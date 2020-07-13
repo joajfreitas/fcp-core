@@ -6,6 +6,7 @@ build-pic:
     - docker
 
   script:
+    pip install setuptools
     python setup.py install
 
 
