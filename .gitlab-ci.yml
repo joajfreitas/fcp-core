@@ -6,8 +6,8 @@ build-pic:
     - docker
 
   script:
-    - pip install setuptools
-    - python setup.py install
+    - pip3 install setuptools
+    - python3 setup.py install
 
 
       # test_c_src:
