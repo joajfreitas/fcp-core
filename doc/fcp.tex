@@ -1,0 +1,678 @@
+\documentclass[11pt, a4paper]{article}
+\usepackage[dvipsnames]{color}
+\usepackage[utf8]{inputenc}
+\usepackage[UKenglish]{babel}
+\usepackage{graphicx}
+\usepackage{fcp}
+\usepackage{dirtree}
+\usepackage{listings}
+\usepackage{minted}
+\usepackage{fourier}
+\usepackage{fancyref}
+\usepackage{bytefield}
+
+\newsavebox{\bytefieldbox}
+\newenvironment{sourcedbytefield}[3][]
+ {\def\source{#3}\setbox\bytefieldbox=\hbox\bgroup\begin{bytefield}[#1]{#2}}
+ {\end{bytefield}\egroup
+  \begin{tabular}{@{}r@{}}
+  \usebox{\bytefieldbox}\\
+  \footnotesize\source
+  \end{tabular}}
+\newcommand{\sourcedincludegraphics}[3][]{%
+  \begin{tabular}{@{}r@{}}
+  \includegraphics[#1]{#2}\\
+  \footnotesize#3
+  \end{tabular}%
+}
+
+\begin{document}
+
+
+\begin{titlepage}
+
+	\includegraphics[width=5cm]{ist.eps}
+	\hfill
+	\includegraphics[width=5cm]{ulisboa.eps}
+    \hspace{3mm}
+	\vspace{2cm}
+	\begin{center}
+		\includegraphics[width=6cm]{Logo-FST-Lisboa.eps}
+	\end{center}
+	\color{FSTRed}\rule{\textwidth}{2pt}
+	\color{black}
+	\begin{center}
+		{\Huge\textbf{\Title}}\\
+
+		\vfill
+	\Large \Author\\
+		\vspace{1cm}
+	\Large \today\\
+		\vspace{1cm}
+	\end{center}
+
+\end{titlepage}
+
+
+\tableofcontents
+
+%\nomenclature{BMS}{Battery Managment System}
+%\nomenclature{BOTS}{Brake Over Travel Switch}
+%\nomenclature{BSPD}{Brake System Plausibility Device}
+%\nomenclature{LVMS}{Low Voltage Master Switch}
+%\nomenclature{IS}{Inertia Switch}
+%\nomenclature{IMD}{Insulation Monitoring Device}
+%\nomenclature{AMS}{Accumulator Managment System}
+%\nomenclature{TSMS}{Tractive System Master Switch}
+%\nomenclature{RTDS}{Ready To Drive System}
+%
+%\cleardoublepage
+%\phantomsection
+%\addcontentsline{toc}{section}{I \ \ \listfigurename}
+%\listoffigures
+%
+%\cleardoublepage
+%\fancyhead[R]{\slshape List of Abbreviations}	% workaround... nomencl package doesn't work that well
+%\renewcommand{\nomname}{List of Abbreviations}
+%\printnomenclature
+%\clearpage
+
+
+%% Remember to change Author and Area on FSTReport.sty
+%% \/-- Start document here
+\section{Motivation}
+
+\section{Install}
+\label{sec:install}
+
+\noindent Check that python and pip are installed:
+\begin{minted}{bash}
+	$ pip -V
+	pip 19.2.3 from /usr/lib/python3.7/site-packages/pip (python 3.7)
+
+	$ python3 -V
+	Python 3.7.4
+\end{minted}
+
+Python3 version should be $>=3.7$.
+
+Install fcp from pip:
+
+\begin{minted}{bash}
+	$ pip install fcp
+\end{minted}
+
+\section{Usage}
+\label{sec:usage}
+
+Usage page:
+\begin{minted}{bash}
+	$ fcp
+
+	Usage: fcp [OPTIONS] COMMAND [ARGS]...
+
+	Options:
+	  --help  Show this message and exit.
+
+	Commands:
+	  c-gen
+	  gui
+	  init
+	  read_dbc
+	  validate
+\end{minted}
+
+\subsection{init}
+\label{sec:usage:init}
+
+\begin{minted}{bash}
+	$ fcp init --help
+	Usage: fcp init [OPTIONS] JSON_FILE
+
+	Options:
+	  --help  Show this message and exit.
+
+\end{minted}
+
+%TODO: add section reference
+The init command created a new json specification file with some required
+defaults. This includes log, command, data protocol messages and default log
+strings. Provide the json file path through the JSON\_FILE argument. 
+
+\danger This will override any existing file if it is passed as the JSON\_FILE.
+
+\subsection{read-dbc}
+\label{sec:usage:read-dbc}
+
+\begin{minted}{bash}
+	$ fcp read_dbc --help
+
+	Usage: fcp read_dbc [OPTIONS] DBC JSON_FILE DEVICE_CONFIG
+
+	Options:
+	  --help  Show this message and exit.
+\end{minted}
+
+\begin{itemize}
+	\item DBC: dbc file path
+	\item JSON\_FILE json spec file
+	\item DEVICE\_CONFIG device config json file
+\end{itemize}
+
+The read\_dbc command will transform a DBC file into a json specification file.
+Some required defaults will be added. See \fref{sec:usage:init} for details on
+which values are added.
+
+Since the DBC files have no knowledge of devices and their IDs the
+device\_config file must be provided so that names can be attributed to
+devices.
+
+Example device\_config:
+\begin{minted}{json}
+{
+	"0": "amk_0",
+	"1": "amk_1",
+	"2": "amk_2",
+	"3": "amk_3",
+	"8": "dcu",
+	"9": "te",
+	"10": "dash",
+	"13": "arm",
+	"14": "bms_master",
+	"15": "bms_verbose",
+	"16": "iib",
+	"20": "ahrsf",
+	"21": "ahrsr",
+	"22": "gpsf",
+	"23": "gpsr",
+	"29": "isa"
+}
+\end{minted}
+
+\danger The read\_dbc command overrides existing json specification files. DBC
+and JSON spec merge are not yet implemented.
+
+
+\subsection{write-dbc}
+\label{sec:usage:write-dbc}
+
+\begin{minted}{bash}
+	$ fcp write_dbc --help
+	Usage: __main__.py write_dbc [OPTIONS] JSON_FILE DBC
+
+	Transform FCP json file into a DBC :param json_file: FCP json file path.
+	:param dbc: dbc file path.
+
+Options:
+  --help  Show this message and exit.
+\end{minted}
+
+\begin{itemize}
+	\item JSON\_FILE json spec file
+	\item DBC: dbc file path
+\end{itemize}
+
+The write\_dbc command will transform a json specification into a DBC file.
+
+\danger The write\_dbc command overrides existing dbc files. DBC
+and JSON spec merge are not yet implemented.
+
+\subsection{validate}
+\label{sec:usage:validate}
+
+\begin{minted}{bash}
+	$ fcp validate --help
+
+	Usage: fcp validate [OPTIONS] JSON_FILE
+
+	Options:
+	  --help  Show this message and exit.
+\end{minted}
+
+Json files are unstructured data files. To be sure that changes to the json spec are according to the specification the validate command checks the correctness of the json file.
+
+\subsection{c-gen}
+\label{sec:usage:c-gen}
+
+\begin{minted}{bash}
+	$ fcp c-gen --help
+
+	Usage: fcp c-gen [OPTIONS] TEMPLATES OUTPUT JSON_FILE SKEL
+
+	Options:
+	  --help  Show this message and exit.
+\end{minted}
+
+\begin{itemize}
+	\item TEMPLATES: Jinja2 template directory
+	\item OUTPUT: C output directory
+	\item JSON\_FILE: json spec file
+	\item SKEL: C skeleton directory
+\end{itemize}
+
+c-gen generates a C implementation of the json spec file.
+
+Example usage (current directory is the project directory):
+
+\begin{minted}{bash}
+	$ fcp c-gen templates out can-ids.json skel
+\end{minted}
+
+\danger This command will override the contents of the output directory
+
+\subsection{gui}
+\begin{minted}
+Usage: fcp gui [OPTIONS]
+
+Options:
+  --help  Show this message and exit.
+\end{minted}
+
+Launches the GUI editor.
+
+\section{GUI}
+\label{sec:gui}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{gui_preview.png}
+	\caption{GUI preview}%
+	\label{fig:gui_preview}
+\end{figure}
+
+\subsection{Shortcuts}
+
+\begin{itemize}
+	\item Ctrl + S : save
+	\item Ctrl + O : open json
+\end{itemize}
+
+\newpage
+\section{Protocol Overview}
+
+\subsection{Basics}
+\subsubsection{can\_ids.h}
+
+\begin{minted}{C}
+/* LOG IDs */
+#define LOG_WRONG_LOG_ID 0
+#define LOG_WRONG_CFG_ID 1
+
+...
+#include "te_can.h"
+#include "dash_can.h"
+...
+#include "common.h"
+
+/* DEVICE IDs */
+...
+#define DEVICE_ID_TE	9 
+#define DEVICE_ID_DASH	10 
+...
+
+/* CAN Structure */
+typedef struct _can_t {
+	...
+	#ifndef NO_TE
+	dev_te_t te;
+	#endif
+	#ifndef NO_DASH
+	dev_dash_t dash;
+	#endif
+	...
+	dev_common_t common;
+} can_t;
+
+void decode_can(CANdata msg, can_t *can);
+uint16_t dev_get_id();
+void dev_send_msg(CANdata msg);
+
+\end{minted}
+
+\par{\textbf{LOG\_IDs}} The \textit{can\_ids.h} start with the definition of
+the LOG IDs. The names that can be used in the C library are constructed by
+prepending \textit{LOG\_} to the all capitalized name of the log that is
+defined in the JSON specification file.
+
+\par{\textbf{Device Includes}} Next follows the includes of all device headers,
+which means that we only need to include \textit{can\_ids.h} to have access to
+all the \textit{can\_ids}.
+
+\par{\textbf{DEVICE IDs}} In the section DEVICE IDs definition of the device
+IDs can be found. This names are constructed by prepending \textit{DEVICE\_} to
+the all capitalized name defined in the JSON specification file.
+
+\par{\textbf{{CAN Structure}} The CAN Structure section contains the
+	\texit{can\_t} structure. This structure contains the all signals defined
+	in the CAN bus.
+
+	To reduce the memory requirements of this structure some devices can be
+	excluded. Devices can be excluded by defining the NO\_{DEVICE\_NAME}, ex:
+	-DNO\_TE.
+
+Example of signals access: \textit{can.te.te\_main.apps}.
+
+From left to right the can\_t structure, then the device name, followed by the
+message name and finally the signals name.
+
+\par{\textbf{decode\_can}} The \textit{decode\_can} function can be used to
+decode a CAN packet into the can\_t structure. Example usage:
+\begin{minted}{C}
+...
+can_t can;
+...
+while (True) {
+	if (!can1_rx_empty()) {
+		CANdata msg  = pop_can1();
+		decode_can(msg, &can);
+	}
+	...
+}
+\end{minted}
+
+\par{\textbf{dev\_get\_id}}
+The \textit{dev\_get\_id} is a function that must be defined by the user. This
+function returns the device ID used in the users code.
+
+\par{\textbf{dev\_send\_msg}} The \textit{dev\_send\_msg} is a function that
+mus be defined by the user. This function sends a CAN frame to the bus.
+
+\subsection{Sending messages automatically}
+Messages can be automatically sent by using the \{device\}\_send\_msgs functions.
+This function sends messages to the bus according to the configured period in
+the FCP json.
+
+It is recommended that the function be called at least as frequently as the most frequent message. 
+The time resolution used is the millisecond so periods smaller than this cannot be used.
+
+The data is going to be sent is the done present in the device field of the can\_t structure. Fill this structure to update the data being sent.
+
+\begin{minted}{C}
+...
+volatile uint32_t time = 0;
+
+void timer1_callback() {
+	time++
+}
+
+int main(void) {
+	can_t can;
+
+	config_timer1(1, 5);
+
+	...
+
+	while (True) {
+		...
+		can.te.apps = get_apps();
+		te_send_msgs(can.te, time);
+	}
+}
+
+\end{minted}
+
+\subsection{LOG Protocol}
+The LOG packet can be used to report errors, warning or other type of information to the user.
+
+In order for the information to be delivered to the user a string representation of the error must be available. Since sending strings through the network would be inefficient we maintain a table of identifiers and the corresponding strings. The ERR\_CODE is the string identifier.
+
+So that strings can deliver more information, there are up to 3 arguments that can be sent over the network. The formatting of strings with arguments could be implemented with a formatting scheme similar to C's \textit{printf}.
+
+\begin{minted}{json}
+    "logs": {
+        "wrong_cfg_id": {
+            "comment": "",
+            "id": 1,
+            "n_args": 0,
+            "name": "wrong_cfg_id",
+            "string": "Cfg code was not found"
+        },
+        "wrong_log_id": {
+            "comment": "",
+            "id": 0,
+            "n\_args": 0,
+            "name": "wrong_log_id",
+            "string": "Log code was not found"
+        }
+    }
+\end{minted}
+
+\\\\
+\begin{bytefield}[bitwidth=2.2em]{16}
+	\bitheader{0-15} \\
+	\begin{rightwordgroup}{Log Header}
+		\bitbox{3}{LEVEL} & \bitbox{2}{N\_ARGS} & \bitbox{3}{Reserved} & \bitbox{8}{ERR\_CODE}
+	\end{rightwordgroup} \\
+	\bitbox{16}{ARG 1} \\
+	\bitbox{16}{ARG 2} \\
+	\bitbox{16}{ARG 3}
+\end{bytefield}
+
+\subsubsection{C Library}
+Example usage of log reporting ordered in decreasing order of severity:
+\begin{minted}{C}
+	...
+	send_can1(logE(LOG_WRONG_LOG_ID, 0, 0, 0)); // Log Error
+	send_can1(logW(LOG_WRONG_LOG_ID, 0, 0, 0)); // Log Warning
+	send_can1(logI(LOG_WRONG_LOG_ID, 0, 0, 0)); // Log Info
+	send_can1(logD(LOG_WRONG_LOG_ID, 0, 0, 0)); // Log Debug
+	...
+\end{minted}
+
+The macros \textit{logE}, \textit{logW}, \textit{logD}, \textit{logI} are defined in the \textit{can\_log.h} file.
+
+The LOG identifiers are defined in the \textit{can\_ids.h} file. Ex LOG ids: \textit{LOG\_WRONG\_LOG\_ID}, \textit{LOG\_WRONG\_CFG\_ID}.
+
+\subsection{CFG Protocol}
+The config protocol allows to receive or define configuration parameters over the network.
+
+In this protocol configuration parameters are identified by an integer id. Identifiers are not global, instead they are local to a device. This means that parameter 0 of device 1 may not be de same parameter as parameter 0 of device 2.
+
+To receive a configuration parameter two packets are required: the REQ and the ANS. The REQ packet carries the request for information while the ANS packet carries the information itself.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\linewidth]{config_get.png}
+	\caption{GET sequence}%
+	\label{fig:cmd_protocol}
+\end{figure}
+
+Analogously to the GET to define a parameter two messages are needed: the REQ and the ANS.
+In this case the REQ is a request for change and already carries the contents of the parameter that are to be defined. Consequentially the ANS packet is just a confirmation that the parameter was indeed changed.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\linewidth]{config_set.png}
+	\caption{SET sequence}%
+	\label{fig:cmd_protocol}
+\end{figure}
+
+CFG REQ GET
+\\\\
+\begin{bytefield}[bitwidth=2.2em]{16}
+	\bitheader{0-15} \\
+	\begin{rightwordgroup}{CFG Header}
+		\bitbox{5}{DST} & \bitbox{3}{RESERVED} & \bitbox{8}{CFG ID}
+	\end{rightwordgroup}
+\end{bytefield}
+
+CFG ANS GET
+\\\\
+\begin{bytefield}[bitwidth=2.2em]{16}
+	\bitheader{0-15} \\
+	\begin{rightwordgroup}{CFG Header}
+		\bitbox{5}{DST} & \bitbox{3}{RESERVED} & \bitbox{8}{CFG ID}
+	\end{rightwordgroup} \\
+	\bitbox{16}{DATA 0:15} \\
+	\bitbox{16}{DATA 16:31}
+\end{bytefield}
+
+CFG REQ SET
+\\\\
+\begin{bytefield}[bitwidth=2.2em]{16}
+	\bitheader{0-15} \\
+	\begin{rightwordgroup}{CFG Header}
+		\bitbox{5}{DST} & \bitbox{3}{RESERVED} & \bitbox{8}{CFG ID}
+	\end{rightwordgroup} \\
+	\bitbox{16}{DATA 0:15} \\
+	\bitbox{16}{DATA 16:31}
+\end{bytefield}
+
+CFG ANS SET
+\\\\
+\begin{bytefield}[bitwidth=2.2em]{16}
+	\bitheader{0-15} \\
+	\begin{rightwordgroup}{CFG Header}
+		\bitbox{5}{DST} & \bitbox{3}{RESERVED} & \bitbox{8}{CFG ID}
+	\end{rightwordgroup} \\
+	\bitbox{16}{DATA 0:15} \\
+	\bitbox{16}{DATA 16:31}
+\end{bytefield}
+
+
+\subsubsection{C Library}
+To use the C CFG Protocol implementation an array which can hold all parameters must be created. The number of parameters can be conveniently found in the .h file of the device. Since parameters can use up to 32 bit the type of the table shoud be \textit{int32\_t}.
+
+For automatic handling of configurations the cfg\_dispatch function should be used. The cfg\_dispatch must be called every time a CAN message is retrieved from the bus.  function should be used. The cfg\_dispatch must be called every time a CAN message is retrieved from the bus. 
+
+\begin{minted}{C}
+uint32_t parameters[CFG_BMS_MASTER_SIZE] = {0};
+cfg_config(parameters, CFG_BMS_MASTER_SIZE);
+
+while (True) {
+	...
+	if (!can1_rx_empty()) {
+		CANdata msg = pop_can1();
+		cfg_dispatch(msg);
+	}
+
+}
+\end{minted}
+
+To make use of a configuration access the parameter table with the macros defined in the device .h .
+
+\begin{minted}{C}
+	...
+	uint32_t version = parameters[CFG_BMS_MASTER_VERSION];
+	...
+\end{minted}
+
+The \textit{cfg\_config} and \textit{cfg\_dispatch} can be found in the \textit{can\_cfg.h} file.
+
+The CFG device macros can be found in the device .h. Ex: \textit{bms\_master\_can.h}
+
+\subsection{CMD Protocol}
+The CMD protocol can be used to request actions of the car ECU's. Two packets are used in this protocol: the SEND and the RET.
+
+Actions are identified by an integer ID. This ID is local to the ECU. This means that command 0 can do different actions if different ECU's are requested.
+
+The SEND packet is the one that can be used to request an action. It can also carry 3 16 bit arguments to be used by the ECU.
+
+The RET packet confirms that the action was executed. It can also send 3 16 bit return values.
+
+This protocol tries to emulate the execution of procedures remotely similar to RPC protocols. It is however limited by the three input arguments and the three output values.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.6\linewidth]{cmd_protocol.png}
+	\caption{\uname}%
+	\label{fig:name}
+\end{figure}
+
+CMD SEND. 
+\\\\
+\begin{bytefield}[bitwidth=2.2em]{16}
+	\bitheader{0-15} \\
+	\begin{rightwordgroup}{CMD Header}
+		\bitbox{5}{DST} & \bitbox{3}{RESERVED} & \bitbox{8}{CMD ID}
+	\end{rightwordgroup} \\
+	\bitbox{16}{ARG 1} \\
+	\bitbox{16}{ARG 2} \\
+	\bitbox{16}{ARG 3}
+\end{bytefield}
+
+CMD RET
+\\\\
+\begin{bytefield}[bitwidth=2.2em]{16}
+	\bitheader{0-15} \\
+	\begin{rightwordgroup}{CMD Header}
+		\bitbox{5}{DST} & \bitbox{3}{RESERVED} & \bitbox{8}{CMD ID}
+	\end{rightwordgroup} \\
+	\bitbox{16}{RET 1} \\
+	\bitbox{16}{RET 2} \\
+	\bitbox{16}{RET 3}
+\end{bytefield}
+
+\subsubsection{C Library}
+To send a CMD using the CMD protocol C library use the \textit{cmd\_send} function.
+
+\begin{minted}{C}
+	...
+	CANdata msg = cmd_send(CMD_TOGGLE_PUMPS, DEVICE_ID_CCU, 0, 0, 0);
+	send_can1(msg);
+	...
+\end{minted}
+
+To handle messages using the CMD Protocol C library a \textit{cmd\_handle} function must be defined.
+
+\begin{minted}{C}
+multiple_return_t cmd_handle(
+	uint16_t id, 
+	uint16_t arg1, 
+	uint16_t arg2, 
+	uint16_t arg3) 
+{
+
+	multiple_return_t mt = {0};
+	if (id == CMD_TOGGLE_PUMPS) {
+		PUMP_LEFT ^= 1;	
+	}
+	else if (id == CMD_ADD) {
+		mt.arg1 = arg1 + arg2
+	}
+	else {
+		CANdata msg = logE(LOG_WRONG_CMD_ID);
+		send_can1(msg);
+	}
+
+	return mt;
+}
+\end{minted}
+
+The \textit{cmd\_handle} function will automatically be called by \textit{cmd\_dispath} which must be called every time a message is retrieved from the bus. 
+
+\begin{minted}{C}
+while (True) {
+	if (!can1_rx_empty()) {
+		CANdata msg = pop_can1();
+		cmd_dispatch(msg);
+	}
+
+}
+\end{minted}
+
+\subsection{CMD vs CFG protocol}
+The CMD and CFG protocols are very similar, this means that the question of when to use each one is a pertinent one.
+
+The CFG protocol is intended for changing parameters only. Ex: maximum torque limit, upper apps 1 threshold, sensor calibration data, ...
+
+The C library works by directly changing memory values without develop intervention which is convenient since no user code is needed to handle the configurations.
+
+On the other side commands allow for the request of immediate actions. Ex: turn on/off pumps/fans, activate TS, write all parameters to flash. These actions must be handled by the developer and for this reason cannot be done automatically by fcp.
+
+\section{Source Code Overview}
+\dirtree{%
+.1 dbc\DTcomment{dbc examples}.
+.1 device\_config.json\DTcomment{id to name matching for devices}.
+.1 doc\DTcomment{documentation sources}.
+.1 json\DTcomment{json FCP file examples}.
+.1 README.md.
+.1 requirements.txt\DTcomment{pip packages list}.
+.1 skel\DTcomment{c skeleton files}.
+.1 spec\DTcomment{python sources}.
+.2 gui\_lib\DTcomment{python gui sources}.
+.1 src\DTcomment{c sources}.
+.1 template\DTcomment{jinja templates}.
+}
+
+\end{document}

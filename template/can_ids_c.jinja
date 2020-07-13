@@ -1,0 +1,11 @@
+#include "can_ids.h"
+
+void decode_can(CANdata msg, {{spec.signature}} *can) {
+{% for device in spec.devices.values() %}
+	#ifndef NO_{{device.name.upper()}}
+	decode_{{device.name}}(msg, &(can->{{device.name}}));
+	#endif
+	{%- endfor %}
+
+	decode_{{spec.common.name}}(msg, &(can->{{spec.common.name}}));
+}
