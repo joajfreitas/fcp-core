@@ -1,11 +1,16 @@
 from setuptools import setup, find_packages
 
-from fcp import VERSION
+
+with open("fcp/version.py") as f:
+    version = f.read()
+
+_, version = version.split("=")
+version = version.strip('"')
 
 setup(
     name="fcp",
     description="CAN bus manager",
-    version=VERSION,
+    version=version,
     author="Joao Freitas",
     author_email="joaj.freitas@gmail.com",
     license="GPLv3",
