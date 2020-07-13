@@ -6,7 +6,7 @@ build-pic:
     - docker
 
   script:
-    sudo python setup.py install
+    python setup.py install
 
 
       # test_c_src:
