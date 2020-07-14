@@ -6,6 +6,7 @@
 !_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
 !_TAG_PROGRAM_URL	https://ctags.io/	/official site/
 !_TAG_PROGRAM_VERSION	0.0.0	/a3c87ab5/
+AT	signal_parser.c	/^#define AT /;"	d	file:
 BIG	signal_parser.h	/^	BIG$/;"	e	enum:_fcp_endianess
 CANdata	candata.h	/^} CANdata;$/;"	t	typeref:struct:__anon871468e70108
 CC	Makefile	/^CC=gcc$/;"	m
@@ -15,6 +16,8 @@ FLOAT	signal_parser.h	/^	FLOAT,$/;"	e	enum:_fcp_type
 LITTLE	signal_parser.h	/^	LITTLE,$/;"	e	enum:_fcp_endianess
 OUT	Makefile	/^OUT=test$/;"	m
 SIGNED	signal_parser.h	/^	SIGNED,$/;"	e	enum:_fcp_type
+STRINGIFY	signal_parser.c	/^#define STRINGIFY(/;"	d	file:
+TOSTRING	signal_parser.c	/^#define TOSTRING(/;"	d	file:
 UNSIGNED	signal_parser.h	/^	UNSIGNED,$/;"	e	enum:_fcp_type
 _CANDATA	candata.h	/^#define _CANDATA$/;"	d
 __MIN_UNIT_	minunit.h	/^#define __MIN_UNIT_$/;"	d
@@ -22,14 +25,14 @@ __SIGNAL_PARSER_H__	signal_parser.h	/^#define __SIGNAL_PARSER_H__$/;"	d
 __anon871468e70108	candata.h	/^typedef struct {$/;"	s
 __anon871468e7020a	candata.h	/^	union {$/;"	u	struct:__anon871468e70108
 __anon871468e70308	candata.h	/^        struct {$/;"	s	union:__anon871468e70108::__anon871468e7020a
+__bswap_16	signal_parser.c	/^#define __bswap_16(/;"	d	file:
+__bswap_32	signal_parser.c	/^#define __bswap_32(/;"	d	file:
+__bswap_64	signal_parser.c	/^#define __bswap_64(/;"	d	file:
 _fcp_endianess	signal_parser.h	/^typedef enum _fcp_endianess {$/;"	g
 _fcp_type	signal_parser.h	/^typedef enum _fcp_type {$/;"	g
 _signal	signal_parser.h	/^typedef struct _signal {$/;"	s
 all_tests	signal_parser_test.c	/^static char *all_tests() {$/;"	f	typeref:typename:char *	file:
-apply_linear_double	signal_parser.c	/^double apply_linear_double(double bitfield, fcp_signal_t signal) {$/;"	f	typeref:typename:double
-apply_linear_float	signal_parser.c	/^float apply_linear_float(float bitfield, fcp_signal_t signal) {$/;"	f	typeref:typename:float
-apply_linear_int64_t	signal_parser.c	/^int64_t apply_linear_int64_t(int64_t bitfield, fcp_signal_t signal){$/;"	f	typeref:typename:int64_t
-apply_linear_uint64_t	signal_parser.c	/^uint64_t apply_linear_uint64_t(uint64_t bitfield, fcp_signal_t signal) {$/;"	f	typeref:typename:uint64_t
+apply_linear	signal_parser.c	/^#define apply_linear(/;"	d	file:
 big_endian_conv	signal_parser.c	/^uint64_t big_endian_conv(uint64_t word, fcp_signal_t signal) {$/;"	f	typeref:typename:uint64_t
 bitfield_sign_conv	signal_parser.c	/^int64_t bitfield_sign_conv(uint64_t bitfield, fcp_signal_t signal) {$/;"	f	typeref:typename:int64_t
 bitmask	signal_parser.c	/^uint64_t bitmask(unsigned length) {$/;"	f	typeref:typename:uint64_t
@@ -44,6 +47,7 @@ dev_id	candata.h	/^			uint16_t dev_id:5; \/\/ Least significant$/;"	m	struct:__a
 dlc	candata.h	/^	uint16_t dlc:4;$/;"	m	struct:__anon871468e70108	typeref:typename:uint16_t:4
 encode_signal	signal_parser.c	/^#define encode_signal(/;"	d	file:
 endianess	signal_parser.h	/^	fcp_endianess_t endianess;$/;"	m	struct:_signal	typeref:typename:fcp_endianess_t
+fcp_decode_signal_double_test_17	signal_parser_test.c	/^bool fcp_decode_signal_double_test_17(void) {$/;"	f	typeref:typename:bool
 fcp_decode_signal_uint64_t_big_endian_test_11	signal_parser_test.c	/^bool fcp_decode_signal_uint64_t_big_endian_test_11(void) {$/;"	f	typeref:typename:bool
 fcp_decode_signal_uint64_t_big_endian_test_12	signal_parser_test.c	/^bool fcp_decode_signal_uint64_t_big_endian_test_12(void) {$/;"	f	typeref:typename:bool
 fcp_decode_signal_uint64_t_big_endian_test_13	signal_parser_test.c	/^bool fcp_decode_signal_uint64_t_big_endian_test_13(void) {$/;"	f	typeref:typename:bool
@@ -61,6 +65,7 @@ fcp_encode_signal_uint64_t_test_15	signal_parser_test.c	/^bool fcp_encode_signal
 fcp_encode_signal_uint64_t_test_16	signal_parser_test.c	/^bool fcp_encode_signal_uint64_t_test_16(void) {$/;"	f	typeref:typename:bool
 fcp_endianess_t	signal_parser.h	/^} fcp_endianess_t;$/;"	t	typeref:enum:_fcp_endianess
 fcp_signal_t	signal_parser.h	/^} fcp_signal_t;$/;"	t	typeref:struct:_signal
+fcp_type_generic	signal_parser.c	/^#define fcp_type_generic(/;"	d	file:
 fcp_type_t	signal_parser.h	/^} fcp_type_t;$/;"	t	typeref:enum:_fcp_type
 get_bit	signal_parser.c	/^#define get_bit(/;"	d	file:
 get_bitfield	signal_parser.c	/^#define get_bitfield(/;"	d	file:

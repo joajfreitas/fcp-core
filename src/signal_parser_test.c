@@ -34,6 +34,7 @@ bool fcp_decode_signal_uint64_t_big_endian_test_13(void);
 bool bitmask_test_14(void);
 bool fcp_encode_signal_uint64_t_test_15(void);
 bool fcp_encode_signal_uint64_t_test_16(void);
+bool fcp_decode_signal_double_test_17(void);
 #if 0
 
 bool is_equal_double(double value, double check);
@@ -427,6 +428,7 @@ bool fcp_decode_signal_uint64_t_test_1(void) {
 	};
 
 	data = fcp_decode_signal_uint64_t(msg, signal);
+	printf("%"PRIu64"  %" PRIu64"\n", data, aux);
 	mu_assert("test1: unsigned decode 64 bit data", data == aux);
 
 	return 0;
@@ -486,8 +488,8 @@ bool fcp_decode_signal_uint64_t_test_4(void) {
 	uint32_t aux = 1000;
 
 	CANdata msg;
-	uint32_t *ptr = (uint32_t *) (msg.data+1);
-	*ptr = aux;
+	uint64_t *ptr = (uint64_t *) msg.data;
+	*ptr = aux << 16;
 	
 	uint64_t *data = (uint64_t *) malloc(sizeof(uint64_t));
 
@@ -501,7 +503,8 @@ bool fcp_decode_signal_uint64_t_test_4(void) {
 	};
 
 	*data = fcp_decode_signal_uint64_t(msg, signal);
-	mu_assert("test4: unsigned decode 32 bit data shifted with scale", is_equal_double(*data, 0.5*(double)aux));
+	//printf("%"PRIu64 " %lf \n", *data, (0.5*aux));
+	mu_assert("test4: unsigned decode 32 bit data shifted with scale", is_equal_double(*data, 0.5*aux));
 
 	return 0;
 }
@@ -791,6 +794,29 @@ bool fcp_encode_signal_uint64_t_test_16(void) {
 	return 0;
 }
 
+bool fcp_decode_signal_double_test_17(void) {
+	uint16_t aux = 10001;
+	
+	fcp_signal_t signal = {
+		.start = 0,
+		.length = 16,
+		.scale = 0.01,
+		.offset = 0,
+		.type = UNSIGNED,
+		.endianess = LITTLE
+	};
+
+	
+	CANdata msg;
+	uint64_t *ptr = (uint64_t *) msg.data;
+	*ptr = aux;
+	
+	double data = fcp_decode_signal_double(msg, signal);
+	mu_assert("test1: decode double with scaling", data == 0.01*aux);
+
+	return 0;
+}
+
 static char *all_tests() {
 	//mu_run_test(encode_signal_unsigned_test_15);
 	//mu_run_test(encode_signal_unsigned_test_16);
@@ -816,6 +842,7 @@ static char *all_tests() {
 	mu_run_test(bitmask_test_14);
 	mu_run_test(fcp_encode_signal_uint64_t_test_15);
 	mu_run_test(fcp_encode_signal_uint64_t_test_16);
+	mu_run_test(fcp_decode_signal_double_test_17);
     return 0;
 }
 

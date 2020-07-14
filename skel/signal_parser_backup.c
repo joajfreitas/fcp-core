@@ -3,23 +3,6 @@
 #include "signal_parser.h"
 #include "candata.h"
 
-// token to string
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
-#define AT __FILE__ ":" TOSTRING(__LINE__)
-
-// define a function for every tipe
-#define fcp_type_generic(function) \
-function(uint64_t) \
-function(uint32_t) \
-function(uint16_t) \
-function(uint8_t) \
-function(int64_t) \
-function(int32_t) \
-function(int16_t) \
-function(int8_t) \
-function(float) \
-function(double) \
 
 
 /* Taken from glib source */
@@ -61,11 +44,11 @@ function(double) \
 #define get_bitfield(data, signal) (((data) >> (signal.start)) & bitmask(signal.length))
 #define set_bitfield(data, signal) (((uint64_t) data) << signal.start)
 
-//uint64_t apply_linear_uint64_t(uint64_t bitfield, fcp_signal_t signal);
-//int64_t apply_linear_int64_t(int64_t bitfield, fcp_signal_t signal);
-//double apply_linear_double(double bitfield, fcp_signal_t signal);
-//float apply_linear_float(float bitfield, fcp_signal_t signal);
-//int64_t bitfield_sign_conv(uint64_t bitfield, fcp_signal_t signal);
+uint64_t apply_linear_uint64_t(uint64_t bitfield, fcp_signal_t signal);
+int64_t apply_linear_int64_t(int64_t bitfield, fcp_signal_t signal);
+double apply_linear_double(double bitfield, fcp_signal_t signal);
+float apply_linear_float(float bitfield, fcp_signal_t signal);
+int64_t bitfield_sign_conv(uint64_t bitfield, fcp_signal_t signal);
 
 
 
@@ -108,26 +91,64 @@ uint64_t bitmask(unsigned length) {
         return 0xffffffffffffffffULL;
 }
 
-#define apply_linear(type) \
-type apply_linear_ ## type (type bitfield, fcp_signal_t signal); \
-type apply_linear_ ## type ( type bitfield, fcp_signal_t signal) { \
-	if (signal.scale == 1.0) { \
-		return (type) (bitfield + (type) signal.offset); \
-	} \
-	else { \
-		printf("apply_linear_" STRINGIFY(type)": %lld \n", (unsigned long long) bitfield); \
-		return (type) (signal.scale * ((double) bitfield) + signal.offset);\
-	}\
+/** @fn uint64_t apply_linear_uint64_t(uint64_t bitfield, double scale, double offset)
+ *  @brief apply a linear conversion to a 64 bit unsigned number.
+ *  @param bitfield 64 bit unsigned data
+ *  @param scale Scaling to apply
+ *  @param offset Offset to apply
+ */
+uint64_t apply_linear_uint64_t(uint64_t bitfield, fcp_signal_t signal) {
+	if (signal.scale == 1.0) {
+		return bitfield + (uint64_t) signal.offset;
+	}
+	else {
+		return signal.scale*(uint32_t)bitfield+signal.offset;
+	}
 }
 
-fcp_type_generic(apply_linear)
-	
+
+/** @fn int64_t apply_linear_int64_t(int64_t bitfield, double scale, double offset)
+ *  @brief apply a linear conversion to a 64 bit signed number. Only applies
+ *  transformations for numbers up to 32 bit
+ *  @param bitfield 64 bit signed data.
+ *  @param scale Scaling to apply.
+ *  @param offset Offset to apply.
+ */
+int64_t apply_linear_int64_t(int64_t bitfield, fcp_signal_t signal){
+	if (signal.scale == 1.0) {
+		return bitfield + (int64_t) signal.offset;
+	}
+
+	else {
+		return signal.scale*(int32_t)bitfield+signal.offset;
+	}
+}
+
+/** @fn double apply_linear_double(double bitfield, double scale, double offset)
+ *  @brief apply a linear conversion to a double.
+ *  @param bitfield double.
+ *  @param scale Scaling to apply.
+ *  @param offset Offset to apply.
+ */
+double apply_linear_double(double bitfield, fcp_signal_t signal) {
+	return signal.scale*bitfield+signal.offset;
+}
+
+/** @fn float apply_linear_float(float bitfield, double scale, double offset)
+ *  @brief apply a linear conversion to a float.
+ *  @param bitfield float.
+ *  @param scale Scaling to apply.
+ *  @param offset Offset to apply.
+ */
+float apply_linear_float(float bitfield, fcp_signal_t signal) {
+	return signal.scale*bitfield+signal.offset;
+}
+
 /** @fn int64_t bitfield_sign_conv(uint64_t bitfield, unsigned length) 
  *  @brief change sign of a 64 bit signed number
  *  @param bitfield The number.
  *  @param length Size of the number
  */
-int64_t bitfield_sign_conv(uint64_t bitfield, fcp_signal_t signal);
 int64_t bitfield_sign_conv(uint64_t bitfield, fcp_signal_t signal) {
 	if (get_bit(bitfield, (signal.length-1))) {
 		return (int64_t) ((0xFFFFFFFFFFFFFFFFUL << signal.length) | (bitfield));
@@ -155,13 +176,12 @@ uint64_t big_endian_conv(uint64_t word, fcp_signal_t signal) {
 	}
 }
 
-// clang format off
 #define decode_signal(_type) \
 _type fcp_decode_signal_ ## _type (CANdata msg, fcp_signal_t signal) { \
 	switch (signal.type) { \
 	case UNSIGNED: \
-		return (_type) apply_linear_ ## _type (  \
-				big_endian_conv( (uint64_t) \
+		return (_type) apply_linear_uint64_t(  \
+				big_endian_conv( \
 					get_bitfield(can_word(msg), signal), signal), signal); \
 	case SIGNED: \
 		return (_type) apply_linear_int64_t( \
@@ -182,7 +202,18 @@ _type fcp_decode_signal_ ## _type (CANdata msg, fcp_signal_t signal) { \
 	} \
 }
 
-fcp_type_generic(decode_signal)
+// clang format off
+decode_signal(uint64_t)
+decode_signal(uint32_t)
+decode_signal(uint16_t)
+decode_signal(uint8_t)
+decode_signal(int64_t)
+decode_signal(int32_t)
+decode_signal(int16_t)
+decode_signal(int8_t)
+decode_signal(float)
+decode_signal(double)
+// clang format on
 
 
 #define encode_signal(_type) \
@@ -214,5 +245,15 @@ uint64_t fcp_encode_signal_ ## _type ( _type value, fcp_signal_t signal) { \
 	return 0; \
 }\
 
-fcp_type_generic(encode_signal)
+// clang-format off
+encode_signal(uint64_t)
+encode_signal(uint32_t)
+encode_signal(uint16_t)
+encode_signal(uint8_t)
+encode_signal(int64_t)
+encode_signal(int32_t)
+encode_signal(int16_t)
+encode_signal(int8_t)
+encode_signal(float)
+encode_signal(double)
 // clang-format on

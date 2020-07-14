@@ -5,7 +5,9 @@ with open("fcp/version.py") as f:
     version = f.read()
 
 _, version = version.split("=")
-version = version.strip('"')
+version = version.strip()
+
+version = version[1:-1]
 
 setup(
     name="fcp",
