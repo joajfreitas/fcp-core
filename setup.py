@@ -20,5 +20,5 @@ setup(
     download_url="https://github.com/joajfreitas/fcp/archive/v0.1.tar.gz",
     packages=find_packages(),
     entry_points={"console_scripts": ["fcp = fcp.__main__:main",],},
-    install_requires=["click", "PySide2", "jinja2", "ww", "fst_cantools"],
+    install_requires=["click", "PySide2", "jinja2", "fst_cantools"],
 )
