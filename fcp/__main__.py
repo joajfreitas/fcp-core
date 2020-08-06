@@ -9,7 +9,6 @@ import click
 #from .dbc_writer import write_dbc
 from .c_generator import c_gen
 from .gui import gui
-from .gui2 import gui2
 from .validator import validate
 from .spec import Spec
 from .docs import generate_docs
@@ -356,7 +355,6 @@ main.add_command(c_gen_cmd)
 main.add_command(init_cmd)
 main.add_command(validate_cmd)
 main.add_command(gui_cmd)
-main.add_command(gui2_cmd)
 main.add_command(dump_dev_list)
 main.add_command(dump_msg_list)
 main.add_command(dump_cfg_list)

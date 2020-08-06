@@ -7,8 +7,6 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   fcp.gui_lib
-
 Submodules
 ----------
 
@@ -88,14 +86,6 @@ fcp.gui module
 --------------
 
 .. automodule:: fcp.gui
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-fcp.gui2 module
----------------
-
-.. automodule:: fcp.gui2
    :members:
    :undoc-members:
    :show-inheritance:
