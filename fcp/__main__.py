@@ -173,15 +173,6 @@ def gui_cmd(file: str):
     logger = setup_logging()
     gui(logger, file)
 
-@click.command(name="gui2")
-@click.argument("file", required=False)
-def gui2_cmd(file: str):
-    """Launch FCP json editor GUI.
-    :param file: Optional FCP json file path
-    """
-    logger = setup_logging()
-    gui2(file, logger)
-
 @click.command()
 @click.argument("json_file")
 def dump_dev_list(json_file):
