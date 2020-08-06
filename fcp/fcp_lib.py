@@ -1,6 +1,6 @@
 import json
 from fcp.spec import *
-from fst_cantools import Message as CANmessage
+from fcp.can import CANMessage
 
 from math import *
 
@@ -68,7 +68,7 @@ class Fcp:
         for msg in spec.common.msgs.values():
             self.messages[msg.name] = msg
 
-    def encode_msg(self, sid, msg_name, signals):
+    def encode_msg(self, sid: int, msg_name: str, signals: Dict[str, float]) -> CANMessage:
         msg = self.messages.get(msg_name)
 
         data = 0
@@ -79,12 +79,8 @@ class Fcp:
             signal = sigs[name]
             data |= encode_signal(signal, value)
 
-        datas = [0, 0, 0, 0]
-        for i in range(4):
-            datas[i] = (data >> 16 * i) & 0xFFFF
-
         sid = make_sid(sid, msg.id)
-        return CANmessage(sid, msg.dlc, datas, 1)
+        return CANMessage(sid, msg.dlc, 1, data64 = data)
 
     def find_msg(self, msg):
         dev_id, msg_id = decompose_id(msg.sid)
@@ -99,14 +95,14 @@ class Fcp:
             if msg.id == msg_id:
                 return msg
 
-    def decode_msg(self, msg):
+    def decode_msg(self, msg: CANMessage):
         fcp_msg = self.find_msg(msg)
         if fcp_msg == None:
             return "", {}
 
         signals = {}
         data = 0
-        for i, d in enumerate(msg.data):
+        for i, d in enumerate(msg.get_data16()):
             data += d << 16 * i
 
         for name, signal in fcp_msg.signals.items():

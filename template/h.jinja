@@ -53,7 +53,8 @@
 {%- endfor %}
 
 #define CFG_{{device.name.upper()}}_SIZE {{device.cfgs.values()|length}}
-extern const char *cfg_names[CFG_{{device.name.upper()}}_SIZE];
+
+extern const char *cfg_{{device.name}}_names[];
 
 /* Message Structures */
 {% for message in device.msgs.values() %}
@@ -80,12 +81,12 @@ typedef struct _{{device.signature.lower()}} {
 {%- for message in device.msgs.values() %}
 /* {{message.name}} */
 {%- for signal in message.signals.values() %}
-#define decode_{{message.full_id}}_{{signal.name}}(msg) decode_signal_{{signal.type}}_as_{{signal.dst_type}}((msg), {{signal.start}}, {{signal.length}}, {{signal.scale}}, {{signal.offset}});
+#define decode_{{message.name.lower()}}_{{signal.name}}(msg) decode_signal_{{signal.type}}_as_{{signal.dst_type}}((msg), {{signal.start}}, {{signal.length}}, {{signal.scale}}, {{signal.offset}});
 {%- endfor %}
 {% endfor %}
 /* Decode messages */
 {% for message in device.msgs.values() %}
-{{message.type.lower()}} decode_{{message.full_id}}(CANdata msg);
+{{message.type.lower()}} decode_{{message.name.lower()}}(CANdata msg);
 {%- endfor %}
 
 void decode_{{device.name}}(CANdata msg, {{device.signature}} *dev);
@@ -94,13 +95,17 @@ void decode_{{device.name}}(CANdata msg, {{device.signature}} *dev);
 {%- for message in device.msgs.values() %}
 /* {{message.name}} */
 {%- for signal in message.signals.values() %}
-#define encode_{{message.full_id}}_{{signal.name}}(signal) encode_signal_{{signal.type}}_from_{{signal.dst_type}}((signal), {{signal.start}}, {{signal.length}}, {{signal.scale}}, {{signal.offset}});
+#define encode_{{message.name.lower()}}_{{signal.name}}(signal) encode_signal_{{signal.type}}_from_{{signal.dst_type}}((signal), {{signal.start}}, {{signal.length}}, {{signal.scale}}, {{signal.offset}});
 {%- endfor %}
 {%- endfor %}
 
 /* Encode messages */
 {% for message in device.msgs.values() %}
-CANdata encode_{{message.full_id}}({{message.type.lower()}});
+{% if message.mux_count == 0 %}
+CANdata encode_{{message.name.lower()}}({{message.type.lower()}});
+{% else %}
+	CANdata encode_{{message.name.lower()}}({{message.type.lower()}}, uint32_t {{message.multiplexor}});
+{% endif %}
 {%- endfor %}
 
 /** @fn {{device.name}}_send_msgs({{device.signature}} dev, uint32_t time)

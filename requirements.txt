@@ -1,4 +1,3 @@
 jinja2
 click
 pyside2
-ww

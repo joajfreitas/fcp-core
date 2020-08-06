@@ -9,8 +9,7 @@ import click
 #from .dbc_writer import write_dbc
 from .c_generator import c_gen
 from .gui import gui
-
-# from .gui2 import gui2
+from .gui2 import gui2
 from .validator import validate
 from .spec import Spec
 from .docs import generate_docs
@@ -174,6 +173,14 @@ def gui_cmd(file: str):
     logger = setup_logging()
     gui(logger, file)
 
+@click.command(name="gui2")
+@click.argument("file", required=False)
+def gui2_cmd(file: str):
+    """Launch FCP json editor GUI.
+    :param file: Optional FCP json file path
+    """
+    logger = setup_logging()
+    gui2(file, logger)
 
 @click.command()
 @click.argument("json_file")
@@ -358,6 +365,7 @@ main.add_command(c_gen_cmd)
 main.add_command(init_cmd)
 main.add_command(validate_cmd)
 main.add_command(gui_cmd)
+main.add_command(gui2_cmd)
 main.add_command(dump_dev_list)
 main.add_command(dump_msg_list)
 main.add_command(dump_cfg_list)

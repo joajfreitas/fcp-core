@@ -2,6 +2,7 @@
 import sys
 import json
 from datetime import datetime
+import webbrowser
 
 from PySide2.QtWidgets import *
 from PySide2.QtGui import QKeySequence
@@ -79,7 +80,6 @@ class NodeDetails(QWidget):
         self.gui.reload()
 
     def delete(self):
-        print("delete", self.node)
         r = self.gui.spec.rm_node(self.node)
         self.setVisible(False)
         self.parent.setVisible(False)
@@ -87,7 +87,6 @@ class NodeDetails(QWidget):
 
     def reload(self):
         for child in self.children:
-            print("\t",child, flush=True)
             child.reload()
 
         for att, get_f, set_f in self.atts:
@@ -285,7 +284,6 @@ class CmdDetails(NodeDetails):
         if arg == None or arg == False:
             arg = Argument()
         
-        print("add argument")
         self.node.args[arg.name] = arg
         arg_widget = ArgDetails(self.gui, arg, FakeParent())
         self.children.append(arg_widget)
@@ -320,7 +318,6 @@ class CmdWidget(QWidget):
 
     def reload(self):
         for child in self.children:
-            print("\t", child, flush=True)
             child.reload()
 
     def add_cmd(self, cmd=None):
@@ -397,7 +394,6 @@ class CfgWidget(QWidget):
 
     def reload(self):
         for child in self.children:
-            print("\t", child, flush=True)
             child.reload()
 
     def add_cfg(self, cfg=None):
@@ -564,22 +560,23 @@ class EnumDetails(NodeDetails):
         self.children = []
 
         self.ui.valueAddButton.clicked.connect(self.add_value)
-
+        
         for enum_value in node.enumeration.values():
             self.add_value(enum_value)
 
     def add_value(self, enum_value=None):
         if enum_value == None or enum_value == False:
             enum_value = EnumValue()
+            self.node.enumeration[enum_value.name] = enum_value
 
-        self.node.enumeration[enum_value.name] = enum_value
         enum_widget = EnumValueDetails(self.gui, enum_value, FakeParent())
         self.children.append(enum_widget)
         self.ui.EnumValueContents.addWidget(enum_widget)
-        print("node.enumeration", self.node.enumeration)
-        self.reload()
-        
+
     def save(self):
+        for child in self.children:
+            child.save()
+
         self.gui.reload()
 
 class LogWidget(QWidget):
@@ -603,12 +600,11 @@ class LogWidget(QWidget):
         self.ui.addLogButton.clicked.connect(self.add_log)
         for log in self.parent.logs.values():
             self.add_log(log)
-
+    
     def reload(self):
         return
 
     def save(self):
-        print("Save log")
         for child in self.children:
             child.save()
 
@@ -649,6 +645,9 @@ class EnumWidget(QWidget):
         for child in self.children:
             child.reload()
 
+        for att, get_f, set_f in self.atts:
+            att.setText(str(get_f()))
+
         return
 
     def save(self):
@@ -660,7 +659,6 @@ class EnumWidget(QWidget):
     def add_enum(self, enum=None):
         if enum == None or enum == False:
             enum = Enum()
-
         self.parent.enums[enum.name] = enum
         enum_widget = EnumDetails(self.gui, enum, FakeParent())
         self.ui.enumContents.addWidget(enum_widget)
@@ -668,18 +666,33 @@ class EnumWidget(QWidget):
 
 class Gui(QMainWindow):
     def __init__(self, logger):
-        self.logger = logger
         QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        
+        self.logger = logger
+
+        self.spec = Spec()
+        self.children = []
+        
+        self.connect_buttons()
+        self.config_shortcuts()
+
+        self.log_widget = None
+        self.enum_widget = None
+    
+    def connect_buttons(self):
+        def fcp_help(link):
+            webbrowser.open(link)
 
         self.ui.actionOpen.triggered.connect(self.open_json)
         self.ui.actionSave.triggered.connect(self.save_json)
         self.ui.actionValidate.triggered.connect(self.validate)
+        self.ui.action_software10e_help.triggered.connect(lambda : fcp_help("https://projectofst.gitlab.io/software10e/docs/fcp/"))
+        self.ui.action_fcp_help.triggered.connect(lambda : fcp_help("https://gitlab.com/joajfreitas/fcp-core/-/raw/master/doc/fcp.pdf?inline=false"))
+        self.ui.addButton.clicked.connect(self.add_device)
 
-        self.spec = Spec()
-        self.children = []
-
+    def config_shortcuts(self):
         shortcutSave = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_S), self)
         shortcutSave.setContext(Qt.ApplicationShortcut)
         shortcutSave.activated.connect(self.save_json)
@@ -687,25 +700,6 @@ class Gui(QMainWindow):
         shortcutOpen = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_O), self)
         shortcutOpen.setContext(Qt.ApplicationShortcut)
         shortcutOpen.activated.connect(self.open_json)
-
-        self.ui.addButton.clicked.connect(self.add_device)
-
-        self.log_widget = None
-        self.enum_widget = None
-
-    def open_log_widget(self, checked):
-        if self.log_widget is None:
-            print("log not opened")
-            return
-
-        self.log_widget.setVisible(checked)
-
-    def open_enum_widget(self, checked):
-        if self.enum_widget is None:
-            print("enum not opened")
-            return
-        
-        self.enum_widget.setVisible(checked)
 
     def validate(self):
         msg = QMessageBox(self)
@@ -728,7 +722,7 @@ class Gui(QMainWindow):
 
             r = self.spec.add_device(device)
             if r == False:
-                print("Failed to create device")
+                self.logger.error("Failed to create device")
                 return
 
         dev_widget = DeviceWidget(
@@ -758,7 +752,7 @@ class Gui(QMainWindow):
             msg = QMessageBox(self)
             msg.setStandardButtons(QMessageBox.Ok)
             msg.setIcon(QMessageBox.Warning)
-            msg.setText(f("{filename} is not a valid filename"))
+            msg.setText(f"{filename} is not a valid filename")
             msg.show()
             return
 
@@ -771,7 +765,7 @@ class Gui(QMainWindow):
             msg = QMessageBox(self)
             msg.setStandardButtons(QMessageBox.Ok)
             msg.setIcon(QMessageBox.Warning)
-            msg.setText(f("'{filename}' is not a valid filename"))
+            msg.setText(f"'{filename}' is not a valid filename")
             msg.show()
             return
 
@@ -788,19 +782,20 @@ class Gui(QMainWindow):
         self.log_widget = LogWidget(self, self.spec)
         self.log_widget.setVisible(True)
         self.ui.logDetailsLayout.addWidget(self.log_widget)
+        self.children.append(self.log_widget)
         self.enum_widget = EnumWidget(self, self.spec)
         self.enum_widget.setVisible(True)
         self.ui.enumDetailsLayout.addWidget(self.enum_widget)
+        self.children.append(self.enum_widget)
 
     def reload(self):
         for node in self.children:
-            print(node, flush=True)
             node.reload()
 
         self.spec.normalize()
 
 
-def gui(logger, file):
+def gui2(file, logger):
     app = QApplication([])
     window = Gui(logger)
     if file != None and file != "":

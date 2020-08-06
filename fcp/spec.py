@@ -1,8 +1,6 @@
-from enum import Enum
 from typing import *
 import copy
 import datetime
-from ww import f
 
 
 def handle_key_not_found(d: dict, key: str):
@@ -165,7 +163,7 @@ class EnumValue:
         return self.value
 
     def set_value(self, value: int) -> None:
-        self.value = value
+        self.value = int(value)
 
     def __hash__(self):
         return hash((self.name, self.creation_date))
@@ -178,12 +176,12 @@ class Enum:
     associations.
     """
 
-    def __init__(self: Enum) -> None:
+    def __init__(self) -> None:
         self.name = ""
         self.enumeration = {}
         self.creation_date = datetime.datetime.now()
 
-    def compile(self: Enum) -> Dict[str, Any]:
+    def compile(self) -> Dict[str, Any]:
         enums = {}
 
         for k, v in self.enumeration.items():
@@ -206,7 +204,6 @@ class Enum:
 
         for k,v in enumeration.items():
             enum_value = EnumValue()
-            print(v)
             enum_value.decompile(v)
             self.enumeration[k] = enum_value
     
@@ -269,7 +266,7 @@ class Spec:
         if enum.name in self.enums.keys():
             return False
 
-        self.enums[enum.name] = log
+        self.enums[enum.name] = enum
 
         return True
 
@@ -324,6 +321,8 @@ class Spec:
             self.rm_log(node)
         elif type(node) == Enum:
             self.rm_enum(node)
+        elif type(node) == EnumValue:
+            self.rm_enum_value(node)
 
     def rm_device(self, device: "Device") -> None:
         """ Remove a Device from Spec.
@@ -426,6 +425,21 @@ class Spec:
 
         for name in enums:
             del self.enums[name]
+
+    def rm_enum_value(self, enum_value):
+        """ Remove a Enum from Spec.
+
+        :param log: EnumValue to be removed.
+        """
+
+        for e in self.enums.values():
+            enum_values = []
+            for ev in e.enumeration.values():
+                if enum_value is ev:
+                    enum_values.append(ev.name)
+
+            for name in enum_values:
+                del e.enumeration[name]
 
     def compile(self) -> Dict[str, Any]:
         """ Transform python class node to its dictionary representation.
@@ -1432,6 +1446,7 @@ class Common:
 
     def __hash__(self):
         return hash((self.name, self.id, self.creation_date))
+
 
 
 def make_sid(dev_id: int, msg_id: int) -> int:

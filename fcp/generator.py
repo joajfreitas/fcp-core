@@ -2,8 +2,7 @@ import os
 from copy import deepcopy
 from pprint import pprint
 from datetime import datetime
-
-from ww import f
+from typing import *
 
 from .spec import Signal, Message, Device, Common, Spec, make_sid
 
@@ -14,19 +13,19 @@ def date():
 
 def decode_signature(device, message, signal):
     id = make_sid(device.id, message.id)
-    return f("decode_{id}_{signal.name}")
+    return f"decode_{id}_{signal.name}"
 
 
 def decode_signal_sig(device, message, signal):
-    return f("{signal.type} {decode_signature(device, message, signal)} (CANdata msg);")
+    return f"{signal.type} {decode_signature(device, message, signal)} (CANdata msg);"
 
 
 def msg_struct_sig(device, message):
-    return f("msg_{device.name}_{message.name}_t")
+    return f"msg_{device.name}_{message.name}_t"
 
 
 def device_struct_sig(device):
-    return f("dev_{device.name}_t")
+    return f"dev_{device.name}_t"
 
 
 def spec_struct_sig(spec):
@@ -44,10 +43,10 @@ def multiplexor(signal, message):
         return
 
     sig = message.get_signal(signal.mux)
-    signal.mux_str = f("[{sig.max_value - sig.min_value + 1}]")
+    signal.mux_str = f"[{sig.max_value - sig.min_value + 1}]"
 
 
-def dst_type_decide(signal):
+def dst_type_decide(signal: Signal):
     if signal.scale != 1:
         return "float"
 
@@ -83,7 +82,7 @@ def enum_type(signal):
 def build_devices(spec, device, tpl):
     mux_counts = 0
 
-    f_msgs=[msg for msg in device.msgs.values() if msg.frequency != 0]
+    f_msgs : List[Message] = [msg for msg in device.msgs.values() if msg.frequency != 0]
 
     for message in device.msgs.values():
         message.multiplexor = ""

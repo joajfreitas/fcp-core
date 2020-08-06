@@ -1,9 +1,6 @@
 import os
 from jinja2 import Template
 
-from ww import f
-
-
 class Tpl:
     def __init__(self, template_dir):
         self.files = {}

@@ -68,5 +68,13 @@ void decode_can(CANdata msg, {{spec.signature}} *can);
  *  @brief User defined function that sends  a CAN packet to the bus.
  *  @param msg CAN packet.
  */
-void dev_send_msg(CANdata msg);
+ void dev_send_msg(CANdata msg);
+
+
+/** @fn void decode_can_callback(CANdata)
+ *  @brief Callback for decode_can
+ *  @param msg CAN packet.
+ */
+ void decode_can_callback(CANdata);
+
 #endif
