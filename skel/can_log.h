@@ -8,10 +8,10 @@
  * Logging Levels
  */
 typedef enum _log_level_t {
-	ERROR,
-	WARNING,
-	DEBUG,
-	INFO
+	FCP_ERROR,
+	FCP_WARNING,
+	FCP_DEBUG,
+	FCP_INFO
 } log_level_t;
 
 /** @fn CANdata log_msg(log_level_t log_level, uint16_t arg1, uint16_t arg2, uint16_t arg3)
@@ -23,23 +23,23 @@ typedef enum _log_level_t {
  */
 CANdata log_msg(log_level_t log_level, uint16_t log_id, uint16_t arg1, uint16_t arg2, uint16_t arg3);
 
-/** @def logE(id, arg1, arg2, arg3) log_msg((ERROR), (id), (arg1), (arg2), (arg3))
+/** @def logE(id, arg1, arg2, arg3) log_msg((FCP_ERROR), (id), (arg1), (arg2), (arg3))
  * Create a log with logging level Error
  */
-#define logE(id, arg1, arg2, arg3) log_msg((ERROR), (id), (arg1), (arg2), (arg3))
+#define logE(id, arg1, arg2, arg3) log_msg((FCP_ERROR), (id), (arg1), (arg2), (arg3))
 
-/** @def logW(id, arg1, arg2, arg3) log_msg((WARNING), (id), (arg1), (arg2), (arg3))
+/** @def logW(id, arg1, arg2, arg3) log_msg((FCP_WARNING), (id), (arg1), (arg2), (arg3))
  * Create a log with logging level Warning
  */
-#define logW(id, arg1, arg2, arg3) log_msg((WARNING), (id), (arg1), (arg2), (arg3))
+#define logW(id, arg1, arg2, arg3) log_msg((FCP_WARNING), (id), (arg1), (arg2), (arg3))
 
-/** @def logD(id, arg1, arg2, arg3) log_msg((DEBUG), (id), (arg1), (arg2), (arg3))
+/** @def logD(id, arg1, arg2, arg3) log_msg((FCP_DEBUG), (id), (arg1), (arg2), (arg3))
  * Create a log with logging level Debug
  */
-#define logD(id, arg1, arg2, arg3) log_msg((DEBUG), (id), (arg1), (arg2), (arg3))
+#define logD(id, arg1, arg2, arg3) log_msg((FCP_DEBUG), (id), (arg1), (arg2), (arg3))
 
-/** @def logI(id, arg1, arg2, arg3) log_msg((INFO), (id), (arg1), (arg2), (arg3))
+/** @def logI(id, arg1, arg2, arg3) log_msg((FCP_INFO), (id), (arg1), (arg2), (arg3))
  * Create a log with logging level Info
  */
-#define logI(id, arg1, arg2, arg3) log_msg((INFO), (id), (arg1), (arg2), (arg3))
+#define logI(id, arg1, arg2, arg3) log_msg((FCP_INFO), (id), (arg1), (arg2), (arg3))
 #endif
