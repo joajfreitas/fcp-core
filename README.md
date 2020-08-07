@@ -37,4 +37,4 @@ JSON specification for can bus messages and helper tools.
 
 ## Documentation
 
-See [https://fcp-core.readthedocs.io/en/latest/](readthedocs.io)
+See [readthedocs.io](https://fcp-core.readthedocs.io/en/latest/)
