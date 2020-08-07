@@ -487,31 +487,6 @@ class DeviceWidget(NodeDetails):
         self.details_button.clicked.connect(self.open_details)
 
 
-class LogDetails(NodeDetails):
-    def load_atts(self, ui, node):
-        self.atts = [
-            (ui.idEdit, node.get_id, node.set_id),
-            (ui.nameEdit, node.get_name, node.set_name),
-            (ui.n_argsEdit, node.get_n_args, node.set_n_args),
-            (ui.commentEdit, node.get_comment, node.set_comment),
-            (ui.stringEdit, node.get_string, node.set_string),
-        ]
-
-    def __init__(self, gui, node, parent):
-        NodeDetails.__init__(self, gui, node, parent)
-
-        self.ui = Ui_LogDetails()
-        self.ui.setupUi(self)
-
-        self.load_atts(self.ui, node)
-        self.connect_atts()
-
-        self.ui.logDeleteButton.clicked.connect(self.delete)
-
-        self.reload()
-        self.setVisible(True)
-
-        self.children = []
 
 class EnumValueDetails(NodeDetails):
     def load_atts(self, ui, node):
@@ -578,6 +553,33 @@ class EnumDetails(NodeDetails):
             child.save()
 
         self.gui.reload()
+
+
+class LogDetails(NodeDetails):
+    def load_atts(self, ui, node):
+        self.atts = [
+            (ui.idEdit, node.get_id, node.set_id),
+            (ui.nameEdit, node.get_name, node.set_name),
+            (ui.n_argsEdit, node.get_n_args, node.set_n_args),
+            (ui.commentEdit, node.get_comment, node.set_comment),
+            (ui.stringEdit, node.get_string, node.set_string),
+        ]
+
+    def __init__(self, gui, node, parent):
+        NodeDetails.__init__(self, gui, node, parent)
+
+        self.ui = Ui_LogDetails()
+        self.ui.setupUi(self)
+
+        self.load_atts(self.ui, node)
+        self.connect_atts()
+
+        self.ui.logDeleteButton.clicked.connect(self.delete)
+
+        self.reload()
+        self.setVisible(True)
+
+        self.children = []
 
 class LogWidget(QWidget):
     def __init__(self, gui, parent):
@@ -768,7 +770,8 @@ class Gui(QMainWindow):
             msg.setText(f"'{filename}' is not a valid filename")
             msg.show()
             return
-
+        
+        print(filename)
         with open(filename) as f:
             j = json.loads(f.read())
 

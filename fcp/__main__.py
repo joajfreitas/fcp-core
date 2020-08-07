@@ -170,7 +170,7 @@ def gui_cmd(file: str):
     :param file: Optional FCP json file path
     """
     logger = setup_logging()
-    gui(logger, file)
+    gui(file, logger)
 
 @click.command()
 @click.argument("json_file")

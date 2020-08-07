@@ -34,38 +34,15 @@ def check_output(output):
     return True, ""
 
 
-def write_files(output, can_ids, devices, common):
+def write_files(output, files):
     def gen_output(d):
         return os.path.join(output, d)
-
-    can_ids_c, can_ids_h = can_ids
-    can_ids_path = gen_output("can_ids.h")
-    with open(can_ids_path, "w") as f:
-        f.write(can_ids_h)
-
-    can_ids_path = gen_output("can_ids.c")
-    with open(can_ids_path, "w") as f:
-        f.write(can_ids_c)
-
-    common_c, common_h = common
-    common_c_path = gen_output("common.c")
-    with open(common_c_path, "w") as f:
-        f.write(common_c)
-
-    common_h_path = gen_output("common.h")
-    with open(common_h_path, "w") as f:
-        f.write(common_h)
-
-    for name, h, c in devices:
-        c_path = gen_output(name + "_can.c")
-        h_path = gen_output(name + "_can.h")
-
-        with open(c_path, "w") as f:
-            f.write(c)
-
-        with open(h_path, "w") as f:
-            f.write(h)
-
+    
+    for name, content in files:
+        if content == "":
+            continue
+        with open(gen_output(name), "w") as f:
+            f.write(content)
 
 def check_version(j, logger):
     version = j.get("version")
@@ -84,18 +61,17 @@ def check_version(j, logger):
 def c_gen(templates, output, json_file, skel, logger):
     # copy skel directory
     status, err = check_output(output)
+    if not status:
+        logger.error(err)
+        exit()
+
     for file in os.listdir(skel):
         shutil.copy(os.path.join(skel, file), output, follow_symlinks=True)
 
-    if not status:
-        logger.error(err)
-        exit()
-
-    tpl = Tpl(templates)
+    tpl = Tpl(logger, templates)
     status, err = tpl.check_tpl_dir()
     if not status:
         logger.error(err)
-        exit()
 
     logger.info("Template dir checked ✅")
 
@@ -117,11 +93,17 @@ def c_gen(templates, output, json_file, skel, logger):
     check_version(j, logger)
 
     logger.info("JSON loaded into Spec ✅")
+    
+
+    files = []
 
     can_ids = build_can_ids(spec, tpl)
-
-    devices = [build_devices(spec, device, tpl) for device in spec.devices.values()]
+    for device in spec.devices.values():
+        files += build_devices(spec, device, tpl)
 
     common = build_common(spec, tpl)
+    enums = build_enums(spec, tpl)
 
-    write_files(output, can_ids, devices, common)
+    files += can_ids + common + enums
+
+    write_files(output, files)

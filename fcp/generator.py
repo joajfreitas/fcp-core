@@ -106,15 +106,16 @@ def build_devices(spec, device, tpl):
 
     device.signature = device_struct_sig(device)
 
-    h = tpl.tpl["h.jinja"].render(device=device, date=date(), mux_counts = mux_counts, f_msgs=f_msgs)
-    c = tpl.tpl["c.jinja"].render(
+    h = tpl.render("h.jinja", device=device, date=date(), mux_counts = mux_counts, f_msgs=f_msgs)
+    c = tpl.render("c.jinja",
         device=device,
         date=date(),
         f_msgs = f_msgs,
         mux_counts = mux_counts,
     )
 
-    return device.name, h, c
+    return [(device.name+"_can.h", h),
+            (device.name+"_can.c", c)]
 
 
 def build_can_ids(spec, tpl):
@@ -127,21 +128,22 @@ def build_can_ids(spec, tpl):
     spec.common.signature = device_struct_sig(spec.common)
 
     logs = list(sorted(spec.logs.values(), key=lambda x: x.id))
-    can_ids_h = tpl.tpl["can_ids_h.jinja"].render(
+    can_ids_h = tpl.render("can_ids_h.jinja",
         devices=sorted(spec.devices.values(), key=lambda x: x.id),
         spec=spec,
         logs=logs,
         date=date(),
     )
 
-    can_ids_c = tpl.tpl["can_ids_c.jinja"].render(
+    can_ids_c = tpl.render("can_ids_c.jinja", 
         devices=sorted(spec.devices.values(), key=lambda x: x.id),
         spec=spec,
         logs=logs,
         date=date(),
     )
 
-    return can_ids_c, can_ids_h
+    return [("can_ids.c", can_ids_c), 
+            ("can_ids.h", can_ids_h)]
 
 
 def build_common(spec, tpl):
@@ -159,7 +161,14 @@ def build_common(spec, tpl):
     build_msg_sig(spec.common)
     spec.common.signature = device_struct_sig(spec.common)
 
-    common_c = tpl.tpl["common_c.jinja"].render(spec=spec, date=date(), mux_counts=mux_counts)
-    common_h = tpl.tpl["common_h.jinja"].render(spec=spec, date=date(), mux_counts=mux_counts)
+    common_c = tpl.render("common_c.jinja", spec=spec, date=date(), mux_counts=mux_counts)
+    common_h = tpl.render("common_h.jinja", spec=spec, date=date(), mux_counts=mux_counts)
 
-    return common_c, common_h
+    return [("common.c", common_c),
+            ("common.h", common_h)]
+
+def build_enums(spec, tpl):
+    enums_h = tpl.render("enums_h.jinja", spec=spec, date=date())
+    
+    return [("can_enums.h", enums_h)]
+    

@@ -218,6 +218,9 @@ class Enum:
 
     def set_value(self, name: int) -> None:
         self.value = value
+    
+    def normalize(self):
+        normalize(self.enumeration)
 
     def __hash__(self):
         return hash((self.name, self.creation_date))
@@ -496,7 +499,10 @@ class Spec:
 
         normalize(self.devices)
         normalize(self.logs)
+
         normalize(self.enums)
+        for enum in self.enums.values():
+            enum.normalize()
 
         for key, dev in self.devices.items():
             dev.normalize()
@@ -512,21 +518,22 @@ class Spec:
 
 
 class Signal:
-    """ Signal node. Represents a CAN signal, similar to a DBC signal.
-        
-        :param name: Name of the Signal.
-        :param start: Start bit
-        :param length: Signal bit size.
-        :param scale: Scaling applied to the signal's data.
-        :param offset: Offset applied to the signal's data.
-        :param unit: Unit of the Signal after applying scaling and offset.
-        :param comment: Description of the Signal.
-        :param min_value: Minimum value allowed to the Signal's data.
-        :param max_value: Maximum value allowed to the Signal's data.
-        :param type: Type of the Signal's data.
-        :param mux: Name of the mux Signal. None if the Signal doesn't belong
-        to a multiplexed Message.
-        :param mux_count: Number of signals that the mux can reference for this Muxed signal.
+    """ 
+    Signal node. Represents a CAN signal, similar to a DBC signal.
+            
+    :param name: Name of the Signal.
+    :param start: Start bit
+    :param length: Signal bit size.
+    :param scale: Scaling applied to the signal's data.
+    :param offset: Offset applied to the signal's data.
+    :param unit: Unit of the Signal after applying scaling and offset.
+    :param comment: Description of the Signal.
+    :param min_value: Minimum value allowed to the Signal's data.
+    :param max_value: Maximum value allowed to the Signal's data.
+    :param type: Type of the Signal's data.
+    :param mux: Name of the mux Signal. None if the Signal doesn't belong to a multiplexed Message.
+    :param mux_count: Number of signals that the mux can reference for this Muxed signal.
+
 
     """
 
@@ -1360,10 +1367,10 @@ class Device:
     def __repr__(self):
         return (
             "{"
-            + f("""
+            + f"""
     name: {self.name}, 
     id: {self.id}
-""")
+"""
             + "}"
         )
 
