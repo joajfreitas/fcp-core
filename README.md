@@ -36,6 +36,5 @@ JSON specification for can bus messages and helper tools.
 	  write_dbc         Transform FCP json file into a DBC :param json_file:
 
 ## Documentation
-See ![doc/fcp.pdf](doc/fcp.pdf).
 
-Or compile from source using pdflatex by running `make` in the doc directory.
+See [https://fcp-core.readthedocs.io/en/latest/](readthedocs.io)
