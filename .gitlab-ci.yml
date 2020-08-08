@@ -6,7 +6,7 @@ build-pic:
     - docker
 
   script:
-    - python -V
+    - python3 -V
     - pip3 install setuptools
     - pip3 install markdown
     - python3 setup.py install
