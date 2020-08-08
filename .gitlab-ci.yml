@@ -1,5 +1,5 @@
 build-pic:
-  image: fstlx/xc16:latest
+  image: fstlx/xc16:testing
   stage: build
   needs: []
   tags:
