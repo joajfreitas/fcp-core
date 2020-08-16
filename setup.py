@@ -1,8 +1,5 @@
 from setuptools import setup, find_packages
 
-from markdown import markdown
-
-
 with open("fcp/version.py") as f:
     version = f.read()
 
