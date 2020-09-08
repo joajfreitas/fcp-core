@@ -718,24 +718,26 @@ class Signal:
     def __hash__(self):
         return hash((self.name, self.start, self.length, self.creation_date))
 
+#    def __repr__(self):
+#        return """ {
+#        name: {},
+#        start: {}, 
+#        length: {}, 
+#        scale: {}, 
+#        offset: {}, 
+#        unit: {}, 
+#        comment: {}, 
+#        min: {}, 
+#        max: {}, 
+#        type: {}, 
+#        byte_order: {}, 
+#        mux: {}, 
+#        mux_count: {}
+#    }
+#    """.format(self.name, self.start, self.length, self.scale, self.offset, self.unit, self.comment, self.min_value, self.max_value, self.type, self.byte_order, self.mux,self.mux_count)
+
     def __repr__(self):
-        return """
-{
-    name: {},
-    start: {}, 
-    length: {}, 
-    scale: {}, 
-    offset: {}, 
-    unit: {}, 
-    comment: {}, 
-    min: {}, 
-    max: {}, 
-    type: {}, 
-    byte_order: {}, 
-    mux: {}, 
-    mux_count: {}
-}
-""".format(self.name, self.start, self.length, self.scale, self.offset, self.unit, self.comment, self.min_value, self.max_value, self.type, self.byte_order, self.mux,self.mux_count)
+        return ""
 
 
 class Message:
@@ -893,12 +895,12 @@ class Message:
     def __repr__(self):
         return (
             "{"
-            + f("""
+            + f"""
     name: {self.name}, 
     id: {self.id}, 
     dlc: {self.dlc}, 
     frequency: {self.frequency}
-""")
+"""
             + "}"
         )
 
@@ -1370,7 +1372,7 @@ class Device:
             + f"""
     name: {self.name}, 
     id: {self.id}
-"""
+    """
             + "}"
         )
 

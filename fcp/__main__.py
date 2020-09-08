@@ -5,8 +5,8 @@ import subprocess, os
 
 import click
 
-#from .dbc_reader import read_dbc, init
-#from .dbc_writer import write_dbc
+from .dbc_reader import read_dbc, init
+from .dbc_writer import write_dbc
 from .c_generator import c_gen
 from .gui import gui
 from .validator import validate
@@ -89,10 +89,10 @@ def read_dbc_cmd(dbc: str, json_file: str, device_config: str):
     }```
     """
     logger = setup_logging()
-    #read_dbc(dbc, json_file, device_config, logger)
+    read_dbc(dbc, json_file, device_config, logger)
 
 
-@click.command(name="write_dbc")
+@click.command(name="write-dbc")
 @click.argument("json_file")
 @click.argument("dbc")
 def write_dbc_cmd(json_file: str, dbc: str):
@@ -105,7 +105,7 @@ def write_dbc_cmd(json_file: str, dbc: str):
 
     with open(json_file) as f:
         j = json.loads(f.read())
-    #write_dbc(j, dbc, logger)
+    write_dbc(j, dbc, logger)
 
 
 @click.command(name="c_gen")
