@@ -19,10 +19,10 @@ setup(
     author_email="joaj.freitas@gmail.com",
     license="GPLv3",
     url="https://gitlab.com/joajfreitas/fcp-core",
-    download_url="https://gitlab.com/joajfreitas/fcp-core/-/archive/v0.29/fcp-core-v0.29.tar.gz",
+    download_url="https://gitlab.com/joajfreitas/fcp-core/-/archive/v0.32/fcp-core-v0.29.tar.gz",
     packages=find_packages(),
     entry_points={"console_scripts": ["fcp = fcp.__main__:main",],},
-    install_requires=["click", "PySide2", "jinja2"],
+    install_requires=["click", "PySide2", "jinja2", "cantools"],
     long_description=long_description,
     long_description_content_type="text/markdown"
 )

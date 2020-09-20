@@ -27,7 +27,7 @@ def is_multiplexer(signal, mux_signals):
 # multiplexer_signal=None,
 
 
-def make_signal(signal, mux_signals):
+def make_signal(signal, mux_signals, dev_name):
     def make_signal_closure(signal, mux_signals, ids):
         return CanSignal(
             signal.name,
@@ -46,6 +46,7 @@ def make_signal(signal, mux_signals):
             is_multiplexer=is_multiplexer(signal, mux_signals),
             multiplexer_ids=ids,
             multiplexer_signal=[signal.mux],
+            receivers=[dev_name],
         )
 
     if signal.mux_count == 1:
@@ -82,10 +83,10 @@ def write_dbc(j, dbc, logger):
             mux_signals = process_mux_signals(msg.signals)
             signals = []
             for sig_name, sig in msg.signals.items():
-                for sig in make_signal(sig, mux_signals):
+                for sig in make_signal(sig, mux_signals, dev_name):
                     signals.append(sig)
 
-            messages.append(CanMessage(id, msg.name, msg.dlc, signals))
+            messages.append(CanMessage(id, msg.name, msg.dlc, signals, senders=[dev_name]))
 
     db = CanDatabase(messages=messages, nodes=nodes)
     dump_file(db, dbc)

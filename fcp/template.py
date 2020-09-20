@@ -55,4 +55,4 @@ class Tpl:
                 with open(v) as f:
                     self.tpl[k] = Template(f.read())
             except Exception as e:
-                self.logger.error(f"Error opening template: {v} not found",  e)
+                self.logger.error(f"Error opening template: {v} not found")
