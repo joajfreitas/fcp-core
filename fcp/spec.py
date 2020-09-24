@@ -217,7 +217,7 @@ class Enum:
         return int(self.value)
 
     def set_value(self, name: int) -> None:
-        self.value = value
+        self.value = int(value)
     
     def normalize(self):
         normalize(self.enumeration)
@@ -944,7 +944,7 @@ class Argument:
 
     def set_id(self, id: int) -> None:
         try:
-            self.id = id
+            self.id = int(id)
         except Exception as e:
             return
 
@@ -1016,7 +1016,7 @@ class Command:
 
     def set_n_args(self, n_args: int) -> None:
         try:
-            self.n_args = n_args
+            self.n_args = int(n_args)
         except Exception as e:
             return
 
@@ -1028,7 +1028,7 @@ class Command:
 
     def set_id(self, id: int) -> None:
         try:
-            self.id = id
+            self.id = int(id)
         except Exception as e:
             return
 
@@ -1132,7 +1132,7 @@ class Config:
 
     def set_id(self, id: int) -> None:
         try:
-            self.id = id
+            self.id = int(id)
         except Exception as e:
             return
 
