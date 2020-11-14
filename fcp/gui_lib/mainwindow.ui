@@ -64,8 +64,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>368</width>
-                 <height>185</height>
+                 <width>374</width>
+                 <height>165</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout"/>
@@ -147,7 +147,7 @@
      <x>0</x>
      <y>0</y>
      <width>450</width>
-     <height>18</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -155,6 +155,7 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen"/>
+    <addaction name="actionOpen_Recent"/>
     <addaction name="actionSave"/>
     <addaction name="actionValidate"/>
    </widget>
@@ -197,6 +198,11 @@
   <action name="action_fcp_help">
    <property name="text">
     <string>FCP Help</string>
+   </property>
+  </action>
+  <action name="actionOpen_Recent">
+   <property name="text">
+    <string>Open Recent</string>
    </property>
   </action>
  </widget>

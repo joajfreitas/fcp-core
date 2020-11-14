@@ -16,185 +16,281 @@ import logging
 from .spec import *
 
 
-def check_device(device):
-    if len(device.msgs.keys()) == 0:
-        return False, f"{device.name}: Device without messages"
-    if device.id > 31:
-        return False, f"{device.name}: dev_id bigger than 32"
-
-    if len(device.name.strip()) != len(device.name):
-        return False, f"{device.name}: Device name contains whitespace"
-
-    return True, ""
-
-
-def check_message(message):
-    if len(message.signals.keys()) == 0:
-        return False, f"{message.name}: Message without signals"
-
-    if len(message.name.strip()) != len(message.name):
-        return False, f"{message.name}: Message name contains whitespace"
-
-    return True, ""
+check_table = {
+    "sig": {},
+    "msg": {},
+    "dev": {},
+    "spec": {},
+    "cmd": {},
+    "cfg": {},
+    "log": {},
+}
 
 
-def check_device_message(message):
-    r, msg = check_message(message)
-    if not r:
-        return r, msg
+def check_decorator(category):
+    def closure(f):
+        if category not in check_table.keys():
+            print(f"{category} category not available")
+            return
+        check_table[category][f.__name__] = f
 
-    if message.id > 63:
-        return False, f"{message.name}: msg_id bigger than 64"
-    # elif message.id < 32:
-    #    return False, f"{message.name}: device has message id smaller than 32"
-
-    return True, ""
+    return closure
 
 
-def check_signal(key, signal):
-    if signal.length > 64:
-        return False, f"{signal.name}: signal length is bigger than 64"
-    elif signal.length + signal.start > 64:
-        return False, f"{signal.name}: signal outside 64 bit range"
-    elif signal.start < 0:
-        return False, f"{signal.name}: signals starts before bit 0"
-    elif signal.length == 0:
-        return False, f"{signal.name}: 0 length signal"
-    elif not (
-        signal.type == "unsigned"
-        or signal.type == "signed"
-        or signal.type == "double"
-        or signal.type == "float"
-    ):
-        return (
-            False,
-            f("{signal.name}: Unsuported signal type, should be {unsigned, signed, double, float}",)
+def fail_msg(node, msg):
+    def location(node):
+        if node.parent is None:
+            return node.name
+
+        return location(node.parent) + "/" + node.name
+
+    return f"{location(node)}: {msg}"
+
+
+@check_decorator("sig")
+def signal_length(signal):
+    if signal.length > 64 or signal.length <= 0:
+        return fail_msg(signal, f"signal length is {signal.length}")
+
+
+@check_decorator("sig")
+def signal_start(signal):
+    if signal.start > 63 or signal.start < 0:
+        return fail_msg(signal, f"signal start is {signal.start}")
+
+
+@check_decorator("sig")
+def signal_total_length(signal):
+    if signal.length + signal.offset > 64:
+        return fail_msg(signal, f"signal end is bigger than 64")
+
+
+@check_decorator("sig")
+def signal_type(signal):
+    types = ["unsigned", "signed", "double", "float"]
+    if signal.type not in types:
+        return fail_msg(
+            signal, f"signal type is {signal.type}. Valid types are: {types}"
         )
-    elif signal.type == "float" and signal.length != 32:
-        return False, f"{signal.name}: float signal length is different than 32"
-    elif signal.type == "double" and signal.length != 64:
-        return False, f"{signal.name}: double signal length is different than 64"
-    elif not (
-        signal.byte_order == "little_endian" or signal.byte_order == "big_endian"
-    ):
-        return False, f"{signal.name}: signal endianess not suported"
-    elif signal.name[0].isdigit():
-        return False, f"{signal.name}: signal name starts with a number"
-    elif signal.scale == 1 and signal.offset != 0:
-        return (
-            False,
-            f"{signal.name}: signal offset is different than 0 for a scale of 1",
+    if signal.type == "float" and signal.length != 32:
+        return fail_msg(signal, f"signal is float but length is {signal.length} != 32")
+
+    if signal.type == "double" and signal.length != 64:
+        return fail_msg(signal, f"signal is double but length is {signal.length} != 64")
+
+
+@check_decorator("sig")
+def signal_endianess(signal):
+    endianess = ["little_endian", "big_endian"]
+
+    if signal.byte_order not in endianess:
+        return fail_msg(
+            signal, f"signal endianess not supported. Valid values are: {endianess}"
         )
-    elif signal.scale != 1 and signal.length > 32:
-        return (
-            False,
-            f"{signal.name}: scaling for variables bigger than 32 bit is unsuported",
+
+
+@check_decorator("sig")
+def signal_name(signal):
+    if not signal.name.isidentifier():
+        return fail_msg(signal, f"{signal.name} is not a valid identifier")
+
+
+@check_decorator("sig")
+def signal_scaling(signal):
+    if signal.scale == 1 and signal.offset != 0:
+        return fail_msg(
+            signal,
+            f"{signal.name}: signal offset is different than 0 for a scaling of 1",
         )
-    elif key != signal.name:
-        return False, f"{signal.name}: signal key is not equal to signal name"
 
-    if len(signal.name.strip()) != len(signal.name):
-        return False, f"{signal.name}: Device name contains whitespace"
-
-    return True, ""
+    if signal.scale != 1 and signal.length > 32:
+        return fail_msg(
+            signal, f"scaling is not supported for variables bigger than 32 bits"
+        )
 
 
-def check_common(message):
-    r = check_message(message)
-    if not r:
-        return r
-
-    if message.id > 63:
-        return False, f"{message.name}: msg_id bigger than 64"
-    elif message.id >= 32:
-        return False, f"{message.name}: common has message id bigger or equal to 32"
-
-    return True, ""
+@check_decorator("sig")
+def signal_mux(signal):
+    if signal.mux == 0:
+        return fail_msg(signal, f"Mux count is 0, should be >= 1")
 
 
-def check_log(log):
-    if log.id < 0:
-        return False, f"{log.name}: log id is smaller than 0"
-    if log.id > 255:
-        return False, f"{log.name} log id is bigger than 255"
-    try:
-        int(log.id)
-    except Exception as e:
-        return False, f"{log.name} is not a valid integer"
+@check_decorator("msg")
+def msg_mux(msg):
+    muxeds = [signal.mux for signal in msg.signals.values() if signal.mux != ""]
+    if len(muxeds) == 0:
+        return
 
-    return True, ""
+    mux = msg.signals.get(muxeds[0])
+    if mux == None:
+        return fail_msg(msg, f"Cannot find mux signal in multiplexed message")
 
-
-def check_logs(logs):
-    log_ids = []
-
-    for log in logs.values():
-        r, m = check_log(log)
-        if r == False:
-            return r, m
-
-    for log in logs.values():
-        if log.id in log_ids:
-            return False, f"{log.name}: found duplicate log id"
-        log_ids.append(log.id)
-
-    return True, ""
+    if 2 ** mux.length < mux.mux_count:
+        return fail_msg(msg, f"Mux cannot fit all possible multiplexed values")
 
 
-def validate(logger, j, spec=None):
-    if spec == None:
-        spec = Spec()
-        spec.decompile(j)
+@check_decorator("msg")
+def msg_name(msg):
+    if not msg.name.isidentifier():
+        return fail_msg(msg, f"Message name is not a valid identifier")
 
-    r, msg = check_logs(spec.logs)
-    if r == False:
-        return r, msg
 
+@check_decorator("msg")
+def msg_id(msg):
+    if msg.id > 64 or msg.id < 0:
+        return fail_msg(msg, f"Message id is not valid: {msg.id}")
+
+
+@check_decorator("msg")
+def msg_dlc(msg):
+    if msg.dlc > 8 or msg.dlc < 0:
+        return fail_msg(msg, f"Message dlc is not valid: {msg.dlc}")
+
+
+@check_decorator("msg")
+def msg_frequency(msg):
+    if msg.frequency < 0:
+        return fail_msg(msg, f"Message frequency is not valid: {msg.frequency}")
+
+
+@check_decorator("msg")
+def msg_overlapping_signals(msg):
+    values = []
+    for signal in msg.signals.values():
+        values += list(range(signal.start, signal.start + signal.length))
+
+    s = set(values)
+
+    if len(s) != len(values):
+        return fail_msg(msg, f"Message has overlapping signals")
+
+
+@check_decorator("dev")
+def dev_name(dev):
+    if not dev.name.isidentifier():
+        return fail_msg(dev, f"Device name is not a valid identifier")
+
+
+@check_decorator("dev")
+def dev_id(dev):
+    if dev.id > 31 or dev.id < 0:
+        return fail_msg(dev, f"Device id is not valid: {dev.id}")
+
+
+@check_decorator("dev")
+def dev_overlapping_msg_ids(dev):
+    ids = [msg.id for msg in dev.msgs.values()]
+    ids_set = set(ids)
+
+    if len(ids_set) != len(ids):
+        return fail_msg(dev, f"Device has overlapping msg ids")
+
+
+@check_decorator("log")
+def log_id(log):
+    if log.id > 255 and log.id < 0:
+        return fail_msg(log, f"Log id is not valid: {log.id}")
+
+
+@check_decorator("log")
+def log_n_args(log):
+    if log.n_args > 3 or log.n_args < 0:
+        return fail_msg(log, f"Log n args is not valid: {log.n_args}")
+
+
+@check_decorator("log")
+def log_name(log):
+    if not log.name.isidentifier():
+        return fail_msg(log, f"Log name is not valid: {log.name}")
+
+
+@check_decorator("cfg")
+def cfg_name(cfg):
+    if not cfg.name.isidentifier():
+        return fail_msg(cfg, f"Cfg name is not valid: {cfg.name}")
+
+
+@check_decorator("cfg")
+def cfg_id(cfg):
+    if cfg.id > 255 and cfg.id < 0:
+        return fail_msg(cfg, f"Cfg id is not valid: {cfg.id}")
+
+
+@check_decorator("cmd")
+def cmd_name(cmd):
+    if not cmd.name.isidentifier():
+        return fail_msg(cmd, f"Cmd name is not valid: {cmd.name}")
+
+
+@check_decorator("cmd")
+def cmd_id(cmd):
+    if cmd.id > 255 and cmd.id < 0:
+        return fail_msg(cmd, f"Cmd id is not valid: {cmd.id}")
+
+
+@check_decorator("cmd")
+def cmd_n_args(cmd):
+    if cmd.n_args > 3 and cmd.n_args < 0:
+        return fail_msg(cmd, f"Cmd n args is not valid: {cmd.n_args}")
+
+
+@check_decorator("spec")
+def spec_overlapping_dev_ids(spec):
+    ids = [dev.id for dev in spec.devices.values()]
+    ids_set = set(ids)
+
+    if len(ids_set) != len(ids):
+        return fail_msg(spec, f"There are overlapping device ids")
+
+
+def spec_repeated_names(spec):
+    def get_signal_names(spec):
+        for dev in spec.devices.values():
+            for msg in dev.msgs.values():
+                for signal in msg.signals.values():
+                    yield signal.name
+
+    names = get_signal_names(spec)
+
+    if len(set(names)) != len(names):
+        return fail_msg(spec, f"There are repeated signal names")
+
+
+def check(category, arg):
+    failed = []
+
+    if category not in check_table.keys():
+        print(f"{category} category not available")
+        return failed
+
+    for check in check_table[category].values():
+        r = check(arg)
+
+        if r:
+            failed.append(r)
+
+    return failed
+
+
+def validate(logger, j, spec):
+    failed = []
+    failed += check("spec", spec)
+
+    for log in spec.logs.values():
+        failed += check("log", log)
     for message in spec.common.msgs.values():
-        r, msg = check_common(message)
-        if not r:
-            return r, msg
-
-    device_ids = []
-    device_names = []
-    message_names = []
-    signal_names = []
+        failed += check("msg", message)
     for device in spec.devices.values():
-        if device.id in device_ids:
-            return False, f"{device.name}: duplicate device id"
-        device_ids.append(device.id)
-
-        if device.name in device_names:
-            return False, f"{device.name}: duplicate device name"
-        device_names.append(device.name)
-
-        r, msg = check_device(device)
-        if not r:
-            return r, msg
-
-        message_ids = []
+        failed += check("dev", device)
         for message in device.msgs.values():
-            if message.id in message_ids:
-                return False, f"{device.name}: {message.name} duplicate message id"
-            message_ids.append(message.id)
+            failed += check("msg", message)
+            for signal in message.signals.values():
+                failed += check("sig", signal)
 
-            if message.name in message_names:
-                return False, f"{device.name}: {message.name} duplicate message name"
-            message_names.append(message.name)
+        for cfg in device.cfgs.values():
+            failed += check("cfg", cfg)
 
-            if type(message) != Message:
-                continue
-            r, msg = check_device_message(message)
-            if not r:
-                return r, msg
+        for cmd in device.cmds.values():
+            failed += check("cmd", cmd)
 
-            for key, signal in message.signals.items():
-                if signal.name in signal_names:
-                    return False, f"{message.name}: {signal.name} duplicate signal name"
-
-                signal_names.append(signal.name)
-                r, msg = check_signal(key, signal)
-                if not r:
-                    return r, msg
-
-    return True, ""
+    return failed

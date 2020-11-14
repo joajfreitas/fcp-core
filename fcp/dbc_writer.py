@@ -83,6 +83,7 @@ def write_dbc(j, dbc, logger):
             mux_signals = process_mux_signals(msg.signals)
             signals = []
             for sig_name, sig in msg.signals.items():
+                print(sig_name)
                 for sig in make_signal(sig, mux_signals, dev_name):
                     signals.append(sig)
 

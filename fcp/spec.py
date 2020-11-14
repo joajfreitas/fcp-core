@@ -49,13 +49,18 @@ class Log:
 
     def __init__(
         self,
-        id: int = -1,
+        parent: "Spec" = None,
+        id: int = 0,
         name: str = "",
         n_args: int = 3,
         comment: str = "",
         string: str = "",
     ):
-        self.id = id
+        self.parent = parent
+        assert self.parent is not None
+
+        c = max([log.id for log in self.parent.logs.values()]+[0]) + 1
+        self.id = id or c
         self.name = name
         self.n_args = n_args
         self.comment = comment
@@ -136,9 +141,15 @@ class EnumValue:
     associations.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, parent: "Enum" = None) -> None:
+        self.parent = parent
+        
+        assert self.parent is not None
+
+        c = max([value.value for value in self.parent.enumeration.values()] + [0])+1
         self.name = ""
-        self.value = 0
+        self.value = c
+
         self.creation_date = datetime.datetime.now()
 
     def compile(self) -> Dict[str, Any]:
@@ -176,7 +187,8 @@ class Enum:
     associations.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, parent: "Spec" = None) -> None:
+        self.parent = parent
         self.name = ""
         self.enumeration = {}
         self.creation_date = datetime.datetime.now()
@@ -203,7 +215,7 @@ class Enum:
         self.__dict__.update(d)
 
         for k,v in enumeration.items():
-            enum_value = EnumValue()
+            enum_value = EnumValue(self)
             enum_value.decompile(v)
             self.enumeration[k] = enum_value
     
@@ -239,6 +251,8 @@ class Spec:
         self.logs = {}
         self.enums = {}
         self.version = "0.2"
+        self.parent = None
+        self.name = ""
     
     def add_device(self, device: "Device") -> bool:
         """ Add a Device to Spec. 
@@ -478,17 +492,17 @@ class Spec:
         self.common.decompile(d["common"])
         
         for k, v in handle_key_not_found(d, "devices"):
-            dev = Device()
+            dev = Device(self)
             dev.decompile(v)
             self.devices[k] = dev
         
         for k, v in handle_key_not_found(d, "logs"):
-            log = Log()
+            log = Log(self)
             log.decompile(v)
             self.logs[k] = log
        
         for k, v in handle_key_not_found(d, "enums"):
-            enum = Enum()
+            enum = Enum(self)
             enum.decompile(v)
             self.enums[k] = enum
 
@@ -539,7 +553,8 @@ class Signal:
 
     def __init__(
         self,
-        name: str = "default_name",
+        parent: "Message" = None,
+        name: str = "",
         start: int = 0,
         length: int = 0,
         scale: float = 1,
@@ -551,10 +566,11 @@ class Signal:
         type: str = "unsigned",
         byte_order: str = "little_endian",
         mux: str = "",
-        mux_count: int = 0,
+        mux_count: int = 1,
         alias: str = "",
     ):
-
+        
+        self.parent = parent
         self.name = name
         self.start = start
         self.length = length
@@ -753,16 +769,21 @@ class Message:
 
     def __init__(
         self,
-        name: str = "default_name",
+        parent: "Device" = None,
+        name: str = "",
         id: int = 0,
         dlc: int = 8,
         signals: Dict[str, Signal] = None,
         frequency: int = 0,
         description: str = "",
     ):
-
+        
+        self.parent = parent
+        assert self.parent is not None 
+        
+        c = max([msg.id for msg in self.parent.msgs.values()] + [0]) + 1
         self.name = name
-        self.id = id
+        self.id = id or c
         self.dlc = dlc
         self.signals = {} if signals == None else signals
         self.frequency = frequency
@@ -840,7 +861,7 @@ class Message:
 
         self.__dict__.update(d)
         for key, value in signals.items():
-            sig = Signal()
+            sig = Signal(self)
             sig.decompile(value)
             self.signals[key] = sig
 
@@ -913,8 +934,8 @@ class Argument:
     :param comment: description of the Argument.
     """
 
-    def __init__(self, name: str = "", id: int = 0, comment: str = ""):
-
+    def __init__(self, parent: "Command" = None, name: str = "", id: int = 0, comment: str = ""):
+        self.parent = parent
         self.name = name
         self.id = id
         self.comment = comment
@@ -979,6 +1000,7 @@ class Command:
 
     def __init__(
         self,
+        parent: "Device" = None,
         name: str = "",
         n_args: int = 3,
         comment: str = "",
@@ -986,11 +1008,16 @@ class Command:
         args: Dict[str, Argument] = None,
         rets: Dict[str, Argument] = None,
     ):
+        
+        self.parent = parent
+        assert self.parent is not None
+        
+        c = max([cmd.id for cmd in self.parent.cmds.values()] + [0]) + 1
 
         self.name = name
         self.n_args = n_args
         self.comment = comment
-        self.id = id
+        self.id = int(id)
         self.args = {} if args == None else args
         self.rets = {} if rets == None else rets
 
@@ -1081,6 +1108,8 @@ class Command:
         del d["rets"]
 
         self.__dict__.update(d)
+        self.id = int(self.id)
+        self.n_args = int(self.n_args)
 
         for arg_k, arg_v in args.items():
             arg = Argument()
@@ -1107,10 +1136,10 @@ class Config:
     :param comment: description of the Config.
     """
 
-    def __init__(self, name: str = "", id: int = 0, comment: str = ""):
-
+    def __init__(self, parent: "Device" = None, name: str = "", id: int = 0, comment: str = ""):
+        self.parent = parent
         self.name = name
-        self.id = id
+        self.id = int(id)
         self.comment = comment
 
         self.creation_date = datetime.datetime.now()
@@ -1158,6 +1187,7 @@ class Config:
         :param d: Node dictionary
         """
         self.__dict__.update(d)
+        self.id = int(self.id)
 
     def normalize(self):
         return
@@ -1179,15 +1209,20 @@ class Device:
 
     def __init__(
         self,
+        parent: "Spec" = None,
         name: str = "default_name",
         id: int = 0,
         msgs: Dict[str, Message] = None,
         cmds: Dict[str, Command] = None,
         cfgs: Dict[str, Config] = None,
     ):
+        
+        self.parent = parent
+        assert self.parent is not None
+        c = max([dev.id for dev in self.parent.devices.values()] + [0]) + 1
 
         self.name = name
-        self.id = id
+        self.id = id or c
         self.msgs = {} if msgs == None else msgs
         self.cmds = {} if cmds == None else cmds
         self.cfgs = {} if cfgs == None else cfgs
@@ -1261,17 +1296,17 @@ class Device:
         self.__dict__.update(d)
 
         for k, v in msgs.items():
-            msg = Message()
+            msg = Message(self)
             msg.decompile(v)
             self.msgs[k] = msg
 
         for k, v in cmds.items():
-            cmd = Command()
+            cmd = Command(self)
             cmd.decompile(v)
             self.cmds[k] = cmd
 
         for k, v in cfgs.items():
-            cfg = Config()
+            cfg = Config(self)
             cfg.decompile(v)
             self.cfgs[k] = cfg
 
@@ -1380,13 +1415,14 @@ class Device:
 class Common:
     def __init__(
         self,
+        parent: Spec = None,
         name: str = "common",
         id: int = 0,
         msgs: Dict[str, Message] = None,
         cfgs: Dict[str, Config] = None,
         cmds: Dict[str, Command] = None,
     ):
-
+        self.parent = parent
         self.name = name
         self.id = id
         self.msgs = {} if msgs == None else msgs
@@ -1449,7 +1485,7 @@ class Common:
         self.__dict__.update(d)
 
         for key, value in msgs.items():
-            msg = Message()
+            msg = Message(self)
             msg.decompile(value)
             self.msgs[key] = msg
 

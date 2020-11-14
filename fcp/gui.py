@@ -3,6 +3,8 @@ import sys
 import json
 from datetime import datetime
 import webbrowser
+from pathlib import Path
+import yaml
 
 from PySide2.QtWidgets import *
 from PySide2.QtGui import QKeySequence
@@ -64,11 +66,9 @@ class NodeDetails(QWidget):
                 self.gui.reload()
 
             return closure
-             
+
         for att, _, set_f in self.atts:
             att.editingFinished.connect(store(att, set_f))
-            #att.textChanged.connect(set_f)
-            #att.textChanged.connect(self.gui.reload)
 
     def save(self):
         for child in self.children:
@@ -99,7 +99,7 @@ class NodeDetails(QWidget):
         if checked == False:
             for child in self.children:
                 child.open_details(False)
-                if not child.details_button is None:
+                if child.details_button is not None:
                     child.details_button.setChecked(False)
 
         if self.details_button is None:
@@ -128,7 +128,7 @@ class SignalDetails(NodeDetails):
             (ui.byteOrderEdit, node.get_byte_order, node.set_byte_order),
             (ui.scaleEdit, node.get_scale, node.set_scale),
             (ui.offsetEdit, node.get_offset, node.set_offset),
-            (ui.aliasEdit, node.get_alias, node.set_alias)
+            (ui.aliasEdit, node.get_alias, node.set_alias),
         ]
 
     def __init__(self, gui, node: "Signal", parent):
@@ -200,7 +200,7 @@ class MessageDetails(NodeDetails):
 
     def add_node(self, node=None):
         if node == None or node == False:
-            node = Signal()
+            node = Signal(self.node)
 
         self.node.signals[node.name] = node
         s = SignalWidget(self.gui, node, SignalDetails, self.gui.ui.signalDetailsLayout)
@@ -283,7 +283,7 @@ class CmdDetails(NodeDetails):
     def add_arg(self, arg=None):
         if arg == None or arg == False:
             arg = Argument()
-        
+
         self.node.args[arg.name] = arg
         arg_widget = ArgDetails(self.gui, arg, FakeParent())
         self.children.append(arg_widget)
@@ -455,7 +455,7 @@ class DeviceDetails(NodeDetails):
 
     def add_node(self, node=None):
         if node == None or node == False:
-            node = Message()
+            node = Message(self.node)
 
         self.node.msgs[node.name] = node
         m = MessageWidget(
@@ -485,7 +485,6 @@ class DeviceWidget(NodeDetails):
 
         self.details_button = self.ui.deviceDetailsButton
         self.details_button.clicked.connect(self.open_details)
-
 
 
 class EnumValueDetails(NodeDetails):
@@ -535,13 +534,13 @@ class EnumDetails(NodeDetails):
         self.children = []
 
         self.ui.valueAddButton.clicked.connect(self.add_value)
-        
+
         for enum_value in node.enumeration.values():
             self.add_value(enum_value)
 
     def add_value(self, enum_value=None):
         if enum_value == None or enum_value == False:
-            enum_value = EnumValue()
+            enum_value = EnumValue(self.node)
             self.node.enumeration[enum_value.name] = enum_value
 
         enum_widget = EnumValueDetails(self.gui, enum_value, FakeParent())
@@ -581,6 +580,7 @@ class LogDetails(NodeDetails):
 
         self.children = []
 
+
 class LogWidget(QWidget):
     def __init__(self, gui, parent):
         self.Window = True
@@ -602,7 +602,7 @@ class LogWidget(QWidget):
         self.ui.addLogButton.clicked.connect(self.add_log)
         for log in self.parent.logs.values():
             self.add_log(log)
-    
+
     def reload(self):
         return
 
@@ -614,12 +614,13 @@ class LogWidget(QWidget):
 
     def add_log(self, log=None):
         if log == None or log == False:
-            log = Log()
+            log = Log(self.parent)
 
         self.parent.logs[log.name] = log
         log_widget = LogDetails(self.gui, log, FakeParent())
         self.ui.logContents.addWidget(log_widget)
         self.children.append(log_widget)
+
 
 class EnumWidget(QWidget):
     def __init__(self, gui, parent):
@@ -666,23 +667,39 @@ class EnumWidget(QWidget):
         self.ui.enumContents.addWidget(enum_widget)
         self.children.append(enum_widget)
 
+
 class Gui(QMainWindow):
     def __init__(self, logger):
         QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        
+
         self.logger = logger
 
         self.spec = Spec()
         self.children = []
-        
+
         self.connect_buttons()
         self.config_shortcuts()
 
         self.log_widget = None
         self.enum_widget = None
-    
+
+        self.file_path = Path("")
+
+        menu = QMenu("recent_files")
+        try:
+            with open(".fcp_gui.yaml") as f:
+                y = yaml.safe_load(f.read())
+                for f in y.get("recent_files"):
+                    action = menu.addAction(f)
+                    action.triggered.connect(lambda: self.load_json(f))
+
+        except Exception as e:
+            pass
+
+        self.ui.actionOpen_Recent.setMenu(menu)
+
     def connect_buttons(self):
         def fcp_help(link):
             webbrowser.open(link)
@@ -690,8 +707,12 @@ class Gui(QMainWindow):
         self.ui.actionOpen.triggered.connect(self.open_json)
         self.ui.actionSave.triggered.connect(self.save_json)
         self.ui.actionValidate.triggered.connect(self.validate)
-        self.ui.action_software10e_help.triggered.connect(lambda : fcp_help("https://projectofst.gitlab.io/software10e/docs/fcp/"))
-        self.ui.action_fcp_help.triggered.connect(lambda : fcp_help("https://fcp-core.readthedocs.io/en/latest/"))
+        self.ui.action_software10e_help.triggered.connect(
+            lambda: fcp_help("https://projectofst.gitlab.io/software10e/docs/fcp/")
+        )
+        self.ui.action_fcp_help.triggered.connect(
+            lambda: fcp_help("https://fcp-core.readthedocs.io/en/latest/")
+        )
         self.ui.addButton.clicked.connect(self.add_device)
 
     def config_shortcuts(self):
@@ -706,21 +727,19 @@ class Gui(QMainWindow):
     def validate(self):
         msg = QMessageBox(self)
         msg.setStandardButtons(QMessageBox.Ok)
-        r, m = validate(self.logger, "{}", spec=self.spec)
-        if r:
+        failed = validate(self.logger, "{}", self.spec)
+        if len(failed) == 0:
             msg.setIcon(QMessageBox.Information)
             msg.setText("Spec passed")
         else:
             msg.setIcon(QMessageBox.Warning)
-            msg.setText("Failed:" + m)
+            msg.setText("\n".join(failed))
 
         msg.show()
 
-        return r, m
-
     def add_device(self, device=None):
         if type(device) != Device and type(device) != Common:
-            device = Device(id=0, name="", msgs={})
+            device = Device(parent=self.spec, id=0, name="", msgs={})
 
             r = self.spec.add_device(device)
             if r == False:
@@ -743,14 +762,13 @@ class Gui(QMainWindow):
         for child in self.children:
             child.save()
 
-        r, m = self.validate()
-        if r == False:
-            return
+        self.validate()
 
-        filename = QFileDialog.getSaveFileName(
-            self, self.tr("Open JSON"), self.tr("JSON (*.json)")
-        )
-        if filename[0] == "":
+        try:
+            filename = QFileDialog.getSaveFileName(
+                self, self.tr("Open JSON"), str(self.file_path.parent)
+            )
+        except Exception as e:
             msg = QMessageBox(self)
             msg.setStandardButtons(QMessageBox.Ok)
             msg.setIcon(QMessageBox.Warning)
@@ -770,8 +788,20 @@ class Gui(QMainWindow):
             msg.setText(f"'{filename}' is not a valid filename")
             msg.show()
             return
-        
-        print(filename)
+
+        try:
+            with open(".fcp_gui.yaml") as f:
+                y = yaml.safe_load(f.read())
+
+            if filename not in y["recent_files"]:
+                y["recent_files"].append(filename)
+        except Exception as e:
+            y = {}
+            y["recent_files"] = []
+
+        with open(".fcp_gui.yaml", "w") as f:
+            f.write(yaml.dump(y))
+
         with open(filename) as f:
             j = json.loads(f.read())
 
@@ -790,6 +820,8 @@ class Gui(QMainWindow):
         self.enum_widget.setVisible(True)
         self.ui.enumDetailsLayout.addWidget(self.enum_widget)
         self.children.append(self.enum_widget)
+
+        self.file_path = Path(filename)
 
     def reload(self):
         for node in self.children:

@@ -94,6 +94,23 @@ class Fcp:
         for msg in self.spec.common.msgs.values():
             if msg.id == msg_id:
                 return msg
+    
+    def find_device(self, id):
+        for dev in self.spec.devices.values:
+            if isinstance(id, int) and dev.id == id:
+                return dev
+            if isinstance(id, str) and dev.name == id:
+                return dev
+
+        return None
+
+    def find_config(self, dev, id):
+        for name, cfg in dev.cfgs.items():
+            if isinstance(id, str) and name == id:
+                return cfg
+
+        return None
+
 
     def decode_msg(self, msg: CANMessage):
         fcp_msg = self.find_msg(msg)
@@ -109,3 +126,59 @@ class Fcp:
             signals[name] = decode_signal(signal, data)
 
         return fcp_msg.name, signals
+
+    def decode_log(self, signal):
+        for name, log in self.spec.logs.items():
+            if log.id == signal["id"]:
+                return log.string
+
+        return ""
+
+    def decode_get(self, signal):
+        dev = self.find_device(signal['dst'])
+        if dev == None:
+            return None
+
+        for name, config in dev.cfgs.items():
+            if config.id == signal['id']:
+                return {config.name : signal['data']}
+
+    
+    def encode_get(self, sid: int, dst: int, config: int):
+        return encode_msg(sid, "req_get", {"dst": dst, "id": config})
+
+    def decode_set(self, signal):
+        dev = self.find_device(signal['dst'])
+        if dev == None:
+            return None
+
+        for name, config in dev.cfgs.items():
+            if config.id == signal['id']:
+                return {"device": device.name, config.name : signal['data']}
+
+    
+    def encode_set(self, sid: int, dst: int, config: int, value: int):
+        return encode_msg(sid, "req_set", {"dst": dst, "id": config, "value": value})
+
+#class FCPCom():
+#    def __init__(self, fcp, com, sid):
+#        self.fcp = fcp
+#        self.com = com
+#        self.sid = sid
+#
+#    def get(self, device, config):
+#        dev = self.fcp.find_device(device)
+#        if dev == None:
+#            return None
+#
+#        cfg = self.fcp.find_config(dev, config)
+#        if cfg == None:
+#            return None
+#
+#        msg = self.fcp.encode_get(self.sid, dev.id, cfg.id)
+#
+#        com.send(msg)
+
+
+
+
