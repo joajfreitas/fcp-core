@@ -7,7 +7,7 @@ build-pic:
 
   script:
     - pacman -Syu --noconfirm
-    - pacman -S python python-pip --noconfirm
+    - pacman -S python python-pip libglvnd --noconfirm
     - python3 -V
     - pip3 install setuptools
     - pip3 install markdown
