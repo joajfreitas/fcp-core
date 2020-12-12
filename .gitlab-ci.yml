@@ -6,6 +6,7 @@ build-pic:
     - docker
 
   script:
+    - pacman -Syu --noconfirm
     - pacman -S python --noconfirm
     - python3 -V
     - pip3 install setuptools
