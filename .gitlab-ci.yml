@@ -6,7 +6,7 @@ build-pic:
     - docker
 
   script:
-    - pacman -S python --nocofirm
+    - pacman -S python --noconfirm
     - python3 -V
     - pip3 install setuptools
     - pip3 install markdown
