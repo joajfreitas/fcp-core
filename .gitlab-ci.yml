@@ -1,5 +1,5 @@
 build-pic:
-  image: fstlx/xc16:testing
+  image: archlinux
   stage: build
   needs: []
   tags:
@@ -11,49 +11,3 @@ build-pic:
     - pip3 install markdown
     - python3 setup.py install
     - fcp --version
-
-
-      # test_c_src:
-      #   image: dock0/arch
-      #   stage: test
-      # 
-      #   before_script:
-      #     - pacman -Syyu --noconfirm
-      #     - pacman -S base-devel --noconfirm
-      # 
-      #   script:
-      #     - cd src && make && ./test
-      # 
-      # 
-      # test_c_output:
-      #   image: dock0/arch
-      #   stage: test
-      # 
-      #   before_script:
-      #     - pacman -Syyu --noconfirm
-      #     - pacman -S base-devel --noconfirm
-      #     - pacman -S python --noconfirm
-      #     - pacman -S python-pip --noconfirm
-      #     - yes | pip install  -r requirements.txt || true
-      # 
-      #   script:
-      #     - python -m fcp c-gen template out test.json skel  
-      #     - cd out && make && make test
-      # 
-      # latex:
-      #   image: dock0/arch
-      #   stage: deploy
-      # 
-      #   before_script:
-      #     - pacman -Syy --noconfirm
-      #     - pacman -Syu --noconfirm
-      #     - pacman -S texlive-bin --noconfirm
-      #     - pacman -S texlive-most --noconfirm
-      #     - pacman -S base base-devel --noconfirm
-      # 
-      #   script:
-      #     - cd doc && make || true
-      # 
-      #   artifacts:
-      #     paths:
-      #       - doc/fcp.pdf
