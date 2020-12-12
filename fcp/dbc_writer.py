@@ -7,6 +7,8 @@ from cantools.database import *
 
 from .spec import *
 
+import copy
+
 
 def is_float(signal):
     return signal.type == "float" or signal.type == "double"
@@ -28,9 +30,9 @@ def is_multiplexer(signal, mux_signals):
 
 
 def make_signal(signal, mux_signals, dev_name):
-    def make_signal_closure(signal, mux_signals, ids):
+    def make_signal_closure(name, signal, mux_signals, ids):
         return CanSignal(
-            signal.name,
+            name,
             signal.start,
             signal.length,
             byte_order=signal.byte_order,
@@ -50,27 +52,24 @@ def make_signal(signal, mux_signals, dev_name):
         )
 
     if signal.mux_count == 1:
-        yield make_signal_closure(signal, mux_signals, None)
+        yield make_signal_closure(signal.name, signal, mux_signals, None)
         return
-
+   
     for i in range(signal.mux_count):
-        yield make_signal_closure(signal, mux_signals, [i])
+        yield make_signal_closure(signal.name + str(i), signal, mux_signals, [i])
 
 
 def process_mux_signals(signals):
     mux_signals = []
     for key, val in signals.items():
-        if val.mux in mux_signals:
+        if val.mux not in mux_signals:
             mux_signals.append(val.mux)
 
     return mux_signals
 
 
-def write_dbc(j, dbc, logger):
+def write_dbc(spec, dbc, logger):
     logger.info("Writing dbc file")
-
-    spec = Spec()
-    spec.decompile(j)
 
     messages = []
     nodes = []
@@ -83,7 +82,6 @@ def write_dbc(j, dbc, logger):
             mux_signals = process_mux_signals(msg.signals)
             signals = []
             for sig_name, sig in msg.signals.items():
-                print(sig_name)
                 for sig in make_signal(sig, mux_signals, dev_name):
                     signals.append(sig)
 

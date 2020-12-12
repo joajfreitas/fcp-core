@@ -115,6 +115,11 @@ def signal_mux(signal):
         return fail_msg(signal, f"Mux count is 0, should be >= 1")
 
 
+@check_decorator("sig")
+def signal_mux_count(sig):
+    if int(sig.mux_count) == 0:
+        return fail_msg(sig, f"Mux count *cannot* be 0")
+
 @check_decorator("msg")
 def msg_mux(msg):
     muxeds = [signal.mux for signal in msg.signals.values() if signal.mux != ""]
@@ -127,7 +132,7 @@ def msg_mux(msg):
 
     if 2 ** mux.length < mux.mux_count:
         return fail_msg(msg, f"Mux cannot fit all possible multiplexed values")
-
+    
 
 @check_decorator("msg")
 def msg_name(msg):
@@ -151,6 +156,7 @@ def msg_dlc(msg):
 def msg_frequency(msg):
     if msg.frequency < 0:
         return fail_msg(msg, f"Message frequency is not valid: {msg.frequency}")
+
 
 
 @check_decorator("msg")
@@ -272,7 +278,7 @@ def check(category, arg):
     return failed
 
 
-def validate(logger, j, spec):
+def validate(logger, spec):
     failed = []
     failed += check("spec", spec)
 

@@ -59,6 +59,7 @@ function(double) \
 #define cast_double(ptr) *((double *) (ptr))
 #define cast_float(ptr) *((float *) (ptr))
 #define get_bitfield(data, signal) (((data) >> (signal.start)) & bitmask(signal.length))
+
 #define set_bitfield(data, signal) (((uint64_t) data) << signal.start)
 
 //uint64_t apply_linear_uint64_t(uint64_t bitfield, fcp_signal_t signal);

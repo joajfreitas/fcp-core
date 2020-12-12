@@ -85,8 +85,8 @@ def c_gen(templates, output, json_file, skel, logger):
     j = json.loads(r)
     spec = Spec()
     spec.decompile(j)
-    ans = validate(logger, j, spec)
-    if not ans:
+    failed = validate(logger, spec)
+    if len(failed) > 0:
         return
     logger.info("Validated JSON ✅")
 

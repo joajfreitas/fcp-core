@@ -76,6 +76,7 @@ class Log:
 
         d = copy.deepcopy(self.__dict__)
         del d["creation_date"]
+        del d["parent"]
         return d
 
     def decompile(self, d: Dict[str, Any]) -> None:
@@ -155,6 +156,7 @@ class EnumValue:
     def compile(self) -> Dict[str, Any]:
         d = copy.deepcopy(self.__dict__)
         del d["creation_date"]
+        del d["parent"]
         return d
 
     def decompile(self, d: Dict[str, Any]) -> None:
@@ -202,6 +204,7 @@ class Enum:
         d = copy.deepcopy(self.__dict__)
         d["enumeration"] = enums
         del d["creation_date"]
+        del d["parent"]
         return d
 
     def decompile(self, d: Dict[str, Any]) -> None:
@@ -218,7 +221,7 @@ class Enum:
             enum_value = EnumValue(self)
             enum_value.decompile(v)
             self.enumeration[k] = enum_value
-    
+
     def get_name(self) -> str:
         return self.name
 
@@ -722,6 +725,7 @@ class Signal:
 
         d = copy.deepcopy(self.__dict__)
         del d["creation_date"]
+        del d["parent"]
         return d
 
     def decompile(self, d: Dict[str, Any]) -> None:
@@ -849,6 +853,7 @@ class Message:
         d = copy.deepcopy(self.__dict__)
         d["signals"] = msgs
         del d["creation_date"]
+        del d["parent"]
         return d
 
     def decompile(self, d: Dict[str, Any]) -> None:
@@ -977,6 +982,7 @@ class Argument:
         print("compiling argument")
         d = copy.deepcopy(self.__dict__)
         del d["creation_date"]
+        del d["parent"]
         return d
 
     def decompile(self, d: Dict[str, Any]) -> None:
@@ -1078,6 +1084,7 @@ class Command:
         att["args"] = args
         att["rets"] = rets
         del att["creation_date"]
+        del att["parent"]
 
         return att
 
@@ -1120,6 +1127,7 @@ class Command:
             ret = Argument()
             ret.decompile(ret_v)
             self.rets[ret_k] = ret
+
 
     def normalize(self):
         return
@@ -1179,6 +1187,7 @@ class Config:
 
         d = copy.deepcopy(self.__dict__)
         del d["creation_date"]
+        del d["parent"]
         return d
 
     def decompile(self, d: Dict[str, Any]) -> None:
@@ -1277,6 +1286,7 @@ class Device:
         att["cmds"] = cmds
         att["cfgs"] = cfgs
         del att["creation_date"]
+        del att["parent"]
 
         return att
 
@@ -1403,10 +1413,10 @@ class Device:
 
     def __repr__(self):
         return (
+    #name: {self.name}, 
+    #id: {self.id}
             "{"
             + f"""
-    name: {self.name}, 
-    id: {self.id}
     """
             + "}"
         )
@@ -1472,6 +1482,7 @@ class Common:
         att = copy.deepcopy(self.__dict__)
         att["msgs"] = msgs
         del att["creation_date"]
+        del att["parent"]
         return att
 
     def decompile(self, d: Dict[str, Any]) -> None:

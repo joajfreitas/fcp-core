@@ -727,7 +727,7 @@ class Gui(QMainWindow):
     def validate(self):
         msg = QMessageBox(self)
         msg.setStandardButtons(QMessageBox.Ok)
-        failed = validate(self.logger, "{}", self.spec)
+        failed = validate(self.logger, self.spec)
         if len(failed) == 0:
             msg.setIcon(QMessageBox.Information)
             msg.setText("Spec passed")

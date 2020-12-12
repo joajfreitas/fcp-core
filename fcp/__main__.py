@@ -2,6 +2,7 @@ import sys
 import logging
 import json
 import subprocess, os
+from pprint import pprint
 
 import click
 
@@ -46,12 +47,12 @@ def get_spec(json_file: str, logger: logging.Logger) -> Spec:
     with open(json_file) as f:
         j = json.loads(f.read())
 
-    r, msg = validate(logger, j)
-    if not r:
-        print(msg)
-        exit()
 
     spec.decompile(j)
+    failed = validate(logger, spec)
+    if len(failed):
+        print(failed)
+        exit()
 
     return spec
 
@@ -102,10 +103,22 @@ def write_dbc_cmd(json_file: str, dbc: str):
     """
 
     logger = setup_logging()
-
+    
     with open(json_file) as f:
         j = json.loads(f.read())
-    write_dbc(j, dbc, logger)
+
+    spec = Spec()
+    spec.decompile(j)
+
+
+    failed = validate(logger, spec)
+    pprint(failed)
+
+    if len(failed) > 0:
+        print("Failed to validate json, refusing to write dbc")
+        exit()
+
+    write_dbc(spec, dbc, logger)
 
 
 @click.command(name="c_gen")
@@ -155,9 +168,11 @@ def validate_cmd(json_file: str):
     logger = setup_logging()
     with open(json_file) as f:
         j = f.read()
-
-    r, msg = validate(logger, json.loads(j))
-    if r:
+    
+    spec = Spec()
+    spec.decompile(j)
+    failed = validate(logger, spec)
+    if len(failed) == 0:
         print("✓ JSON validated")
     else:
         print("❌" + msg)
