@@ -3,16 +3,13 @@
 ################################################################################
 ## Form generated from reading UI file 'devicedetails.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.15.0
+## Created by: Qt User Interface Compiler version 5.15.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import (QCoreApplication, QDate, QDateTime, QMetaObject,
-    QObject, QPoint, QRect, QSize, QTime, QUrl, Qt)
-from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
-    QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPalette, QPainter,
-    QPixmap, QRadialGradient)
+from PySide2.QtCore import *
+from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 
@@ -20,7 +17,7 @@ class Ui_DeviceDetails(object):
     def setupUi(self, DeviceDetails):
         if not DeviceDetails.objectName():
             DeviceDetails.setObjectName(u"DeviceDetails")
-        DeviceDetails.resize(398, 382)
+        DeviceDetails.resize(404, 382)
         self.verticalLayout_2 = QVBoxLayout(DeviceDetails)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.groupBox = QGroupBox(DeviceDetails)
@@ -66,7 +63,7 @@ class Ui_DeviceDetails(object):
         self.scrollArea.setWidgetResizable(True)
         self.messageContents = QWidget()
         self.messageContents.setObjectName(u"messageContents")
-        self.messageContents.setGeometry(QRect(0, 0, 346, 202))
+        self.messageContents.setGeometry(QRect(0, 0, 352, 202))
         self.verticalLayout = QVBoxLayout(self.messageContents)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.scrollArea.setWidget(self.messageContents)

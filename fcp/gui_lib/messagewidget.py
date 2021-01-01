@@ -3,16 +3,13 @@
 ################################################################################
 ## Form generated from reading UI file 'messagewidget.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.15.0
+## Created by: Qt User Interface Compiler version 5.15.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import (QCoreApplication, QDate, QDateTime, QMetaObject,
-    QObject, QPoint, QRect, QSize, QTime, QUrl, Qt)
-from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
-    QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPalette, QPainter,
-    QPixmap, QRadialGradient)
+from PySide2.QtCore import *
+from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 
@@ -62,6 +59,12 @@ class Ui_MessageWidget(object):
 
         self.horizontalLayout_4.addLayout(self.verticalLayout)
 
+        self.deleteButton = QPushButton(self.groupBox)
+        self.deleteButton.setObjectName(u"deleteButton")
+        self.deleteButton.setMaximumSize(QSize(25, 25))
+
+        self.horizontalLayout_4.addWidget(self.deleteButton)
+
         self.messageDetailsButton = QPushButton(self.groupBox)
         self.messageDetailsButton.setObjectName(u"messageDetailsButton")
         self.messageDetailsButton.setMaximumSize(QSize(60, 25))
@@ -85,6 +88,7 @@ class Ui_MessageWidget(object):
         self.id.setText("")
         self.dlc.setText("")
         self.frequency.setText("")
+        self.deleteButton.setText(QCoreApplication.translate("MessageWidget", u"\u2717", None))
         self.messageDetailsButton.setText(QCoreApplication.translate("MessageWidget", u"...", None))
     # retranslateUi
 

@@ -13,6 +13,8 @@ Options:
 import json
 import logging
 
+import colorful as cf
+
 from .spec import *
 
 
@@ -37,14 +39,14 @@ def check_decorator(category):
     return closure
 
 
-def fail_msg(node, msg):
+def fail_msg(node, msg, level="error"):
     def location(node):
         if node.parent is None:
             return node.name
 
         return location(node.parent) + "/" + node.name
 
-    return f"{location(node)}: {msg}"
+    return (level, f"{location(node)}: {msg}")
 
 
 @check_decorator("sig")
@@ -61,8 +63,14 @@ def signal_start(signal):
 
 @check_decorator("sig")
 def signal_total_length(signal):
-    if signal.length + signal.offset > 64:
-        return fail_msg(signal, f"signal end is bigger than 64")
+    if signal.start + signal.length > 64:
+        level = "error"
+        if signal.byte_order == "big_endian":
+            level = "warning"
+        else:
+            level = "error"
+
+        return fail_msg(signal, f"signal end is bigger than 64", level)
 
 
 @check_decorator("sig")
@@ -192,6 +200,7 @@ def dev_overlapping_msg_ids(dev):
         return fail_msg(dev, f"Device has overlapping msg ids")
 
 
+
 @check_decorator("log")
 def log_id(log):
     if log.id > 255 and log.id < 0:
@@ -248,6 +257,38 @@ def spec_overlapping_dev_ids(spec):
     if len(ids_set) != len(ids):
         return fail_msg(spec, f"There are overlapping device ids")
 
+@check_decorator("spec")
+def spec_same_name_configs(spec):
+    cfgs = []
+    for dev in spec.devices.values():
+        for cfg in dev.cfgs.values():
+            cfgs += [cfg.name]
+
+    cfgs_set = set()
+
+    for cfg in cfgs:
+        if cfgs.count(cfg) > 1:
+            cfgs_set.add(cfg)
+
+    if len(cfgs_set) != 0:
+        return fail_msg(spec, "There are overlapping config names [{}]".format(", ".join(cfgs_set)), level="warning")
+
+
+@check_decorator("spec")
+def spec_same_name_commands(spec):
+    cmds = []
+    for dev in spec.devices.values():
+        for cmd in dev.cmds.values():
+            cmds += [cmd.name]
+
+    cmds_set = set()
+
+    for cmd in cmds:
+        if cmds.count(cmd) > 1:
+            cmds_set.add(cmd)
+
+    if len(cmds_set) != 0:
+        return fail_msg(spec, "There are overlapping command names [{}]".format(", ".join(cmds_set)), level="warning")
 
 def spec_repeated_names(spec):
     def get_signal_names(spec):
@@ -300,3 +341,13 @@ def validate(logger, spec):
             failed += check("cmd", cmd)
 
     return failed
+
+def format_error(level, message):
+    if level == "warning":
+        level = cf.yellow(level)
+    elif level == "error":
+        level = cf.red(level)
+    else:
+        level = cf.blue(level)
+
+    return f"{level}: {message}"

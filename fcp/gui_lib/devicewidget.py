@@ -3,16 +3,13 @@
 ################################################################################
 ## Form generated from reading UI file 'devicewidget.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.15.0
+## Created by: Qt User Interface Compiler version 5.15.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import (QCoreApplication, QDate, QDateTime, QMetaObject,
-    QObject, QPoint, QRect, QSize, QTime, QUrl, Qt)
-from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
-    QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPalette, QPainter,
-    QPixmap, QRadialGradient)
+from PySide2.QtCore import *
+from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 
@@ -20,7 +17,7 @@ class Ui_DeviceWidget(object):
     def setupUi(self, DeviceWidget):
         if not DeviceWidget.objectName():
             DeviceWidget.setObjectName(u"DeviceWidget")
-        DeviceWidget.resize(370, 99)
+        DeviceWidget.resize(370, 118)
         self.horizontalLayout_2 = QHBoxLayout(DeviceWidget)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.groupBox_2 = QGroupBox(DeviceWidget)
@@ -36,6 +33,12 @@ class Ui_DeviceWidget(object):
         self.id.setObjectName(u"id")
 
         self.horizontalLayout_3.addWidget(self.id)
+
+        self.deleteButton = QPushButton(self.groupBox_2)
+        self.deleteButton.setObjectName(u"deleteButton")
+        self.deleteButton.setMaximumSize(QSize(25, 25))
+
+        self.horizontalLayout_3.addWidget(self.deleteButton)
 
         self.deviceDetailsButton = QPushButton(self.groupBox_2)
         self.deviceDetailsButton.setObjectName(u"deviceDetailsButton")
@@ -58,6 +61,7 @@ class Ui_DeviceWidget(object):
         self.groupBox_2.setTitle("")
         self.name.setText("")
         self.id.setText("")
+        self.deleteButton.setText(QCoreApplication.translate("DeviceWidget", u"\u2717", None))
         self.deviceDetailsButton.setText(QCoreApplication.translate("DeviceWidget", u"...", None))
     # retranslateUi
 

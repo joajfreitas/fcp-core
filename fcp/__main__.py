@@ -1,16 +1,18 @@
 import sys
 import logging
-import json
+import hjson as json
 import subprocess, os
 from pprint import pprint
 
 import click
 
+
 from .dbc_reader import read_dbc, init
 from .dbc_writer import write_dbc
 from .c_generator import c_gen
 from .gui import gui
-from .validator import validate
+from .gui2 import gui2
+from .validator import validate, format_error
 from .spec import Spec
 from .docs import generate_docs
 from .version import VERSION
@@ -36,6 +38,21 @@ def setup_logging() -> logging.Logger:
     return logger
 
 
+def report_validate(failed):
+    error = 0
+    if len(failed):
+        for level, msg in failed:
+            print(format_error(level, msg))
+
+            if level == "error":
+                error += 1
+
+        if error > 0:
+            print("Too many error won't continue")
+            return True
+
+    return False
+
 def get_spec(json_file: str, logger: logging.Logger) -> Spec:
     """Create Spec from json file path.
     :param json_file: path to the json file.
@@ -50,9 +67,9 @@ def get_spec(json_file: str, logger: logging.Logger) -> Spec:
 
     spec.decompile(j)
     failed = validate(logger, spec)
-    if len(failed):
-        print(failed)
+    if report_validate(failed):
         exit()
+
 
     return spec
 
@@ -103,21 +120,7 @@ def write_dbc_cmd(json_file: str, dbc: str):
     """
 
     logger = setup_logging()
-    
-    with open(json_file) as f:
-        j = json.loads(f.read())
-
-    spec = Spec()
-    spec.decompile(j)
-
-
-    failed = validate(logger, spec)
-    pprint(failed)
-
-    if len(failed) > 0:
-        print("Failed to validate json, refusing to write dbc")
-        exit()
-
+    spec = get_spec(json_file, logger)
     write_dbc(spec, dbc, logger)
 
 
@@ -136,7 +139,8 @@ def c_gen_cmd(templates: str, output: str, json_file: str, skel: str, noformat: 
     """
 
     logger = setup_logging()
-    c_gen(templates, output, json_file, skel, logger)
+    spec = get_spec(json_file, logger)
+    c_gen(spec, templates, output, skel, logger)
 
     if noformat == False:
         subprocess.run(
@@ -167,7 +171,7 @@ def validate_cmd(json_file: str):
 
     logger = setup_logging()
     with open(json_file) as f:
-        j = f.read()
+        j = json.loads(f.read())
     
     spec = Spec()
     spec.decompile(j)
@@ -175,7 +179,9 @@ def validate_cmd(json_file: str):
     if len(failed) == 0:
         print("✓ JSON validated")
     else:
-        print("❌" + msg)
+        print("❌")
+        for level, msg in failed:
+            print(format_error(level, msg))
 
 
 @click.command(name="gui")
@@ -186,6 +192,16 @@ def gui_cmd(file: str):
     """
     logger = setup_logging()
     gui(file, logger)
+
+
+@click.command(name="gui2")
+@click.argument("file", required=False)
+def gui_cmd2(file: str):
+    """Launch FCP json editor GUI.
+    :param file: Optional FCP json file path
+    """
+    logger = setup_logging()
+    gui2(file, logger)
 
 @click.command()
 @click.argument("json_file")
@@ -355,7 +371,7 @@ def docs(json_file: str, out: str, link_location: str):
 @click.group(invoke_without_command=True)
 @click.option("--version", is_flag=True, default=False)
 def main(version):
-    """CLI utility for managment of FCP JSON files."""
+    """CLI utility for managment of FCP JSON files. """
         
     if len(sys.argv) == 1:
         print("fcp cli util.\nVersion:", VERSION, "\nFor usage see fcp --help")
@@ -370,6 +386,7 @@ main.add_command(c_gen_cmd)
 main.add_command(init_cmd)
 main.add_command(validate_cmd)
 main.add_command(gui_cmd)
+main.add_command(gui_cmd2)
 main.add_command(dump_dev_list)
 main.add_command(dump_msg_list)
 main.add_command(dump_cfg_list)

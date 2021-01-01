@@ -3,16 +3,13 @@
 ################################################################################
 ## Form generated from reading UI file 'signalwidget.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.15.0
+## Created by: Qt User Interface Compiler version 5.15.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import (QCoreApplication, QDate, QDateTime, QMetaObject,
-    QObject, QPoint, QRect, QSize, QTime, QUrl, Qt)
-from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
-    QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPalette, QPainter,
-    QPixmap, QRadialGradient)
+from PySide2.QtCore import *
+from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 
@@ -52,6 +49,12 @@ class Ui_SignalWidget(object):
 
         self.horizontalLayout_2.addLayout(self.verticalLayout_2)
 
+        self.deleteButton = QPushButton(self.groupBox)
+        self.deleteButton.setObjectName(u"deleteButton")
+        self.deleteButton.setMaximumSize(QSize(25, 25))
+
+        self.horizontalLayout_2.addWidget(self.deleteButton)
+
         self.signalDetailsButton = QPushButton(self.groupBox)
         self.signalDetailsButton.setObjectName(u"signalDetailsButton")
         self.signalDetailsButton.setMaximumSize(QSize(60, 25))
@@ -74,6 +77,7 @@ class Ui_SignalWidget(object):
         self.name.setText("")
         self.start.setText("")
         self.length.setText("")
+        self.deleteButton.setText(QCoreApplication.translate("SignalWidget", u"\u2717", None))
         self.signalDetailsButton.setText(QCoreApplication.translate("SignalWidget", u"...", None))
     # retranslateUi
 

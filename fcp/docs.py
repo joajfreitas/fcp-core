@@ -73,7 +73,7 @@ def markdown(spec, root):
 
         device += f"## Configs \n"
         for cfg in sorted(dev.cfgs.values(), key=lambda x: x.id):
-            device += f"### {cfg.id}. {cfg.name}\n"
+            device += f"### {cfg.name} ({cfg.id}) : {cfg.type}\n"
             if not cfg.comment == "":
                 device += f"_{cfg.comment}_\n"
             device += "\n"
@@ -83,6 +83,17 @@ def markdown(spec, root):
             device += f"### {cmd.id}. {cmd.name}\n"
             if not cmd.comment == "":
                 device += f"_{cmd.comment}_\n"
+            
+            if len(cmd.args) > 0:
+                device += "\n#### Arguments\n"
+                for arg in cmd.args.values():
+                    device += f" * {arg.name} ({arg.id}): {arg.type}\n"
+            
+            if len(cmd.rets) > 0:
+                device += "\n#### Returns\n"
+                for ret in cmd.rets.values():
+                    device += f" * {ret.name} ({arg.id}): {arg.type}\n"
+
             device += "\n"
 
         devices.append(device)

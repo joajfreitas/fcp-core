@@ -1,10 +1,11 @@
 # This Python file uses the following encoding: utf-8
 import sys
-import json
+import hjson as json
 from datetime import datetime
 import webbrowser
 from pathlib import Path
 import yaml
+from copy import deepcopy
 
 from PySide2.QtWidgets import *
 from PySide2.QtGui import QKeySequence
@@ -82,7 +83,8 @@ class NodeDetails(QWidget):
     def delete(self):
         r = self.gui.spec.rm_node(self.node)
         self.setVisible(False)
-        self.parent.setVisible(False)
+        if self.parent:
+            self.parent.setVisible(False)
         return
 
     def reload(self):
@@ -167,6 +169,9 @@ class SignalWidget(NodeDetails):
         self.details_button = self.ui.signalDetailsButton
         self.details_button.clicked.connect(self.open_details)
 
+        self.delete_button = self.ui.deleteButton
+        self.delete_button.clicked.connect(self.delete)
+
         self.reload()
 
 
@@ -227,6 +232,9 @@ class MessageWidget(NodeDetails):
 
         self.details_button = self.ui.messageDetailsButton
         self.details_button.clicked.connect(self.open_details)
+
+        self.button_button = self.ui.deleteButton
+        self.button_button.clicked.connect(self.delete)
 
 
 class ArgDetails(NodeDetails):
@@ -486,6 +494,9 @@ class DeviceWidget(NodeDetails):
         self.details_button = self.ui.deviceDetailsButton
         self.details_button.clicked.connect(self.open_details)
 
+        self.delete_button = self.ui.deleteButton
+        self.delete_button.clicked.connect(self.delete)
+
 
 class EnumValueDetails(NodeDetails):
     def load_atts(self, ui, node):
@@ -674,6 +685,8 @@ class Gui(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
+        self.history = None
+
         self.logger = logger
 
         self.spec = Spec()
@@ -724,10 +737,46 @@ class Gui(QMainWindow):
         shortcutOpen.setContext(Qt.ApplicationShortcut)
         shortcutOpen.activated.connect(self.open_json)
 
+        shortcutOpen = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_V), self)
+        shortcutOpen.setContext(Qt.ApplicationShortcut)
+        shortcutOpen.activated.connect(self.validate)
+
+        shortcutOpen = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_Z), self)
+        shortcutOpen.setContext(Qt.ApplicationShortcut)
+        shortcutOpen.activated.connect(self.undo)
+
+        shortcutOpen = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_R), self)
+        shortcutOpen.setContext(Qt.ApplicationShortcut)
+        shortcutOpen.activated.connect(self.redo)
+ 
+    def save_history(self):
+        old_spec = deepcopy(self.spec)
+        self.history.insert(0, old_spec)
+
+    def undo(self):
+        if self.history is None:
+            print("JSON not loaded yet!")
+            return
+
+        print("undo")
+        print(self.history)
+        if len(self.history) >= 2:
+            self.history.pop()
+            self.spec = self.history[-1]
+            self.reload()
+
+
+    def redo(self):
+        if self.history is None:
+            print("JSON not loaded yet!")
+            return
+        print("redo")
+
     def validate(self):
         msg = QMessageBox(self)
         msg.setStandardButtons(QMessageBox.Ok)
         failed = validate(self.logger, self.spec)
+        failed = [f"{level}: {msg}"for level, msg in failed]
         if len(failed) == 0:
             msg.setIcon(QMessageBox.Information)
             msg.setText("Spec passed")
@@ -738,12 +787,19 @@ class Gui(QMainWindow):
         msg.show()
 
     def add_device(self, device=None):
-        if type(device) != Device and type(device) != Common:
-            device = Device(parent=self.spec, id=0, name="", msgs={})
+        new_device = device is None or type(device) == bool
+        print("new_device:", new_device)
+        if new_device:
+            self.save_history()
+            device = Device(parent=self.spec, msgs={})
 
             r = self.spec.add_device(device)
             if r == False:
-                self.logger.error("Failed to create device")
+                msg = QMessageBox(self)
+                msg.setStandardButtons(QMessageBox.Ok)
+                msg.setIcon(QMessageBox.Warning)
+                msg.setText("Failed to create device")
+                msg.show()
                 return
 
         dev_widget = DeviceWidget(
@@ -757,6 +813,8 @@ class Gui(QMainWindow):
             self, self.tr("Open JSON"), self.tr("JSON (*.json)")
         )
         self.load_json(filename[0])
+        self.history = []
+        self.history.append()
 
     def save_json(self):
         for child in self.children:
@@ -807,6 +865,12 @@ class Gui(QMainWindow):
 
         self.spec.decompile(j)
 
+        self.reload_spec()
+
+        self.file_path = Path(filename)
+        self.history = [self.spec]
+
+    def reload_spec(self):
         for device in sorted(self.spec.devices.values(), key=lambda x: x.id):
             self.add_device(device)
 
@@ -821,13 +885,19 @@ class Gui(QMainWindow):
         self.ui.enumDetailsLayout.addWidget(self.enum_widget)
         self.children.append(self.enum_widget)
 
-        self.file_path = Path(filename)
 
+    def close_spec(self):
+        return
     def reload(self):
+        print("reload:", self.history)
+        self.save_history()
         for node in self.children:
             node.reload()
 
         self.spec.normalize()
+
+
+
 
 
 def gui(file, logger):

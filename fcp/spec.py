@@ -525,11 +525,21 @@ class Spec:
             dev.normalize()
 
     def __repr__(self):
-        out = "Spec: \n"
-        for device in self.devices.values():
-            out += ""
-            out += str(device)
-            out += "\n"
+
+        msg_count = 0
+        sig_count = 0
+
+        for dev in self.devices.values():
+            for msg in dev.msgs.values():
+                msg_count += 1
+                for sig in msg.signals.values():
+                    sig_count += 1
+
+        return f"(Spec: {len(self.devices)}, {msg_count}, {sig_count})"
+        #for device in self.devices.values():
+        #    out += ""
+        #    out += str(device)
+        #    out += "\n"
 
         return out
 
@@ -573,8 +583,10 @@ class Signal:
         alias: str = "",
     ):
         
+        assert parent is not None
         self.parent = parent
-        self.name = name
+        m = max([int(sig.name[3:]) for sig in self.parent.signals.values() if sig.name.startswith("sig")] + [0])
+        self.name = name or ("sig" + str(m + 1))
         self.start = start
         self.length = length
         self.scale = scale
@@ -738,26 +750,26 @@ class Signal:
     def __hash__(self):
         return hash((self.name, self.start, self.length, self.creation_date))
 
-#    def __repr__(self):
-#        return """ {
-#        name: {},
-#        start: {}, 
-#        length: {}, 
-#        scale: {}, 
-#        offset: {}, 
-#        unit: {}, 
-#        comment: {}, 
-#        min: {}, 
-#        max: {}, 
-#        type: {}, 
-#        byte_order: {}, 
-#        mux: {}, 
-#        mux_count: {}
-#    }
-#    """.format(self.name, self.start, self.length, self.scale, self.offset, self.unit, self.comment, self.min_value, self.max_value, self.type, self.byte_order, self.mux,self.mux_count)
-
     def __repr__(self):
-        return ""
+        return """ {
+        name: {},
+        start: {}, 
+        length: {}, 
+        scale: {}, 
+        offset: {}, 
+        unit: {}, 
+        comment: {}, 
+        min: {}, 
+        max: {}, 
+        type: {}, 
+        byte_order: {}, 
+        mux: {}, 
+        mux_count: {}
+    }
+    """.format(self.name, self.start, self.length, self.scale, self.offset, self.unit, self.comment, self.min_value, self.max_value, self.type, self.byte_order, self.mux,self.mux_count)
+
+#    def __repr__(self):
+#        return ""
 
 
 class Message:
@@ -784,10 +796,11 @@ class Message:
         
         self.parent = parent
         assert self.parent is not None 
-        
+
         c = max([msg.id for msg in self.parent.msgs.values()] + [0]) + 1
-        self.name = name
         self.id = id or c
+
+        self.name = name or ("msg" + str(self.id))
         self.dlc = dlc
         self.signals = {} if signals == None else signals
         self.frequency = frequency
@@ -939,11 +952,12 @@ class Argument:
     :param comment: description of the Argument.
     """
 
-    def __init__(self, parent: "Command" = None, name: str = "", id: int = 0, comment: str = ""):
+    def __init__(self, parent: "Command" = None, name: str = "", id: int = 0, comment: str = "", type: str = "unsigned"):
         self.parent = parent
         self.name = name
         self.id = id
         self.comment = comment
+        self.type = type
 
         self.creation_date = datetime.datetime.now()
 
@@ -955,6 +969,9 @@ class Argument:
 
     def get_id(self) -> int:
         return self.id
+
+    def get_type(self) -> str:
+        return self.type
 
     def set_name(self, name: str) -> None:
         try:
@@ -973,6 +990,9 @@ class Argument:
             self.id = int(id)
         except Exception as e:
             return
+
+    def set_type(self, type: str) -> None:
+        self.type = type
 
     def compile(self) -> Dict[str, Any]:
         """ Transform python class node to its dictionary representation.
@@ -1144,11 +1164,12 @@ class Config:
     :param comment: description of the Config.
     """
 
-    def __init__(self, parent: "Device" = None, name: str = "", id: int = 0, comment: str = ""):
+    def __init__(self, parent: "Device" = None, name: str = "", id: int = 0, comment: str = "", type: str = "unsigned"):
         self.parent = parent
         self.name = name
         self.id = int(id)
         self.comment = comment
+        self.type = type
 
         self.creation_date = datetime.datetime.now()
 
@@ -1160,6 +1181,9 @@ class Config:
 
     def get_comment(self) -> str:
         return self.comment
+
+    def get_type(self) -> str:
+        return self.type
 
     def set_name(self, name: str) -> None:
         try:
@@ -1178,6 +1202,9 @@ class Config:
             self.comment = comment
         except Exception as e:
             return
+
+    def set_type(self, type: str) -> None:
+        self.type = type
 
     def compile(self) -> Dict[str, Any]:
         """ Transform python class node to its dictionary representation.
@@ -1219,7 +1246,7 @@ class Device:
     def __init__(
         self,
         parent: "Spec" = None,
-        name: str = "default_name",
+        name: str = "",
         id: int = 0,
         msgs: Dict[str, Message] = None,
         cmds: Dict[str, Command] = None,
@@ -1230,7 +1257,7 @@ class Device:
         assert self.parent is not None
         c = max([dev.id for dev in self.parent.devices.values()] + [0]) + 1
 
-        self.name = name
+        self.name = name or ("device" + str(c))
         self.id = id or c
         self.msgs = {} if msgs == None else msgs
         self.cmds = {} if cmds == None else cmds

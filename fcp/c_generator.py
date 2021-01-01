@@ -21,7 +21,6 @@ import shutil
 from .spec import Spec
 from .template import Tpl
 from .generator import *
-from .validator import validate
 
 
 def check_output(output):
@@ -58,7 +57,7 @@ def check_version(j, logger):
     logger.info("Correct file version ✅")
 
 
-def c_gen(templates, output, json_file, skel, logger):
+def c_gen(spec, templates, output, skel, logger):
     # copy skel directory
     status, err = check_output(output)
     if not status:
@@ -76,24 +75,6 @@ def c_gen(templates, output, json_file, skel, logger):
     logger.info("Template dir checked ✅")
 
     tpl.open_tpl_files()
-
-    with open(json_file) as f:
-        r = f.read()
-
-    logger.info("JSON spec file successfully read ✅")
-
-    j = json.loads(r)
-    spec = Spec()
-    spec.decompile(j)
-    failed = validate(logger, spec)
-    if len(failed) > 0:
-        return
-    logger.info("Validated JSON ✅")
-
-    check_version(j, logger)
-
-    logger.info("JSON loaded into Spec ✅")
-    
 
     files = []
 
