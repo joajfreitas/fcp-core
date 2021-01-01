@@ -125,3 +125,6 @@ dmypy.json
 
 # tags
 tags
+
+
+.fcp_gui.yaml
