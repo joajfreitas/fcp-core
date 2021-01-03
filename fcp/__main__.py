@@ -171,7 +171,7 @@ def validate_cmd(json_file: str):
     logger = setup_logging()
     with open(json_file) as f:
         j = json.loads(f.read())
-    
+ 
     spec = Spec()
     spec.decompile(j)
     failed = validate(logger, spec)
