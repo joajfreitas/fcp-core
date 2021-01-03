@@ -5,6 +5,8 @@ from pathlib import Path
 import sys
 import hjson
 
+from hashlib import sha1
+
 from sqlalchemy import Column, ForeignKey, Integer, Float, String, func, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -77,6 +79,9 @@ class Device(SpecBase):
     def from_dict(self, fcp):
         self.name = fcp["name"]
         self.id = fcp["id"]
+
+    def __repr__(self):
+        return f"<Device name={self.name} id={self.id}>"
 
 class Log(SpecBase):
     __tablename__ = "logs"
@@ -162,12 +167,19 @@ def create_session(db_path: Path, base) -> Session:
 
 
 def init_session(file_path: Path) -> Session:
+    print("file_path:", file_path)
     with file_path.open() as f:
         j = hjson.loads(f.read())
-    db_path: Path = Path(get_config_dir()) / str(hash(file_path.absolute()) + sys.maxsize + 1)
+ 
+    abs = bytes(str(file_path.absolute()), 'utf-8')
+    db_path = Path(sha1(abs).hexdigest()[:16] + "-" + file_path.name)
+    db_path: Path = Path(get_config_dir()) / db_path
 
-    #if db_path.is_file():
-    #    db_path.unlink()
+    print("db_path:", db_path)
+
+    if db_path.is_file():
+        db_path.unlink()
+
     session = create_session(db_path, SpecBase)
     json_to_sql(session, j)
 
