@@ -1,20 +1,21 @@
 from typing import *
 
+from appdirs import *
 from pathlib import Path
 import sys
 import hjson
-
-import pdb
 
 from sqlalchemy import Column, ForeignKey, Integer, Float, String, func, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
-Base = declarative_base()
+from .dirs import get_config_dir
 
 
-class Signal(Base):
+SpecBase = declarative_base()
+
+class Signal(SpecBase):
     __tablename__ = "signals"
     parent = Column(String, ForeignKey('msgs.name'), primary_key=True)
     name = Column(String, primary_key=True, default="signal")
@@ -50,7 +51,7 @@ class Signal(Base):
         self.alias = fcp["alias"]
 
 
-class Message(Base):
+class Message(SpecBase):
     __tablename__ = "msgs"
     parent = Column(String, ForeignKey('devs.name'), primary_key=True)
     name = Column(String, primary_key=True, default="msg")
@@ -68,7 +69,7 @@ class Message(Base):
         self.description = fcp["description"]
 
 
-class Device(Base):
+class Device(SpecBase):
     __tablename__ = "devs"
     name = Column(String, primary_key=True, default="dev")
     id = Column(Integer, default=0)
@@ -77,7 +78,7 @@ class Device(Base):
         self.name = fcp["name"]
         self.id = fcp["id"]
 
-class Log(Base):
+class Log(SpecBase):
     __tablename__ = "logs"
     name = Column(String, primary_key=True, default="log")
     id = Column(Integer, default=0)
@@ -92,7 +93,7 @@ class Log(Base):
         self.comment = fcp["comment"]
         self.string = fcp["string"]
 
-class Command(Base):
+class Command(SpecBase):
     __tablename__ = "cmds"
     parent = Column(String, ForeignKey('devs.name'), primary_key=True)
     name = Column(String, primary_key=True, default="cmd")
@@ -107,7 +108,7 @@ class Command(Base):
         self.n_args = fcp["n_args"]
         self.comment = fcp["comment"]
 
-class Config(Base):
+class Config(SpecBase):
     __tablename__ = "cfgs"
     parent = Column(String, ForeignKey('devs.name'), primary_key=True)
     name = Column(String, primary_key=True, default="cfg")
@@ -150,12 +151,31 @@ def json_to_sql(session: Session, j: Dict[Any, Any]):
 
     session.commit()
 
-def get_session(db_path: Path) -> Session:
+def create_session(db_path: Path, base) -> Session:
     engine = create_engine("sqlite:///" + str(db_path))
-    Base.metadata.create_all(engine)
-    Base.metadata.bind = engine
+    base.metadata.create_all(engine)
+    base.metadata.bind = engine
     DBSession = sessionmaker(bind=engine)
     session: Session = DBSession()
+
+    return session
+
+
+def init_session(file_path: Path) -> Session:
+    with file_path.open() as f:
+        j = hjson.loads(f.read())
+    db_path: Path = Path(get_config_dir()) / str(hash(file_path.absolute()) + sys.maxsize + 1)
+
+    #if db_path.is_file():
+    #    db_path.unlink()
+    session = create_session(db_path, SpecBase)
+    json_to_sql(session, j)
+
+    return session
+
+def spec_session(file_paht: Path) -> Session:
+    db_path = Path(get_config_dir()) / hash(file_path)
+    session = create_session(db_path, SpecBase)
 
     return session
 
@@ -164,6 +184,6 @@ if __name__ == "__main__":
     with open(sys.argv[1]) as f:
         j = hjson.loads(f.read())
 
-    session = get_session("db")
+    session = create_session("db", SpecBase)
     json_to_sql(session, j)
 

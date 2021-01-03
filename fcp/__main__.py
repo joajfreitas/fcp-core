@@ -2,6 +2,7 @@ import sys
 import logging
 import hjson as json
 import subprocess, os
+from pathlib import Path
 from pprint import pprint
 
 import click
@@ -10,8 +11,6 @@ import click
 from .dbc_reader import read_dbc, init
 from .dbc_writer import write_dbc
 from .c_generator import c_gen
-from .gui import gui
-from .gui2 import gui2
 from .validator import validate, format_error
 from .spec import Spec
 from .docs import generate_docs
@@ -190,18 +189,21 @@ def gui_cmd(file: str):
     """Launch FCP json editor GUI.
     :param file: Optional FCP json file path
     """
+
+    from .gui import gui
     logger = setup_logging()
     gui(file, logger)
 
 
 @click.command(name="gui2")
-@click.argument("file", required=False)
-def gui_cmd2(file: str):
+@click.argument("file", type=Path, required=False)
+def gui_cmd2(file: Path):
     """Launch FCP json editor GUI.
     :param file: Optional FCP json file path
     """
-    logger = setup_logging()
-    gui2(file, logger)
+
+    from .gui2 import gui2
+    gui2(file)
 
 @click.command()
 @click.argument("json_file")
