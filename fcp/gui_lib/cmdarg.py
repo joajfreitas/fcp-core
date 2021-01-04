@@ -37,7 +37,6 @@ class Ui_CmdArg(object):
 
         self.horizontalLayout_2.addWidget(self.idEdit)
 
-
         self.verticalLayout_3.addLayout(self.horizontalLayout_2)
 
         self.horizontalLayout = QHBoxLayout()
@@ -51,7 +50,6 @@ class Ui_CmdArg(object):
         self.nameEdit.setObjectName(u"nameEdit")
 
         self.horizontalLayout.addWidget(self.nameEdit)
-
 
         self.verticalLayout_3.addLayout(self.horizontalLayout)
 
@@ -67,7 +65,6 @@ class Ui_CmdArg(object):
 
         self.horizontalLayout_3.addWidget(self.commentEdit)
 
-
         self.verticalLayout_3.addLayout(self.horizontalLayout_3)
 
         self.deleteArgButton = QPushButton(self.groupBox)
@@ -75,13 +72,12 @@ class Ui_CmdArg(object):
 
         self.verticalLayout_3.addWidget(self.deleteArgButton)
 
-
         self.verticalLayout_2.addWidget(self.groupBox)
-
 
         self.retranslateUi(CmdArg)
 
         QMetaObject.connectSlotsByName(CmdArg)
+
     # setupUi
 
     def retranslateUi(self, CmdArg):
@@ -89,7 +85,11 @@ class Ui_CmdArg(object):
         self.groupBox.setTitle(QCoreApplication.translate("CmdArg", u"Argument", None))
         self.idLabel.setText(QCoreApplication.translate("CmdArg", u"id", None))
         self.nameLabel.setText(QCoreApplication.translate("CmdArg", u"name", None))
-        self.commentLabel.setText(QCoreApplication.translate("CmdArg", u"comment", None))
-        self.deleteArgButton.setText(QCoreApplication.translate("CmdArg", u"Delete", None))
-    # retranslateUi
+        self.commentLabel.setText(
+            QCoreApplication.translate("CmdArg", u"comment", None)
+        )
+        self.deleteArgButton.setText(
+            QCoreApplication.translate("CmdArg", u"Delete", None)
+        )
 
+    # retranslateUi

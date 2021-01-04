@@ -13,6 +13,7 @@ from .dirs import get_config_dir
 
 ConfigBase = declarative_base()
 
+
 class File(ConfigBase):
     __tablename__ = "files"
 
@@ -31,12 +32,12 @@ class File(ConfigBase):
 
     def access(session, path: Path):
         if not File.exists(session, path):
-            file = File(path = str(path), time_used = time.time())
+            file = File(path=str(path), time_used=time.time())
             session.add(file)
 
-        session.execute(update(File)
-                 .where(File.path == str(path))
-                 .values(time_used=time.time()))
+        session.execute(
+            update(File).where(File.path == str(path)).values(time_used=time.time())
+        )
 
         session.commit()
 
@@ -45,6 +46,7 @@ def config_session():
     config = Path(get_config_dir()) / "config"
     return create_session(config, ConfigBase)
 
+
 def main():
     session = config_session()
 
@@ -52,7 +54,5 @@ def main():
     session.commit()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-
-

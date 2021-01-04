@@ -1,6 +1,7 @@
 import os
 from jinja2 import Template
 
+
 class Tpl:
     def __init__(self, logger, template_dir):
         self.files = {}
@@ -12,7 +13,7 @@ class Tpl:
             "can_ids_c.jinja",
             "common_c.jinja",
             "common_h.jinja",
-            "enums_h.jinja"
+            "enums_h.jinja",
         ]
 
         self.template_dir = template_dir
@@ -38,7 +39,7 @@ class Tpl:
             expand_files[k] = os.path.join(self.template_dir, k)
 
         return expand_files
-    
+
     def render(self, name, *args, **kwargs):
         template = self.tpl.get(name)
         if template == None:

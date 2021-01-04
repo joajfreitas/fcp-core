@@ -83,12 +83,12 @@ def markdown(spec, root):
             device += f"### {cmd.id}. {cmd.name}\n"
             if not cmd.comment == "":
                 device += f"_{cmd.comment}_\n"
-            
+
             if len(cmd.args) > 0:
                 device += "\n#### Arguments\n"
                 for arg in cmd.args.values():
                     device += f" * {arg.name} ({arg.id}): {arg.type}\n"
-            
+
             if len(cmd.rets) > 0:
                 device += "\n#### Returns\n"
                 for ret in cmd.rets.values():
@@ -175,7 +175,7 @@ end
 
     with open(os.path.join(out, "links-to-html.lua"), "w") as _f:
         _f.write(links_to_html)
-    
+
     os.system(f"cd {out}; ./build.sh")
 
     logger.info("Done")

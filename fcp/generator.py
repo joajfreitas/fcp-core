@@ -69,11 +69,13 @@ def dst_type_decide(signal: Signal):
     elif signal.length <= 64:
         return "uint64_t"
 
+
 def enum_endianess(signal):
     if signal.byte_order == "big_endian":
         return "BIG"
     else:
         return "LITTLE"
+
 
 def enum_type(signal):
     return signal.type.upper()
@@ -82,7 +84,7 @@ def enum_type(signal):
 def build_devices(spec, device, tpl):
     mux_counts = 0
 
-    f_msgs : List[Message] = [msg for msg in device.msgs.values() if msg.frequency != 0]
+    f_msgs: List[Message] = [msg for msg in device.msgs.values() if msg.frequency != 0]
 
     for message in device.msgs.values():
         message.multiplexor = ""
@@ -97,7 +99,7 @@ def build_devices(spec, device, tpl):
                 message.multiplexor = signal.mux
             if signal.mux_count != 1:
                 message.mux_count = signal.mux_count
-    
+
     for f_msg in f_msgs:
         if f_msg.mux_count != 0:
             mux_counts += 1
@@ -106,16 +108,18 @@ def build_devices(spec, device, tpl):
 
     device.signature = device_struct_sig(device)
 
-    h = tpl.render("h.jinja", device=device, date=date(), mux_counts = mux_counts, f_msgs=f_msgs)
-    c = tpl.render("c.jinja",
+    h = tpl.render(
+        "h.jinja", device=device, date=date(), mux_counts=mux_counts, f_msgs=f_msgs
+    )
+    c = tpl.render(
+        "c.jinja",
         device=device,
         date=date(),
-        f_msgs = f_msgs,
-        mux_counts = mux_counts,
+        f_msgs=f_msgs,
+        mux_counts=mux_counts,
     )
 
-    return [(device.name+"_can.h", h),
-            (device.name+"_can.c", c)]
+    return [(device.name + "_can.h", h), (device.name + "_can.c", c)]
 
 
 def build_can_ids(spec, tpl):
@@ -128,22 +132,23 @@ def build_can_ids(spec, tpl):
     spec.common.signature = device_struct_sig(spec.common)
 
     logs = list(sorted(spec.logs.values(), key=lambda x: x.id))
-    can_ids_h = tpl.render("can_ids_h.jinja",
+    can_ids_h = tpl.render(
+        "can_ids_h.jinja",
         devices=sorted(spec.devices.values(), key=lambda x: x.id),
         spec=spec,
         logs=logs,
         date=date(),
     )
 
-    can_ids_c = tpl.render("can_ids_c.jinja", 
+    can_ids_c = tpl.render(
+        "can_ids_c.jinja",
         devices=sorted(spec.devices.values(), key=lambda x: x.id),
         spec=spec,
         logs=logs,
         date=date(),
     )
 
-    return [("can_ids.c", can_ids_c), 
-            ("can_ids.h", can_ids_h)]
+    return [("can_ids.c", can_ids_c), ("can_ids.h", can_ids_h)]
 
 
 def build_common(spec, tpl):
@@ -161,14 +166,17 @@ def build_common(spec, tpl):
     build_msg_sig(spec.common)
     spec.common.signature = device_struct_sig(spec.common)
 
-    common_c = tpl.render("common_c.jinja", spec=spec, date=date(), mux_counts=mux_counts)
-    common_h = tpl.render("common_h.jinja", spec=spec, date=date(), mux_counts=mux_counts)
+    common_c = tpl.render(
+        "common_c.jinja", spec=spec, date=date(), mux_counts=mux_counts
+    )
+    common_h = tpl.render(
+        "common_h.jinja", spec=spec, date=date(), mux_counts=mux_counts
+    )
 
-    return [("common.c", common_c),
-            ("common.h", common_h)]
+    return [("common.c", common_c), ("common.h", common_h)]
+
 
 def build_enums(spec, tpl):
     enums_h = tpl.render("enums_h.jinja", spec=spec, date=date())
-    
+
     return [("can_enums.h", enums_h)]
-    

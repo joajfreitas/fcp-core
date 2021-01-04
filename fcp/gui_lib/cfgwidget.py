@@ -47,18 +47,23 @@ class Ui_CfgWidget(object):
 
         self.verticalLayout_3.addWidget(self.addCfgButton)
 
-
         self.verticalLayout.addWidget(self.groupBox)
-
 
         self.retranslateUi(CfgWidget)
 
         QMetaObject.connectSlotsByName(CfgWidget)
+
     # setupUi
 
     def retranslateUi(self, CfgWidget):
-        CfgWidget.setWindowTitle(QCoreApplication.translate("CfgWidget", u"CfgWidget", None))
-        self.groupBox.setTitle(QCoreApplication.translate("CfgWidget", u"Configs", None))
-        self.addCfgButton.setText(QCoreApplication.translate("CfgWidget", u"Add Cfg", None))
-    # retranslateUi
+        CfgWidget.setWindowTitle(
+            QCoreApplication.translate("CfgWidget", u"CfgWidget", None)
+        )
+        self.groupBox.setTitle(
+            QCoreApplication.translate("CfgWidget", u"Configs", None)
+        )
+        self.addCfgButton.setText(
+            QCoreApplication.translate("CfgWidget", u"Add Cfg", None)
+        )
 
+    # retranslateUi

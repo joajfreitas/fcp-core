@@ -128,6 +128,7 @@ def signal_mux_count(sig):
     if int(sig.mux_count) == 0:
         return fail_msg(sig, f"Mux count *cannot* be 0")
 
+
 @check_decorator("msg")
 def msg_mux(msg):
     muxeds = [signal.mux for signal in msg.signals.values() if signal.mux != ""]
@@ -140,7 +141,7 @@ def msg_mux(msg):
 
     if 2 ** mux.length < mux.mux_count:
         return fail_msg(msg, f"Mux cannot fit all possible multiplexed values")
-    
+
 
 @check_decorator("msg")
 def msg_name(msg):
@@ -164,7 +165,6 @@ def msg_dlc(msg):
 def msg_frequency(msg):
     if msg.frequency < 0:
         return fail_msg(msg, f"Message frequency is not valid: {msg.frequency}")
-
 
 
 @check_decorator("msg")
@@ -198,7 +198,6 @@ def dev_overlapping_msg_ids(dev):
 
     if len(ids_set) != len(ids):
         return fail_msg(dev, f"Device has overlapping msg ids")
-
 
 
 @check_decorator("log")
@@ -257,6 +256,7 @@ def spec_overlapping_dev_ids(spec):
     if len(ids_set) != len(ids):
         return fail_msg(spec, f"There are overlapping device ids")
 
+
 @check_decorator("spec")
 def spec_same_name_configs(spec):
     cfgs = []
@@ -271,7 +271,11 @@ def spec_same_name_configs(spec):
             cfgs_set.add(cfg)
 
     if len(cfgs_set) != 0:
-        return fail_msg(spec, "There are overlapping config names [{}]".format(", ".join(cfgs_set)), level="warning")
+        return fail_msg(
+            spec,
+            "There are overlapping config names [{}]".format(", ".join(cfgs_set)),
+            level="warning",
+        )
 
 
 @check_decorator("spec")
@@ -288,7 +292,12 @@ def spec_same_name_commands(spec):
             cmds_set.add(cmd)
 
     if len(cmds_set) != 0:
-        return fail_msg(spec, "There are overlapping command names [{}]".format(", ".join(cmds_set)), level="warning")
+        return fail_msg(
+            spec,
+            "There are overlapping command names [{}]".format(", ".join(cmds_set)),
+            level="warning",
+        )
+
 
 def spec_repeated_names(spec):
     def get_signal_names(spec):
@@ -341,6 +350,7 @@ def validate(logger, spec):
             failed += check("cmd", cmd)
 
     return failed
+
 
 def format_error(level, message):
     if level == "warning":

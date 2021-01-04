@@ -36,12 +36,13 @@ def check_output(output):
 def write_files(output, files):
     def gen_output(d):
         return os.path.join(output, d)
-    
+
     for name, content in files:
         if content == "":
             continue
         with open(gen_output(name), "w") as f:
             f.write(content)
+
 
 def check_version(j, logger):
     version = j.get("version")

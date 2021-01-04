@@ -51,23 +51,25 @@ class Ui_EnumValue(object):
 
         self.horizontalLayout_2.addWidget(self.enumDeleteButton)
 
-
         self.verticalLayout_2.addLayout(self.horizontalLayout_2)
 
-
         self.verticalLayout.addWidget(self.groupBox)
-
 
         self.retranslateUi(EnumValue)
 
         QMetaObject.connectSlotsByName(EnumValue)
+
     # setupUi
 
     def retranslateUi(self, EnumValue):
-        EnumValue.setWindowTitle(QCoreApplication.translate("EnumValue", u"EnumDetails", None))
+        EnumValue.setWindowTitle(
+            QCoreApplication.translate("EnumValue", u"EnumDetails", None)
+        )
         self.groupBox.setTitle("")
         self.nameLabel.setText(QCoreApplication.translate("EnumValue", u"name", None))
         self.valueLabel.setText(QCoreApplication.translate("EnumValue", u"value", None))
-        self.enumDeleteButton.setText(QCoreApplication.translate("EnumValue", u"Delete", None))
-    # retranslateUi
+        self.enumDeleteButton.setText(
+            QCoreApplication.translate("EnumValue", u"Delete", None)
+        )
 
+    # retranslateUi

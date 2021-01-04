@@ -16,7 +16,7 @@ def make_dict():
 
 
 def normalize(xs: Dict[str, Any], key: Callable[[Any], str] = None):
-    """ Update xs dictionary keys according to key. 
+    """Update xs dictionary keys according to key.
         By default key is `lambda x : x.name`
 
     :param xs: Dictionary containing spec node
@@ -38,7 +38,7 @@ def normalize(xs: Dict[str, Any], key: Callable[[Any], str] = None):
 
 
 class Log:
-    """ Log protocol node.
+    """Log protocol node.
 
     :param id: Log integer identifier.
     :param name: Name of the Log node.
@@ -59,7 +59,7 @@ class Log:
         self.parent = parent
         assert self.parent is not None
 
-        c = max([log.id for log in self.parent.logs.values()]+[0]) + 1
+        c = max([log.id for log in self.parent.logs.values()] + [0]) + 1
         self.id = id or c
         self.name = name
         self.n_args = n_args
@@ -69,7 +69,7 @@ class Log:
         self.creation_date = datetime.datetime.now()
 
     def compile(self) -> Dict[str, Any]:
-        """ Transform python class node to its dictionary representation.
+        """Transform python class node to its dictionary representation.
 
         :return: A dictionary containing the node parameters
         """
@@ -80,7 +80,7 @@ class Log:
         return d
 
     def decompile(self, d: Dict[str, Any]) -> None:
-        """ Transform node dictionary representation into a python class.
+        """Transform node dictionary representation into a python class.
 
         :param d: Node dictionary
         """
@@ -135,19 +135,22 @@ class Log:
         return hash((self.name, self.id, self.creation_date))
 
     def __repr__(self):
-        return "name: {}, id: {}, string: {}, n_args: {}, comment: {}".format(self.name, self.id, self.string, self.n_args, self.comment)
+        return "name: {}, id: {}, string: {}, n_args: {}, comment: {}".format(
+            self.name, self.id, self.string, self.n_args, self.comment
+        )
+
 
 class EnumValue:
-    """ Fcp EnumValue. C lookalike for FCP type definitions with name-value
+    """Fcp EnumValue. C lookalike for FCP type definitions with name-value
     associations.
     """
 
     def __init__(self, parent: "Enum" = None) -> None:
         self.parent = parent
-        
+
         assert self.parent is not None
 
-        c = max([value.value for value in self.parent.enumeration.values()] + [0])+1
+        c = max([value.value for value in self.parent.enumeration.values()] + [0]) + 1
         self.name = ""
         self.value = c
 
@@ -160,12 +163,12 @@ class EnumValue:
         return d
 
     def decompile(self, d: Dict[str, Any]) -> None:
-        """ Transform node dictionary representation into a python class.
+        """Transform node dictionary representation into a python class.
 
         :param d: Node dictionary
         """
         self.__dict__.update(d)
-    
+
     def get_name(self) -> str:
         return self.name
 
@@ -184,8 +187,9 @@ class EnumValue:
     def __repr__(self):
         return "name: {}".format(self.name)
 
+
 class Enum:
-    """ Fcp Enum. C lookalike for FCP type definitions with name-value
+    """Fcp Enum. C lookalike for FCP type definitions with name-value
     associations.
     """
 
@@ -208,16 +212,16 @@ class Enum:
         return d
 
     def decompile(self, d: Dict[str, Any]) -> None:
-        """ Transform node dictionary representation into a python class.
+        """Transform node dictionary representation into a python class.
 
         :param d: Node dictionary
         """
         enumeration = d["enumeration"]
         del d["enumeration"]
-        
+
         self.__dict__.update(d)
 
-        for k,v in enumeration.items():
+        for k, v in enumeration.items():
             enum_value = EnumValue(self)
             enum_value.decompile(v)
             self.enumeration[k] = enum_value
@@ -233,7 +237,7 @@ class Enum:
 
     def set_value(self, name: int) -> None:
         self.value = int(value)
-    
+
     def normalize(self):
         normalize(self.enumeration)
 
@@ -243,8 +247,9 @@ class Enum:
     def __repr__(self):
         return "name: {}".format(self.name)
 
+
 class Spec:
-    """ FCP root node. Holds all Devices, Messages, Signals, Logs, Configs,
+    """FCP root node. Holds all Devices, Messages, Signals, Logs, Configs,
     Commands and Arguments.
     """
 
@@ -256,9 +261,9 @@ class Spec:
         self.version = "0.2"
         self.parent = None
         self.name = ""
-    
+
     def add_device(self, device: "Device") -> bool:
-        """ Add a Device to Spec. 
+        """Add a Device to Spec.
 
         :param device: Device to be added
         :return: Operation success status: True - Success, False - Failure
@@ -274,7 +279,7 @@ class Spec:
         return True
 
     def add_enum(self, enum: "Enum") -> bool:
-        """ Add a Enum to Spec. 
+        """Add a Enum to Spec.
 
         :param enum: Enum to be added
         :return: Operation success status: True - Success, False - Failure
@@ -291,7 +296,7 @@ class Spec:
         return True
 
     def add_log(self, log: "Log") -> bool:
-        """ Add a Log to Spec. 
+        """Add a Log to Spec.
 
         :param log: Log to be added
         :return: Operation success status: True - Success, False - Failure
@@ -306,8 +311,9 @@ class Spec:
         self.logs[log.name] = log
 
         return True
+
     def get_device(self, name: str) -> Optional["Device"]:
-        """ Get a Device from Spec by its name.
+        """Get a Device from Spec by its name.
 
         :param name: Device name.
         :return: Device or None if not found.
@@ -315,7 +321,7 @@ class Spec:
         return self.devices.get(name)
 
     def get_log(self, name: str) -> Optional["Log"]:
-        """ Get a Log from Spec by its name.
+        """Get a Log from Spec by its name.
 
         :param name: Log name.
         :return: Log or None if not found.
@@ -323,7 +329,7 @@ class Spec:
         return self.logs.get(name)
 
     def rm_node(self, node: Any) -> None:
-        """ Remove a node from Spec.
+        """Remove a node from Spec.
 
         :param node: node to be removed.
         """
@@ -345,7 +351,7 @@ class Spec:
             self.rm_enum_value(node)
 
     def rm_device(self, device: "Device") -> None:
-        """ Remove a Device from Spec.
+        """Remove a Device from Spec.
 
         :param device: Device to be removed.
         """
@@ -355,7 +361,7 @@ class Spec:
             del self.devices[name]
 
     def rm_message(self, message: "Message") -> None:
-        """ Remove a Message from Spec.
+        """Remove a Message from Spec.
 
         :param message: Message to be removed.
         """
@@ -369,11 +375,10 @@ class Spec:
                 dev.rm_msg(name)
 
     def rm_signal(self, signal: "Signal") -> None:
-        """ Remove a Signal from Spec.
+        """Remove a Signal from Spec.
 
         :param signal: Signal to be removed.
         """
-
 
         for dev in self.devices.values():
             for msg in dev.msgs.values():
@@ -387,11 +392,10 @@ class Spec:
                     msg.rm_signal(name)
 
     def rm_config(self, config: "Config") -> None:
-        """ Remove a Config from Spec.
+        """Remove a Config from Spec.
 
         :param config: Config to be removed.
         """
-
 
         for dev in self.devices.values():
             cfgs = []
@@ -403,11 +407,10 @@ class Spec:
                 dev.rm_cfg(name)
 
     def rm_cmd(self, command: "Command") -> None:
-        """ Remove a Command from Spec.
+        """Remove a Command from Spec.
 
         :param command: Command to be removed.
         """
-
 
         for dev in self.devices.values():
             cmds = []
@@ -419,7 +422,7 @@ class Spec:
                 dev.rm_cmd(name)
 
     def rm_log(self, log):
-        """ Remove a Log from Spec.
+        """Remove a Log from Spec.
 
         :param log: Log to be removed.
         """
@@ -433,7 +436,7 @@ class Spec:
             del self.logs[name]
 
     def rm_enum(self, enum):
-        """ Remove a Enum from Spec.
+        """Remove a Enum from Spec.
 
         :param log: Enum to be removed.
         """
@@ -447,7 +450,7 @@ class Spec:
             del self.enums[name]
 
     def rm_enum_value(self, enum_value):
-        """ Remove a Enum from Spec.
+        """Remove a Enum from Spec.
 
         :param log: EnumValue to be removed.
         """
@@ -462,7 +465,7 @@ class Spec:
                 del e.enumeration[name]
 
     def compile(self) -> Dict[str, Any]:
-        """ Transform python class node to its dictionary representation.
+        """Transform python class node to its dictionary representation.
 
         :return: A dictionary containing the node parameters
         """
@@ -485,7 +488,7 @@ class Spec:
         return d
 
     def decompile(self, d: Dict[str, Any]) -> None:
-        """ Transform node dictionary representation into a python class.
+        """Transform node dictionary representation into a python class.
 
         :param d: Node dictionary
         """
@@ -493,17 +496,17 @@ class Spec:
         self.devices = {}
         self.logs = {}
         self.common.decompile(d["common"])
-        
+
         for k, v in handle_key_not_found(d, "devices"):
             dev = Device(self)
             dev.decompile(v)
             self.devices[k] = dev
-        
+
         for k, v in handle_key_not_found(d, "logs"):
             log = Log(self)
             log.decompile(v)
             self.logs[k] = log
-       
+
         for k, v in handle_key_not_found(d, "enums"):
             enum = Enum(self)
             enum.decompile(v)
@@ -536,7 +539,7 @@ class Spec:
                     sig_count += 1
 
         return f"(Spec: {len(self.devices)}, {msg_count}, {sig_count})"
-        #for device in self.devices.values():
+        # for device in self.devices.values():
         #    out += ""
         #    out += str(device)
         #    out += "\n"
@@ -545,9 +548,9 @@ class Spec:
 
 
 class Signal:
-    """ 
+    """
     Signal node. Represents a CAN signal, similar to a DBC signal.
-            
+
     :param name: Name of the Signal.
     :param start: Start bit
     :param length: Signal bit size.
@@ -582,10 +585,17 @@ class Signal:
         mux_count: int = 1,
         alias: str = "",
     ):
-        
+
         assert parent is not None
         self.parent = parent
-        m = max([int(sig.name[3:]) for sig in self.parent.signals.values() if sig.name.startswith("sig")] + [0])
+        m = max(
+            [
+                int(sig.name[3:])
+                for sig in self.parent.signals.values()
+                if sig.name.startswith("sig")
+            ]
+            + [0]
+        )
         self.name = name or ("sig" + str(m + 1))
         self.start = start
         self.length = length
@@ -730,7 +740,7 @@ class Signal:
         return self.alias
 
     def compile(self) -> Dict[str, Any]:
-        """ Transform python class node to its dictionary representation.
+        """Transform python class node to its dictionary representation.
 
         :return: A dictionary containing the node parameters
         """
@@ -741,7 +751,7 @@ class Signal:
         return d
 
     def decompile(self, d: Dict[str, Any]) -> None:
-        """ Transform node dictionary representation into a python class.
+        """Transform node dictionary representation into a python class.
 
         :param d: Node dictionary
         """
@@ -766,21 +776,36 @@ class Signal:
         mux: {}, 
         mux_count: {}
     }
-    """.format(self.name, self.start, self.length, self.scale, self.offset, self.unit, self.comment, self.min_value, self.max_value, self.type, self.byte_order, self.mux,self.mux_count)
+    """.format(
+            self.name,
+            self.start,
+            self.length,
+            self.scale,
+            self.offset,
+            self.unit,
+            self.comment,
+            self.min_value,
+            self.max_value,
+            self.type,
+            self.byte_order,
+            self.mux,
+            self.mux_count,
+        )
+
 
 #    def __repr__(self):
 #        return ""
 
 
 class Message:
-    """ Message node, Represents a CAN message, similar to a DBC message.
-        
-        :param name: Name of the Message.
-        :param id: FST Message identifier, highest 6 bits of the identifier.
-        :param dlc: Message DLC.
-        :param signals: Dictionary containing the Message signals.
-        :param frequency: Transmission period in millisecond. If 0 message
-        isn't automatically sent. 
+    """Message node, Represents a CAN message, similar to a DBC message.
+
+    :param name: Name of the Message.
+    :param id: FST Message identifier, highest 6 bits of the identifier.
+    :param dlc: Message DLC.
+    :param signals: Dictionary containing the Message signals.
+    :param frequency: Transmission period in millisecond. If 0 message
+    isn't automatically sent.
     """
 
     def __init__(
@@ -793,9 +818,9 @@ class Message:
         frequency: int = 0,
         description: str = "",
     ):
-        
+
         self.parent = parent
-        assert self.parent is not None 
+        assert self.parent is not None
 
         c = max([msg.id for msg in self.parent.msgs.values()] + [0]) + 1
         self.id = id or c
@@ -854,7 +879,7 @@ class Message:
         return self.description
 
     def compile(self) -> Dict[str, Any]:
-        """ Transform python class node to its dictionary representation.
+        """Transform python class node to its dictionary representation.
 
         :return: A dictionary containing the node parameters
         """
@@ -870,7 +895,7 @@ class Message:
         return d
 
     def decompile(self, d: Dict[str, Any]) -> None:
-        """ Transform node dictionary representation into a python class.
+        """Transform node dictionary representation into a python class.
 
         :param d: Node dictionary
         """
@@ -884,7 +909,7 @@ class Message:
             self.signals[key] = sig
 
     def add_signal(self, signal: Signal) -> bool:
-        """ Add a Signal to Message. 
+        """Add a Signal to Message.
 
         :param signal: Signal to be added
         :return: Operation success status: True - Success, False - Failure
@@ -902,7 +927,7 @@ class Message:
         return True
 
     def get_signal(self, name: str) -> Optional[Signal]:
-        """ Get a Signal from Message by its name.
+        """Get a Signal from Message by its name.
 
         :param name: Signal name.
         :return: Signal or None if not found.
@@ -911,15 +936,15 @@ class Message:
         return self.signals.get(name)
 
     def rm_signal(self, name: str) -> bool:
-        """ Remove a Signal from Spec.
+        """Remove a Signal from Spec.
 
         :param signal: Signal to be removed.
         """
         if self.get_signal(name) is None:
             print("Not found", name)
             return False
-        
-        print("deleting signal") 
+
+        print("deleting signal")
         del self.signals[name]
         return True
 
@@ -945,14 +970,21 @@ class Message:
 
 
 class Argument:
-    """ Argument node. Represents a Command Argument.
+    """Argument node. Represents a Command Argument.
 
     :param name: Name of the Argument.
     :param id: Argument identifier.
     :param comment: description of the Argument.
     """
 
-    def __init__(self, parent: "Command" = None, name: str = "", id: int = 0, comment: str = "", type: str = "unsigned"):
+    def __init__(
+        self,
+        parent: "Command" = None,
+        name: str = "",
+        id: int = 0,
+        comment: str = "",
+        type: str = "unsigned",
+    ):
         self.parent = parent
         self.name = name
         self.id = id
@@ -995,7 +1027,7 @@ class Argument:
         self.type = type
 
     def compile(self) -> Dict[str, Any]:
-        """ Transform python class node to its dictionary representation.
+        """Transform python class node to its dictionary representation.
 
         :return: A dictionary containing the node parameters
         """
@@ -1006,7 +1038,7 @@ class Argument:
         return d
 
     def decompile(self, d: Dict[str, Any]) -> None:
-        """ Transform node dictionary representation into a python class.
+        """Transform node dictionary representation into a python class.
 
         :param d: Node dictionary
         """
@@ -1014,7 +1046,7 @@ class Argument:
 
 
 class Command:
-    """ Command node. Represents a Command.
+    """Command node. Represents a Command.
 
     :param name: Name of the Command.
     :param n_args: Number of arguments in the Command.
@@ -1034,10 +1066,10 @@ class Command:
         args: Dict[str, Argument] = None,
         rets: Dict[str, Argument] = None,
     ):
-        
+
         self.parent = parent
         assert self.parent is not None
-        
+
         c = max([cmd.id for cmd in self.parent.cmds.values()] + [0]) + 1
 
         self.name = name
@@ -1086,7 +1118,7 @@ class Command:
             return
 
     def compile(self) -> Dict[str, Any]:
-        """ Transform python class node to its dictionary representation.
+        """Transform python class node to its dictionary representation.
 
         :return: A dictionary containing the node parameters
         """
@@ -1109,7 +1141,7 @@ class Command:
         return att
 
     def add_arg(self, arg: Argument) -> None:
-        """ Add a input Argument to Command. 
+        """Add a input Argument to Command.
 
         :param arg: Argument to be added
         :return: Operation success status: True - Success, False - Failure
@@ -1117,7 +1149,7 @@ class Command:
         self.args[arg.name] = arg
 
     def add_ret(self, ret: Argument) -> None:
-        """ Add a output Argument to Command. 
+        """Add a output Argument to Command.
 
         :param ret: Argument to be added
         :return: Operation success status: True - Success, False - Failure
@@ -1125,7 +1157,7 @@ class Command:
         self.rets[ret.name] = ret
 
     def decompile(self, d: Dict[str, Any]) -> None:
-        """ Transform node dictionary representation into a python class.
+        """Transform node dictionary representation into a python class.
 
         :param d: Node dictionary
         """
@@ -1148,7 +1180,6 @@ class Command:
             ret.decompile(ret_v)
             self.rets[ret_k] = ret
 
-
     def normalize(self):
         return
 
@@ -1157,14 +1188,21 @@ class Command:
 
 
 class Config:
-    """ Config node. Represents a Config.
+    """Config node. Represents a Config.
 
     :param name: Name of the Config.
     :param id: Config identifier.
     :param comment: description of the Config.
     """
 
-    def __init__(self, parent: "Device" = None, name: str = "", id: int = 0, comment: str = "", type: str = "unsigned"):
+    def __init__(
+        self,
+        parent: "Device" = None,
+        name: str = "",
+        id: int = 0,
+        comment: str = "",
+        type: str = "unsigned",
+    ):
         self.parent = parent
         self.name = name
         self.id = int(id)
@@ -1207,7 +1245,7 @@ class Config:
         self.type = type
 
     def compile(self) -> Dict[str, Any]:
-        """ Transform python class node to its dictionary representation.
+        """Transform python class node to its dictionary representation.
 
         :return: A dictionary containing the node parameters
         """
@@ -1218,7 +1256,7 @@ class Config:
         return d
 
     def decompile(self, d: Dict[str, Any]) -> None:
-        """ Transform node dictionary representation into a python class.
+        """Transform node dictionary representation into a python class.
 
         :param d: Node dictionary
         """
@@ -1233,14 +1271,14 @@ class Config:
 
 
 class Device:
-    """ Device node, Represents a CAN device.
-        
-        :param name: Name of the Device.
-        :param id: FST Device identifier, lowest 5 bits of the identifier.
-        :param msgs: Dictionary containing the Device messages.
-        :param cmds: Dictionary containing the Device commands.
-        :param cfgs: Dictionary containing the Device configs.
-        isn't automatically sent. 
+    """Device node, Represents a CAN device.
+
+    :param name: Name of the Device.
+    :param id: FST Device identifier, lowest 5 bits of the identifier.
+    :param msgs: Dictionary containing the Device messages.
+    :param cmds: Dictionary containing the Device commands.
+    :param cfgs: Dictionary containing the Device configs.
+    isn't automatically sent.
     """
 
     def __init__(
@@ -1252,7 +1290,7 @@ class Device:
         cmds: Dict[str, Command] = None,
         cfgs: Dict[str, Config] = None,
     ):
-        
+
         self.parent = parent
         assert self.parent is not None
         c = max([dev.id for dev in self.parent.devices.values()] + [0]) + 1
@@ -1290,7 +1328,7 @@ class Device:
         self.cfgs[cfg.name] = cfg
 
     def compile(self) -> Dict[str, Any]:
-        """ Transform python class node to its dictionary representation.
+        """Transform python class node to its dictionary representation.
 
         :return: A dictionary containing the node parameters
         """
@@ -1318,7 +1356,7 @@ class Device:
         return att
 
     def decompile(self, d: Dict[str, Any]) -> None:
-        """ Transform node dictionary representation into a python class.
+        """Transform node dictionary representation into a python class.
 
         :param d: Node dictionary
         """
@@ -1348,7 +1386,7 @@ class Device:
             self.cfgs[k] = cfg
 
     def add_msg(self, msg: Message) -> bool:
-        """ Add a Message to Device. 
+        """Add a Message to Device.
 
         :param msg: Message to be added.
         :return: Operation success status: True - Success, False - Failure
@@ -1364,7 +1402,7 @@ class Device:
         return True
 
     def get_msg(self, name: str) -> Optional[Message]:
-        """ Get a Message from Device by its name.
+        """Get a Message from Device by its name.
 
         :param name: Message name.
         :return: Message or None if not found.
@@ -1372,7 +1410,7 @@ class Device:
         return self.msgs.get(name)
 
     def rm_msg(self, name: str) -> bool:
-        """ Remove a Message from Device.
+        """Remove a Message from Device.
 
         :param name: Name of the Message to be removed.
         """
@@ -1383,7 +1421,7 @@ class Device:
         return True
 
     def get_cmd(self, name: str) -> Optional[Command]:
-        """ Get a Command from Device by its name.
+        """Get a Command from Device by its name.
 
         :param name: Command name.
         :return: Command or None if not found.
@@ -1391,7 +1429,7 @@ class Device:
         return self.cmds.get(name)
 
     def rm_cmd(self, name: str) -> bool:
-        """ Remove a Command from Device.
+        """Remove a Command from Device.
 
         :param name: Name of the Command to be removed.
         """
@@ -1402,7 +1440,7 @@ class Device:
         return True
 
     def get_cfg(self, name: str) -> Optional[Config]:
-        """ Get a Config from Device by its name.
+        """Get a Config from Device by its name.
 
         :param name: Config name.
         :return: Config or None if not found.
@@ -1410,7 +1448,7 @@ class Device:
         return self.cfgs.get(name)
 
     def rm_cfg(self, name: str) -> bool:
-        """ Remove a Config from Device.
+        """Remove a Config from Device.
 
         :param name: Name of the Config to be removed.
         """
@@ -1440,8 +1478,8 @@ class Device:
 
     def __repr__(self):
         return (
-    #name: {self.name}, 
-    #id: {self.id}
+            # name: {self.name},
+            # id: {self.id}
             "{"
             + f"""
     """
@@ -1497,7 +1535,7 @@ class Common:
         return True
 
     def compile(self) -> Dict[str, Any]:
-        """ Transform python class node to its dictionary representation.
+        """Transform python class node to its dictionary representation.
 
         :return: A dictionary containing the node parameters
         """
@@ -1513,7 +1551,7 @@ class Common:
         return att
 
     def decompile(self, d: Dict[str, Any]) -> None:
-        """ Transform node dictionary representation into a python class.
+        """Transform node dictionary representation into a python class.
 
         :param d: Node dictionary
         """
@@ -1529,7 +1567,6 @@ class Common:
 
     def __hash__(self):
         return hash((self.name, self.id, self.creation_date))
-
 
 
 def make_sid(dev_id: int, msg_id: int) -> int:

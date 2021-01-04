@@ -38,7 +38,6 @@ class Ui_MessageWidget(object):
 
         self.horizontalLayout_2.addWidget(self.id)
 
-
         self.verticalLayout.addLayout(self.horizontalLayout_2)
 
         self.horizontalLayout_3 = QHBoxLayout()
@@ -53,9 +52,7 @@ class Ui_MessageWidget(object):
 
         self.horizontalLayout_3.addWidget(self.frequency)
 
-
         self.verticalLayout.addLayout(self.horizontalLayout_3)
-
 
         self.horizontalLayout_4.addLayout(self.verticalLayout)
 
@@ -72,23 +69,28 @@ class Ui_MessageWidget(object):
 
         self.horizontalLayout_4.addWidget(self.messageDetailsButton)
 
-
         self.horizontalLayout.addWidget(self.groupBox)
-
 
         self.retranslateUi(MessageWidget)
 
         QMetaObject.connectSlotsByName(MessageWidget)
+
     # setupUi
 
     def retranslateUi(self, MessageWidget):
-        MessageWidget.setWindowTitle(QCoreApplication.translate("MessageWidget", u"MessageWidget", None))
+        MessageWidget.setWindowTitle(
+            QCoreApplication.translate("MessageWidget", u"MessageWidget", None)
+        )
         self.groupBox.setTitle("")
         self.name.setText("")
         self.id.setText("")
         self.dlc.setText("")
         self.frequency.setText("")
-        self.deleteButton.setText(QCoreApplication.translate("MessageWidget", u"\u2717", None))
-        self.messageDetailsButton.setText(QCoreApplication.translate("MessageWidget", u"...", None))
-    # retranslateUi
+        self.deleteButton.setText(
+            QCoreApplication.translate("MessageWidget", u"\u2717", None)
+        )
+        self.messageDetailsButton.setText(
+            QCoreApplication.translate("MessageWidget", u"...", None)
+        )
 
+    # retranslateUi

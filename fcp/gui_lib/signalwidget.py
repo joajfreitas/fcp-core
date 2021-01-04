@@ -43,9 +43,7 @@ class Ui_SignalWidget(object):
 
         self.horizontalLayout_4.addWidget(self.length)
 
-
         self.verticalLayout_2.addLayout(self.horizontalLayout_4)
-
 
         self.horizontalLayout_2.addLayout(self.verticalLayout_2)
 
@@ -62,22 +60,27 @@ class Ui_SignalWidget(object):
 
         self.horizontalLayout_2.addWidget(self.signalDetailsButton)
 
-
         self.horizontalLayout.addWidget(self.groupBox)
-
 
         self.retranslateUi(SignalWidget)
 
         QMetaObject.connectSlotsByName(SignalWidget)
+
     # setupUi
 
     def retranslateUi(self, SignalWidget):
-        SignalWidget.setWindowTitle(QCoreApplication.translate("SignalWidget", u"SignalWidget", None))
+        SignalWidget.setWindowTitle(
+            QCoreApplication.translate("SignalWidget", u"SignalWidget", None)
+        )
         self.groupBox.setTitle("")
         self.name.setText("")
         self.start.setText("")
         self.length.setText("")
-        self.deleteButton.setText(QCoreApplication.translate("SignalWidget", u"\u2717", None))
-        self.signalDetailsButton.setText(QCoreApplication.translate("SignalWidget", u"...", None))
-    # retranslateUi
+        self.deleteButton.setText(
+            QCoreApplication.translate("SignalWidget", u"\u2717", None)
+        )
+        self.signalDetailsButton.setText(
+            QCoreApplication.translate("SignalWidget", u"...", None)
+        )
 
+    # retranslateUi

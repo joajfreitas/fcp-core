@@ -18,7 +18,7 @@ from .version import VERSION
 
 
 def setup_logging() -> logging.Logger:
-    """ Setup Logger.
+    """Setup Logger.
 
     :return: logger object.
     """
@@ -52,6 +52,7 @@ def report_validate(failed):
 
     return False
 
+
 def get_spec(json_file: str, logger: logging.Logger) -> Spec:
     """Create Spec from json file path.
     :param json_file: path to the json file.
@@ -63,12 +64,10 @@ def get_spec(json_file: str, logger: logging.Logger) -> Spec:
     with open(json_file) as f:
         j = json.loads(f.read())
 
-
     spec.decompile(j)
     failed = validate(logger, spec)
     if report_validate(failed):
         exit()
-
 
     return spec
 
@@ -78,7 +77,7 @@ def get_spec(json_file: str, logger: logging.Logger) -> Spec:
 @click.argument("json_file")
 @click.argument("device_config")
 def read_dbc_cmd(dbc: str, json_file: str, device_config: str):
-    """ Transform a DBC file into FCP json.
+    """Transform a DBC file into FCP json.
     :param dbc: dbc file path.
     :param json_file: FCP json file path.
     :param device_config: json with device name configuration.
@@ -87,22 +86,22 @@ def read_dbc_cmd(dbc: str, json_file: str, device_config: str):
 
     ```json
     {
-	"0": "amk_0",
-	"1": "amk_1",
-	"2": "amk_2",
-	"3": "amk_3",
-	"8": "dcu",
-	"9": "te",
-	"10": "dash",
-	"13": "arm",
-	"14": "bms_master",
-	"15": "bms_verbose",
-	"16": "iib",
-	"20": "ahrsf",
-	"21": "ahrsr",
-	"22": "gpsf",
-	"23": "gpsr",
-	"29": "isa"
+        "0": "amk_0",
+        "1": "amk_1",
+        "2": "amk_2",
+        "3": "amk_3",
+        "8": "dcu",
+        "9": "te",
+        "10": "dash",
+        "13": "arm",
+        "14": "bms_master",
+        "15": "bms_verbose",
+        "16": "iib",
+        "20": "ahrsf",
+        "21": "ahrsr",
+        "22": "gpsf",
+        "23": "gpsr",
+        "29": "isa"
     }```
     """
     logger = setup_logging()
@@ -113,7 +112,7 @@ def read_dbc_cmd(dbc: str, json_file: str, device_config: str):
 @click.argument("json_file")
 @click.argument("dbc")
 def write_dbc_cmd(json_file: str, dbc: str):
-    """ Transform FCP json file into a DBC
+    """Transform FCP json file into a DBC
     :param json_file: FCP json file path.
     :param dbc: dbc file path.
     """
@@ -153,12 +152,12 @@ def c_gen_cmd(templates: str, output: str, json_file: str, skel: str, noformat: 
 @click.command(name="init")
 @click.argument("json_file")
 def init_cmd(json_file: str):
-    """Create a basic FCP json file. 
+    """Create a basic FCP json file.
     :param json_file: FCP json file path.
     """
 
     logger = setup_logging()
-    #init(json_file, logger)
+    # init(json_file, logger)
 
 
 @click.command(name="validate")
@@ -171,7 +170,7 @@ def validate_cmd(json_file: str):
     logger = setup_logging()
     with open(json_file) as f:
         j = json.loads(f.read())
- 
+
     spec = Spec()
     spec.decompile(j)
     failed = validate(logger, spec)
@@ -191,6 +190,7 @@ def gui_cmd(file: str):
     """
 
     from .gui import gui
+
     logger = setup_logging()
     gui(file, logger)
 
@@ -203,7 +203,9 @@ def gui_cmd2(file: Path):
     """
 
     from .gui2 import gui2
+
     gui2(file)
+
 
 @click.command()
 @click.argument("json_file")
@@ -287,6 +289,7 @@ def dump_signal_list(json_file, message):
             for signal in msg.signals.values():
                 print(signal)
 
+
 @click.command()
 @click.argument("json_file")
 @click.argument("message", required=False)
@@ -300,6 +303,7 @@ def dump_signal_names(json_file, message):
                 continue
             for signal in msg.signals.values():
                 print(signal.name)
+
 
 @click.command()
 @click.argument("json_file")
@@ -357,7 +361,7 @@ def print_signal(json_file, signal):
 @click.argument("out")
 @click.argument("link_location", required=False)
 def docs(json_file: str, out: str, link_location: str):
-    """ Generate FCP documentation. 
+    """Generate FCP documentation.
     :param json_file: FCP json file path.
     :param out: output directory.
     """
@@ -370,11 +374,12 @@ def docs(json_file: str, out: str, link_location: str):
     spec = get_spec(json_file, logger)
     generate_docs(spec, out, link_location, logger)
 
+
 @click.group(invoke_without_command=True)
 @click.option("--version", is_flag=True, default=False)
 def main(version):
     """CLI utility for managment of FCP JSON files. """
-        
+
     if len(sys.argv) == 1:
         print("fcp cli util.\nVersion:", VERSION, "\nFor usage see fcp --help")
     if version:
@@ -404,6 +409,3 @@ main.add_command(docs)
 
 if __name__ == "__main__":
     main()
-
-
-

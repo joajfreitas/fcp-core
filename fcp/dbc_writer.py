@@ -54,7 +54,7 @@ def make_signal(signal, mux_signals, dev_name):
     if signal.mux_count == 1:
         yield make_signal_closure(signal.name, signal, mux_signals, None)
         return
-   
+
     for i in range(signal.mux_count):
         yield make_signal_closure(signal.name + str(i), signal, mux_signals, [i])
 
@@ -85,7 +85,9 @@ def write_dbc(spec, dbc, logger):
                 for sig in make_signal(sig, mux_signals, dev_name):
                     signals.append(sig)
 
-            messages.append(CanMessage(id, msg.name, msg.dlc, signals, senders=[dev_name]))
+            messages.append(
+                CanMessage(id, msg.name, msg.dlc, signals, senders=[dev_name])
+            )
 
     db = CanDatabase(messages=messages, nodes=nodes)
     dump_file(db, dbc)

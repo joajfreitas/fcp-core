@@ -8,6 +8,7 @@ from math import *
 def bitmask(n):
     return 2 ** n - 1
 
+
 def test_bitmask():
     assert 0xF == bitmask(4)
 
@@ -18,9 +19,9 @@ def encode_signal(signal, value):
 
 
 def conv_endianess(value: int, signal: Signal):
-    length = signal.get_length()/8
+    length = signal.get_length() / 8
     log2_length = log2(length)
-    
+
     if length == 1:
         return value
 
@@ -31,17 +32,26 @@ def conv_endianess(value: int, signal: Signal):
         return value
 
     length = int(length)
+
     def swap64(x):
-        return int.from_bytes(value.to_bytes(8, byteorder='little'), byteorder='big', signed=False)
+        return int.from_bytes(
+            value.to_bytes(8, byteorder="little"), byteorder="big", signed=False
+        )
+
     def swap32(x):
-        return int.from_bytes(value.to_bytes(4, byteorder='little'), byteorder='big', signed=False)
+        return int.from_bytes(
+            value.to_bytes(4, byteorder="little"), byteorder="big", signed=False
+        )
+
     def swap16(x):
-        return int.from_bytes(value.to_bytes(2, byteorder='little'), byteorder='big', signed=False)
+        return int.from_bytes(
+            value.to_bytes(2, byteorder="little"), byteorder="big", signed=False
+        )
 
     if length == 8:
         return swap64(value)
     if length == 4:
-        return swap32(value) 
+        return swap32(value)
     if length == 2:
         return swap16(value)
 
@@ -49,10 +59,10 @@ def conv_endianess(value: int, signal: Signal):
 def decode_signal(signal, value):
     value = (value >> signal.start) & bitmask(signal.length)
     value = conv_endianess(value, signal)
-    if signal.type == 'signed':
+    if signal.type == "signed":
         value = int(value)
         if (value >> (signal.length - 1)) == 1:
-            value = - ((value ^ bitmask(signal.length)) + 1)
+            value = -((value ^ bitmask(signal.length)) + 1)
     return (value * signal.scale) + signal.offset
 
 
@@ -68,7 +78,9 @@ class Fcp:
         for msg in spec.common.msgs.values():
             self.messages[msg.name] = msg
 
-    def encode_msg(self, sid: int, msg_name: str, signals: Dict[str, float]) -> CANMessage:
+    def encode_msg(
+        self, sid: int, msg_name: str, signals: Dict[str, float]
+    ) -> CANMessage:
         msg = self.messages.get(msg_name)
 
         data = 0
@@ -80,7 +92,7 @@ class Fcp:
             data |= encode_signal(signal, value)
 
         sid = make_sid(sid, msg.id)
-        return CANMessage(sid, msg.dlc, 1, data64 = data)
+        return CANMessage(sid, msg.dlc, 1, data64=data)
 
     def find_msg(self, msg):
         dev_id, msg_id = decompose_id(msg.sid)
@@ -94,7 +106,7 @@ class Fcp:
         for msg in self.spec.common.msgs.values():
             if msg.id == msg_id:
                 return msg
-    
+
     def find_device(self, id):
         for dev in self.spec.devices.values:
             if isinstance(id, int) and dev.id == id:
@@ -110,7 +122,6 @@ class Fcp:
                 return cfg
 
         return None
-
 
     def decode_msg(self, msg: CANMessage):
         fcp_msg = self.find_msg(msg)
@@ -135,32 +146,31 @@ class Fcp:
         return ""
 
     def decode_get(self, signal):
-        dev = self.find_device(signal['dst'])
+        dev = self.find_device(signal["dst"])
         if dev == None:
             return None
 
         for name, config in dev.cfgs.items():
-            if config.id == signal['id']:
-                return {config.name : signal['data']}
+            if config.id == signal["id"]:
+                return {config.name: signal["data"]}
 
-    
     def encode_get(self, sid: int, dst: int, config: int):
         return encode_msg(sid, "req_get", {"dst": dst, "id": config})
 
     def decode_set(self, signal):
-        dev = self.find_device(signal['dst'])
+        dev = self.find_device(signal["dst"])
         if dev == None:
             return None
 
         for name, config in dev.cfgs.items():
-            if config.id == signal['id']:
-                return {"device": device.name, config.name : signal['data']}
+            if config.id == signal["id"]:
+                return {"device": device.name, config.name: signal["data"]}
 
-    
     def encode_set(self, sid: int, dst: int, config: int, value: int):
         return encode_msg(sid, "req_set", {"dst": dst, "id": config, "value": value})
 
-#class FCPCom():
+
+# class FCPCom():
 #    def __init__(self, fcp, com, sid):
 #        self.fcp = fcp
 #        self.com = com
@@ -178,7 +188,3 @@ class Fcp:
 #        msg = self.fcp.encode_get(self.sid, dev.id, cfg.id)
 #
 #        com.send(msg)
-
-
-
-

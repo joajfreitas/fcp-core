@@ -748,7 +748,7 @@ class Gui(QMainWindow):
         shortcutOpen = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_R), self)
         shortcutOpen.setContext(Qt.ApplicationShortcut)
         shortcutOpen.activated.connect(self.redo)
- 
+
     def save_history(self):
         old_spec = deepcopy(self.spec)
         self.history.insert(0, old_spec)
@@ -765,7 +765,6 @@ class Gui(QMainWindow):
             self.spec = self.history[-1]
             self.reload()
 
-
     def redo(self):
         if self.history is None:
             print("JSON not loaded yet!")
@@ -776,7 +775,7 @@ class Gui(QMainWindow):
         msg = QMessageBox(self)
         msg.setStandardButtons(QMessageBox.Ok)
         failed = validate(self.logger, self.spec)
-        failed = [f"{level}: {msg}"for level, msg in failed]
+        failed = [f"{level}: {msg}" for level, msg in failed]
         if len(failed) == 0:
             msg.setIcon(QMessageBox.Information)
             msg.setText("Spec passed")
@@ -885,9 +884,9 @@ class Gui(QMainWindow):
         self.ui.enumDetailsLayout.addWidget(self.enum_widget)
         self.children.append(self.enum_widget)
 
-
     def close_spec(self):
         return
+
     def reload(self):
         print("reload:", self.history)
         self.save_history()
@@ -895,9 +894,6 @@ class Gui(QMainWindow):
             node.reload()
 
         self.spec.normalize()
-
-
-
 
 
 def gui(file, logger):
