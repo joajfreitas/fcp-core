@@ -3,8 +3,10 @@ from PySide2.QtCore import Signal
 
 from ..gui_lib.devicedetails import Ui_DeviceDetails
 
+
 class DeviceDetails(QWidget):
-    #open_device = Signal(str, bool)
+    # open_device = Signal(str, bool)
+    save = Signal()
 
     def __init__(self, dev):
         QWidget.__init__(self)
@@ -14,32 +16,34 @@ class DeviceDetails(QWidget):
         self.dev = dev
 
         self.atts = [
-            (self.ui.idEdit, self.dev.id),
-            (self.ui.nameEdit, self.dev.name),
+            (self.ui.idEdit, self.dev.id, "id"),
+            (self.ui.nameEdit, self.dev.name, "name"),
         ]
-        
+
         self.connect_ui()
         self.reload()
 
-        #self.ui.deviceDetailsButton.clicked.connect(self.details)
-        #self.ui.deleteButton.clicked.connect(self.delete)
+        # self.ui.deviceDetailsButton.clicked.connect(self.details)
+        # self.ui.deleteButton.clicked.connect(self.delete)
+
 
     def connect_ui(self):
-        def assign(var):
-            def closure(value):
-                print(var, value)
-                var = value
-            return closure
+        def set_wrapper(obj, var):
+            def set(value):
+                setattr(obj, var, value)
+                self.save.emit()
 
-        for att, var in self.atts:
-            att.textEdited.connect(assign(var))
+            return set
+        
+        for att, _, var_name in self.atts:
+            att.textEdited.connect(set_wrapper(self.dev, var_name))
 
     def reload(self):
-        for att, var in self.atts:
+        for att, var, _ in self.atts:
             att.setText(str(var))
 
-    #def details(self, checked):
+    # def details(self, checked):
     #    self.open_device.emit(self.dev.name, checked)
 
-    #def delete(self):
+    # def delete(self):
     #    print("delete")

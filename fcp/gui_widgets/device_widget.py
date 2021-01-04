@@ -3,6 +3,7 @@ from PySide2.QtCore import Signal
 
 from ..gui_lib.devicewidget import Ui_DeviceWidget
 
+
 class DeviceWidget(QWidget):
     open_device = Signal(str, bool)
 
@@ -22,7 +23,6 @@ class DeviceWidget(QWidget):
 
         self.ui.deviceDetailsButton.clicked.connect(self.details)
         self.ui.deleteButton.clicked.connect(self.delete)
-
 
     def reload(self):
         for att, var in self.atts:
