@@ -35,6 +35,11 @@ JSON specification for can bus messages and helper tools.
 	  validate          Verify correctness of FCP json file.
 	  write_dbc         Transform FCP json file into a DBC :param json_file:
 
+## Implementations
+
+ * Rust: https://gitlab.com/joajfreitas/fcp-rust
+ * C++: https://gitlab.com/joajfreitas/fcp-cpp
+
 ## Documentation
 
 See [readthedocs.io](https://fcp-core.readthedocs.io/en/latest/)
