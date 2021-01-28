@@ -1,196 +1,266 @@
-# -*- coding: utf-8 -*-
-
-################################################################################
-## Form generated from reading UI file 'mainwindow.ui'
-##
-## Created by: Qt User Interface Compiler version 5.15.2
-##
-## WARNING! All changes made in this file will be lost when recompiling UI file!
-################################################################################
-
-from PySide2.QtCore import *
-from PySide2.QtGui import *
 from PySide2.QtWidgets import *
+from PySide2.QtGui import QKeySequence
+from PySide2.QtCore import Qt
+from PySide2.QtCore import Signal
 
+from .widgets.mainwindow import Ui_MainWindow
+from .widgets.devicewidget import Ui_DeviceWidget
+from .widgets.devicedetails import Ui_DeviceDetails
+from .widgets.messagewidget import Ui_MessageWidget
+from .widgets.messagedetails import Ui_MessageDetails
+from .widgets.signalwidget import Ui_SignalWidget
+from .widgets.signaldetails import Ui_SignalDetails
+from .widgets.logwidget import Ui_LogWidget
+from .widgets.enumwidget import Ui_EnumWidget
+from .widgets.enumdetails import Ui_EnumDetails
+from .widgets.logdetails import Ui_LogDetails
+from .widgets.cfgwidget import Ui_CfgWidget
+from .widgets.cfgdetails import Ui_CfgDetails
+from .widgets.cmdwidget import Ui_CmdWidget
+from .widgets.cmddetails import Ui_CmdDetails
+from .widgets.cmdarg import Ui_CmdArg
+from .widgets.enumvalue import Ui_EnumValue
 
-class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
-        if not MainWindow.objectName():
-            MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(450, 323)
-        self.actionOpen = QAction(MainWindow)
-        self.actionOpen.setObjectName(u"actionOpen")
-        self.actionSave = QAction(MainWindow)
-        self.actionSave.setObjectName(u"actionSave")
-        self.actionValidate = QAction(MainWindow)
-        self.actionValidate.setObjectName(u"actionValidate")
-        self.actionLogs = QAction(MainWindow)
-        self.actionLogs.setObjectName(u"actionLogs")
-        self.action_software10e_help = QAction(MainWindow)
-        self.action_software10e_help.setObjectName(u"action_software10e_help")
-        self.action_fcp_help = QAction(MainWindow)
-        self.action_fcp_help.setObjectName(u"action_fcp_help")
-        self.actionOpen_Recent = QAction(MainWindow)
-        self.actionOpen_Recent.setObjectName(u"actionOpen_Recent")
-        self.centralwidget = QWidget(MainWindow)
-        self.centralwidget.setObjectName(u"centralwidget")
-        self.horizontalLayout = QHBoxLayout(self.centralwidget)
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalLayout.setContentsMargins(-1, -1, -1, 9)
-        self.tabWidget = QTabWidget(self.centralwidget)
-        self.tabWidget.setObjectName(u"tabWidget")
-        self.tab = QWidget()
-        self.tab.setObjectName(u"tab")
-        self.verticalLayout_3 = QVBoxLayout(self.tab)
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.verticalLayout_2 = QVBoxLayout()
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.horizontalLayout_3 = QHBoxLayout()
-        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.horizontalSpacer_2 = QSpacerItem(
-            0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum
+from .node_details import NodeDetails, FakeParent
+from .signal_details import SignalDetails
+from .signal_widget import SignalWidget
+from .message_details import MessageDetails
+from .message_widget import MessageWidget
+from .arg_details import ArgDetails
+from .cmd_details import CmdDetails
+from .cmd_widget import CmdWidget
+from .cfg_details import CfgDetails
+from .cfg_widget import CfgWidget
+from .device_details import DeviceDetails
+from .device_widget import DeviceWidget
+from .enum_value_details import EnumValueDetails
+from .enum_details import EnumDetails
+from .log_details import LogDetails
+from .log_widget import LogWidget
+from .enum_widget import EnumWidget
+
+from pathlib import Path
+import json
+import yaml
+import webbrowser
+from copy import deepcopy
+
+from ..spec import *
+from ..validator import validate
+from ..config import *
+from .message_box import MessageBox
+
+from .undo_redo import UndoRedo, UndoAdd
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        QMainWindow.__init__(self)
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+
+        self.history = None
+
+        self.spec = Spec()
+        self.children = []
+
+        self.connect_buttons()
+        self.config_shortcuts()
+
+        self.log_widget = None
+        self.enum_widget = None
+
+        self.file_path = Path("")
+
+        self.config, _ = config_session()
+        self.recent_files()
+
+        self.undo_redo = UndoRedo()
+
+    def recent_files(self):
+        files = File.recent_files(self.config)
+
+        menu = QMenu("recent_files")
+        for file in files:
+            action = menu.addAction(file.path)
+            action.triggered.connect(lambda x: self.load(Path(file.path)))
+
+        self.ui.actionOpen_Recent.setMenu(menu)
+
+    def connect_buttons(self):
+        def fcp_help(link):
+            webbrowser.open(link)
+
+        self.ui.actionOpen.triggered.connect(self.open_json)
+        self.ui.actionSave.triggered.connect(self.save_json)
+        self.ui.actionValidate.triggered.connect(self.validate)
+        self.ui.action_software10e_help.triggered.connect(
+            lambda: fcp_help("https://projectofst.gitlab.io/software10e/docs/fcp/")
         )
-
-        self.horizontalLayout_3.addItem(self.horizontalSpacer_2)
-
-        self.scrollArea = QScrollArea(self.tab)
-        self.scrollArea.setObjectName(u"scrollArea")
-        self.scrollArea.setMaximumSize(QSize(400, 16777215))
-        self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.scrollArea.setWidgetResizable(True)
-        self.scrollAreaContents = QWidget()
-        self.scrollAreaContents.setObjectName(u"scrollAreaContents")
-        self.scrollAreaContents.setGeometry(QRect(0, 0, 374, 165))
-        self.verticalLayout = QVBoxLayout(self.scrollAreaContents)
-        self.verticalLayout.setObjectName(u"verticalLayout")
-        self.scrollArea.setWidget(self.scrollAreaContents)
-
-        self.horizontalLayout_3.addWidget(self.scrollArea)
-
-        self.horizontalSpacer = QSpacerItem(
-            0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum
+        self.ui.action_fcp_help.triggered.connect(
+            lambda: fcp_help("https://fcp-core.readthedocs.io/en/latest/")
         )
+        self.ui.addButton.clicked.connect(self.add_device)
 
-        self.horizontalLayout_3.addItem(self.horizontalSpacer)
+    def shortcut(self, key_sequence, f):
+        shortcutSave = QShortcut(key_sequence, self)
+        shortcutSave.setContext(Qt.ApplicationShortcut)
+        shortcutSave.activated.connect(f)
 
-        self.horizontalLayout_3.setStretch(1, 10)
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_3)
+    def config_shortcuts(self):
+        self.shortcut(QKeySequence(Qt.CTRL + Qt.Key_S), self.save_json)
+        self.shortcut(QKeySequence(Qt.CTRL + Qt.Key_O), self.open_json)
+        self.shortcut(QKeySequence(Qt.CTRL + Qt.Key_V), self.validate)
+        self.shortcut(QKeySequence(Qt.CTRL + Qt.Key_Z), self.undo)
+        self.shortcut(QKeySequence(Qt.CTRL + Qt.Key_R), self.redo)
 
-        self.horizontalLayout_2 = QHBoxLayout()
-        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.addButton = QPushButton(self.tab)
-        self.addButton.setObjectName(u"addButton")
-        self.addButton.setMaximumSize(QSize(400, 16777215))
+    def save_history(self):
+        old_spec = deepcopy(self.spec)
+        self.history.insert(0, old_spec)
 
-        self.horizontalLayout_2.addWidget(self.addButton)
+    def undo(self):
+        self.undo_redo.undo()
+        self.reload()
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_2)
 
-        self.verticalLayout_3.addLayout(self.verticalLayout_2)
+    def redo(self):
+        self.undo_redo.redo()
+        self.reload()
 
-        self.tabWidget.addTab(self.tab, "")
-        self.Logs = QWidget()
-        self.Logs.setObjectName(u"Logs")
-        self.verticalLayout_4 = QVBoxLayout(self.Logs)
-        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.logDetailsLayout = QVBoxLayout()
-        self.logDetailsLayout.setObjectName(u"logDetailsLayout")
+    def validate(self):
+        failed = validate(self.spec)
+        failed = [f"{level}: {msg}" for level, msg in failed]
+        if len(failed) == 0:
+            MessageBox(
+                self,
+                QMessageBox.Ok,
+                QMessageBox.Information,
+                "Spec passed").launch()
+        else:
+            MessageBox(
+                self,
+                QMessageBox.Ok,
+                QMessageBox.Warning,
+                "\n".join(failed)).launch()
 
-        self.verticalLayout_4.addLayout(self.logDetailsLayout)
+    def add_device(self, device=None, widget=None):
+        new_device = device is None or type(device) == bool
 
-        self.tabWidget.addTab(self.Logs, "")
-        self.tab_3 = QWidget()
-        self.tab_3.setObjectName(u"tab_3")
-        self.verticalLayout_5 = QVBoxLayout(self.tab_3)
-        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.enumDetailsLayout = QVBoxLayout()
-        self.enumDetailsLayout.setObjectName(u"enumDetailsLayout")
+        if new_device:
+            device = Device(parent=self.spec, msgs={})
+        
+        if type(device) is Device:
+            r = self.spec.add_device(device)
+            #if r == False:
+            #    msg = QMessageBox(self)
+            #    msg.setStandardButtons(QMessageBox.Ok)
+            #    msg.setIcon(QMessageBox.Warning)
+            #    msg.setText("Failed to create device")
+            #    msg.show()
+            #    return
+        
+        if widget is None:
+            dev_widget = DeviceWidget(
+                self, device, details=DeviceDetails, layout=self.ui.deviceDetailsLayout
+            )
+        else:
+            dev_widget = widget
 
-        self.verticalLayout_5.addLayout(self.enumDetailsLayout)
+        if new_device:
+            undo_action = UndoAdd(device, dev_widget, dev_widget.delete, self.add_device)
+            self.undo_redo.push(undo_action)
 
-        self.tabWidget.addTab(self.tab_3, "")
+        self.ui.verticalLayout.addWidget(dev_widget)
+        self.children.append(dev_widget)
 
-        self.horizontalLayout.addWidget(self.tabWidget)
-
-        self.deviceDetailsLayout = QVBoxLayout()
-        self.deviceDetailsLayout.setObjectName(u"deviceDetailsLayout")
-
-        self.horizontalLayout.addLayout(self.deviceDetailsLayout)
-
-        self.messageDetailsLayout = QVBoxLayout()
-        self.messageDetailsLayout.setObjectName(u"messageDetailsLayout")
-
-        self.horizontalLayout.addLayout(self.messageDetailsLayout)
-
-        self.signalDetailsLayout = QVBoxLayout()
-        self.signalDetailsLayout.setObjectName(u"signalDetailsLayout")
-
-        self.horizontalLayout.addLayout(self.signalDetailsLayout)
-
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QMenuBar(MainWindow)
-        self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 450, 27))
-        self.menuFile = QMenu(self.menubar)
-        self.menuFile.setObjectName(u"menuFile")
-        self.menuHelp = QMenu(self.menubar)
-        self.menuHelp.setObjectName(u"menuHelp")
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QStatusBar(MainWindow)
-        self.statusbar.setObjectName(u"statusbar")
-        MainWindow.setStatusBar(self.statusbar)
-
-        self.menubar.addAction(self.menuFile.menuAction())
-        self.menubar.addAction(self.menuHelp.menuAction())
-        self.menuFile.addAction(self.actionOpen)
-        self.menuFile.addAction(self.actionOpen_Recent)
-        self.menuFile.addAction(self.actionSave)
-        self.menuFile.addAction(self.actionValidate)
-        self.menuHelp.addAction(self.action_software10e_help)
-        self.menuHelp.addAction(self.action_fcp_help)
-
-        self.retranslateUi(MainWindow)
-
-        self.tabWidget.setCurrentIndex(0)
-
-        QMetaObject.connectSlotsByName(MainWindow)
-
-    # setupUi
-
-    def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(
-            QCoreApplication.translate("MainWindow", u"MainWindow", None)
+    def open_json(self):
+        filename = QFileDialog.getOpenFileName(
+            self, self.tr("Open JSON"), self.tr("JSON (*.json)")
         )
-        self.actionOpen.setText(QCoreApplication.translate("MainWindow", u"Open", None))
-        self.actionSave.setText(QCoreApplication.translate("MainWindow", u"Save", None))
-        self.actionValidate.setText(
-            QCoreApplication.translate("MainWindow", u"Validate", None)
-        )
-        self.actionLogs.setText(QCoreApplication.translate("MainWindow", u"Logs", None))
-        self.action_software10e_help.setText(
-            QCoreApplication.translate("MainWindow", u"Software10e FCP", None)
-        )
-        self.action_fcp_help.setText(
-            QCoreApplication.translate("MainWindow", u"FCP Help", None)
-        )
-        self.actionOpen_Recent.setText(
-            QCoreApplication.translate("MainWindow", u"Open Recent", None)
-        )
-        self.addButton.setText(QCoreApplication.translate("MainWindow", u"Add", None))
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.tab),
-            QCoreApplication.translate("MainWindow", u"Devices", None),
-        )
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.Logs),
-            QCoreApplication.translate("MainWindow", u"Logs", None),
-        )
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.tab_3),
-            QCoreApplication.translate("MainWindow", u"Enums", None),
-        )
-        self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
-        self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))
+        self.load_json(filename[0])
+        self.history = []
+        self.history.append()
 
-    # retranslateUi
+    def save_json(self):
+        for child in self.children:
+            child.save()
+
+        self.validate()
+
+        try:
+            filename = QFileDialog.getSaveFileName(
+                self, self.tr("Open JSON"), str(self.file_path.parent)
+            )
+        except Exception as e:
+            msg = QMessageBox(self)
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText(f"{filename} is not a valid filename")
+            msg.show()
+            return
+
+        with open(filename[0], "w") as f:
+            j = self.spec.compile()
+            f.write(json.dumps(j, indent=4))
+
+    def load_json(self, filename):
+        if filename == "":
+            msg = QMessageBox(self)
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText(f"'{filename}' is not a valid filename")
+            msg.show()
+            return
+
+        try:
+            with open(".fcp_gui.yaml") as f:
+                y = yaml.safe_load(f.read())
+
+            if filename not in y["recent_files"]:
+                y["recent_files"].append(filename)
+        except Exception as e:
+            y = {}
+            y["recent_files"] = []
+
+        with open(".fcp_gui.yaml", "w") as f:
+            f.write(yaml.dump(y))
+
+        with open(filename) as f:
+            j = json.loads(f.read())
+
+        self.spec.decompile(j)
+
+        self.reload_spec()
+
+        self.file_path = Path(filename)
+        self.history = [self.spec]
+
+    def reload_spec(self):
+        for device in sorted(self.spec.devices.values(), key=lambda x: x.id):
+            self.add_device(device)
+
+        self.add_device(self.spec.common)
+
+        self.log_widget = LogWidget(self, self.spec)
+        self.log_widget.setVisible(True)
+        self.ui.logDetailsLayout.addWidget(self.log_widget)
+        self.children.append(self.log_widget)
+        self.enum_widget = EnumWidget(self, self.spec)
+        self.enum_widget.setVisible(True)
+        self.ui.enumDetailsLayout.addWidget(self.enum_widget)
+        self.children.append(self.enum_widget)
+
+    def close_spec(self):
+        return
+
+    def reload(self):
+        #print("reload:", self.history)
+        self.save_history()
+        for node in self.children:
+            node.reload()
+
+        self.spec.normalize()
+
+    def reload_service(self, path):
+        print("reload.service")
+        self.reload()

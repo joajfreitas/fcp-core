@@ -328,7 +328,7 @@ def check(category, arg):
     return failed
 
 
-def validate(logger, spec):
+def validate(spec):
     failed = []
     failed += check("spec", spec)
 

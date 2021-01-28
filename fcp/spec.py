@@ -2,6 +2,10 @@ from typing import *
 import copy
 import datetime
 
+import time
+
+import code
+
 
 def handle_key_not_found(d: dict, key: str):
     return d.get(key).items() if d.get(key) != None else []
@@ -13,6 +17,20 @@ def field(default_factory):
 
 def make_dict():
     return {}
+
+def filter_private(d: Dict[str, Any]) -> Dict[str, Any]:
+    return {k:v for (k,v) in d.items() if k.startswith('_')}
+
+
+def make_private(obj, d: Dict[str, Any]) -> Dict[str, Any]:
+    new_d = {}
+    for key in d.keys():
+        T = type(getattr(obj, key))
+        new_d["_" + key] = T(d[key])
+    return new_d
+
+def make_public(obj, d: Dict[str, Any]) -> Dict[str, Any]:
+    return {k[1:] if k.startswith('_') else k:v for (k,v) in d.items()}
 
 
 def normalize(xs: Dict[str, Any], key: Callable[[Any], str] = None):
@@ -37,7 +55,20 @@ def normalize(xs: Dict[str, Any], key: Callable[[Any], str] = None):
         del xs[k]
 
 
-class Log:
+class Node():
+    @property
+    def spec(self):
+        print(self)
+        if type(self.parent) is Spec:
+            return self.parent
+
+        if self.parent is None:
+            print("Parent is None")
+            exit()
+
+        return self.parent.get_spec()
+
+class Log(Node):
     """Log protocol node.
 
     :param id: Log integer identifier.
@@ -60,11 +91,11 @@ class Log:
         assert self.parent is not None
 
         c = max([log.id for log in self.parent.logs.values()] + [0]) + 1
-        self.id = id or c
-        self.name = name
-        self.n_args = n_args
-        self.comment = comment
-        self.string = string
+        self._id = id or c
+        self._name = name
+        self._n_args = n_args
+        self._comment = comment
+        self._string = string
 
         self.creation_date = datetime.datetime.now()
 
@@ -73,61 +104,70 @@ class Log:
 
         :return: A dictionary containing the node parameters
         """
-
-        d = copy.deepcopy(self.__dict__)
-        del d["creation_date"]
-        del d["parent"]
-        return d
+        return make_public(self, filter_private(self.__dict__))
 
     def decompile(self, d: Dict[str, Any]) -> None:
         """Transform node dictionary representation into a python class.
 
         :param d: Node dictionary
         """
-        self.__dict__.update(d)
+        for k, v in make_private(self, d).items():
+            self.__setattr__(k, v)
 
-    def get_id(self) -> int:
-        return self.id
+        #self.__dict__.update(make_private(self, d))
 
-    def get_name(self) -> str:
-        return self.name
+    @property
+    def id(self) -> int:
+        return self._id
 
-    def get_n_args(self) -> int:
-        return self.n_args
+    @property
+    def name(self) -> str:
+        return self._name
 
-    def get_comment(self) -> str:
-        return self.comment
+    @property
+    def n_args(self) -> int:
+        return self._n_args
 
-    def get_string(self) -> str:
-        return self.string
+    @property
+    def comment(self) -> str:
+        return self._comment
 
-    def set_id(self, id: int) -> None:
+    @property
+    def string(self) -> str:
+        return self._string
+ 
+    @id.setter
+    def id(self, id: int) -> None:
         try:
-            self.id = int(id)
+            self._id = int(id)
         except Exception as e:
             return
 
-    def set_name(self, name: str) -> None:
+    @name.setter
+    def name(self, name: str) -> None:
         try:
-            self.name = name
+            self._name = name
         except Exception as e:
             return
 
-    def set_n_args(self, n_args: int) -> None:
+    @n_args.setter
+    def n_args(self, n_args: int) -> None:
         try:
-            self.n_args = int(n_args)
+            self._n_args = int(n_args)
         except Exception as e:
             return
 
-    def set_comment(self, comment: str) -> None:
+    @comment.setter
+    def comment(self, comment: str) -> None:
         try:
-            self.comment = comment
+            self._comment = comment
         except Exception as e:
             return
 
-    def set_string(self, string: str) -> None:
+    @string.setter
+    def string(self, string: str) -> None:
         try:
-            self.string = string
+            self._string = string
         except Exception as e:
             return
 
@@ -135,12 +175,10 @@ class Log:
         return hash((self.name, self.id, self.creation_date))
 
     def __repr__(self):
-        return "name: {}, id: {}, string: {}, n_args: {}, comment: {}".format(
-            self.name, self.id, self.string, self.n_args, self.comment
-        )
+        return f"<Log name: {self.name}, id: {self.id}, n_args: {self.n_args}>"
 
 
-class EnumValue:
+class EnumValue(Node):
     """Fcp EnumValue. C lookalike for FCP type definitions with name-value
     associations.
     """
@@ -151,15 +189,13 @@ class EnumValue:
         assert self.parent is not None
 
         c = max([value.value for value in self.parent.enumeration.values()] + [0]) + 1
-        self.name = ""
-        self.value = c
+        self._name = ""
+        self._value = c
 
         self.creation_date = datetime.datetime.now()
 
     def compile(self) -> Dict[str, Any]:
-        d = copy.deepcopy(self.__dict__)
-        del d["creation_date"]
-        del d["parent"]
+        d = make_public(self, filter_private(self.__dict__))
         return d
 
     def decompile(self, d: Dict[str, Any]) -> None:
@@ -167,48 +203,49 @@ class EnumValue:
 
         :param d: Node dictionary
         """
-        self.__dict__.update(d)
+        #self.__dict__.update(make_private(self, d))
+        for k,v in make_private(self, d).items():
+            self.__setattr__(k,v)
 
-    def get_name(self) -> str:
-        return self.name
+    @property
+    def name(self) -> str:
+        return self._name
 
-    def set_name(self, name: str) -> None:
-        self.name = name
+    @name.setter
+    def name(self, name: str) -> None:
+        self._name = name
 
-    def get_value(self) -> int:
-        return self.value
+    @property
+    def value(self) -> int:
+        return self._value
 
-    def set_value(self, value: int) -> None:
-        self.value = int(value)
+    @value.setter
+    def value(self, value: int) -> None:
+        self._value = int(value)
 
     def __hash__(self):
-        return hash((self.name, self.creation_date))
+        return hash((self._name, self.creation_date))
 
     def __repr__(self):
         return "name: {}".format(self.name)
 
 
-class Enum:
+class Enum(Node):
     """Fcp Enum. C lookalike for FCP type definitions with name-value
     associations.
     """
 
     def __init__(self, parent: "Spec" = None) -> None:
         self.parent = parent
-        self.name = ""
+        self._name = ""
         self.enumeration = {}
         self.creation_date = datetime.datetime.now()
 
     def compile(self) -> Dict[str, Any]:
-        enums = {}
+        enums = {k: v.compile() for (k, v) in self.enumeration.items()}
 
-        for k, v in self.enumeration.items():
-            enums[k] = v.compile()
-
-        d = copy.deepcopy(self.__dict__)
+        d = make_public(self, (filter_private(self.__dict__)))
         d["enumeration"] = enums
-        del d["creation_date"]
-        del d["parent"]
         return d
 
     def decompile(self, d: Dict[str, Any]) -> None:
@@ -219,24 +256,22 @@ class Enum:
         enumeration = d["enumeration"]
         del d["enumeration"]
 
-        self.__dict__.update(d)
+        #self.__dict__.update(make_private(self, d))
+        for k,v in make_private(self, d).items():
+            self.__setattr__(k,v)
 
         for k, v in enumeration.items():
             enum_value = EnumValue(self)
             enum_value.decompile(v)
             self.enumeration[k] = enum_value
 
-    def get_name(self) -> str:
-        return self.name
+    @property
+    def name(self) -> str:
+        return self._name
 
-    def set_name(self, name: str) -> None:
+    @name.setter
+    def name(self, name: str) -> None:
         self.name = name
-
-    def get_value(self) -> int:
-        return int(self.value)
-
-    def set_value(self, name: int) -> None:
-        self.value = int(value)
 
     def normalize(self):
         normalize(self.enumeration)
@@ -470,20 +505,26 @@ class Spec:
         :return: A dictionary containing the node parameters
         """
 
+
         d = {"devices": {}, "logs": {}, "enums": {}}
 
         for dev_k, dev_v in self.devices.items():
             d["devices"][dev_k] = dev_v.compile()
 
-        for log_k, log_v in self.logs.items():
-            d["logs"][log_k] = log_v.compile()
+
+        for log in self.logs.values():
+            print("log", log.name)
+            d["logs"][log.name] = log.compile()
+
+
 
         for enum_k, enum_v in self.enums.items():
             d["enums"][enum_k] = enum_v.compile()
 
-        d["common"] = self.common.compile()
 
+        d["common"] = self.common.compile()
         d["version"] = self.version
+
 
         return d
 
@@ -492,7 +533,7 @@ class Spec:
 
         :param d: Node dictionary
         """
-        d = copy.deepcopy(d)
+        d = copy.copy(d)
         self.devices = {}
         self.logs = {}
         self.common.decompile(d["common"])
@@ -512,7 +553,7 @@ class Spec:
             enum.decompile(v)
             self.enums[k] = enum
 
-        self.versionn = d["version"]
+        self.version = d["version"]
 
     def normalize(self):
         """ Update devices and logs dictionary keys.  """
@@ -547,7 +588,7 @@ class Spec:
         return out
 
 
-class Signal:
+class Signal(Node):
     """
     Signal node. Represents a CAN signal, similar to a DBC signal.
 
@@ -596,148 +637,175 @@ class Signal:
             ]
             + [0]
         )
-        self.name = name or ("sig" + str(m + 1))
-        self.start = start
-        self.length = length
-        self.scale = scale
-        self.offset = offset
-        self.unit = unit
-        self.comment = comment
-        self.min_value = min_value
-        self.max_value = max_value
-        self.type = type
-        self.byte_order = byte_order
-        self.mux = mux
-        self.mux_count = mux_count
-        self.alias = alias
+        self._name = name or ("sig" + str(m + 1))
+        self._start = start
+        self._length = length
+        self._scale = scale
+        self._offset = offset
+        self._unit = unit
+        self._comment = comment
+        self._min_value = min_value
+        self._max_value = max_value
+        self._type = type
+        self._byte_order = byte_order
+        self._mux = mux
+        self._mux_count = mux_count
+        self._alias = alias
 
         self.creation_date = datetime.datetime.now()
 
-    def set_name(self, name: str) -> None:
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def start(self) -> int:
+        return self._start
+
+    @property
+    def length(self) -> int:
+        return self._length
+
+    @property
+    def scale(self) -> float:
+        return self._scale
+
+    @property
+    def offset(self) -> float:
+        return self._offset
+
+    @property
+    def unit(self) -> str:
+        return self._unit
+
+    @property
+    def comment(self) -> str:
+        return self._comment
+
+    @property
+    def min_value(self) -> float:
+        return self._min_value
+
+    @property
+    def max_value(self) -> float:
+        return self._max_value
+
+    @property
+    def type(self) -> str:
+        return self._type
+
+    @property
+    def byte_order(self) -> str:
+        return self._byte_order
+
+    @property
+    def mux(self) -> str:
+        return self._mux
+
+    @property
+    def mux_count(self) -> int:
+        return self._mux_count
+
+    @property
+    def alias(self) -> str:
+        return self._alias
+
+    @name.setter
+    def name(self, name: str) -> None:
         try:
-            self.name = name
+            self._name = name
+        except Exception as e:
+            return
+    @start.setter
+    def start(self, start: int) -> None:
+        try:
+            self._start = int(start)
         except Exception as e:
             return
 
-    def set_start(self, start: int) -> None:
+    @length.setter
+    def length(self, length: int) -> None:
         try:
-            self.start = int(start)
+            self._length = int(length)
         except Exception as e:
             return
 
-    def set_length(self, length: int) -> None:
+    @scale.setter
+    def scale(self, scale: float) -> None:
         try:
-            self.length = int(length)
+            self._scale = float(scale)
         except Exception as e:
             return
 
-    def set_scale(self, scale: float) -> None:
+    @offset.setter
+    def offset(self, offset: float) -> None:
         try:
-            self.scale = float(scale)
+            self._offset = float(offset)
         except Exception as e:
             return
 
-    def set_offset(self, offset: float) -> None:
+    @unit.setter
+    def unit(self, unit: str) -> None:
         try:
-            self.offset = float(offset)
+            self._unit = unit
         except Exception as e:
             return
 
-    def set_unit(self, unit: str) -> None:
+    @comment.setter
+    def comment(self, comment: str) -> None:
         try:
-            self.unit = unit
+            self._comment = comment
         except Exception as e:
             return
 
-    def set_comment(self, comment: str) -> None:
+    @min_value.setter
+    def min_value(self, min_value: float) -> None:
         try:
-            self.comment = comment
+            self._min_value = float(min_value)
         except Exception as e:
             return
 
-    def set_min_value(self, min_value: float) -> None:
+    @max_value.setter
+    def max_value(self, max_value: float) -> None:
         try:
-            self.min_value = float(min_value)
+            self._max_value = float(max_value)
         except Exception as e:
             return
 
-    def set_max_value(self, max_value: float) -> None:
+    @type.setter
+    def type(self, type: str) -> None:
         try:
-            self.max_value = float(max_value)
+            self._type = type
         except Exception as e:
             return
 
-    def set_type(self, type: str) -> None:
+    @byte_order.setter
+    def byte_order(self, byte_order: str) -> None:
         try:
-            self.type = type
+            self._byte_order = byte_order
         except Exception as e:
             return
 
-    def set_byte_order(self, byte_order: str) -> None:
+    @mux.setter
+    def mux(self, mux: str) -> None:
         try:
-            self.byte_order = byte_order
+            self._mux = mux
         except Exception as e:
             return
 
-    def set_mux(self, mux: str) -> None:
+    @mux_count.setter
+    def mux_count(self, mux_count: int) -> None:
         try:
-            self.mux = mux
+            self._mux_count = int(mux_count)
         except Exception as e:
             return
 
-    def set_mux_count(self, mux_count: int) -> None:
+    @alias.setter
+    def alias(self, alias: str) -> None:
         try:
-            self.mux_count = int(mux_count)
+            self._alias = alias
         except Exception as e:
             return
-
-    def set_alias(self, alias: str) -> None:
-        try:
-            self.alias = alias
-        except Exception as e:
-            return
-
-    def get_name(self) -> str:
-        return self.name
-
-    def get_start(self) -> int:
-        return self.start
-
-    def get_length(self) -> int:
-        return self.length
-
-    def get_scale(self) -> float:
-        return self.scale
-
-    def get_offset(self) -> float:
-        return self.offset
-
-    def get_unit(self) -> str:
-        return self.unit
-
-    def get_comment(self) -> str:
-        return self.comment
-
-    def get_min_value(self) -> float:
-        return self.min_value
-
-    def get_max_value(self) -> float:
-        return self.max_value
-
-    def get_type(self) -> str:
-        return self.type
-
-    def get_byte_order(self) -> str:
-        return self.byte_order
-
-    def get_mux(self) -> str:
-        return self.mux
-
-    def get_mux_count(self) -> int:
-        return self.mux_count
-
-    def get_alias(self) -> str:
-        return self.alias
 
     def compile(self) -> Dict[str, Any]:
         """Transform python class node to its dictionary representation.
@@ -745,17 +813,16 @@ class Signal:
         :return: A dictionary containing the node parameters
         """
 
-        d = copy.deepcopy(self.__dict__)
-        del d["creation_date"]
-        del d["parent"]
-        return d
+        return make_public(self, filter_private(self.__dict__))
 
     def decompile(self, d: Dict[str, Any]) -> None:
         """Transform node dictionary representation into a python class.
 
         :param d: Node dictionary
         """
-        self.__dict__.update(d)
+        #self.__dict__.update(make_private(self, d))
+        for k,v in make_private(self, d).items():
+            self.__setattr__(k,v)
 
     def __hash__(self):
         return hash((self.name, self.start, self.length, self.creation_date))
@@ -763,17 +830,17 @@ class Signal:
     def __repr__(self):
         return """ {
         name: {},
-        start: {}, 
-        length: {}, 
-        scale: {}, 
-        offset: {}, 
-        unit: {}, 
-        comment: {}, 
-        min: {}, 
-        max: {}, 
-        type: {}, 
-        byte_order: {}, 
-        mux: {}, 
+        start: {},
+        length: {},
+        scale: {},
+        offset: {},
+        unit: {},
+        comment: {},
+        min: {},
+        max: {},
+        type: {},
+        byte_order: {},
+        mux: {},
         mux_count: {}
     }
     """.format(
@@ -797,7 +864,7 @@ class Signal:
 #        return ""
 
 
-class Message:
+class Message(Node):
     """Message node, Represents a CAN message, similar to a DBC message.
 
     :param name: Name of the Message.
@@ -823,60 +890,71 @@ class Message:
         assert self.parent is not None
 
         c = max([msg.id for msg in self.parent.msgs.values()] + [0]) + 1
-        self.id = id or c
+        self._id = id or c
 
-        self.name = name or ("msg" + str(self.id))
-        self.dlc = dlc
+        self._name = name or ("msg" + str(self.id))
+        self._dlc = dlc
         self.signals = {} if signals == None else signals
-        self.frequency = frequency
-        self.description = description
+        self._frequency = frequency
+        self._description = description
 
         self.creation_date = datetime.datetime.now()
 
-    def set_name(self, name: str) -> None:
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def id(self) -> int:
+        return self._id
+
+    @property
+    def dlc(self) -> int:
+        return self._dlc
+
+    @property
+    def frequency(self) -> int:
+        return self._frequency
+
+    @property
+    def description(self) -> str:
+        return self._description
+
+    @name.setter
+    def name(self, name: str) -> None:
         try:
-            self.name = name
+            self._name = name
         except Exception as e:
             return
 
-    def set_id(self, id: int) -> None:
+    @id.setter
+    def id(self, id: int) -> None:
         try:
-            self.id = int(id)
+            self._id = int(id)
         except Exception as e:
             return
 
-    def set_dlc(self, dlc: int) -> None:
+    @dlc.setter
+    def dlc(self, dlc: int) -> None:
         try:
-            self.dlc = int(dlc)
+            self._dlc = int(dlc)
         except Exception as e:
             return
 
-    def set_frequency(self, frequency: int) -> None:
+    @frequency.setter
+    def frequency(self, frequency: int) -> None:
         try:
-            self.frequency = int(frequency)
+            self._frequency = int(frequency)
         except Exception as e:
             return
 
-    def set_description(self, description: str) -> None:
+    @description.setter
+    def description(self, description: str) -> None:
         try:
-            self.description = description
+            self._description = description
         except Exception as e:
             return
 
-    def get_name(self) -> str:
-        return self.name
-
-    def get_id(self) -> int:
-        return self.id
-
-    def get_dlc(self) -> int:
-        return self.dlc
-
-    def get_frequency(self) -> int:
-        return self.frequency
-
-    def get_description(self) -> str:
-        return self.description
 
     def compile(self) -> Dict[str, Any]:
         """Transform python class node to its dictionary representation.
@@ -884,14 +962,12 @@ class Message:
         :return: A dictionary containing the node parameters
         """
 
-        msgs = {}
+        sigs = {}
         for k, v in self.signals.items():
-            msgs[k] = v.compile()
+            sigs[k] = v.compile()
 
-        d = copy.deepcopy(self.__dict__)
-        d["signals"] = msgs
-        del d["creation_date"]
-        del d["parent"]
+        d = make_public(self, filter_private(self.__dict__))
+        d["signals"] = sigs
         return d
 
     def decompile(self, d: Dict[str, Any]) -> None:
@@ -900,9 +976,10 @@ class Message:
         :param d: Node dictionary
         """
         signals = d["signals"]
-        del d["signals"]
+        #self.__dict__.update(make_private(self, d))
+        for k,v in make_private(self,d).items():
+            self.__setattr__(k,v)
 
-        self.__dict__.update(d)
         for key, value in signals.items():
             sig = Signal(self)
             sig.decompile(value)
@@ -969,7 +1046,7 @@ class Message:
         )
 
 
-class Argument:
+class Argument(Node):
     """Argument node. Represents a Command Argument.
 
     :param name: Name of the Argument.
@@ -986,55 +1063,60 @@ class Argument:
         type: str = "unsigned",
     ):
         self.parent = parent
-        self.name = name
-        self.id = id
-        self.comment = comment
-        self.type = type
+        self._name = name
+        self._id = id
+        self._comment = comment
+        self._type = type
 
         self.creation_date = datetime.datetime.now()
 
-    def get_name(self) -> str:
-        return self.name
+    @property
+    def name(self) -> str:
+        return self._name
 
-    def get_comment(self) -> str:
-        return self.comment
+    @property
+    def comment(self) -> str:
+        return self._comment
 
-    def get_id(self) -> int:
-        return self.id
+    @property
+    def id(self) -> int:
+        return self._id
 
-    def get_type(self) -> str:
-        return self.type
+    @property
+    def type(self) -> str:
+        return self._type
 
-    def set_name(self, name: str) -> None:
+    @name.setter
+    def name(self, name: str) -> None:
         try:
-            self.name = name
+            self._name = name
         except Exception as e:
             return
 
-    def set_comment(self, comment: str) -> None:
+    @comment.setter
+    def comment(self, comment: str) -> None:
         try:
-            self.comment = comment
+            self._comment = comment
         except Exception as e:
             return
 
-    def set_id(self, id: int) -> None:
+    @id.setter
+    def id(self, id: int) -> None:
         try:
-            self.id = int(id)
+            self._id = int(id)
         except Exception as e:
             return
 
-    def set_type(self, type: str) -> None:
-        self.type = type
+    @type.setter
+    def type(self, type: str) -> None:
+        self._type = type
 
     def compile(self) -> Dict[str, Any]:
         """Transform python class node to its dictionary representation.
 
         :return: A dictionary containing the node parameters
         """
-        print("compiling argument")
-        d = copy.deepcopy(self.__dict__)
-        del d["creation_date"]
-        del d["parent"]
+        d = make_public(self, filter_private(self.__dict__))
         return d
 
     def decompile(self, d: Dict[str, Any]) -> None:
@@ -1042,10 +1124,12 @@ class Argument:
 
         :param d: Node dictionary
         """
-        self.__dict__.update(d)
+        #self.__dict__.update(make_private(self, d))
+        for k,v in make_private(self,d).items():
+            self.__setattr__(k,v)
 
 
-class Command:
+class Command(Node):
     """Command node. Represents a Command.
 
     :param name: Name of the Command.
@@ -1070,50 +1154,58 @@ class Command:
         self.parent = parent
         assert self.parent is not None
 
-        c = max([cmd.id for cmd in self.parent.cmds.values()] + [0]) + 1
+        c = max([int(cmd.id) for cmd in self.parent.cmds.values()] + [0]) + 1
 
-        self.name = name
-        self.n_args = n_args
-        self.comment = comment
-        self.id = int(id)
+        self._name = name
+        self._n_args = n_args
+        self._comment = comment
+        self._id = int(id)
         self.args = {} if args == None else args
         self.rets = {} if rets == None else rets
 
         self.creation_date = datetime.datetime.now()
 
-    def get_name(self) -> str:
-        return self.name
+    @property
+    def name(self) -> str:
+        return self._name
 
-    def get_n_args(self) -> int:
-        return self.n_args
+    @property
+    def n_args(self) -> int:
+        return int(self._n_args)
 
-    def get_comment(self) -> str:
-        return self.comment
+    @property
+    def comment(self) -> str:
+        return self._comment
 
-    def get_id(self) -> int:
-        return self.id
+    @property
+    def id(self) -> int:
+        return int(self._id)
 
-    def set_name(self, name: str) -> None:
+    @name.setter
+    def name(self, name: str) -> None:
         try:
-            self.name = name
+            self._name = name
         except Exception as e:
             return
 
-    def set_n_args(self, n_args: int) -> None:
+    @n_args.setter
+    def n_args(self, n_args: int) -> None:
         try:
-            self.n_args = int(n_args)
+            self._n_args = int(n_args)
         except Exception as e:
             return
 
-    def set_comment(self, comment: str) -> None:
+    @comment.setter
+    def comment(self, comment: str) -> None:
         try:
-            self.comment = comment
+            self._comment = comment
         except Exception as e:
             return
 
-    def set_id(self, id: int) -> None:
+    @id.setter
+    def id(self, id: int) -> None:
         try:
-            self.id = int(id)
+            self._id = int(id)
         except Exception as e:
             return
 
@@ -1132,11 +1224,9 @@ class Command:
         for k, v in self.rets.items():
             rets[k] = v.compile()
 
-        att = copy.deepcopy(self.__dict__)
+        att = make_public(self, filter_private(self.__dict__))
         att["args"] = args
         att["rets"] = rets
-        del att["creation_date"]
-        del att["parent"]
 
         return att
 
@@ -1163,12 +1253,10 @@ class Command:
         """
         args = d["args"]
         rets = d["rets"]
-        del d["args"]
-        del d["rets"]
 
-        self.__dict__.update(d)
-        self.id = int(self.id)
-        self.n_args = int(self.n_args)
+        #self.__dict__.update(make_private(self, d))
+        for k,v in make_private(self, d).items():
+            self.__setattr__(k,v)
 
         for arg_k, arg_v in args.items():
             arg = Argument()
@@ -1187,7 +1275,7 @@ class Command:
         return hash((self.name, self.id, self.creation_date))
 
 
-class Config:
+class Config(Node):
     """Config node. Represents a Config.
 
     :param name: Name of the Config.
@@ -1204,44 +1292,52 @@ class Config:
         type: str = "unsigned",
     ):
         self.parent = parent
-        self.name = name
-        self.id = int(id)
-        self.comment = comment
-        self.type = type
+        self._name = name
+        self._id = int(id)
+        self._comment = comment
+        self._type = type
 
         self.creation_date = datetime.datetime.now()
 
-    def get_name(self) -> str:
-        return self.name
+    @property
+    def name(self) -> str:
+        return self._name
+ 
+    @property
+    def id(self) -> int:
+        return int(self._id)
 
-    def get_id(self) -> int:
-        return self.id
+    @property
+    def comment(self) -> str:
+        return self._comment
 
-    def get_comment(self) -> str:
-        return self.comment
+    @property
+    def type(self) -> str:
+        return self._type
 
-    def get_type(self) -> str:
-        return self.type
-
-    def set_name(self, name: str) -> None:
+    @name.setter
+    def name(self, name: str) -> None:
         try:
-            self.name = name
+            self._name = name
         except Exception as e:
             return
 
-    def set_id(self, id: int) -> None:
+    @id.setter
+    def id(self, id: int) -> None:
         try:
             self.id = int(id)
         except Exception as e:
             return
 
-    def set_comment(self, comment: str) -> None:
+    @comment.setter
+    def comment(self, comment: str) -> None:
         try:
             self.comment = comment
         except Exception as e:
             return
 
-    def set_type(self, type: str) -> None:
+    @type.setter
+    def type(self, type: str) -> None:
         self.type = type
 
     def compile(self) -> Dict[str, Any]:
@@ -1250,18 +1346,16 @@ class Config:
         :return: A dictionary containing the node parameters
         """
 
-        d = copy.deepcopy(self.__dict__)
-        del d["creation_date"]
-        del d["parent"]
-        return d
+        return make_public(self, filter_private(self.__dict__))
 
     def decompile(self, d: Dict[str, Any]) -> None:
         """Transform node dictionary representation into a python class.
 
         :param d: Node dictionary
         """
-        self.__dict__.update(d)
-        self.id = int(self.id)
+        #self.__dict__.update(make_private(self, d))
+        for k,v in make_private(self, d).items():
+            self.__setattr__(k,v)
 
     def normalize(self):
         return
@@ -1270,7 +1364,7 @@ class Config:
         return hash((self.name, self.id, self.creation_date))
 
 
-class Device:
+class Device(Node):
     """Device node, Represents a CAN device.
 
     :param name: Name of the Device.
@@ -1295,31 +1389,36 @@ class Device:
         assert self.parent is not None
         c = max([dev.id for dev in self.parent.devices.values()] + [0]) + 1
 
-        self.name = name or ("device" + str(c))
-        self.id = id or c
+        self._name = name or ("device" + str(c))
+        self._id = id or c
         self.msgs = {} if msgs == None else msgs
         self.cmds = {} if cmds == None else cmds
         self.cfgs = {} if cfgs == None else cfgs
 
         self.creation_date = datetime.datetime.now()
 
-    def set_name(self, name: str) -> None:
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def id(self) -> int:
+        return self._id
+
+    @name.setter
+    def name(self, name: str) -> None:
         try:
-            self.name = name
+            self._name = name
         except Exception as e:
             return
 
-    def set_id(self, id: int) -> None:
+    @id.setter
+    def id(self, id: int) -> None:
         try:
-            self.id = int(id)
+            self._id = int(id)
         except Exception as e:
             return
 
-    def get_name(self) -> str:
-        return self.name
-
-    def get_id(self) -> int:
-        return self.id
 
     def add_cmd(self, cmd: Command) -> None:
         self.cmds[cmd.name] = cmd
@@ -1346,12 +1445,10 @@ class Device:
         for cfg_k, cfg_v in self.cfgs.items():
             cfgs[cfg_k] = cfg_v.compile()
 
-        att = copy.deepcopy(self.__dict__)
+        att = make_public(self, filter_private(self.__dict__))
         att["msgs"] = msgs
         att["cmds"] = cmds
         att["cfgs"] = cfgs
-        del att["creation_date"]
-        del att["parent"]
 
         return att
 
@@ -1364,11 +1461,10 @@ class Device:
         cmds = d["cmds"]
         cfgs = d["cfgs"]
 
-        del d["msgs"]
-        del d["cmds"]
-        del d["cfgs"]
+        for k, v in make_private(self, d).items():
+            f = self.__setattr__(k, v)
 
-        self.__dict__.update(d)
+        #self.__dict__.update()
 
         for k, v in msgs.items():
             msg = Message(self)
@@ -1477,17 +1573,10 @@ class Device:
         return hash((self.name, self.id, self.creation_date))
 
     def __repr__(self):
-        return (
-            # name: {self.name},
-            # id: {self.id}
-            "{"
-            + f"""
-    """
-            + "}"
-        )
+        return f"<Device name={self.name} id={self.id}>"
 
 
-class Common:
+class Common(Node):
     def __init__(
         self,
         parent: Spec = None,
@@ -1498,31 +1587,36 @@ class Common:
         cmds: Dict[str, Command] = None,
     ):
         self.parent = parent
-        self.name = name
-        self.id = id
+        self._name = name
+        self._id = id
         self.msgs = {} if msgs == None else msgs
         self.cfgs = {} if cfgs == None else cfgs
         self.cmds = {} if cmds == None else cmds
 
         self.creation_date = datetime.datetime.now()
 
-    def set_name(self, name: str) -> None:
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def id(self) -> int:
+        return self._id
+
+    @name.setter
+    def name(self, name: str) -> None:
         try:
-            self.name = name
+            self._name = name
         except Exception as e:
             return
 
-    def set_id(self, id: int) -> None:
+    @id.setter
+    def id(self, id: int) -> None:
         try:
-            self.id = int(id)
+            self._id = int(id)
         except Exception as e:
             return
 
-    def get_name(self) -> str:
-        return self.name
-
-    def get_id(self) -> int:
-        return self.id
 
     def add_msg(self, msg: Message) -> bool:
         if msg == None:
@@ -1544,10 +1638,8 @@ class Common:
         for msg_k, msg_v in self.msgs.items():
             msgs[msg_k] = msg_v.compile()
 
-        att = copy.deepcopy(self.__dict__)
+        att = make_public(self, filter_private(self.__dict__))
         att["msgs"] = msgs
-        del att["creation_date"]
-        del att["parent"]
         return att
 
     def decompile(self, d: Dict[str, Any]) -> None:
@@ -1558,7 +1650,7 @@ class Common:
         msgs = d["msgs"]
         del d["msgs"]
 
-        self.__dict__.update(d)
+        self.__dict__.update(make_private(self, d))
 
         for key, value in msgs.items():
             msg = Message(self)
@@ -1567,6 +1659,9 @@ class Common:
 
     def __hash__(self):
         return hash((self.name, self.id, self.creation_date))
+
+    def __repr__(self):
+        return f"<Common name={self.name} id={self.id}>"
 
 
 def make_sid(dev_id: int, msg_id: int) -> int:

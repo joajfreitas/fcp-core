@@ -39,25 +39,23 @@ class Signal(SpecBase):
     def from_dict(self, fcp, msg_name):
         self._parent = msg_name
         self.__dict__.update(fcp)
-        #self.name = fcp["name"]
-        #self.start = fcp["start"]
-        #self.length = fcp["length"]
-        #self.scale = fcp["scale"]
-        #self.offset = fcp["offset"]
-        #self.unit = fcp["unit"]
-        #self.comment = fcp["comment"]
-        #self.min_value = fcp["min_value"]
-        #self.max_value = fcp["max_value"]
-        #self.type = fcp["type"]
-        #self.byte_order = fcp["byte_order"]
-        #self.mux = fcp["mux"]
-        #self.mux_count = fcp["mux_count"]
-        #self.alias = fcp["alias"]
+        # self.name = fcp["name"]
+        # self.start = fcp["start"]
+        # self.length = fcp["length"]
+        # self.scale = fcp["scale"]
+        # self.offset = fcp["offset"]
+        # self.unit = fcp["unit"]
+        # self.comment = fcp["comment"]
+        # self.min_value = fcp["min_value"]
+        # self.max_value = fcp["max_value"]
+        # self.type = fcp["type"]
+        # self.byte_order = fcp["byte_order"]
+        # self.mux = fcp["mux"]
+        # self.mux_count = fcp["mux_count"]
+        # self.alias = fcp["alias"]
 
     def to_dict(self) -> Dict[Any, Any]:
-        return {k:v for (k,v) in self.__dict__.items() if not k.startswith("_")}
-
-
+        return {k: v for (k, v) in self.__dict__.items() if not k.startswith("_")}
 
 
 class Message(SpecBase):
@@ -78,7 +76,7 @@ class Message(SpecBase):
         self.description = fcp["description"]
 
     def to_dict(self) -> Dict[Any, Any]:
-        return {k:v for (k,v) in self.__dict__.items() if not k.startswith("_")}
+        return {k: v for (k, v) in self.__dict__.items() if not k.startswith("_")}
 
 
 class Device(SpecBase):
@@ -91,7 +89,7 @@ class Device(SpecBase):
         self.id = fcp["id"]
 
     def to_dict(self) -> Dict[Any, Any]:
-        return {k:v for (k,v) in self.__dict__.items() if not k.startswith("_")}
+        return {k: v for (k, v) in self.__dict__.items() if not k.startswith("_")}
 
     def __repr__(self):
         return f"<Device name={self.name} id={self.id}>"
@@ -113,7 +111,7 @@ class Log(SpecBase):
         self.string = fcp["string"]
 
     def to_dict(self) -> Dict[Any, Any]:
-        return {k:v for (k,v) in self.__dict__.items() if not k.startswith("_")}
+        return {k: v for (k, v) in self.__dict__.items() if not k.startswith("_")}
 
 
 class Command(SpecBase):
@@ -176,6 +174,7 @@ def json_to_sql(session: Session, j: Dict[Any, Any]):
 
     session.commit()
 
+
 def sql_to_json(session: Session) -> Dict[Any, Any]:
     signals = session.query(Signal).all()
     devs = session.query(Device).all()
@@ -192,18 +191,20 @@ def sql_to_json(session: Session) -> Dict[Any, Any]:
             sigs = session.query(Signal).filter(Signal._parent == msg.name).all()
             json["devices"][dev.name]["msgs"][msg.name]["signals"] = {}
             for sig in sigs:
-                json["devices"][dev.name]["msgs"][msg.name]["signals"][sig.name] = sig.to_dict()
+                json["devices"][dev.name]["msgs"][msg.name]["signals"][
+                    sig.name
+                ] = sig.to_dict()
 
     json["logs"] = {}
     logs = session.query(Log).all()
     for log in logs:
         json["logs"][log.name] = log.to_dict()
 
-
     return json
 
+
 def create_session(db_path: Path, base) -> Session:
-    engine = create_engine("sqlite:///" + str(db_path), echo=True)
+    engine = create_engine("sqlite:///" + str(db_path))
     base.metadata.create_all(engine)
     base.metadata.bind = engine
     DBSession = sessionmaker(bind=engine)
@@ -230,7 +231,7 @@ def init_session(file_path: Path) -> Session:
     json_to_sql(session, j)
 
     connection = engine.connect()
-    #connection.execute()
+    # connection.execute()
 
     return session, engine
 

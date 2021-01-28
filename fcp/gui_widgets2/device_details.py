@@ -26,7 +26,6 @@ class DeviceDetails(QWidget):
         # self.ui.deviceDetailsButton.clicked.connect(self.details)
         # self.ui.deleteButton.clicked.connect(self.delete)
 
-
     def connect_ui(self):
         def set_wrapper(obj, var):
             def set(value):
@@ -34,7 +33,7 @@ class DeviceDetails(QWidget):
                 self.save.emit()
 
             return set
-        
+
         for att, _, var_name in self.atts:
             att.textEdited.connect(set_wrapper(self.dev, var_name))
 

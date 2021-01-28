@@ -183,7 +183,7 @@ class CANMessage:
             return None
 
     def __repr__(self):
-        return str(self.encode_json())[1:]
+        return f"<CANMessage sid={self.sid}, dlc={self.dlc}, data={self.data64}"
 
 
 def test_encode_json():

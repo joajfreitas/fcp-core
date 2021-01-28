@@ -173,7 +173,7 @@ def validate_cmd(json_file: str):
 
     spec = Spec()
     spec.decompile(j)
-    failed = validate(logger, spec)
+    failed = validate(spec)
     if len(failed) == 0:
         print("✓ JSON validated")
     else:
@@ -192,7 +192,7 @@ def gui_cmd(file: str):
     from .gui import gui
 
     logger = setup_logging()
-    gui(file, logger)
+    gui(file)
 
 
 @click.command(name="gui2")

@@ -32,7 +32,6 @@ class MainWindow(QMainWindow):
         shortcutOpen.setContext(Qt.ApplicationShortcut)
         shortcutOpen.activated.connect(self.undo)
 
-    
     def undo(self):
         print("undo")
         ids = self.undo_redo.undo()
@@ -46,9 +45,7 @@ class MainWindow(QMainWindow):
         self.session.commit()
 
         try:
-            filename, _ = QFileDialog.getSaveFileName(
-                self, self.tr("Open JSON"), ""
-            )
+            filename, _ = QFileDialog.getSaveFileName(self, self.tr("Open JSON"), "")
         except Exception as e:
             msg = QMessageBox(self)
             msg.setStandardButtons(QMessageBox.Ok)
@@ -60,7 +57,6 @@ class MainWindow(QMainWindow):
         j = json.dumps(sql_to_json(self.session), indent=4)
         with open(filename, "w") as f:
             f.write(j)
- 
 
     def recent_files(self):
         files = File.recent_files(self.config)
