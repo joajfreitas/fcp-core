@@ -4,3 +4,6 @@ pyside2
 colorful
 cantools
 hjson
+pyyaml
+PySide2
+sqlalchemy

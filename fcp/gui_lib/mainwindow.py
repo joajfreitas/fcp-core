@@ -127,9 +127,8 @@ class MainWindow(QMainWindow):
         self.undo_redo.redo()
         self.reload()
 
-    def validate(self):
+    def validate(self) -> int:
         failed = validate(self.spec)
-        failed = [f"{level}: {msg}" for level, msg in failed]
         if len(failed) == 0:
             MessageBox(
                 self,
@@ -137,11 +136,25 @@ class MainWindow(QMainWindow):
                 QMessageBox.Information,
                 "Spec passed").launch()
         else:
+
+            if len(failed) > 5:
+                print(failed[0])
+                failed = [(lvl, msg) for lvl, msg in failed if lvl=="error"]
+                failed = [f"{level}: {msg}" for level, msg in failed]
+
+                errors = "\n".join(failed[:5]) + f"\nand {len(failed)-5} more errors..."
+            else:
+                failed = [f"{level}: {msg}" for level, msg in failed]
+                errors = "\n".join(failed)
+
+
             MessageBox(
                 self,
                 QMessageBox.Ok,
                 QMessageBox.Warning,
-                "\n".join(failed)).launch()
+                errors).launch()
+
+        return len(failed)
 
     def add_device(self, device=None, widget=None):
         new_device = device is None or type(device) == bool
@@ -185,7 +198,9 @@ class MainWindow(QMainWindow):
         for child in self.children:
             child.save()
 
-        self.validate()
+        l = self.validate()
+        if l > 0:
+            return
 
         try:
             filename = QFileDialog.getSaveFileName(

@@ -1,6 +1,6 @@
 import sys
 import logging
-import hjson as json
+import json
 import subprocess, os
 from pathlib import Path
 from pprint import pprint
@@ -374,6 +374,20 @@ def docs(json_file: str, out: str, link_location: str):
     spec = get_spec(json_file, logger)
     generate_docs(spec, out, link_location, logger)
 
+@click.command("fix")
+@click.argument("src")
+@click.argument("dst")
+def fix(src: str, dst: str):
+    print("Warning: This operation may lose some data")
+    spec = Spec()
+    with open(src) as f:
+        j = json.loads(f.read())
+
+    spec.decompile(j)
+    d = spec.compile()
+    with open(dst, "w") as f:
+        f.write(json.dumps(d, indent=4))
+
 
 @click.group(invoke_without_command=True)
 @click.option("--version", is_flag=True, default=False)
@@ -393,19 +407,20 @@ main.add_command(c_gen_cmd)
 main.add_command(init_cmd)
 main.add_command(validate_cmd)
 main.add_command(gui_cmd)
-main.add_command(gui_cmd2)
-main.add_command(dump_dev_list)
-main.add_command(dump_msg_list)
-main.add_command(dump_cfg_list)
-main.add_command(dump_cmd_list)
-main.add_command(dump_log_list)
-main.add_command(dump_signal_list)
-main.add_command(dump_signal_names)
-main.add_command(print_log)
-main.add_command(print_dev)
-main.add_command(print_msg)
-main.add_command(print_signal)
+#main.add_command(gui_cmd2)
+#main.add_command(dump_dev_list)
+#main.add_command(dump_msg_list)
+#main.add_command(dump_cfg_list)
+#main.add_command(dump_cmd_list)
+#main.add_command(dump_log_list)
+#main.add_command(dump_signal_list)
+#main.add_command(dump_signal_names)
+#main.add_command(print_log)
+#main.add_command(print_dev)
+#main.add_command(print_msg)
+#main.add_command(print_signal)
 main.add_command(docs)
+main.add_command(fix)
 
 if __name__ == "__main__":
     main()

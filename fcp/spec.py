@@ -58,12 +58,10 @@ def normalize(xs: Dict[str, Any], key: Callable[[Any], str] = None):
 class Node():
     @property
     def spec(self):
-        print(self)
         if type(self.parent) is Spec:
             return self.parent
 
         if self.parent is None:
-            print("Parent is None")
             exit()
 
         return self.parent.get_spec()
@@ -420,7 +418,6 @@ class Spec:
                 signals = []
                 for sig in msg.signals.values():
                     if sig is signal:
-                        print("found signal")
                         signals.append(signal.name)
 
                 for name in signals:
@@ -513,7 +510,6 @@ class Spec:
 
 
         for log in self.logs.values():
-            print("log", log.name)
             d["logs"][log.name] = log.compile()
 
 
@@ -614,12 +610,12 @@ class Signal(Node):
         name: str = "",
         start: int = 0,
         length: int = 0,
-        scale: float = 1,
-        offset: float = 0,
+        scale: float = 1.0,
+        offset: float = 0.0,
         unit: str = "",
         comment: str = "",
-        min_value: int = 0,
-        max_value: int = 0,
+        min_value: float = 0.0,
+        max_value: float = 0.0,
         type: str = "unsigned",
         byte_order: str = "little_endian",
         mux: str = "",
@@ -1018,10 +1014,8 @@ class Message(Node):
         :param signal: Signal to be removed.
         """
         if self.get_signal(name) is None:
-            print("Not found", name)
             return False
 
-        print("deleting signal")
         del self.signals[name]
         return True
 
