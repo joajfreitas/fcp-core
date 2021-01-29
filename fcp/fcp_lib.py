@@ -19,7 +19,7 @@ def encode_signal(signal, value):
 
 
 def conv_endianess(value: int, signal: Signal):
-    length = signal.get_length() / 8
+    length = signal.length / 8
     log2_length = log2(length)
 
     if length == 1:
@@ -28,7 +28,7 @@ def conv_endianess(value: int, signal: Signal):
     if log2_length != int(log2_length):
         return value
 
-    if signal.get_byte_order() != "big_endian":
+    if signal.byte_order != "big_endian":
         return value
 
     length = int(length)
@@ -129,14 +129,28 @@ class Fcp:
             return "", {}
 
         signals = {}
+        final_signals = {}
+        signals_mux = {}
+
         data = 0
         for i, d in enumerate(msg.get_data16()):
             data += d << 16 * i
 
+        there_are_muxed = False
+        
         for name, signal in fcp_msg.signals.items():
+            if signal.mux_count != 1:
+                signals_mux[name] = signal.mux
+                there_are_muxed = True
             signals[name] = decode_signal(signal, data)
 
-        return fcp_msg.name, signals
+        if there_are_muxed:
+            for (k,v) in signals.items():
+                if k in signals_mux.keys():
+                    mux_value = signals[signals_mux[k]]
+                    final_signals[k+str(round(mux_value))] = v
+
+        return fcp_msg.name, final_signals
 
     def decode_log(self, signal):
         for name, log in self.spec.logs.items():
