@@ -37,7 +37,7 @@ def setup_logging() -> logging.Logger:
     return logger
 
 
-def report_validate(failed):
+def report_validate(failed, force):
     error = 0
     if len(failed):
         for level, msg in failed:
@@ -47,13 +47,14 @@ def report_validate(failed):
                 error += 1
 
         if error > 0:
-            print("Too many error won't continue")
-            return True
+            if not force:
+                print("Too many error won't continue")
+                return True
 
     return False
 
 
-def get_spec(json_file: str, logger: logging.Logger) -> Spec:
+def get_spec(json_file: str, force: bool = False) -> Spec:
     """Create Spec from json file path.
     :param json_file: path to the json file.
     :param logger: logger.
@@ -65,8 +66,8 @@ def get_spec(json_file: str, logger: logging.Logger) -> Spec:
         j = json.loads(f.read())
 
     spec.decompile(j)
-    failed = validate(logger, spec)
-    if report_validate(failed):
+    failed = validate(spec)
+    if report_validate(failed, force):
         exit()
 
     return spec
@@ -117,8 +118,7 @@ def write_dbc_cmd(json_file: str, dbc: str):
     :param dbc: dbc file path.
     """
 
-    logger = setup_logging()
-    spec = get_spec(json_file, logger)
+    spec = get_spec(json_file)
     write_dbc(spec, dbc, logger)
 
 
@@ -128,16 +128,17 @@ def write_dbc_cmd(json_file: str, dbc: str):
 @click.argument("json_file")
 @click.argument("skel")
 @click.option("--noformat", is_flag=True, default=False)
-def c_gen_cmd(templates: str, output: str, json_file: str, skel: str, noformat: bool):
+@click.option("--force", is_flag=True, default=False)
+def c_gen_cmd(templates: str, output: str, json_file: str, skel: str, noformat: bool, force: bool):
     """Transform FCP json into a C library.
     :param templates: jinja template directory.
     :param output: output directory.
     :param json_file: FCP json file path.
     :param skel: C skeleton directory.
     """
-
     logger = setup_logging()
-    spec = get_spec(json_file, logger)
+
+    spec = get_spec(json_file, force)
     c_gen(spec, templates, output, skel, logger)
 
     if noformat == False:
@@ -210,8 +211,7 @@ def gui_cmd2(file: Path):
 @click.command()
 @click.argument("json_file")
 def dump_dev_list(json_file):
-    logger = setup_logging()
-    spec = get_spec(json_file, logger)
+    spec = get_spec(json_file)
 
     for dev in spec.devices.keys():
         print(dev)
@@ -221,9 +221,7 @@ def dump_dev_list(json_file):
 @click.argument("json_file")
 @click.argument("device", required=False)
 def dump_msg_list(json_file, device):
-    logger = setup_logging()
-
-    spec = get_spec(json_file, logger)
+    spec = get_spec(json_file)
 
     for dev_name, dev in spec.devices.items():
         if device != None and device != dev_name:
@@ -237,9 +235,7 @@ def dump_msg_list(json_file, device):
 @click.argument("json_file")
 @click.argument("device", required=False)
 def dump_cfg_list(json_file, device):
-    logger = setup_logging()
-
-    spec = get_spec(json_file, logger)
+    spec = get_spec(json_file)
 
     for dev_name, dev in spec.devices.items():
         if device != None and device != dev_name:
@@ -253,9 +249,7 @@ def dump_cfg_list(json_file, device):
 @click.argument("json_file")
 @click.argument("device", required=False)
 def dump_cmd_list(json_file, device):
-    logger = setup_logging()
-
-    spec = get_spec(json_file, logger)
+    spec = get_spec(json_file)
 
     for dev_name, dev in spec.devices.items():
         if device != None and device != dev_name:
@@ -268,8 +262,7 @@ def dump_cmd_list(json_file, device):
 @click.command()
 @click.argument("json_file")
 def dump_log_list(json_file):
-    logger = setup_logging()
-    spec = get_spec(json_file, logger)
+    spec = get_spec(json_file)
 
     for log in spec.logs.keys():
         print(log)
@@ -279,8 +272,7 @@ def dump_log_list(json_file):
 @click.argument("json_file")
 @click.argument("message", required=False)
 def dump_signal_list(json_file, message):
-    logger = setup_logging()
-    spec = get_spec(json_file, logger)
+    spec = get_spec(json_file)
 
     for dev in spec.devices.values():
         for msg in dev.msgs.values():
@@ -294,8 +286,7 @@ def dump_signal_list(json_file, message):
 @click.argument("json_file")
 @click.argument("message", required=False)
 def dump_signal_names(json_file, message):
-    logger = setup_logging()
-    spec = get_spec(json_file, logger)
+    spec = get_spec(json_file)
 
     for dev in spec.devices.values():
         for msg in dev.msgs.values():
@@ -309,8 +300,7 @@ def dump_signal_names(json_file, message):
 @click.argument("json_file")
 @click.argument("log")
 def print_log(json_file, log):
-    logger = setup_logging()
-    spec = get_spec(json_file, logger)
+    spec = get_spec(json_file)
 
     print(spec.get_log(log))
 
@@ -319,9 +309,7 @@ def print_log(json_file, log):
 @click.argument("json_file")
 @click.argument("dev")
 def print_dev(json_file, dev):
-    logger = setup_logging()
-
-    spec = get_spec(json_file, logger)
+    spec = get_spec(json_file)
 
     print(spec.get_device(dev))
 
@@ -330,8 +318,7 @@ def print_dev(json_file, dev):
 @click.argument("json_file")
 @click.argument("message")
 def print_msg(json_file, message):
-    logger = setup_logging()
-    spec = get_spec(json_file, logger)
+    spec = get_spec(json_file)
 
     for dev in spec.devices.values():
         for name, msg in dev.msgs.items():
@@ -344,9 +331,7 @@ def print_msg(json_file, message):
 @click.argument("json_file")
 @click.argument("signal")
 def print_signal(json_file, signal):
-    logger = setup_logging()
-
-    spec = get_spec(json_file, logger)
+    spec = get_spec(json_file)
 
     for dev in spec.devices.values():
         for msg in dev.msgs.values():
@@ -371,7 +356,7 @@ def docs(json_file: str, out: str, link_location: str):
 
     logger = setup_logging()
 
-    spec = get_spec(json_file, logger)
+    spec = get_spec(json_file)
     generate_docs(spec, out, link_location, logger)
 
 @click.command("fix")
