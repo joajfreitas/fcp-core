@@ -43,18 +43,3 @@ JSON specification for can bus messages and helper tools.
 ## Documentation
 
 See [readthedocs.io](https://fcp-core.readthedocs.io/en/latest/)
-
-## v1 Targets
-
-### Use SQlite for gui editing
-
-
-### Update the text config format
-
-Currently using JSON.
-
-Either update it to hjson, yaml, ... Or replace it completly with a new custom
-language.
-	
-
-
