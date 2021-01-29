@@ -1,4 +1,17 @@
-build-pic:
+test:
+  image: joajfreitas/arch-python
+  stage: build
+  needs: []
+  tags:
+    - docker
+
+  script:
+    - pip3 install pytest
+    - cd fcp && pytest -v
+
+
+
+install:
   image: archlinux
   stage: build
   needs: []
