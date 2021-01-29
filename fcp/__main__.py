@@ -369,6 +369,14 @@ def fix(src: str, dst: str):
         j = json.loads(f.read())
 
     spec.decompile(j)
+
+    for dev in spec.devices.values():
+        for msg in dev.msgs.values():
+            for sig in msg.signals.values():
+                if sig.mux_count == 0:
+                    sig.mux_count = 1
+
+
     d = spec.compile()
     with open(dst, "w") as f:
         f.write(json.dumps(d, indent=4))
