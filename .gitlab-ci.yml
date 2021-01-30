@@ -34,10 +34,11 @@ release:
 
 
 pages:
+  image: alpine:latest
   stage: deploy
   script:
   - echo 'Nothing to do...'
   artifacts:
     paths:
-    - release-notes
+    - public
     expire_in: 1 day
