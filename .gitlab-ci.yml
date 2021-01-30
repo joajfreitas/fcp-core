@@ -27,6 +27,6 @@ release:
     - release
 
   script:
-    - python setup.py install
+    - python setup.py sdist
     - pip install twine
     - twine upload -u joajfreitas -p $PYPI_PASSWRD /* 
