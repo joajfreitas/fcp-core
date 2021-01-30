@@ -4,9 +4,6 @@ import datetime
 
 import time
 
-import code
-
-
 def handle_key_not_found(d: dict, key: str):
     return d.get(key).items() if d.get(key) != None else []
 
@@ -133,7 +130,7 @@ class Log(Node):
     @property
     def string(self) -> str:
         return self._string
- 
+
     @id.setter
     def id(self, id: int) -> None:
         try:
@@ -972,7 +969,6 @@ class Message(Node):
         :param d: Node dictionary
         """
         signals = d["signals"]
-        #self.__dict__.update(make_private(self, d))
         for k,v in make_private(self,d).items():
             self.__setattr__(k,v)
 
@@ -1583,9 +1579,9 @@ class Common(Node):
         self.parent = parent
         self._name = name
         self._id = id
-        self.msgs = {} if msgs == None else msgs
-        self.cfgs = {} if cfgs == None else cfgs
-        self.cmds = {} if cmds == None else cmds
+        self.msgs = {} if msgs is None else msgs
+        self.cfgs = {} if cfgs is None else cfgs
+        self.cmds = {} if cmds is None else cmds
 
         self.creation_date = datetime.datetime.now()
 
@@ -1660,9 +1656,10 @@ class Common(Node):
 
 def make_sid(dev_id: int, msg_id: int) -> int:
     """ Find the sid from the dev_id and the msg_id """
-    return msg_id * 32 + dev_id
+    return (msg_id << 5) + dev_id
 
 
 def decompose_id(sid: int) -> Tuple[int, int]:
     """ Find the dev_id and the msg_id from the sid."""
     return sid & 0x1F, (sid >> 5) & 0x3F
+

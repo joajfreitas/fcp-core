@@ -4,7 +4,7 @@ import pytest
 @pytest.fixture
 def json():
     import json
-    with open("../json/fst10e.json") as f:
+    with open("json/fst10e.json") as f:
         return json.loads(f.read())
 
 def test_make_sid():
