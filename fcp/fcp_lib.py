@@ -128,29 +128,22 @@ class Fcp:
         if fcp_msg == None:
             return "", {}
 
-        signals = {}
-        final_signals = {}
-        signals_mux = {}
-
         data = 0
         for i, d in enumerate(msg.get_data16()):
             data += d << 16 * i
 
-        there_are_muxed = False
-        
+        mux = ""
+        signals = {}
         for name, signal in fcp_msg.signals.items():
             if signal.mux_count != 1:
-                signals_mux[name] = signal.mux
-                there_are_muxed = True
+                mux = signal.mux
             signals[name] = decode_signal(signal, data)
 
-        if there_are_muxed:
-            for (k,v) in signals.items():
-                if k in signals_mux.keys():
-                    mux_value = signals[signals_mux[k]]
-                    final_signals[k+str(round(mux_value))] = v
+        if mux != "":
+            mux_value = str(int(signals[mux]))
+            signals = {k + (mux_value if k != mux else ""):v for (k,v) in signals.items()}
 
-        return fcp_msg.name, final_signals
+        return fcp_msg.name, signals
 
     def decode_log(self, signal):
         for name, log in self.spec.logs.items():
