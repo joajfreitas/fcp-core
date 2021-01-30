@@ -31,3 +31,13 @@ release:
     - python setup.py sdist
     - pip install twine
     - twine upload -u joajfreitas -p $PYPI_PASSWORD dist/* 
+
+
+pages:
+  stage: deploy
+  script:
+  - echo 'Nothing to do...'
+  artifacts:
+    paths:
+    - release-notes
+    expire_in: 1 day
