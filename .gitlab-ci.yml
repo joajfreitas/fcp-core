@@ -23,6 +23,7 @@ install:
 
 release:
   image: joajfreitas/arch-python
+  stage: deploy
   only:
     - release
 
