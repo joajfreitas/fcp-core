@@ -34,7 +34,7 @@ release:
 
 
 pages:
-  image: alpine:latest
+  image: joajfreitas/arch-python
   stage: deploy
   script:
   - cd public; python index.py > index.html
