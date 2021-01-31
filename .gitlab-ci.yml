@@ -37,7 +37,7 @@ pages:
   image: alpine:latest
   stage: deploy
   script:
-  - echo 'Nothing to do...'
+  - cd public; python index.py > index.html
   artifacts:
     paths:
     - public
