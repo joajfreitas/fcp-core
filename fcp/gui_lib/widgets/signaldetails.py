@@ -36,6 +36,7 @@ class Ui_SignalDetails(object):
 
         self.horizontalLayout_14.addWidget(self.nameEdit)
 
+
         self.verticalLayout.addLayout(self.horizontalLayout_14)
 
         self.horizontalLayout_15 = QHBoxLayout()
@@ -49,6 +50,7 @@ class Ui_SignalDetails(object):
         self.aliasEdit.setObjectName(u"aliasEdit")
 
         self.horizontalLayout_15.addWidget(self.aliasEdit)
+
 
         self.verticalLayout.addLayout(self.horizontalLayout_15)
 
@@ -64,6 +66,7 @@ class Ui_SignalDetails(object):
 
         self.horizontalLayout_13.addWidget(self.commentEdit)
 
+
         self.verticalLayout.addLayout(self.horizontalLayout_13)
 
         self.horizontalLayout_12 = QHBoxLayout()
@@ -77,6 +80,7 @@ class Ui_SignalDetails(object):
         self.startEdit.setObjectName(u"startEdit")
 
         self.horizontalLayout_12.addWidget(self.startEdit)
+
 
         self.verticalLayout.addLayout(self.horizontalLayout_12)
 
@@ -92,6 +96,7 @@ class Ui_SignalDetails(object):
 
         self.horizontalLayout_11.addWidget(self.lengthEdit)
 
+
         self.verticalLayout.addLayout(self.horizontalLayout_11)
 
         self.horizontalLayout_9 = QHBoxLayout()
@@ -105,6 +110,7 @@ class Ui_SignalDetails(object):
         self.typeEdit.setObjectName(u"typeEdit")
 
         self.horizontalLayout_9.addWidget(self.typeEdit)
+
 
         self.verticalLayout.addLayout(self.horizontalLayout_9)
 
@@ -120,6 +126,7 @@ class Ui_SignalDetails(object):
 
         self.horizontalLayout_8.addWidget(self.unitEdit)
 
+
         self.verticalLayout.addLayout(self.horizontalLayout_8)
 
         self.horizontalLayout_7 = QHBoxLayout()
@@ -133,6 +140,7 @@ class Ui_SignalDetails(object):
         self.minValueEdit.setObjectName(u"minValueEdit")
 
         self.horizontalLayout_7.addWidget(self.minValueEdit)
+
 
         self.verticalLayout.addLayout(self.horizontalLayout_7)
 
@@ -148,6 +156,7 @@ class Ui_SignalDetails(object):
 
         self.horizontalLayout_6.addWidget(self.maxValueEdit)
 
+
         self.verticalLayout.addLayout(self.horizontalLayout_6)
 
         self.horizontalLayout_5 = QHBoxLayout()
@@ -161,6 +170,7 @@ class Ui_SignalDetails(object):
         self.muxEdit.setObjectName(u"muxEdit")
 
         self.horizontalLayout_5.addWidget(self.muxEdit)
+
 
         self.verticalLayout.addLayout(self.horizontalLayout_5)
 
@@ -176,6 +186,7 @@ class Ui_SignalDetails(object):
 
         self.horizontalLayout_4.addWidget(self.muxCountEdit)
 
+
         self.verticalLayout.addLayout(self.horizontalLayout_4)
 
         self.horizontalLayout_3 = QHBoxLayout()
@@ -189,6 +200,7 @@ class Ui_SignalDetails(object):
         self.byteOrderEdit.setObjectName(u"byteOrderEdit")
 
         self.horizontalLayout_3.addWidget(self.byteOrderEdit)
+
 
         self.verticalLayout.addLayout(self.horizontalLayout_3)
 
@@ -204,6 +216,7 @@ class Ui_SignalDetails(object):
 
         self.horizontalLayout_2.addWidget(self.scaleEdit)
 
+
         self.verticalLayout.addLayout(self.horizontalLayout_2)
 
         self.horizontalLayout = QHBoxLayout()
@@ -217,6 +230,7 @@ class Ui_SignalDetails(object):
         self.offsetEdit.setObjectName(u"offsetEdit")
 
         self.horizontalLayout.addWidget(self.offsetEdit)
+
 
         self.verticalLayout.addLayout(self.horizontalLayout)
 
@@ -232,68 +246,36 @@ class Ui_SignalDetails(object):
 
         self.horizontalLayout_10.addWidget(self.signalDeleteButton)
 
+
         self.verticalLayout.addLayout(self.horizontalLayout_10)
 
+
         self.verticalLayout_2.addWidget(self.groupBox)
+
 
         self.retranslateUi(SignalDetails)
 
         QMetaObject.connectSlotsByName(SignalDetails)
-
     # setupUi
 
     def retranslateUi(self, SignalDetails):
-        SignalDetails.setWindowTitle(
-            QCoreApplication.translate("SignalDetails", u"SignalDetails", None)
-        )
-        self.groupBox.setTitle(
-            QCoreApplication.translate("SignalDetails", u"Signal", None)
-        )
-        self.nameLabel.setText(
-            QCoreApplication.translate("SignalDetails", u"name", None)
-        )
-        self.aliasLabel.setText(
-            QCoreApplication.translate("SignalDetails", u"alias", None)
-        )
-        self.commentLabel.setText(
-            QCoreApplication.translate("SignalDetails", u"comment", None)
-        )
-        self.startLabel.setText(
-            QCoreApplication.translate("SignalDetails", u"start", None)
-        )
-        self.lengthLabel.setText(
-            QCoreApplication.translate("SignalDetails", u"length", None)
-        )
-        self.typeLabel.setText(
-            QCoreApplication.translate("SignalDetails", u"type", None)
-        )
-        self.unitLabel.setText(
-            QCoreApplication.translate("SignalDetails", u"unit", None)
-        )
-        self.minValueLabel.setText(
-            QCoreApplication.translate("SignalDetails", u"min_value", None)
-        )
-        self.maxValueLabel.setText(
-            QCoreApplication.translate("SignalDetails", u"max_value", None)
-        )
+        SignalDetails.setWindowTitle(QCoreApplication.translate("SignalDetails", u"SignalDetails", None))
+        self.groupBox.setTitle(QCoreApplication.translate("SignalDetails", u"Signal", None))
+        self.nameLabel.setText(QCoreApplication.translate("SignalDetails", u"name", None))
+        self.aliasLabel.setText(QCoreApplication.translate("SignalDetails", u"alias", None))
+        self.commentLabel.setText(QCoreApplication.translate("SignalDetails", u"comment", None))
+        self.startLabel.setText(QCoreApplication.translate("SignalDetails", u"start", None))
+        self.lengthLabel.setText(QCoreApplication.translate("SignalDetails", u"length", None))
+        self.typeLabel.setText(QCoreApplication.translate("SignalDetails", u"type", None))
+        self.unitLabel.setText(QCoreApplication.translate("SignalDetails", u"unit", None))
+        self.minValueLabel.setText(QCoreApplication.translate("SignalDetails", u"min_value", None))
+        self.maxValueLabel.setText(QCoreApplication.translate("SignalDetails", u"max_value", None))
         self.muxLabel.setText(QCoreApplication.translate("SignalDetails", u"mux", None))
-        self.muxCountLabel.setText(
-            QCoreApplication.translate("SignalDetails", u"mux_count", None)
-        )
-        self.byteOrderLabel.setText(
-            QCoreApplication.translate("SignalDetails", u"byte_order", None)
-        )
-        self.scaleLabel.setText(
-            QCoreApplication.translate("SignalDetails", u"scale", None)
-        )
-        self.offsetLabel.setText(
-            QCoreApplication.translate("SignalDetails", u"offset", None)
-        )
-        self.saveSignal.setText(
-            QCoreApplication.translate("SignalDetails", u"Save", None)
-        )
-        self.signalDeleteButton.setText(
-            QCoreApplication.translate("SignalDetails", u"Delete", None)
-        )
-
+        self.muxCountLabel.setText(QCoreApplication.translate("SignalDetails", u"mux_count", None))
+        self.byteOrderLabel.setText(QCoreApplication.translate("SignalDetails", u"byte_order", None))
+        self.scaleLabel.setText(QCoreApplication.translate("SignalDetails", u"scale", None))
+        self.offsetLabel.setText(QCoreApplication.translate("SignalDetails", u"offset", None))
+        self.saveSignal.setText(QCoreApplication.translate("SignalDetails", u"Save", None))
+        self.signalDeleteButton.setText(QCoreApplication.translate("SignalDetails", u"Delete", None))
     # retranslateUi
+

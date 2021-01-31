@@ -32,15 +32,13 @@ class Ui_LogLayout(object):
 
         self.verticalLayout.addWidget(self.scrollArea)
 
+
         self.retranslateUi(LogLayout)
 
         QMetaObject.connectSlotsByName(LogLayout)
-
     # setupUi
 
     def retranslateUi(self, LogLayout):
-        LogLayout.setWindowTitle(
-            QCoreApplication.translate("LogLayout", u"LogLayout", None)
-        )
-
+        LogLayout.setWindowTitle(QCoreApplication.translate("LogLayout", u"LogLayout", None))
     # retranslateUi
+

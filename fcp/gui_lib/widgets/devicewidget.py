@@ -47,26 +47,21 @@ class Ui_DeviceWidget(object):
 
         self.horizontalLayout_3.addWidget(self.deviceDetailsButton)
 
+
         self.horizontalLayout_2.addWidget(self.groupBox_2)
+
 
         self.retranslateUi(DeviceWidget)
 
         QMetaObject.connectSlotsByName(DeviceWidget)
-
     # setupUi
 
     def retranslateUi(self, DeviceWidget):
-        DeviceWidget.setWindowTitle(
-            QCoreApplication.translate("DeviceWidget", u"DeviceWidget", None)
-        )
+        DeviceWidget.setWindowTitle(QCoreApplication.translate("DeviceWidget", u"DeviceWidget", None))
         self.groupBox_2.setTitle("")
         self.name.setText("")
         self.id.setText("")
-        self.deleteButton.setText(
-            QCoreApplication.translate("DeviceWidget", u"\u2717", None)
-        )
-        self.deviceDetailsButton.setText(
-            QCoreApplication.translate("DeviceWidget", u"...", None)
-        )
-
+        self.deleteButton.setText(QCoreApplication.translate("DeviceWidget", u"\u2717", None))
+        self.deviceDetailsButton.setText(QCoreApplication.translate("DeviceWidget", u"...", None))
     # retranslateUi
+

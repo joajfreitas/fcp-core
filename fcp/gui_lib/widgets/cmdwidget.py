@@ -49,23 +49,18 @@ class Ui_CmdWidget(object):
 
         self.verticalLayout_4.addWidget(self.addCmdButton)
 
+
         self.verticalLayout.addWidget(self.groupBox)
+
 
         self.retranslateUi(CmdWidget)
 
         QMetaObject.connectSlotsByName(CmdWidget)
-
     # setupUi
 
     def retranslateUi(self, CmdWidget):
-        CmdWidget.setWindowTitle(
-            QCoreApplication.translate("CmdWidget", u"CmdWidget", None)
-        )
-        self.groupBox.setTitle(
-            QCoreApplication.translate("CmdWidget", u"Commands", None)
-        )
-        self.addCmdButton.setText(
-            QCoreApplication.translate("CmdWidget", u"Add Cmd", None)
-        )
-
+        CmdWidget.setWindowTitle(QCoreApplication.translate("CmdWidget", u"CmdWidget", None))
+        self.groupBox.setTitle(QCoreApplication.translate("CmdWidget", u"Commands", None))
+        self.addCmdButton.setText(QCoreApplication.translate("CmdWidget", u"Add Cmd", None))
     # retranslateUi
+

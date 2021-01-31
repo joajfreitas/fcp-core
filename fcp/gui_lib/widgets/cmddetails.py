@@ -41,6 +41,7 @@ class Ui_CmdDetails(object):
 
         self.horizontalLayout.addWidget(self.nameEdit)
 
+
         self.verticalLayout.addLayout(self.horizontalLayout)
 
         self.horizontalLayout_3 = QHBoxLayout()
@@ -54,6 +55,7 @@ class Ui_CmdDetails(object):
         self.commentEdit.setObjectName(u"commentEdit")
 
         self.horizontalLayout_3.addWidget(self.commentEdit)
+
 
         self.verticalLayout.addLayout(self.horizontalLayout_3)
 
@@ -69,6 +71,7 @@ class Ui_CmdDetails(object):
 
         self.horizontalLayout_2.addWidget(self.n_argsEdit)
 
+
         self.verticalLayout.addLayout(self.horizontalLayout_2)
 
         self.horizontalLayout_4 = QHBoxLayout()
@@ -82,6 +85,7 @@ class Ui_CmdDetails(object):
         self.idEdit.setObjectName(u"idEdit")
 
         self.horizontalLayout_4.addWidget(self.idEdit)
+
 
         self.verticalLayout.addLayout(self.horizontalLayout_4)
 
@@ -107,6 +111,7 @@ class Ui_CmdDetails(object):
 
         self.verticalLayout.addWidget(self.addArgButton)
 
+
         self.verticalLayout_4.addLayout(self.verticalLayout)
 
         self.deleteCmdButton = QPushButton(self.groupBox)
@@ -114,36 +119,26 @@ class Ui_CmdDetails(object):
 
         self.verticalLayout_4.addWidget(self.deleteCmdButton)
 
+
         self.argDetailsLayout.addWidget(self.groupBox)
 
+
         self.horizontalLayout_5.addLayout(self.argDetailsLayout)
+
 
         self.retranslateUi(CmdDetails)
 
         QMetaObject.connectSlotsByName(CmdDetails)
-
     # setupUi
 
     def retranslateUi(self, CmdDetails):
-        CmdDetails.setWindowTitle(
-            QCoreApplication.translate("CmdDetails", u"CmdDetails", None)
-        )
-        self.groupBox.setTitle(
-            QCoreApplication.translate("CmdDetails", u"Command", None)
-        )
+        CmdDetails.setWindowTitle(QCoreApplication.translate("CmdDetails", u"CmdDetails", None))
+        self.groupBox.setTitle(QCoreApplication.translate("CmdDetails", u"Command", None))
         self.nameLabel.setText(QCoreApplication.translate("CmdDetails", u"name", None))
-        self.commentLabel.setText(
-            QCoreApplication.translate("CmdDetails", u"comment", None)
-        )
-        self.n_argsLabel.setText(
-            QCoreApplication.translate("CmdDetails", u"n_args", None)
-        )
+        self.commentLabel.setText(QCoreApplication.translate("CmdDetails", u"comment", None))
+        self.n_argsLabel.setText(QCoreApplication.translate("CmdDetails", u"n_args", None))
         self.idLabel.setText(QCoreApplication.translate("CmdDetails", u"id", None))
-        self.addArgButton.setText(
-            QCoreApplication.translate("CmdDetails", u"Add Arg", None)
-        )
-        self.deleteCmdButton.setText(
-            QCoreApplication.translate("CmdDetails", u"Delete", None)
-        )
-
+        self.addArgButton.setText(QCoreApplication.translate("CmdDetails", u"Add Arg", None))
+        self.deleteCmdButton.setText(QCoreApplication.translate("CmdDetails", u"Delete", None))
     # retranslateUi
+

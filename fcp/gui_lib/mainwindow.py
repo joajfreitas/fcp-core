@@ -45,12 +45,34 @@ import yaml
 import webbrowser
 from copy import deepcopy
 
+from ..version import VERSION
 from ..spec import *
 from ..validator import validate
 from ..config import *
 from .message_box import MessageBox
 
 from .undo_redo import UndoRedo, UndoAdd
+
+
+import requests
+
+
+def nag_intro():
+    r = requests.get("https://pypi.org/pypi/fcp/json")
+    j = json.loads(r.text)
+    releases = list(j["releases"].keys())
+    releases.sort(key=lambda s: [int(u) for u in s.split('.')])
+    newest_version = releases[-1]
+
+    out = ""
+    if newest_version != VERSION:
+        out += f"FCP v{newest_version} is available. Go get it:\nsudo pip install fcp=={newest_version}"
+
+    release_url = f"https://joajfreitas.gitlab.io/fcp-core/v{VERSION}.md"
+    print(release_url)
+    r = requests.get(release_url)
+    out += "\n" + r.text
+    return out
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -75,6 +97,15 @@ class MainWindow(QMainWindow):
         self.recent_files()
 
         self.undo_redo = UndoRedo()
+
+
+
+        MessageBox(
+            self,
+            QMessageBox.Ok,
+            QMessageBox.Information,
+            nag_intro()).launch()
+
 
     def recent_files(self):
         files = File.recent_files(self.config)
@@ -161,7 +192,7 @@ class MainWindow(QMainWindow):
 
         if new_device:
             device = Device(parent=self.spec, msgs={})
-        
+
         if type(device) is Device:
             r = self.spec.add_device(device)
             #if r == False:
@@ -171,7 +202,7 @@ class MainWindow(QMainWindow):
             #    msg.setText("Failed to create device")
             #    msg.show()
             #    return
-        
+
         if widget is None:
             dev_widget = DeviceWidget(
                 self, device, details=DeviceDetails, layout=self.ui.deviceDetailsLayout

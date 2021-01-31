@@ -47,9 +47,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.horizontalSpacer_2 = QSpacerItem(
-            0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum
-        )
+        self.horizontalSpacer_2 = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_3.addItem(self.horizontalSpacer_2)
 
@@ -67,9 +65,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_3.addWidget(self.scrollArea)
 
-        self.horizontalSpacer = QSpacerItem(
-            0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum
-        )
+        self.horizontalSpacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_3.addItem(self.horizontalSpacer)
 
@@ -85,7 +81,9 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_2.addWidget(self.addButton)
 
+
         self.verticalLayout_2.addLayout(self.horizontalLayout_2)
+
 
         self.verticalLayout_3.addLayout(self.verticalLayout_2)
 
@@ -154,43 +152,24 @@ class Ui_MainWindow(object):
 
         self.tabWidget.setCurrentIndex(0)
 
-        QMetaObject.connectSlotsByName(MainWindow)
 
+        QMetaObject.connectSlotsByName(MainWindow)
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(
-            QCoreApplication.translate("MainWindow", u"MainWindow", None)
-        )
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.actionOpen.setText(QCoreApplication.translate("MainWindow", u"Open", None))
         self.actionSave.setText(QCoreApplication.translate("MainWindow", u"Save", None))
-        self.actionValidate.setText(
-            QCoreApplication.translate("MainWindow", u"Validate", None)
-        )
+        self.actionValidate.setText(QCoreApplication.translate("MainWindow", u"Validate", None))
         self.actionLogs.setText(QCoreApplication.translate("MainWindow", u"Logs", None))
-        self.action_software10e_help.setText(
-            QCoreApplication.translate("MainWindow", u"Software10e FCP", None)
-        )
-        self.action_fcp_help.setText(
-            QCoreApplication.translate("MainWindow", u"FCP Help", None)
-        )
-        self.actionOpen_Recent.setText(
-            QCoreApplication.translate("MainWindow", u"Open Recent", None)
-        )
+        self.action_software10e_help.setText(QCoreApplication.translate("MainWindow", u"Software10e FCP", None))
+        self.action_fcp_help.setText(QCoreApplication.translate("MainWindow", u"FCP Help", None))
+        self.actionOpen_Recent.setText(QCoreApplication.translate("MainWindow", u"Open Recent", None))
         self.addButton.setText(QCoreApplication.translate("MainWindow", u"Add", None))
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.tab),
-            QCoreApplication.translate("MainWindow", u"Devices", None),
-        )
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.Logs),
-            QCoreApplication.translate("MainWindow", u"Logs", None),
-        )
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.tab_3),
-            QCoreApplication.translate("MainWindow", u"Enums", None),
-        )
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("MainWindow", u"Devices", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.Logs), QCoreApplication.translate("MainWindow", u"Logs", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("MainWindow", u"Enums", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))
-
     # retranslateUi
+

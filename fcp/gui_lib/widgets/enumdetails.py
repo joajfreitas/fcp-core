@@ -34,6 +34,7 @@ class Ui_EnumDetails(object):
 
         self.horizontalLayout_2.addWidget(self.nameEdit)
 
+
         self.verticalLayout_2.addLayout(self.horizontalLayout_2)
 
         self.enumContents = QScrollArea(EnumDetails)
@@ -53,6 +54,7 @@ class Ui_EnumDetails(object):
 
         self.verticalLayout_2.addWidget(self.enumContents)
 
+
         self.verticalLayout.addLayout(self.verticalLayout_2)
 
         self.horizontalLayout = QHBoxLayout()
@@ -67,24 +69,19 @@ class Ui_EnumDetails(object):
 
         self.horizontalLayout.addWidget(self.valueAddButton)
 
+
         self.verticalLayout.addLayout(self.horizontalLayout)
+
 
         self.retranslateUi(EnumDetails)
 
         QMetaObject.connectSlotsByName(EnumDetails)
-
     # setupUi
 
     def retranslateUi(self, EnumDetails):
-        EnumDetails.setWindowTitle(
-            QCoreApplication.translate("EnumDetails", u"EnumValue", None)
-        )
+        EnumDetails.setWindowTitle(QCoreApplication.translate("EnumDetails", u"EnumValue", None))
         self.nameLabel.setText(QCoreApplication.translate("EnumDetails", u"name", None))
-        self.enumDeleteButton.setText(
-            QCoreApplication.translate("EnumDetails", u"Delete", None)
-        )
-        self.valueAddButton.setText(
-            QCoreApplication.translate("EnumDetails", u"Add Value", None)
-        )
-
+        self.enumDeleteButton.setText(QCoreApplication.translate("EnumDetails", u"Delete", None))
+        self.valueAddButton.setText(QCoreApplication.translate("EnumDetails", u"Add Value", None))
     # retranslateUi
+

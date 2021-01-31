@@ -37,6 +37,7 @@ class Ui_LogDetails(object):
 
         self.horizontalLayout_2.addWidget(self.nameEdit)
 
+
         self.verticalLayout_2.addLayout(self.horizontalLayout_2)
 
         self.horizontalLayout_3 = QHBoxLayout()
@@ -50,6 +51,7 @@ class Ui_LogDetails(object):
         self.idEdit.setObjectName(u"idEdit")
 
         self.horizontalLayout_3.addWidget(self.idEdit)
+
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_3)
 
@@ -65,6 +67,7 @@ class Ui_LogDetails(object):
 
         self.horizontalLayout_4.addWidget(self.n_argsEdit)
 
+
         self.verticalLayout_2.addLayout(self.horizontalLayout_4)
 
         self.horizontalLayout_5 = QHBoxLayout()
@@ -78,6 +81,7 @@ class Ui_LogDetails(object):
         self.commentEdit.setObjectName(u"commentEdit")
 
         self.horizontalLayout_5.addWidget(self.commentEdit)
+
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_5)
 
@@ -93,6 +97,7 @@ class Ui_LogDetails(object):
 
         self.horizontalLayout.addWidget(self.stringEdit)
 
+
         self.verticalLayout_2.addLayout(self.horizontalLayout)
 
         self.logDeleteButton = QPushButton(self.groupBox)
@@ -100,32 +105,23 @@ class Ui_LogDetails(object):
 
         self.verticalLayout_2.addWidget(self.logDeleteButton)
 
+
         self.verticalLayout.addWidget(self.groupBox)
+
 
         self.retranslateUi(LogDetails)
 
         QMetaObject.connectSlotsByName(LogDetails)
-
     # setupUi
 
     def retranslateUi(self, LogDetails):
-        LogDetails.setWindowTitle(
-            QCoreApplication.translate("LogDetails", u"LogDetails", None)
-        )
+        LogDetails.setWindowTitle(QCoreApplication.translate("LogDetails", u"LogDetails", None))
         self.groupBox.setTitle(QCoreApplication.translate("LogDetails", u"Log", None))
         self.nameLabel.setText(QCoreApplication.translate("LogDetails", u"name", None))
         self.idLabel.setText(QCoreApplication.translate("LogDetails", u"id", None))
-        self.n_argsLabel.setText(
-            QCoreApplication.translate("LogDetails", u"n_args", None)
-        )
-        self.commentLabel.setText(
-            QCoreApplication.translate("LogDetails", u"comment", None)
-        )
-        self.stringLabel.setText(
-            QCoreApplication.translate("LogDetails", u"string", None)
-        )
-        self.logDeleteButton.setText(
-            QCoreApplication.translate("LogDetails", u"Delete", None)
-        )
-
+        self.n_argsLabel.setText(QCoreApplication.translate("LogDetails", u"n_args", None))
+        self.commentLabel.setText(QCoreApplication.translate("LogDetails", u"comment", None))
+        self.stringLabel.setText(QCoreApplication.translate("LogDetails", u"string", None))
+        self.logDeleteButton.setText(QCoreApplication.translate("LogDetails", u"Delete", None))
     # retranslateUi
+
