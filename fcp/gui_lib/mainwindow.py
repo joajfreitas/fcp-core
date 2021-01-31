@@ -68,7 +68,7 @@ def nag_intro():
     if newest_version != VERSION:
         out += f"FCP v{newest_version} is available. Go get it:\nsudo pip install fcp=={newest_version}"
 
-    release_url = f"https://joajfreitas.gitlab.io/fcp-core/v{VERSION}.md"
+    release_url = f"https://joajfreitas.gitlab.io/fcp-core/v{VERSION}.html"
     print(release_url)
     r = requests.get(release_url)
     out += "\n" + r.text
