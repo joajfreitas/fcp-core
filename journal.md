@@ -3,3 +3,4 @@
  - Show release notes in GUI
  - Complete undo implementation
  - TESTS
+ - magic number in logs
