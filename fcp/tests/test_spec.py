@@ -1,11 +1,19 @@
-from ..spec import *
+from ..specs import *
 import pytest
 
 @pytest.fixture
 def json():
     import json
-    with open("json/fst10e.json") as f:
+    with open("json/test.json") as f:
         return json.loads(f.read())
+
+@pytest.fixture
+def spec(json):
+    spec = Spec()
+    spec.decompile(json)
+    return spec
+
+
 
 def test_make_sid():
     assert make_sid(10, 10) == 330

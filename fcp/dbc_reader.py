@@ -14,6 +14,7 @@ import logging
 import json
 import cantools
 
+from .specs import Argument
 from .spec import (
     Spec,
     Device,
@@ -21,7 +22,6 @@ from .spec import (
     Signal,
     Log,
     Command,
-    Argument,
     Config,
     make_sid,
     decompose_id,

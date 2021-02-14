@@ -1,16 +1,12 @@
 import json
-from fcp.spec import *
-from fcp.can import CANMessage
-
+from typing import *
 from math import *
+import queue
+from threading import Thread
+from result import Ok, Err
 
-
-def bitmask(n):
-    return 2 ** n - 1
-
-
-def test_bitmask():
-    assert 0xF == bitmask(4)
+from fcp.specs import *
+from fcp.can import CANMessage
 
 
 def encode_signal(signal, value):
@@ -55,21 +51,19 @@ def conv_endianess(value: int, signal: Signal):
     if length == 2:
         return swap16(value)
 
-
-def decode_signal(signal, value):
-    value = (value >> signal.start) & bitmask(signal.length)
-    value = conv_endianess(value, signal)
-    if signal.type == "signed":
-        value = int(value)
-        if (value >> (signal.length - 1)) == 1:
-            value = -((value ^ bitmask(signal.length)) + 1)
-    return (value * signal.scale) + signal.offset
-
-
 class Fcp:
     def __init__(self, spec):
         self.messages = {}
-        self.spec = spec
+
+        if type(spec) is str:
+            with open(spec) as f:
+                j = json.loads(f.read())
+            spec = Spec()
+            spec.decompile(j)
+            self.spec = spec
+        elif type(spec) is Spec:
+            self.spec = spec
+
 
         for device in spec.devices.values():
             for msg in device.msgs.values():
@@ -79,20 +73,27 @@ class Fcp:
             self.messages[msg.name] = msg
 
     def encode_msg(
-        self, sid: int, msg_name: str, signals: Dict[str, float]
-    ) -> CANMessage:
+        self, msg_name: str, signals: Dict[str, float], src: int = None) -> CANMessage:
         msg = self.messages.get(msg_name)
+        return msg.encode(signals, src)
 
-        data = 0
+    def decode_msg(self, msg: CANMessage):
+        fcp_msg = self.find_msg(msg)
+        if fcp_msg is None:
+            return "", {}
 
-        sigs = msg.signals
+        return fcp_msg.decode(msg)
 
-        for name, value in signals.items():
-            signal = sigs[name]
-            data |= encode_signal(signal, value)
+    def encode_cmd(self, src: int, dst: str, name: str, args: list[int]) -> CANMessage:
+        device = self.find_device(dst)
+        if device is None:
+            return Err(f"{dst} device not found")
 
-        sid = make_sid(sid, msg.id)
-        return CANMessage(sid, msg.dlc, 1, data64=data)
+        cmd = device.get_cmd(name)
+        if cmd is None:
+            return Err(f"{dst}/{name} cmd not found")
+
+        return Ok(cmd.encode(src, device.id, args))
 
     def find_msg(self, msg):
         dev_id, msg_id = decompose_id(msg.sid)
@@ -108,7 +109,7 @@ class Fcp:
                 return msg
 
     def find_device(self, id):
-        for dev in self.spec.devices.values:
+        for dev in self.spec.devices.values():
             if isinstance(id, int) and dev.id == id:
                 return dev
             if isinstance(id, str) and dev.name == id:
@@ -123,27 +124,6 @@ class Fcp:
 
         return None
 
-    def decode_msg(self, msg: CANMessage):
-        fcp_msg = self.find_msg(msg)
-        if fcp_msg == None:
-            return "", {}
-
-        data = 0
-        for i, d in enumerate(msg.get_data16()):
-            data += d << 16 * i
-
-        mux = ""
-        signals = {}
-        for name, signal in fcp_msg.signals.items():
-            if signal.mux_count != 1:
-                mux = signal.mux
-            signals[name] = decode_signal(signal, data)
-
-        if mux != "":
-            mux_value = str(int(signals[mux]))
-            signals = {k + (mux_value if k != mux else ""):v for (k,v) in signals.items()}
-
-        return fcp_msg.name, signals
 
     def decode_log(self, signal):
         for name, log in self.spec.logs.items():
@@ -176,22 +156,72 @@ class Fcp:
     def encode_set(self, sid: int, dst: int, config: int, value: int):
         return encode_msg(sid, "req_set", {"dst": dst, "id": config, "value": value})
 
+class Proxy():
+    def __init__(self, socket, addrs):
+        self.socket = socket
+        self.addrs = []
 
-# class FCPCom():
-#    def __init__(self, fcp, com, sid):
-#        self.fcp = fcp
-#        self.com = com
-#        self.sid = sid
-#
-#    def get(self, device, config):
-#        dev = self.fcp.find_device(device)
-#        if dev == None:
-#            return None
-#
-#        cfg = self.fcp.find_config(dev, config)
-#        if cfg == None:
-#            return None
-#
-#        msg = self.fcp.encode_get(self.sid, dev.id, cfg.id)
-#
-#        com.send(msg)
+        self.cmds = {}
+
+    def recv(self) -> CANMessage:
+        msg, addr = self.socket.recvfrom(1024)
+        return Ok(CANMessage.decode_json(msg))
+
+    def send(self, msg: CANMessage):
+        for addr in self.addrs:
+            self.socket.sendto(msg.encode_json(), addr)
+
+class FcpCom():
+    def __init__(self, fcp: Fcp, proxy: Proxy, id: int = 31):
+        self.fcp = fcp
+        self.proxy = proxy
+        self.id = id
+
+        self.terminate = False
+        self.cmds = {}
+        self.q = queue.Queue()
+
+    def start(self):
+        self.thread = Thread(target=self.run, daemon=True)
+        self.thread.start()
+
+    def stop(self):
+        self.terminate = True
+        self.thread.join()
+
+    def cmd(self, dst, name, args):
+        if self.cmds.get((dst, name)) is None:
+            self.cmds[(dst, name)] = queue.Queue()
+
+        msg = self.fcp.encode_cmd(self.id, dst, name, args)
+        if msg.is_err():
+            return msg
+        msg = msg.ok()
+        self.proxy.send(msg)
+
+        try:
+            r = self.cmds[(dst, name)].get(timeout=2)
+            return Ok(r)
+        except queue.Empty as e:
+            return Err("Timeout")
+
+    def run(self):
+        while True:
+            if self.terminate == True:
+                break
+            if (r := self.proxy.recv()).is_err():
+                continue
+            msg = r.ok()
+            name, signals = self.fcp.decode_msg(msg)
+
+            self.q.put((name, signals))
+
+            if name == "return_cmd":
+                dev = self.fcp.spec.get_device(msg.get_dev_id())
+                cmd = dev.get_cmd(signals["id"])
+                rets = (signals["ret1"], signals["ret2"], signals["ret3"])
+                q = self.cmds.get((dev.name, cmd.name))
+                if q is not None:
+                    q.put(rets)
+
+

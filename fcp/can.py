@@ -32,6 +32,12 @@ class CANMessage:
     def get_data16(self):
         return [(self.data64 >> 16 * i) & 0xFFFF for i in range(4)]
 
+    def get_msg_id(self):
+        return self.sid >> 5
+
+    def get_dev_id(self):
+        return self.sid & 0x1F
+
     def get_data64(self):
         return self.data64
 
@@ -183,7 +189,7 @@ class CANMessage:
             return None
 
     def __repr__(self):
-        return f"<CANMessage sid={self.sid}, dlc={self.dlc}, data={self.data64}"
+        return f"<CANMessage sid={self.sid}, dlc={self.dlc}, data={self.get_data16()}"
 
 
 def test_encode_json():
