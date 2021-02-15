@@ -1,9 +1,10 @@
 from typing import *
 import datetime
 
-from .node import Node
+from .node import Node, Transmit
+from ..can import CANMessage
 
-class Config(Node):
+class Config(Transmit):
     """Config node. Represents a Config.
 
     :param name: Name of the Config.
@@ -87,6 +88,27 @@ class Config(Node):
 
     def normalize(self):
         return
+
+    def encode_set(self, src: int, dst: int, value: int) -> CANMessage:
+        common = self.parent.parent.get_common()
+        req_set = common.get_msg("req_set")
+        msg = req_set.encode({
+            "id": self.id,
+            "dst": dst,
+            "data": value
+        })
+
+        return msg
+
+    def encode_get(self, src: int, dst: int) -> CANMessage:
+        common = self.parent.parent.get_common()
+        req_set = common.get_msg("req_get")
+        msg = req_set.encode({
+            "id": self.id,
+            "dst": dst,
+        })
+
+        return msg
 
     def __hash__(self):
         return hash((self.name, self.id, self.creation_date))

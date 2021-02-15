@@ -15,7 +15,6 @@ def fcp():
 @pytest.fixture
 def test_msg(fcp):
     return fcp.encode_msg("iib_motor", {"temp_motor":10})
-    return CANMessage(sid=32, dlc=8, data16=[16,2,3,4], timestamp=0)
 
 def test_encode_msg(fcp, test_msg):
     msg = fcp.encode_msg("iib_motor", {"temp_motor":10})
@@ -35,9 +34,18 @@ class FakeProxy():
     def __init__(self, socket, addrs):
         self.socket = socket
         self.addrs = []
+        self.i = 0
 
     def recv(self) -> CANMessage:
-        return Ok(CANMessage(sid=80, dlc=8, data16=[8<<8,2,0,0], timestamp=0))
+        msgs = [
+            CANMessage(sid=80, dlc=8, data16=[8<<8,2,0,0], timestamp=0),
+            CANMessage(sid=208, dlc=8, data16=[1,1,0,0], timestamp=0),
+            CANMessage(sid=144, dlc=8, data16=[1,1,0,0], timestamp=0)
+        ]
+
+        msg = msgs[self.i]
+        self.i = (self.i + 1) % len(msgs)
+        return Ok(msg)
 
     def send(self, msg: CANMessage):
         return
@@ -55,6 +63,20 @@ def test_fcpcom_cmd(fcpcom):
     assert rets.is_ok()
     assert rets.unwrap()[0] == 2
 
+def test_fcpcom_set(fcpcom):
+    fcpcom.start()
+    rets = fcpcom.set("iib", "regen_on", 1)
+    fcpcom.stop()
+    print(rets)
+    assert rets.is_ok()
+
+def test_fcpcom_get(fcpcom):
+    fcpcom.start()
+    rets = fcpcom.get("iib", "regen_on")
+    fcpcom.stop()
+    print(rets)
+    assert rets.is_ok()
+    assert rets.unwrap() == 1
 
 #def test_decode_msg(fcp):
 #    msg = CANMessage(1232, 8, 0, data16=[0,0,0,0])

@@ -141,8 +141,16 @@ class Fcp:
             if config.id == signal["id"]:
                 return {config.name: signal["data"]}
 
-    def encode_get(self, sid: int, dst: int, config: int):
-        return encode_msg(sid, "req_get", {"dst": dst, "id": config})
+    def encode_get(self, src: int, dst: int, config: int):
+        device = self.find_device(dst)
+        if device is None:
+            return Err(f"{dst} device not found")
+
+        cfg = device.get_cfg(config)
+        if cfg is None:
+            return Err(f"{dst}/{name} cfg not found")
+
+        return Ok(cfg.encode_get(src, device.id))
 
     def decode_set(self, signal):
         dev = self.find_device(signal["dst"])
@@ -153,8 +161,16 @@ class Fcp:
             if config.id == signal["id"]:
                 return {"device": device.name, config.name: signal["data"]}
 
-    def encode_set(self, sid: int, dst: int, config: int, value: int):
-        return encode_msg(sid, "req_set", {"dst": dst, "id": config, "value": value})
+    def encode_set(self, src: int, dst: str, config: str, value: int):
+        device = self.find_device(dst)
+        if device is None:
+            return Err(f"{dst} device not found")
+
+        cfg = device.get_cfg(config)
+        if cfg is None:
+            return Err(f"{dst}/{name} cfg not found")
+
+        return Ok(cfg.encode_set(src, device.id, value))
 
 class Proxy():
     def __init__(self, socket, addrs):
@@ -179,6 +195,8 @@ class FcpCom():
 
         self.terminate = False
         self.cmds = {}
+        self.sets = {}
+        self.gets = {}
         self.q = queue.Queue()
 
     def start(self):
@@ -205,6 +223,40 @@ class FcpCom():
         except queue.Empty as e:
             return Err("Timeout")
 
+    def set(self, dst, name, value):
+        if self.sets.get((dst, name)) is None:
+            self.sets[(dst, name)] = queue.Queue()
+        print(self.sets)
+
+        msg = self.fcp.encode_set(self.id, dst, name, value)
+        if msg.is_err():
+            return msg
+        msg = msg.ok()
+        self.proxy.send(msg)
+
+        try:
+            self.sets[(dst, name)].get(timeout=2)
+            return Ok()
+        except queue.Empty as e:
+            return Err("Timeout")
+
+    def get(self, dst, name):
+        if self.gets.get((dst, name)) is None:
+            self.gets[(dst, name)] = queue.Queue()
+
+        msg = self.fcp.encode_get(self.id, dst, name)
+        if msg.is_err():
+            return msg
+        msg = msg.ok()
+        self.proxy.send(msg)
+
+        try:
+            r = self.gets[(dst, name)].get(timeout=2)
+            return Ok(r)
+        except queue.Empty as e:
+            return Err("Timeout")
+
+
     def run(self):
         while True:
             if self.terminate == True:
@@ -223,5 +275,18 @@ class FcpCom():
                 q = self.cmds.get((dev.name, cmd.name))
                 if q is not None:
                     q.put(rets)
-
+            elif name == "ans_set":
+                dev = self.fcp.spec.get_device(msg.get_dev_id())
+                cfg = dev.get_cfg(signals["id"])
+                q = self.sets.get((dev.name, cfg.name))
+                if q is not None:
+                    q.put(None)
+            elif name == "ans_get":
+                dev = self.fcp.spec.get_device(msg.get_dev_id())
+                cfg = dev.get_cfg(signals["id"])
+                ret = signals["data"]
+                q = self.gets.get((dev.name, cfg.name))
+                if q is not None:
+                    q.put(ret)
+                pass
 

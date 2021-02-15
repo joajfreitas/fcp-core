@@ -175,7 +175,13 @@ class Device(Node):
         :param name: Config name.
         :return: Config or None if not found.
         """
-        return self.cfgs.get(name)
+
+        if type(name) is str:
+            return self.cfgs.get(name)
+        if type(name) is int or type(name) is float:
+            for cfg in self.cfgs.values():
+                if cfg.id == int(name):
+                    return cfg
 
     def rm_cfg(self, name: str) -> bool:
         """Remove a Config from Device.
