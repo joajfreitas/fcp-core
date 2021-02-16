@@ -6,6 +6,7 @@ test:
     - docker
 
   script:
+    - pip install -r requirements.txt
     - pytest -v fcp
 
 
@@ -37,7 +38,6 @@ pages:
   image: joajfreitas/arch-python
   stage: deploy
   script:
-    - pip install -r requirements.txt
     - cd public; python index.py > index.html
   artifacts:
     paths:
