@@ -23,7 +23,7 @@ setup(
     packages=find_packages(),
     entry_points={"console_scripts": ["fcp = fcp.__main__:main",],},
     install_requires=["jinja2", "click", "pyside2", "colorful", "cantools",
-                      "hjson", "pyyaml", "PySide2", "sqlalchemy", "appdirs", "result"],
+                      "hjson", "pyyaml", "PySide2", "sqlalchemy", "appdirs", "result", "hypothesis"],
     long_description=long_description,
     long_description_content_type="text/markdown"
 )
