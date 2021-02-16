@@ -18,7 +18,7 @@ import json
 import logging
 import shutil
 
-from .spec import Spec
+from .specs import Spec
 from .template import Tpl
 from .generator import *
 

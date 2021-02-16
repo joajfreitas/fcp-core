@@ -15,7 +15,7 @@ import logging
 
 import colorful as cf
 
-from .spec import *
+from .specs import *
 
 
 check_table = {

@@ -4,7 +4,7 @@ from pprint import pprint
 from datetime import datetime
 from typing import *
 
-from .spec import Signal, Message, Device, Common, Spec, make_sid
+from .specs import Signal, Message, Device, Common, Spec, make_sid
 
 
 def date():
