@@ -15,7 +15,7 @@ import json
 import cantools
 
 from .specs import Argument
-from .spec import (
+from .specs import (
     Spec,
     Device,
     Message,
@@ -52,18 +52,19 @@ query_user_ids.ids = {}
 
 
 def default_device(device):
-    version = Config("version", 0, "git version")
+    version = Config(device, "version", 0, "git version")
     device.add_cfg(version)
 
 
 def default_common_log_msg(spec):
-    log_msg = Message(name="log", id=0)
-    level = Signal(name="level", start=0, length=3)
-    n_args = Signal(start=3, length=2, name="n_args")
-    err_code = Signal(start=8, length=8, name="err_code")
-    arg1 = Signal(start=16, length=16, name="arg1")
-    arg2 = Signal(start=32, length=16, name="arg2")
-    arg3 = Signal(start=48, length=16, name="arg3")
+    common = spec.get_common()
+    log_msg = Message(parent=common, name="log", id=0)
+    level = Signal(parent=log_msg, name="level", start=0, length=3)
+    n_args = Signal(parent=log_msg, start=3, length=2, name="n_args")
+    err_code = Signal(parent=log_msg, start=8, length=8, name="err_code")
+    arg1 = Signal(parent=log_msg, start=16, length=16, name="arg1")
+    arg2 = Signal(parent=log_msg, start=32, length=16, name="arg2")
+    arg3 = Signal(parent=log_msg, start=48, length=16, name="arg3")
     log_msg.add_signal(level)
     log_msg.add_signal(n_args)
     log_msg.add_signal(err_code)
@@ -75,38 +76,39 @@ def default_common_log_msg(spec):
 
 
 def default_common_cfg_msg(spec):
-    req_get = Message(name="req_get", id=3)
-    dst = Signal(name="dst", start=0, length=5)
-    id = Signal(name="id", start=8, length=8)
+    common = spec.get_common()
+    req_get = Message(parent=common, name="req_get", id=3)
+    dst = Signal(parent=req_get, name="dst", start=0, length=5)
+    id = Signal(parent=req_get, name="id", start=8, length=8)
 
     req_get.add_signal(id)
     req_get.add_signal(dst)
     spec.common.add_msg(req_get)
 
-    ans_get = Message(name="ans_get", id=4)
-    id = Signal(name="id", start=0, length=5)
-    dst = Signal(name="dst", start=8, length=8)
-    data = Signal(name="data", start=16, length=32)
+    ans_get = Message(parent=common, name="ans_get", id=4)
+    id = Signal(parent=ans_get, name="id", start=0, length=5)
+    dst = Signal(parent=ans_get, name="dst", start=8, length=8)
+    data = Signal(parent=ans_get, name="data", start=16, length=32)
 
     ans_get.add_signal(id)
     ans_get.add_signal(dst)
     ans_get.add_signal(data)
     spec.common.add_msg(ans_get)
 
-    req_set = Message(name="req_set", id=5)
-    dst = Signal(name="dst", start=0, length=5)
-    id = Signal(name="id", start=8, length=8)
-    data = Signal(name="data", start=16, length=32)
+    req_set = Message(parent=common, name="req_set", id=5)
+    dst = Signal(parent=req_set, name="dst", start=0, length=5)
+    id = Signal(parent=req_set, name="id", start=8, length=8)
+    data = Signal(parent=req_set, name="data", start=16, length=32)
 
     req_set.add_signal(id)
     req_set.add_signal(dst)
     req_set.add_signal(data)
     spec.common.add_msg(req_set)
 
-    ans_set = Message(name="ans_set", id=6)
-    id = Signal(name="id", start=0, length=5)
-    dst = Signal(name="dst", start=8, length=8)
-    data = Signal(name="data", start=16, length=32)
+    ans_set = Message(parent=common, name="ans_set", id=6)
+    id = Signal(parent=ans_set, name="id", start=0, length=5)
+    dst = Signal(parent=ans_set, name="dst", start=8, length=8)
+    data = Signal(parent=ans_set, name="data", start=16, length=32)
 
     ans_set.add_signal(id)
     ans_set.add_signal(dst)
@@ -115,12 +117,13 @@ def default_common_cfg_msg(spec):
 
 
 def default_common_cmd_msg(spec):
-    cmd_args_msg = Message(name="send_cmd", id=1)
-    dst = Signal(name="dst", start=0, length=5)
-    id = Signal(name="id", start=8, length=8)
-    arg1 = Signal(start=16, length=16, name="arg1")
-    arg2 = Signal(start=32, length=16, name="arg2")
-    arg3 = Signal(start=48, length=16, name="arg3")
+    common = spec.get_common()
+    cmd_args_msg = Message(parent=common, name="send_cmd", id=1)
+    dst =  Signal(parent=cmd_args_msg, name="dst", start=0, length=5)
+    id =   Signal(parent=cmd_args_msg, name="id", start=8, length=8)
+    arg1 = Signal(parent=cmd_args_msg, start=16, length=16, name="arg1")
+    arg2 = Signal(parent=cmd_args_msg, start=32, length=16, name="arg2")
+    arg3 = Signal(parent=cmd_args_msg, start=48, length=16, name="arg3")
 
     cmd_args_msg.add_signal(dst)
     cmd_args_msg.add_signal(id)
@@ -130,11 +133,11 @@ def default_common_cmd_msg(spec):
 
     spec.common.add_msg(cmd_args_msg)
 
-    cmd_return = Message(name="return_cmd", id=2)
-    id = Signal(name="id", start=8, length=8)
-    ret1 = Signal(start=16, length=16, name="ret1")
-    ret2 = Signal(start=32, length=16, name="ret2")
-    ret3 = Signal(start=48, length=16, name="ret3")
+    cmd_return = Message(parent=common, name="return_cmd", id=2)
+    id =   Signal(parent=cmd_return, name="id", start=8, length=8)
+    ret1 = Signal(parent=cmd_return, start=16, length=16, name="ret1")
+    ret2 = Signal(parent=cmd_return, start=32, length=16, name="ret2")
+    ret3 = Signal(parent=cmd_return, start=48, length=16, name="ret3")
 
     cmd_return.add_signal(id)
     cmd_return.add_signal(ret1)
@@ -151,12 +154,12 @@ def default_common(spec):
 
 
 def default_spec_logs(spec):
-    log_error = Log(
+    log_error = Log(parent=spec,
         id=0, name="wrong_log_id", n_args=0, string="Log code was not found"
     )
     spec.add_log(log_error)
 
-    cfg_error = Log(
+    cfg_error = Log(parent=spec,
         id=1, name="wrong_cfg_id", n_args=0, string="Cfg code was not found"
     )
 
@@ -175,7 +178,7 @@ def default_configs(spec):
         default_device(device)
 
 
-def read_dbc(dbc, json_file, device_config, logger):
+def read_dbc(dbc, json_file, device_config):
     # if device name configuration is provided load it
     if device_config:
         with open(device_config) as f:
@@ -186,7 +189,6 @@ def read_dbc(dbc, json_file, device_config, logger):
     spec = Spec()
 
     for message in db.messages:
-        logger.debug("db message " + str(message))
         sid = message.frame_id
         dev_id, msg_id = decompose_id(sid)
 
@@ -196,21 +198,20 @@ def read_dbc(dbc, json_file, device_config, logger):
         else:
             device_name = dev_config[str(dev_id)]
 
-        device = Device(id=dev_id, name=device_name, msgs={})
+        device = Device(parent=spec, id=dev_id, name=device_name, msgs={})
 
-        msg = Message(name=message.name, id=msg_id, dlc=message.length, signals={})
+        msg = Message(parent=device, name=message.name, id=msg_id, dlc=message.length, signals={})
 
         err = spec.add_device(device)
-        logger.debug("add device " + str(dev_id) + " " + str(err) + " " + str(device))
         err = spec.devices[device.name].add_msg(msg)
-        logger.debug("add message " + str(msg_id) + " " + str(err) + " " + str(msg))
 
         for signal in message.signals:
             t = find_type(signal)
-            print(
-                signal.multiplexer_signal, signal.is_multiplexer, signal.multiplexer_ids
-            )
+            #print(
+                #signal.multiplexer_signal, signal.is_multiplexer, signal.multiplexer_ids
+            #)
             sig = Signal(
+                parent = msg,
                 name=signal.name,
                 start=signal.start,
                 length=signal.length,
@@ -227,13 +228,9 @@ def read_dbc(dbc, json_file, device_config, logger):
             )
             err = spec.devices[device.name].get_msg(message.name).add_signal(sig)
 
-            logger.debug(
-                "add signal " + str(sig.name) + " " + str(err) + " " + str(sig)
-            )
 
     default_configs(spec)
     j = spec.compile()
-    # pprint(j)
     j["version"] = "0.2"
 
     with open(json_file, "w") as f:
