@@ -12,7 +12,7 @@ from .dbc_reader import read_dbc, init
 from .dbc_writer import write_dbc
 from .c_generator import c_gen
 from .validator import validate, format_error
-from .spec import Spec
+from .specs import Spec
 from .docs import generate_docs
 from .version import VERSION
 
