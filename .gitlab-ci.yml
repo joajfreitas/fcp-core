@@ -37,7 +37,8 @@ pages:
   image: joajfreitas/arch-python
   stage: deploy
   script:
-  - cd public; python index.py > index.html
+    - pip install -r requirements.txt
+    - cd public; python index.py > index.html
   artifacts:
     paths:
     - public
