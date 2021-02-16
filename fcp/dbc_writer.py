@@ -5,7 +5,7 @@ from cantools.database.can.node import Node as CanNode
 
 from cantools.database import *
 
-from .spec import *
+from .specs import *
 
 import copy
 
