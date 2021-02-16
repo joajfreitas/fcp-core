@@ -4,6 +4,7 @@ from math import *
 import queue
 from threading import Thread
 from result import Ok, Err
+import atexit
 
 from fcp.specs import *
 from fcp.can import CANMessage
@@ -226,7 +227,6 @@ class FcpCom():
     def set(self, dst, name, value):
         if self.sets.get((dst, name)) is None:
             self.sets[(dst, name)] = queue.Queue()
-        print(self.sets)
 
         msg = self.fcp.encode_set(self.id, dst, name, value)
         if msg.is_err():
