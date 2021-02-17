@@ -5,6 +5,7 @@ from .node import Node
 from .message import Message
 from .cmd import Command
 from .config import Config
+from .utils import normalize
 
 class Device(Node):
     """Device node, Represents a CAN device.
@@ -56,6 +57,7 @@ class Device(Node):
 
     @id.setter
     def id(self, id: int) -> None:
+        print("set id")
         try:
             self._id = int(id)
         except Exception as e:

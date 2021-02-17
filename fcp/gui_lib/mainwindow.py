@@ -46,7 +46,7 @@ import webbrowser
 from copy import deepcopy
 
 from ..version import VERSION
-from ..spec import *
+from ..specs import *
 from ..validator import validate
 from ..config import *
 from .message_box import MessageBox
@@ -67,10 +67,10 @@ def nag_intro():
     out = ""
     if newest_version != VERSION:
         out += f"<p><b>FCP v{newest_version} is available. Go get it:\nsudo pip install fcp=={newest_version}</b></p>"
-
-    release_url = f"https://joajfreitas.gitlab.io/fcp-core/v{VERSION}.html"
-    r = requests.get(release_url)
-    out += "\n" + r.text
+    else:
+        release_url = f"https://joajfreitas.gitlab.io/fcp-core/v{VERSION}.html"
+        r = requests.get(release_url)
+        out += "\n" + r.text
     return out
 
 class MainWindow(QMainWindow):
@@ -90,7 +90,7 @@ class MainWindow(QMainWindow):
         self.log_widget = None
         self.enum_widget = None
 
-        self.file_path = Path("")
+        self.filename = None
 
         self.config, _ = config_session()
         self.recent_files()
@@ -159,6 +159,7 @@ class MainWindow(QMainWindow):
 
     def validate(self) -> int:
         failed = validate(self.spec)
+        failed_count = len([lvl for lvl, msg in failed if lvl == "error"])
         if len(failed) == 0:
             MessageBox(
                 self,
@@ -166,12 +167,11 @@ class MainWindow(QMainWindow):
                 QMessageBox.Information,
                 "Spec passed").launch()
         else:
-
             if len(failed) > 5:
                 print(failed[0])
-                failed = [(lvl, msg) for lvl, msg in failed if lvl=="error"]
+                failed = sorted(failed, key = lambda x : 0 if x[0] == "error" else 1)
+                failed = [(lvl, msg) for lvl, msg in failed]
                 failed = [f"{level}: {msg}" for level, msg in failed]
-
                 errors = "\n".join(failed[:5]) + f"\nand {len(failed)-5} more errors..."
             else:
                 failed = [f"{level}: {msg}" for level, msg in failed]
@@ -184,7 +184,7 @@ class MainWindow(QMainWindow):
                 QMessageBox.Warning,
                 errors).launch()
 
-        return len(failed)
+        return failed_count
 
     def add_device(self, device=None, widget=None):
         new_device = device is None or type(device) == bool
@@ -232,21 +232,43 @@ class MainWindow(QMainWindow):
         if l > 0:
             return
 
-        try:
-            filename = QFileDialog.getSaveFileName(
-                self, self.tr("Open JSON"), str(self.file_path.parent)
-            )
-        except Exception as e:
-            msg = QMessageBox(self)
-            msg.setStandardButtons(QMessageBox.Ok)
-            msg.setIcon(QMessageBox.Warning)
-            msg.setText(f"{filename} is not a valid filename")
-            msg.show()
-            return
+        if self.filename:
+            filename = self.filename
+        else:
+            try:
+                filename = QFileDialog.getSaveFileName(
+                    self, self.tr("Open JSON"), str(self.filename)
+                )
+                filename = filename[0]
+            except Exception as e:
+                msg = QMessageBox(self)
+                msg.setStandardButtons(QMessageBox.Ok)
+                msg.setIcon(QMessageBox.Warning)
+                msg.setText(f"{filename} is not a valid filename")
+                msg.show()
+                return
 
-        with open(filename[0], "w") as f:
+        MessageBox(
+            self,
+            QMessageBox.Ok,
+            QMessageBox.Information,
+            "Saved").launch()
+
+        with open(filename, "w") as f:
             j = self.spec.compile()
             f.write(json.dumps(j, indent=4))
+
+    def load(self, filename):
+        print("filename", filename)
+        with open(filename) as f:
+            j = json.loads(f.read())
+
+        self.spec.decompile(j)
+
+        self.reload_spec()
+
+        self.filename = Path(filename)
+        self.history = [self.spec]
 
     def load_json(self, filename):
         if filename == "":
@@ -257,28 +279,12 @@ class MainWindow(QMainWindow):
             msg.show()
             return
 
-        try:
-            with open(".fcp_gui.yaml") as f:
-                y = yaml.safe_load(f.read())
 
-            if filename not in y["recent_files"]:
-                y["recent_files"].append(filename)
-        except Exception as e:
-            y = {}
-            y["recent_files"] = []
+        self.filename = filename
 
-        with open(".fcp_gui.yaml", "w") as f:
-            f.write(yaml.dump(y))
+        File.access(self.config, filename)
+        self.load(filename)
 
-        with open(filename) as f:
-            j = json.loads(f.read())
-
-        self.spec.decompile(j)
-
-        self.reload_spec()
-
-        self.file_path = Path(filename)
-        self.history = [self.spec]
 
     def reload_spec(self):
         for device in sorted(self.spec.devices.values(), key=lambda x: x.id):

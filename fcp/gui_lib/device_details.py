@@ -11,7 +11,7 @@ from .message_details import MessageDetails
 
 from .undo_redo import UndoAdd
 
-from ..spec import *
+from ..specs import *
 
 
 class DeviceDetails(NodeDetails):

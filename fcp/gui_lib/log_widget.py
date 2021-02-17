@@ -8,7 +8,7 @@ from .log_details import LogDetails
 
 from .undo_redo import UndoAdd
 
-from ..spec import Log
+from ..specs import Log
 
 
 class LogWidget(QWidget):

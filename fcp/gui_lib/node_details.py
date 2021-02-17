@@ -38,9 +38,9 @@ class NodeDetails(QWidget):
     def connect_atts(self):
         def store(obj, var, att):
             def closure():
-                print(type(obj), var)
                 old = getattr(obj,var)
-                setattr(obj, "_" + var, att.text())
+                value = type(old)(att.text())
+                setattr(obj, "_" + var, value)
 
                 self.gui.undo_redo.push(UndoUpdate(obj, var, old, att.text()))
                 self.gui.reload()

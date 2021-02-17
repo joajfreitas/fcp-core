@@ -8,6 +8,8 @@ from .node_details import NodeDetails, FakeParent
 from .signal_widget import SignalWidget
 from .signal_details import SignalDetails
 
+from ..specs import *
+
 
 class MessageDetails(NodeDetails):
     def load_atts(self, ui, node):

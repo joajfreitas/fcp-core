@@ -73,7 +73,7 @@ class Argument(Node):
 
         :return: A dictionary containing the node parameters
         """
-        d = self.make_public(self, filter_private(self.__dict__))
+        d = self.make_public(self, self.filter_private(self.__dict__))
         return d
 
     def decompile(self, d: Dict[str, Any]) -> None:

@@ -5,6 +5,7 @@ from ..can import CANMessage
 from .node import Node, Transmit
 from .signal import Signal
 from ..can import CANMessage
+from .utils import normalize
 
 class Message(Transmit):
     """Message node, Represents a CAN message, similar to a DBC message.
