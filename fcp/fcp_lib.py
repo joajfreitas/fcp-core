@@ -85,7 +85,7 @@ class Fcp:
 
         return fcp_msg.decode(msg)
 
-    def encode_cmd(self, src: int, dst: str, name: str, args: list[int]) -> CANMessage:
+    def encode_cmd(self, src: int, dst: str, name: str, args) -> CANMessage:
         device = self.find_device(dst)
         if device is None:
             return Err(f"{dst} device not found")
@@ -261,7 +261,8 @@ class FcpCom():
         while True:
             if self.terminate == True:
                 break
-            if (r := self.proxy.recv()).is_err():
+            r = self.proxy.recv()
+            if r.is_err():
                 continue
             msg = r.ok()
             name, signals = self.fcp.decode_msg(msg)
