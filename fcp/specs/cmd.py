@@ -144,7 +144,7 @@ class Command(Transmit):
             ret.decompile(ret_v)
             self.rets[ret_k] = ret
 
-    def encode(self, src: int, dst: int, args: list[int]) -> CANMessage:
+    def encode(self, src: int, dst: int, args) -> CANMessage:
         common = self.parent.parent.get_common()
         send_cmd = common.get_msg("send_cmd")
         msg = send_cmd.encode(
