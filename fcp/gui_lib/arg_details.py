@@ -9,9 +9,9 @@ from .node_details import NodeDetails, FakeParent
 class ArgDetails(NodeDetails):
     def load_atts(self, ui, node):
         self.atts = [
-            (ui.nameEdit, node.get_name, node.set_name),
-            (ui.commentEdit, node.get_comment, node.set_comment),
-            (ui.idEdit, node.get_id, node.set_id),
+            (ui.nameEdit, node.name, "name"),
+            (ui.commentEdit, node.comment, "comment"),
+            (ui.idEdit, node.id, "id"),
         ]
 
     def __init__(self, gui, node: "Argument", parent):

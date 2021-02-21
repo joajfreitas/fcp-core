@@ -6,6 +6,8 @@ from .widgets.cmdwidget import Ui_CmdWidget
 from .node_details import NodeDetails, FakeParent
 from .cmd_details import CmdDetails
 
+from ..specs import Command
+
 
 class CmdWidget(QWidget):
     def __init__(self, gui, parent):
@@ -39,7 +41,7 @@ class CmdWidget(QWidget):
 
     def add_cmd(self, cmd=None):
         if not cmd:
-            cmd = Command()
+            cmd = Command(self.parent)
 
         self.parent.cmds[cmd.name] = cmd
         cmd_details = CmdDetails(self.gui, cmd, FakeParent())

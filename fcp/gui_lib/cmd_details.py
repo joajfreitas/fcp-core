@@ -4,6 +4,9 @@ from PySide2.QtCore import Qt
 
 from .widgets.cmddetails import Ui_CmdDetails
 from .node_details import NodeDetails, FakeParent
+from .arg_details import ArgDetails
+
+from ..specs import Argument
 
 
 class CmdDetails(NodeDetails):
@@ -36,7 +39,7 @@ class CmdDetails(NodeDetails):
 
     def add_arg(self, arg=None):
         if arg == None or arg == False:
-            arg = Argument()
+            arg = Argument(self.parent)
 
         self.node.args[arg.name] = arg
         arg_widget = ArgDetails(self.gui, arg, FakeParent())
