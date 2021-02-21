@@ -1,3 +1,8 @@
+from typing import *
+import datetime
+
+from .node import Node
+
 class EnumValue(Node):
     """Fcp EnumValue. C lookalike for FCP type definitions with name-value
     associations.

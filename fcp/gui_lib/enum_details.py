@@ -4,12 +4,14 @@ from PySide2.QtCore import Qt
 
 from .widgets.enumdetails import Ui_EnumDetails
 from .node_details import NodeDetails, FakeParent
+from .enum_value_details import EnumValueDetails
+from ..specs import EnumValue
 
 
 class EnumDetails(NodeDetails):
     def load_atts(self, ui, node):
         self.atts = [
-            (ui.nameEdit, node.get_name, node.set_name),
+            (ui.nameEdit, node.name, "name"),
         ]
 
     def __init__(self, gui, node, parent):

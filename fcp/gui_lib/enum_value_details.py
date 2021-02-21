@@ -9,8 +9,8 @@ from .node_details import NodeDetails, FakeParent
 class EnumValueDetails(NodeDetails):
     def load_atts(self, ui, node):
         self.atts = [
-            (ui.valueEdit, node.get_value, node.set_value),
-            (ui.nameEdit, node.get_name, node.set_name),
+            (ui.valueEdit, node.value, "value"),
+            (ui.nameEdit, node.name, "name"),
         ]
 
     def __init__(self, gui, node, parent):

@@ -3,7 +3,11 @@ from PySide2.QtGui import QKeySequence
 from PySide2.QtCore import Qt
 
 
+from .node_details import FakeParent
 from .widgets.enumwidget import Ui_EnumWidget
+from .enum_details import EnumDetails
+
+from ..specs import Enum
 
 
 class EnumWidget(QWidget):

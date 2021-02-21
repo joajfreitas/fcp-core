@@ -6,6 +6,8 @@ from .widgets.cfgwidget import Ui_CfgWidget
 from .cfg_details import CfgDetails
 from .node_details import NodeDetails, FakeParent
 
+from ..specs import Config
+
 
 class CfgWidget(QWidget):
     def __init__(self, gui, parent):
