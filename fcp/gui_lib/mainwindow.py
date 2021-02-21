@@ -3,23 +3,7 @@ from PySide2.QtGui import QKeySequence
 from PySide2.QtCore import Qt
 from PySide2.QtCore import Signal
 
-from .widgets.mainwindow import Ui_MainWindow
-from .widgets.devicewidget import Ui_DeviceWidget
-from .widgets.devicedetails import Ui_DeviceDetails
-from .widgets.messagewidget import Ui_MessageWidget
-from .widgets.messagedetails import Ui_MessageDetails
-from .widgets.signalwidget import Ui_SignalWidget
-from .widgets.signaldetails import Ui_SignalDetails
-from .widgets.logwidget import Ui_LogWidget
-from .widgets.enumwidget import Ui_EnumWidget
-from .widgets.enumdetails import Ui_EnumDetails
-from .widgets.logdetails import Ui_LogDetails
-from .widgets.cfgwidget import Ui_CfgWidget
-from .widgets.cfgdetails import Ui_CfgDetails
-from .widgets.cmdwidget import Ui_CmdWidget
-from .widgets.cmddetails import Ui_CmdDetails
-from .widgets.cmdarg import Ui_CmdArg
-from .widgets.enumvalue import Ui_EnumValue
+from .widgets import *
 
 from .node_details import NodeDetails, FakeParent
 from .signal_details import SignalDetails
@@ -43,7 +27,7 @@ from pathlib import Path
 import json
 import yaml
 import webbrowser
-from copy import deepcopy
+from copy import deepcopy, copy
 
 from ..version import VERSION
 from ..specs import *
@@ -70,7 +54,9 @@ def nag_intro():
     else:
         release_url = f"https://joajfreitas.gitlab.io/fcp-core/v{VERSION}.html"
         r = requests.get(release_url)
-        out += "\n" + r.text
+        if r.ok:
+            out += "\n" + r.text
+
     return out
 
 class MainWindow(QMainWindow):
@@ -107,12 +93,18 @@ class MainWindow(QMainWindow):
 
 
     def recent_files(self):
-        files = File.recent_files(self.config)
+        def loads(path):
+            def closure():
+                self.load(path)
 
+            return closure
+
+        files = File.recent_files(self.config)
         menu = QMenu("recent_files")
+
         for file in files:
             action = menu.addAction(file.path)
-            action.triggered.connect(lambda x: self.load(Path(file.path)))
+            action.triggered.connect(loads(file.path))
 
         self.ui.actionOpen_Recent.setMenu(menu)
 
@@ -168,7 +160,6 @@ class MainWindow(QMainWindow):
                 "Spec passed").launch()
         else:
             if len(failed) > 5:
-                print(failed[0])
                 failed = sorted(failed, key = lambda x : 0 if x[0] == "error" else 1)
                 failed = [(lvl, msg) for lvl, msg in failed]
                 failed = [f"{level}: {msg}" for level, msg in failed]
@@ -259,9 +250,10 @@ class MainWindow(QMainWindow):
             f.write(json.dumps(j, indent=4))
 
     def load(self, filename):
-        print("filename", filename)
+        File.access(self.config, filename)
         with open(filename) as f:
-            j = json.loads(f.read())
+            r = f.read()
+            j = json.loads(r)
 
         self.spec.decompile(j)
 
@@ -313,5 +305,4 @@ class MainWindow(QMainWindow):
         self.spec.normalize()
 
     def reload_service(self, path):
-        print("reload.service")
         self.reload()
