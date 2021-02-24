@@ -187,8 +187,18 @@ class Message(Transmit):
         return msg
 
     def decode(self, msg: CANMessage):
-        sigs = {name : sig.decode(msg) for name, sig in self.signals.items()}
-        return self.name, sigs
+        mux = ""
+        signals = {}
+        for name, signal in self.signals.items():
+            if signal.mux_count != 1:
+                mux = signal.mux
+            signals[name] = signal.decode(msg)
+
+        if mux != "":
+            mux_value = str(int(signals[mux]))
+            signals = {k + (mux_value if k != mux else ""):v for (k,v) in signals.items()}
+
+        return self.name, signals
 
     def __hash__(self):
         return hash((self.name, self.id, self.creation_date))

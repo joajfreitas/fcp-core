@@ -24,7 +24,7 @@ def test_encode_msg(fcp, test_msg):
 def test_decode_msg(fcp, test_msg):
     name, signals = fcp.decode_msg(test_msg)
     assert name == "iib_motor"
-    assert signals["temp_motor"] == 10
+    assert signals["temp_motor0"] == 10
 
 def test_encode_cmd(fcp):
     msg = fcp.encode_cmd(10, "iib", "set_regen_on", [1,2,3])

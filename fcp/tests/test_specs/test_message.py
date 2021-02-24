@@ -19,8 +19,13 @@ def message(device):
     msg.add_signal(Signal(parent=msg, name="test4", start=48, length=16))
     return msg
 
+#@pytest.fixture(scope="session")
+
 def test_encode(message):
     msg = message.encode({"test1": 10, "test5": 10})
     assert type(msg) is CANMessage
     print(msg)
     assert msg.get_data16()[0] == 2570
+
+#def test_decode(message, can_msg):
+#    
