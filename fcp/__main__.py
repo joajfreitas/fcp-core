@@ -119,7 +119,7 @@ def write_dbc_cmd(json_file: str, dbc: str):
     """
 
     spec = get_spec(json_file)
-    write_dbc(spec, dbc, logger)
+    write_dbc(spec, dbc)
 
 
 @click.command(name="c_gen")

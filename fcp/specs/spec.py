@@ -99,6 +99,12 @@ class Spec:
         """
         return self.logs.get(name)
 
+    def get_signals(self) -> List[Signal]:
+        for dev in self.devices.values():
+            for msg in dev.msgs.values():
+                for signal in msg.signals.values():
+                    yield signal
+
     def rm_node(self, node: Any) -> None:
         """Remove a node from Spec.
 

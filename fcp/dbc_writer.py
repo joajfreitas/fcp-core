@@ -68,8 +68,7 @@ def process_mux_signals(signals):
     return mux_signals
 
 
-def write_dbc(spec, dbc, logger):
-    logger.info("Writing dbc file")
+def write_dbc(spec, dbc):
 
     messages = []
     nodes = []
