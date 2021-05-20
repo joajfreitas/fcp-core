@@ -311,6 +311,8 @@ class Spec:
     def __repr__(self):
 
         msg_count = 0
+        cfg_count = 0
+        cmd_count = 0
         sig_count = 0
 
         for dev in self.devices.values():
@@ -318,8 +320,12 @@ class Spec:
                 msg_count += 1
                 for sig in msg.signals.values():
                     sig_count += 1
+            for cfg in dev.cfgs.values():
+                cfg_count += 1
+            for cmd in dev.cmds.values():
+                cmd_count += 1
 
-        return f"(Spec: {len(self.devices)}, {msg_count}, {sig_count})"
+        return f"(Spec: devs={len(self.devices)}, msgs={msg_count}, sigs={sig_count}, logs={len(self.logs)}, cfgs={cfg_count}, cmds={cmd_count})"
 
 
 def decompose_id(sid: int) -> Tuple[int, int]:

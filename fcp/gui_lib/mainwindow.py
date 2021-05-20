@@ -42,7 +42,10 @@ import requests
 
 
 def nag_intro():
-    r = requests.get("https://pypi.org/pypi/fcp/json")
+    try:
+        r = requests.get("https://pypi.org/pypi/fcp/json")
+    except Exception as e:
+        return
     j = json.loads(r.text)
     releases = list(j["releases"].keys())
     releases.sort(key=lambda s: [int(u) for u in s.split('.')])

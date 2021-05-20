@@ -101,6 +101,7 @@ class Device(Node):
 
         :param d: Node dictionary
         """
+
         msgs = d["msgs"]
         cmds = d["cmds"]
         cfgs = d["cfgs"]

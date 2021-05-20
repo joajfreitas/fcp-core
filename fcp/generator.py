@@ -47,6 +47,12 @@ def multiplexor(signal, message):
 
 
 def dst_type_decide(signal: Signal):
+    if signal.type == "float":
+        return "float"
+
+    if signal.type == "double":
+        return "double"
+
     if signal.scale != 1:
         return "float"
 

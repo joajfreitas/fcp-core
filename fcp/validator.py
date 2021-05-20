@@ -257,12 +257,11 @@ def spec_overlapping_dev_ids(spec):
         return fail_msg(spec, f"There are overlapping device ids")
 
 
-@check_decorator("spec")
-def spec_same_name_configs(spec):
+@check_decorator("dev")
+def spec_same_name_configs(device):
     cfgs = []
-    for dev in spec.devices.values():
-        for cfg in dev.cfgs.values():
-            cfgs += [cfg.name]
+    for cfg in device.cfgs.values():
+        cfgs += [cfg.name]
 
     cfgs_set = set()
 
@@ -278,12 +277,11 @@ def spec_same_name_configs(spec):
         )
 
 
-@check_decorator("spec")
-def spec_same_name_commands(spec):
+@check_decorator("dev")
+def spec_same_name_commands(dev):
     cmds = []
-    for dev in spec.devices.values():
-        for cmd in dev.cmds.values():
-            cmds += [cmd.name]
+    for cmd in dev.cmds.values():
+        cmds += [cmd.name]
 
     cmds_set = set()
 

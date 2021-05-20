@@ -15,6 +15,7 @@ from .validator import validate, format_error
 from .specs import Spec
 from .docs import generate_docs
 from .version import VERSION
+from .fcp_v2 import spec_to_fcp_v2, fcp_v2, fcp_v2_from_file
 
 
 def setup_logging() -> logging.Logger:
@@ -35,7 +36,6 @@ def setup_logging() -> logging.Logger:
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     return logger
-
 
 def report_validate(failed, force):
     error = 0
@@ -62,8 +62,13 @@ def get_spec(json_file: str, force: bool = False) -> Spec:
     """
 
     spec = Spec()
-    with open(json_file) as f:
-        j = json.loads(f.read())
+
+    path = Path(json_file)
+    if path.suffix == ".json":
+        with open(json_file) as f:
+            j = json.loads(f.read())
+    elif path.suffix == ".fcp":
+        j = fcp_v2_from_file(json_file)
 
     spec.decompile(j)
     failed = validate(spec)
@@ -169,11 +174,8 @@ def validate_cmd(json_file: str):
     """
 
     logger = setup_logging()
-    with open(json_file) as f:
-        j = json.loads(f.read())
+    spec = get_spec(json_file)
 
-    spec = Spec()
-    spec.decompile(j)
     failed = validate(spec)
     if len(failed) == 0:
         print("✓ JSON validated")
@@ -381,6 +383,37 @@ def fix(src: str, dst: str):
     with open(dst, "w") as f:
         f.write(json.dumps(d, indent=4))
 
+@click.command("json_to_fcp2")
+@click.argument("json_file")
+@click.argument("output")
+def json_to_fcp2(json_file: str, output: str):
+    spec = get_spec(json_file)
+    v2 = spec_to_fcp_v2(spec)
+
+    with open(output, "w") as f:
+        f.write(v2)
+
+
+
+@click.command("read_fcp2")
+@click.argument("fcp_v2_file")
+def read_fcp2(fcp_v2_file):
+    with open(fcp_v2_file) as f:
+        v2 = fcp_v2(f.read())
+
+    spec = Spec()
+    spec.decompile(v2)
+
+
+@click.command("read_fcp")
+@click.argument("json_file")
+def read_fcp(json_file: str):
+    logger = setup_logging()
+
+    spec = get_spec(json_file)
+    print(spec)
+
+
 
 @click.group(invoke_without_command=True)
 @click.option("--version", is_flag=True, default=False)
@@ -413,6 +446,9 @@ main.add_command(gui_cmd)
 #main.add_command(print_signal)
 main.add_command(docs)
 main.add_command(fix)
+main.add_command(json_to_fcp2)
+main.add_command(read_fcp2)
+main.add_command(read_fcp)
 
 if __name__ == "__main__":
     main()

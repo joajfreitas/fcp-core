@@ -36,10 +36,10 @@ def make_signal(signal, mux_signals, dev_name):
             signal.start,
             signal.length,
             byte_order=signal.byte_order,
-            scale=signal.scale,
-            offset=signal.offset,
-            minimum=signal.min_value,
-            maximum=signal.max_value,
+            scale=int(signal.scale),
+            offset=int(signal.offset),
+            minimum=int(signal.min_value),
+            maximum=int(signal.max_value),
             unit=signal.unit,
             comment=signal.comment,
             is_float=is_float(signal),
@@ -52,7 +52,11 @@ def make_signal(signal, mux_signals, dev_name):
         )
 
     if signal.mux_count == 1:
+        #if len(mux_signals) > 0:
+        #    yield make_signal_closure(signal.name, signal, mux_signals, [1])
+        #else:
         yield make_signal_closure(signal.name, signal, mux_signals, None)
+
         return
 
     for i in range(signal.mux_count):
