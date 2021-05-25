@@ -33,11 +33,11 @@ def make_signal(signal, mux_signals, dev_name):
     def make_signal_closure(name, signal, mux_signals, ids):
         return CanSignal(
             name,
-            signal.start,
+            signal.start + (7 if signal.byte_order == "big_endian" else 0),
             signal.length,
             byte_order=signal.byte_order,
-            scale=int(signal.scale),
-            offset=int(signal.offset),
+            scale=float(signal.scale),
+            offset=float(signal.offset),
             minimum=int(signal.min_value),
             maximum=int(signal.max_value),
             unit=signal.unit,

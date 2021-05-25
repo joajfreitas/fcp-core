@@ -21,6 +21,12 @@ def param_conv(key, value):
         return {"start": value[0], "length": value[1]}
     elif key == "sat":
         return {"min_value": value[0], "max_value": value[1]}
+    elif key == "endianess":
+        return {"byte_order": value[0][1:-1] + "_endian"}
+    elif key == "mux":
+        return {"mux": value[0][1:-1], "mux_count": value[1]}
+    elif key == "unit":
+        return {"unit": value[0][1:-1]}
     else:
         return {key: value[0]}
     return {key: value}
@@ -32,7 +38,7 @@ def params_conv(params):
 
 class FcpVisitor(NodeVisitor):
     def visit_spec(self, node, visited_children):
-        d = {"log": {}, "device": {}}
+        d = {"log": {}, "device": {}, "enum": {}}
 
         for child in visited_children:
             type, child = child[0]
@@ -44,6 +50,7 @@ class FcpVisitor(NodeVisitor):
         return {
             "logs": d["log"],
             "devices": d["device"],
+            "enums": d["enum"],
             "common": common,
             "version": "0.3",
         }
@@ -139,6 +146,7 @@ class FcpVisitor(NodeVisitor):
     def visit_signal(self, node, visited_children):
         comment, _, name, _, params, _ = visited_children
         params = params_conv(params)
+
         return {
             "name": name.text.strip(),
             "comment": comment[0],
@@ -177,6 +185,26 @@ class FcpVisitor(NodeVisitor):
             }
         )
 
+    def visit_enum_value(self, node, visited_children):
+        name, _, value, _ = visited_children
+        return {
+            "name": name.text.strip(),
+            "value": value.text.strip(),
+        }
+
+    def visit_enum(self, node, visited_children):
+        comment, _, name, _, params, _, values, _ = visited_children
+
+        vs = {value["name"]:value for value in values}
+
+        return (
+            "enum",
+            {
+                "name": name.text.strip(),
+                "enumeration": vs,
+            }
+        )
+
     def visit_comment(self, node, visited_children):
         text, _ = visited_children
         return text.text.replace("/* ", "").replace(" */", "").replace("/*", "").replace("*/", "")
@@ -190,7 +218,7 @@ class FcpVisitor(NodeVisitor):
 def fcp_v2(file):
     grammar = Grammar(
         """
-        spec = (device / log)*
+        spec = (device / log / enum)*
 
         ws        = ~"\s*"
         colon     = ws? ":" ws?
@@ -223,6 +251,9 @@ def fcp_v2(file):
         config = comment? "config" name colon params semicomma
 
         log = comment? "log" name colon params semicomma
+
+        enum = comment? "enum" name colon params lbrace (enum_value)+ rbrace
+        enum_value = name colon number semicomma
         """)
 
     fcp_vis = FcpVisitor()
@@ -242,7 +273,25 @@ device {{device.name}}: id({{device.id}}) {
     message {{msg.name}}: id({{msg.id}}) | dlc({{msg.dlc}}) | period({{msg.frequency}}) {
         {% for sig in msg.signals.values() %}
         /*{{sig.comment}}*/
-        signal {{sig.name}}: type({{sig.type}}) | size({{sig.start}}, {{sig.length}}) | sat({{sig.min_value}}, {{sig.max_value}});
+        signal {{sig.name}}: size({{sig.start}}, {{sig.length}})
+        {%- if sig.type != "unsigned" -%}
+        type({{sig.type}})
+        {%- endif -%}
+        {%- if not (sig.min_value == 0.0 and sig.max_value == 0.0) -%}
+        | sat({{sig.min_value}}, {{sig.max_value}})
+        {%- endif -%}
+        {%- if not (sig.scale == 1.0 and sig.offset == 0.0) -%}
+        | scale({{sig.scale}}, {{sig.offset}})
+        {%- endif -%}
+        {%- if sig.unit != "" -%}
+        | unit("{{sig.unit}}")
+        {%- endif -%}
+        {%- if sig.byte_order != "little_endian" -%}
+        | endianess("{{"little" if "little" in sig.byte_order else "big"}}")
+        {% endif -%}
+        {%- if not (sig.mux == "" and sig.mux_count == 1) -%}
+        | mux("{{sig.mux}}", {{sig.mux_count}})
+        {%- endif -%};
         {% endfor %}
     }
     {% endfor %}

@@ -3,6 +3,7 @@ import datetime
 
 from .node import Node
 from .utils import normalize
+from .enum_value import EnumValue
 
 class Enum(Node):
     """Fcp Enum. C lookalike for FCP type definitions with name-value
@@ -31,7 +32,7 @@ class Enum(Node):
         del d["enumeration"]
 
         #self.__dict__.update(make_private(self, d))
-        for k,v in make_private(self, d).items():
+        for k,v in self.make_private(self, d).items():
             self.__setattr__(k,v)
 
         for k, v in enumeration.items():

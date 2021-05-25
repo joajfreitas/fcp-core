@@ -93,7 +93,7 @@ def signal_endianess(signal):
 
     if signal.byte_order not in endianess:
         return fail_msg(
-            signal, f"signal endianess not supported. Valid values are: {endianess}"
+            signal, f"signal endianess not supported. Valid values are: {endianess} got {signal.byte_order}"
         )
 
 
@@ -137,7 +137,7 @@ def msg_mux(msg):
 
     mux = msg.signals.get(muxeds[0])
     if mux == None:
-        return fail_msg(msg, f"Cannot find mux signal in multiplexed message")
+        return fail_msg(msg, f"Cannot find mux signal in multiplexed message got {muxeds[0]}")
 
     if 2 ** mux.length < mux.mux_count:
         return fail_msg(msg, f"Mux cannot fit all possible multiplexed values")

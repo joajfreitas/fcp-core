@@ -188,8 +188,17 @@ class CANMessage:
         except Exception as e:
             return None
 
+    @staticmethod
+    def decode_socketcan(msg):
+        data = sum([b<<(i*8) for i,b in enumerate(msg.data)])
+        return CANMessage(
+            sid=msg.arbitration_id,
+            dlc=msg.dlc,
+            timestamp=msg.timestamp,
+            data64=data)
+
     def __repr__(self):
-        return f"<CANMessage sid={self.sid}, dlc={self.dlc}, data={self.get_data16()}"
+        return f"<CANMessage sid={self.sid}, dlc={self.dlc}, data={self.get_data16()}>"
 
 
 def test_encode_json():
