@@ -2,6 +2,7 @@ from typing import *
 import json
 import struct
 import datetime
+import can
 
 
 class CANMessage:
@@ -109,6 +110,15 @@ class CANMessage:
 
         s = struct.pack("HH4HI", self.sid, self.dlc, *self.get_data16(), self.timestamp)
         return s
+
+    def encode_socketcan(self):
+        msg = can.Message(
+            arbitration_id=self.sid,
+            data = self.get_data8(),
+            is_extended_id = False
+        )
+
+        return msg
 
     @staticmethod
     def decode_json(j):
