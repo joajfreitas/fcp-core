@@ -42,6 +42,18 @@ import requests
 
 
 def nag_intro():
+    def version_comparison(v1, v2):
+        v1s = [int(v) for v in v1.split(".")]
+        v2s = [int(v) for v in v2.split(".")]
+
+        for v1, v2 in zip(v1s, v2s):
+            if v1 > v2:
+                return 1
+            elif v1 < v2:
+                return -1
+
+        return 0
+
     try:
         r = requests.get("https://pypi.org/pypi/fcp/json")
     except Exception as e:
@@ -49,16 +61,20 @@ def nag_intro():
     j = json.loads(r.text)
     releases = list(j["releases"].keys())
     releases.sort(key=lambda s: [int(u) for u in s.split('.')])
-    newest_version = releases[-1]
+    upstream_version = releases[-1]
 
     out = ""
-    if newest_version != VERSION:
-        out += f"<p><b>FCP v{newest_version} is available. Go get it:\nsudo pip install fcp=={newest_version}</b></p>"
-    else:
+
+    version_comp = version_comparison(upstream_version, VERSION)
+    if version_comp == 1:
+        out += f"<p><b>FCP v{upstream_version} is available. Go get it:\nsudo pip install fcp=={upstream_version}</b></p>"
+    elif version_comp == 0:
         release_url = f"https://joajfreitas.gitlab.io/fcp-core/v{VERSION}.html"
         r = requests.get(release_url)
         if r.ok:
             out += "\n" + r.text
+    elif version_comp == -1:
+        out += f"Oh! I see you're running a development version. Good luck."
 
     return out
 

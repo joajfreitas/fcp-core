@@ -19,6 +19,7 @@ install:
     - docker
 
   script:
+    - python hooks/check_release_notes
     - python3 setup.py install
     - fcp --version
 
@@ -29,6 +30,7 @@ release:
     - release
 
   script:
+    - python hooks/check_release_notes
     - python setup.py sdist
     - pip install twine
     - twine upload -u joajfreitas -p $PYPI_PASSWORD dist/* 

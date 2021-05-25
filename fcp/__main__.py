@@ -1,21 +1,22 @@
+""" Main """
+
 import sys
 import logging
 import json
-import subprocess, os
+import subprocess
+import os
 from pathlib import Path
-from pprint import pprint
 
 import click
 
-
-from .dbc_reader import read_dbc, init
+from .dbc_reader import read_dbc
 from .dbc_writer import write_dbc
 from .c_generator import c_gen
 from .validator import validate, format_error
 from .specs import Spec
 from .docs import generate_docs
 from .version import VERSION
-from .fcp_v2 import spec_to_fcp_v2, fcp_v2, fcp_v2_from_file
+from .idl import spec_to_fcp_v2, fcp_v2_from_file, fcp_v2
 
 
 def setup_logging() -> logging.Logger:
@@ -36,6 +37,7 @@ def setup_logging() -> logging.Logger:
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     return logger
+
 
 def report_validate(failed, force):
     error = 0
