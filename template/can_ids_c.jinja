@@ -1,7 +1,7 @@
 #include "can_ids.h"
 
 void decode_can(CANdata msg, {{spec.signature}} *can) {
-switch (msg.sid) {
+switch (msg.dev_id) {
 {% for device in spec.devices.values() %}
 	case {{device.id}}:
 		#ifndef {{device.name.upper()}}

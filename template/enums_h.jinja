@@ -1,0 +1,14 @@
+#ifndef __CAN_ENUMS_H__
+#define __CAN_ENUMS_H__
+
+{% for enum in spec.enums.values() %}
+{% if enum.enumeration | length != 0 %}
+typedef enum _fcp_{{enum.name.lower()}}_t {
+	{%- for name, value in enum.enumeration.items() %}
+		FCP_{{enum.name.upper()}}_{{value.name.upper()}} = {{value.value}},
+	{%- endfor %}
+	} fcp_{{enum.name.lower()}}_t;
+{% endif %}
+{% endfor %}
+
+#endif
