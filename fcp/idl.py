@@ -44,8 +44,9 @@ class FcpVisitor(NodeVisitor):
             type, child = child[0]
             d[type][child["name"]] = child
 
-        common = d["device"]["common"]
-        del d["device"]["common"]
+        common = d["device"].get("common")
+        if common is not None:
+            del d["device"]["common"]
 
         return {
             "logs": d["log"],
@@ -257,8 +258,15 @@ def fcp_v2(file):
         """)
 
     fcp_vis = FcpVisitor()
-    ast = grammar.parse(file)
-    return fcp_vis.visit(ast)
+    ast = None
+    try:
+        ast = grammar.parse(file)
+    except Exception as e:
+        print(f"exception: {e}")
+
+    v = fcp_vis.visit(ast)
+    #print("v:", v)
+    return v
 
 def fcp_v2_from_file(file):
     with open(file) as f:
