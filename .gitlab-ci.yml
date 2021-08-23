@@ -1,15 +1,24 @@
+stages:
+  - check
+  - build
+  - deploy
+
+
+black:
+  image: joajfreitas/arch-python
+  stage: check
+  needs: []
+  script:
+    - pip install black
+    - black --check fcp
+
 test:
   image: joajfreitas/arch-python
   stage: build
   needs: []
-  tags:
-    - docker
-
   script:
     - pip install -r requirements.txt
     - pytest -v fcp
-
-
 
 install:
   image: joajfreitas/arch-python
