@@ -60,7 +60,7 @@ def nag_intro():
         return
     j = json.loads(r.text)
     releases = list(j["releases"].keys())
-    releases.sort(key=lambda s: [int(u) for u in s.split('.')])
+    releases.sort(key=lambda s: [int(u) for u in s.split(".")])
     upstream_version = releases[-1]
 
     out = ""
@@ -77,6 +77,7 @@ def nag_intro():
         out += f"Oh! I see you're running a development version. Good luck."
 
     return out
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -102,14 +103,7 @@ class MainWindow(QMainWindow):
 
         self.undo_redo = UndoRedo()
 
-
-
-        MessageBox(
-            self,
-            QMessageBox.Ok,
-            QMessageBox.Information,
-            nag_intro()).launch()
-
+        MessageBox(self, QMessageBox.Ok, QMessageBox.Information, nag_intro()).launch()
 
     def recent_files(self):
         def loads(path):
@@ -147,7 +141,6 @@ class MainWindow(QMainWindow):
         shortcutSave.setContext(Qt.ApplicationShortcut)
         shortcutSave.activated.connect(f)
 
-
     def config_shortcuts(self):
         self.shortcut(QKeySequence(Qt.CTRL + Qt.Key_S), self.save_json)
         self.shortcut(QKeySequence(Qt.CTRL + Qt.Key_O), self.open_json)
@@ -163,7 +156,6 @@ class MainWindow(QMainWindow):
         self.undo_redo.undo()
         self.reload()
 
-
     def redo(self):
         self.undo_redo.redo()
         self.reload()
@@ -173,13 +165,11 @@ class MainWindow(QMainWindow):
         failed_count = len([lvl for lvl, msg in failed if lvl == "error"])
         if len(failed) == 0:
             MessageBox(
-                self,
-                QMessageBox.Ok,
-                QMessageBox.Information,
-                "Spec passed").launch()
+                self, QMessageBox.Ok, QMessageBox.Information, "Spec passed"
+            ).launch()
         else:
             if len(failed) > 5:
-                failed = sorted(failed, key = lambda x : 0 if x[0] == "error" else 1)
+                failed = sorted(failed, key=lambda x: 0 if x[0] == "error" else 1)
                 failed = [(lvl, msg) for lvl, msg in failed]
                 failed = [f"{level}: {msg}" for level, msg in failed]
                 errors = "\n".join(failed[:5]) + f"\nand {len(failed)-5} more errors..."
@@ -187,12 +177,7 @@ class MainWindow(QMainWindow):
                 failed = [f"{level}: {msg}" for level, msg in failed]
                 errors = "\n".join(failed)
 
-
-            MessageBox(
-                self,
-                QMessageBox.Ok,
-                QMessageBox.Warning,
-                errors).launch()
+            MessageBox(self, QMessageBox.Ok, QMessageBox.Warning, errors).launch()
 
         return failed_count
 
@@ -204,7 +189,7 @@ class MainWindow(QMainWindow):
 
         if type(device) is Device:
             r = self.spec.add_device(device)
-            #if r == False:
+            # if r == False:
             #    msg = QMessageBox(self)
             #    msg.setStandardButtons(QMessageBox.Ok)
             #    msg.setIcon(QMessageBox.Warning)
@@ -220,7 +205,9 @@ class MainWindow(QMainWindow):
             dev_widget = widget
 
         if new_device:
-            undo_action = UndoAdd(device, dev_widget, dev_widget.delete, self.add_device)
+            undo_action = UndoAdd(
+                device, dev_widget, dev_widget.delete, self.add_device
+            )
             self.undo_redo.push(undo_action)
 
         self.ui.verticalLayout.addWidget(dev_widget)
@@ -258,11 +245,7 @@ class MainWindow(QMainWindow):
                 msg.show()
                 return
 
-        MessageBox(
-            self,
-            QMessageBox.Ok,
-            QMessageBox.Information,
-            "Saved").launch()
+        MessageBox(self, QMessageBox.Ok, QMessageBox.Information, "Saved").launch()
 
         with open(filename, "w") as f:
             j = self.spec.compile()
@@ -290,12 +273,10 @@ class MainWindow(QMainWindow):
             msg.show()
             return
 
-
         self.filename = filename
 
         File.access(self.config, filename)
         self.load(filename)
-
 
     def reload_spec(self):
         for device in sorted(self.spec.devices.values(), key=lambda x: x.id):
@@ -316,7 +297,7 @@ class MainWindow(QMainWindow):
         return
 
     def reload(self):
-        #print("reload:", self.history)
+        # print("reload:", self.history)
         self.save_history()
         for node in self.children:
             node.reload()

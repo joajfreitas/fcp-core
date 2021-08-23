@@ -7,6 +7,7 @@ from .signal import Signal
 from ..can import CANMessage
 from .utils import normalize
 
+
 class Message(Transmit):
     """Message node, Represents a CAN message, similar to a DBC message.
 
@@ -96,7 +97,6 @@ class Message(Transmit):
         except Exception as e:
             return
 
-
     def compile(self) -> Dict[str, Any]:
         """Transform python class node to its dictionary representation.
 
@@ -117,8 +117,8 @@ class Message(Transmit):
         :param d: Node dictionary
         """
         signals = d["signals"]
-        for k,v in self.make_private(self,d).items():
-            self.__setattr__(k,v)
+        for k, v in self.make_private(self, d).items():
+            self.__setattr__(k, v)
 
         for key, value in signals.items():
             sig = Signal(self)
@@ -151,7 +151,6 @@ class Message(Transmit):
         """
         return self.signals.get(name)
 
-
     def rm_signal(self, name: str) -> bool:
         """Remove a Signal from Spec.
 
@@ -164,7 +163,7 @@ class Message(Transmit):
         return True
 
     def normalize(self):
-        """ Update signals dictionary keys."""
+        """Update signals dictionary keys."""
         normalize(self.signals)
 
     def encode(self, signals, src=None):
@@ -179,10 +178,11 @@ class Message(Transmit):
             (data >> 0) & 0xFFFF,
             (data >> 16) & 0xFFFF,
             (data >> 32) & 0xFFFF,
-            (data >> 48) & 0xFFFF]
+            (data >> 48) & 0xFFFF,
+        ]
 
         sid = (self.id << 5) + self.parent.id
-        msg = CANMessage(sid=sid, dlc=self.dlc, data16 = data16, timestamp = 0)
+        msg = CANMessage(sid=sid, dlc=self.dlc, data16=data16, timestamp=0)
 
         return msg
 
@@ -196,7 +196,9 @@ class Message(Transmit):
 
         if mux != "":
             mux_value = str(int(signals[mux]))
-            signals = {k + (mux_value if k != mux else ""):v for (k,v) in signals.items()}
+            signals = {
+                k + (mux_value if k != mux else ""): v for (k, v) in signals.items()
+            }
 
         return self.name, signals
 

@@ -33,19 +33,19 @@ class Ui_Notices(object):
         self.buttonBox = QDialogButtonBox(Notices)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
 
         self.verticalLayout.addWidget(self.buttonBox)
-
 
         self.retranslateUi(Notices)
 
         QMetaObject.connectSlotsByName(Notices)
+
     # setupUi
 
     def retranslateUi(self, Notices):
         Notices.setWindowTitle(QCoreApplication.translate("Notices", u"Form", None))
         self.top_label.setText("")
         self.label.setText("")
-    # retranslateUi
 
+    # retranslateUi

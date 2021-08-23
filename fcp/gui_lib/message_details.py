@@ -29,7 +29,7 @@ class MessageDetails(NodeDetails):
 
         self.load_atts(self.ui, node)
         self.connect_atts()
- 
+
         sigs = list(self.node.signals.values())
         for sig in sigs:
             self.add_node(sig)

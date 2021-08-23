@@ -14,7 +14,7 @@ class FakeParent:
 
 
 class NodeDetails(QWidget):
-    """ Node (Device, Message, Signal, Log, Config, Command) interface """
+    """Node (Device, Message, Signal, Log, Config, Command) interface"""
 
     reload_sig = Signal(str)
 
@@ -38,7 +38,7 @@ class NodeDetails(QWidget):
     def connect_atts(self):
         def store(obj, var, att):
             def closure():
-                old = getattr(obj,var)
+                old = getattr(obj, var)
                 value = type(old)(att.text())
                 setattr(obj, "_" + var, value)
 

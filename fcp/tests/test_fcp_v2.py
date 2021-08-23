@@ -4,6 +4,7 @@ import pytest
 
 import os
 
+
 def test_f():
     for path in os.listdir("fcp/tests/v2_samples"):
         spec = Spec()

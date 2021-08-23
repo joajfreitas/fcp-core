@@ -46,18 +46,21 @@ class Ui_EnumWidget(object):
 
         self.verticalLayout_3.addWidget(self.addEnumButton)
 
-
         self.verticalLayout.addWidget(self.groupBox)
-
 
         self.retranslateUi(EnumWidget)
 
         QMetaObject.connectSlotsByName(EnumWidget)
+
     # setupUi
 
     def retranslateUi(self, EnumWidget):
-        EnumWidget.setWindowTitle(QCoreApplication.translate("EnumWidget", u"EnumWidget", None))
+        EnumWidget.setWindowTitle(
+            QCoreApplication.translate("EnumWidget", u"EnumWidget", None)
+        )
         self.groupBox.setTitle(QCoreApplication.translate("EnumWidget", u"Enums", None))
-        self.addEnumButton.setText(QCoreApplication.translate("EnumWidget", u"Add Enums", None))
-    # retranslateUi
+        self.addEnumButton.setText(
+            QCoreApplication.translate("EnumWidget", u"Add Enums", None)
+        )
 
+    # retranslateUi

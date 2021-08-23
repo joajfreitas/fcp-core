@@ -5,6 +5,7 @@ from .node import Node, Transmit
 from .arg import Argument
 from ..can import CANMessage
 
+
 class Command(Transmit):
     """Command node. Represents a Command.
 
@@ -130,9 +131,9 @@ class Command(Transmit):
         args = d["args"]
         rets = d["rets"]
 
-        #self.__dict__.update(make_private(self, d))
-        for k,v in self.make_private(self, d).items():
-            self.__setattr__(k,v)
+        # self.__dict__.update(make_private(self, d))
+        for k, v in self.make_private(self, d).items():
+            self.__setattr__(k, v)
 
         for arg_k, arg_v in args.items():
             arg = Argument()
@@ -148,8 +149,14 @@ class Command(Transmit):
         common = self.parent.parent.get_common()
         send_cmd = common.get_msg("send_cmd")
         msg = send_cmd.encode(
-            {"id": self.id, "dst": dst, "arg1": args[0], "arg2": args[1], "arg3": args[2]},
-            src=src
+            {
+                "id": self.id,
+                "dst": dst,
+                "arg1": args[0],
+                "arg2": args[1],
+                "arg3": args[2],
+            },
+            src=src,
         )
         return msg
 

@@ -11,6 +11,7 @@ from jinja2 import Template
 
 from .specs import Device, Log, Message, Config, Signal, Command
 
+
 def param_conv(key, value):
     value = [v.strip() for v in value]
     if key == "period":
@@ -31,9 +32,10 @@ def param_conv(key, value):
         return {key: value[0]}
     return {key: value}
 
+
 def params_conv(params):
     params = [param_conv(key, value) for key, value in params.items()]
-    return {k:v for d in params for k,v in d.items()}
+    return {k: v for d in params for k, v in d.items()}
 
 
 class FcpVisitor(NodeVisitor):
@@ -75,7 +77,7 @@ class FcpVisitor(NodeVisitor):
                 "cfgs": d["config"],
                 "cmds": d["command"],
                 **params,
-            }
+            },
         )
 
     def visit_config(self, node, visited_children):
@@ -103,7 +105,7 @@ class FcpVisitor(NodeVisitor):
                 "rets": {},
                 "comment": comment[0],
                 **params,
-            }
+            },
         )
 
     def visit_cmd_args(self, node, visited_children):
@@ -124,13 +126,13 @@ class FcpVisitor(NodeVisitor):
             {
                 "name": name.text.strip(),
                 **params,
-            }
+            },
         )
 
     def visit_message(self, node, visited_children):
         comment, _, name, _, params, _, signals, _ = visited_children
 
-        sigs = {sig["name"]:sig for sig in signals}
+        sigs = {sig["name"]: sig for sig in signals}
 
         params = params_conv(params)
 
@@ -141,7 +143,7 @@ class FcpVisitor(NodeVisitor):
                 "signals": sigs,
                 "description": comment[0],
                 **params,
-            }
+            },
         )
 
     def visit_signal(self, node, visited_children):
@@ -177,14 +179,7 @@ class FcpVisitor(NodeVisitor):
         comment = comment[0] if type(comment) == list else ""
         params = params_conv(params)
 
-        return (
-            "log",
-            {
-                "name": name.text.strip(),
-                "comment": comment,
-                **params
-            }
-        )
+        return ("log", {"name": name.text.strip(), "comment": comment, **params})
 
     def visit_enum_value(self, node, visited_children):
         name, _, value, _ = visited_children
@@ -196,23 +191,27 @@ class FcpVisitor(NodeVisitor):
     def visit_enum(self, node, visited_children):
         comment, _, name, _, params, _, values, _ = visited_children
 
-        vs = {value["name"]:value for value in values}
+        vs = {value["name"]: value for value in values}
 
         return (
             "enum",
             {
                 "name": name.text.strip(),
                 "enumeration": vs,
-            }
+            },
         )
 
     def visit_comment(self, node, visited_children):
         text, _ = visited_children
-        return text.text.replace("/* ", "").replace(" */", "").replace("/*", "").replace("*/", "")
-
+        return (
+            text.text.replace("/* ", "")
+            .replace(" */", "")
+            .replace("/*", "")
+            .replace("*/", "")
+        )
 
     def generic_visit(self, node, visited_children):
-        """ The generic visit method. """
+        """The generic visit method."""
         return visited_children or node
 
 
@@ -255,7 +254,8 @@ def fcp_v2(file):
 
         enum = comment? "enum" name colon params lbrace (enum_value)+ rbrace
         enum_value = name colon number semicomma
-        """)
+        """
+    )
 
     fcp_vis = FcpVisitor()
     ast = None
@@ -265,15 +265,18 @@ def fcp_v2(file):
         print(f"exception: {e}")
 
     v = fcp_vis.visit(ast)
-    #print("v:", v)
+    # print("v:", v)
     return v
+
 
 def fcp_v2_from_file(file):
     with open(file) as f:
         return fcp_v2(f.read())
 
+
 def spec_to_fcp_v2(spec):
-    template = Template("""
+    template = Template(
+        """
 {% for device in devs -%}
 device {{device.name}}: id({{device.id}}) {
     {% for msg in device.msgs.values() %}
@@ -327,7 +330,8 @@ device {{device.name}}: id({{device.id}}) {
 {% for log in spec.logs.values() %}
 log {{log.name}}: id({{log.id}}) | str("{{log.string}}");
 {% endfor -%}
-""")
+"""
+    )
 
     return template.render(
         {

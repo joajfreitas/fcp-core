@@ -3,6 +3,7 @@ import datetime
 
 from .node import Node
 
+
 class Log(Node):
     """Log protocol node.
 

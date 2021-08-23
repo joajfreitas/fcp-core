@@ -3,6 +3,7 @@ import pytest
 from ..fcp_lib import *
 from ..can import CANMessage
 
+
 @pytest.fixture
 def fcp():
     with open("json/test.json") as f:
@@ -12,25 +13,30 @@ def fcp():
     spec.decompile(j)
     return Fcp(spec)
 
+
 @pytest.fixture
 def test_msg(fcp):
-    return fcp.encode_msg("iib_motor", {"temp_motor":10})
+    return fcp.encode_msg("iib_motor", {"temp_motor": 10})
+
 
 def test_encode_msg(fcp, test_msg):
-    msg = fcp.encode_msg("iib_motor", {"temp_motor":10})
+    msg = fcp.encode_msg("iib_motor", {"temp_motor": 10})
     assert type(msg) is CANMessage
     assert msg.get_dev_id() == 16
+
 
 def test_decode_msg(fcp, test_msg):
     name, signals = fcp.decode_msg(test_msg)
     assert name == "iib_motor"
     assert signals["temp_motor0"] == 10
 
+
 def test_encode_cmd(fcp):
-    msg = fcp.encode_cmd(10, "iib", "set_regen_on", [1,2,3])
+    msg = fcp.encode_cmd(10, "iib", "set_regen_on", [1, 2, 3])
     assert msg is not None
 
-class FakeProxy():
+
+class FakeProxy:
     def __init__(self, socket, addrs):
         self.socket = socket
         self.addrs = []
@@ -38,9 +44,9 @@ class FakeProxy():
 
     def recv(self) -> CANMessage:
         msgs = [
-            CANMessage(sid=80, dlc=8, data16=[8<<8,2,0,0], timestamp=0),
-            CANMessage(sid=208, dlc=8, data16=[1,1,0,0], timestamp=0),
-            CANMessage(sid=144, dlc=8, data16=[1,1,0,0], timestamp=0)
+            CANMessage(sid=80, dlc=8, data16=[8 << 8, 2, 0, 0], timestamp=0),
+            CANMessage(sid=208, dlc=8, data16=[1, 1, 0, 0], timestamp=0),
+            CANMessage(sid=144, dlc=8, data16=[1, 1, 0, 0], timestamp=0),
         ]
 
         msg = msgs[self.i]
@@ -50,18 +56,21 @@ class FakeProxy():
     def send(self, msg: CANMessage):
         return
 
+
 @pytest.fixture
 def fcpcom(fcp):
     fcp_com = FcpCom(fcp, FakeProxy(None, None))
     return fcp_com
 
+
 def test_fcpcom_cmd(fcpcom):
     fcpcom.start()
-    rets = fcpcom.cmd("iib", "add", (1,1,0))
+    rets = fcpcom.cmd("iib", "add", (1, 1, 0))
     fcpcom.stop()
     print(rets)
     assert rets.is_ok()
     assert rets.unwrap()[0] == 2
+
 
 def test_fcpcom_set(fcpcom):
     fcpcom.start()
@@ -69,6 +78,7 @@ def test_fcpcom_set(fcpcom):
     fcpcom.stop()
     print(rets)
     assert rets.is_ok()
+
 
 def test_fcpcom_get(fcpcom):
     fcpcom.start()
@@ -78,7 +88,8 @@ def test_fcpcom_get(fcpcom):
     assert rets.is_ok()
     assert rets.unwrap() == 1
 
-#def test_decode_msg(fcp):
+
+# def test_decode_msg(fcp):
 #    msg = CANMessage(1232, 8, 0, data16=[0,0,0,0])
 #    msg, signals = fcp.decode_msg(msg)
 #    assert "motor_speed0" in signals.keys()

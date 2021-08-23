@@ -36,7 +36,6 @@ class Ui_MessageDetails(object):
 
         self.horizontalLayout.addWidget(self.nameEdit)
 
-
         self.verticalLayout_3.addLayout(self.horizontalLayout)
 
         self.horizontalLayout_2 = QHBoxLayout()
@@ -50,7 +49,6 @@ class Ui_MessageDetails(object):
         self.idEdit.setObjectName(u"idEdit")
 
         self.horizontalLayout_2.addWidget(self.idEdit)
-
 
         self.verticalLayout_3.addLayout(self.horizontalLayout_2)
 
@@ -66,7 +64,6 @@ class Ui_MessageDetails(object):
 
         self.horizontalLayout_3.addWidget(self.dlcEdit)
 
-
         self.verticalLayout_3.addLayout(self.horizontalLayout_3)
 
         self.horizontalLayout_4 = QHBoxLayout()
@@ -81,7 +78,6 @@ class Ui_MessageDetails(object):
 
         self.horizontalLayout_4.addWidget(self.frequencyEdit)
 
-
         self.verticalLayout_3.addLayout(self.horizontalLayout_4)
 
         self.horizontalLayout_6 = QHBoxLayout()
@@ -95,7 +91,6 @@ class Ui_MessageDetails(object):
         self.descriptionEdit.setObjectName(u"descriptionEdit")
 
         self.horizontalLayout_6.addWidget(self.descriptionEdit)
-
 
         self.verticalLayout_3.addLayout(self.horizontalLayout_6)
 
@@ -123,27 +118,41 @@ class Ui_MessageDetails(object):
 
         self.horizontalLayout_5.addWidget(self.deleteMessageButton)
 
-
         self.verticalLayout_3.addLayout(self.horizontalLayout_5)
 
-
         self.verticalLayout.addWidget(self.groupBox)
-
 
         self.retranslateUi(MessageDetails)
 
         QMetaObject.connectSlotsByName(MessageDetails)
+
     # setupUi
 
     def retranslateUi(self, MessageDetails):
-        MessageDetails.setWindowTitle(QCoreApplication.translate("MessageDetails", u"MessageDetails", None))
-        self.groupBox.setTitle(QCoreApplication.translate("MessageDetails", u"Message", None))
-        self.nameLabel.setText(QCoreApplication.translate("MessageDetails", u"name", None))
+        MessageDetails.setWindowTitle(
+            QCoreApplication.translate("MessageDetails", u"MessageDetails", None)
+        )
+        self.groupBox.setTitle(
+            QCoreApplication.translate("MessageDetails", u"Message", None)
+        )
+        self.nameLabel.setText(
+            QCoreApplication.translate("MessageDetails", u"name", None)
+        )
         self.idLabel.setText(QCoreApplication.translate("MessageDetails", u"id", None))
-        self.dlcLabel.setText(QCoreApplication.translate("MessageDetails", u"dlc", None))
-        self.frequencyLabel.setText(QCoreApplication.translate("MessageDetails", u"frequency", None))
-        self.descriptionLabel.setText(QCoreApplication.translate("MessageDetails", u"description", None))
-        self.addButton.setText(QCoreApplication.translate("MessageDetails", u"Add", None))
-        self.deleteMessageButton.setText(QCoreApplication.translate("MessageDetails", u"Delete", None))
-    # retranslateUi
+        self.dlcLabel.setText(
+            QCoreApplication.translate("MessageDetails", u"dlc", None)
+        )
+        self.frequencyLabel.setText(
+            QCoreApplication.translate("MessageDetails", u"frequency", None)
+        )
+        self.descriptionLabel.setText(
+            QCoreApplication.translate("MessageDetails", u"description", None)
+        )
+        self.addButton.setText(
+            QCoreApplication.translate("MessageDetails", u"Add", None)
+        )
+        self.deleteMessageButton.setText(
+            QCoreApplication.translate("MessageDetails", u"Delete", None)
+        )
 
+    # retranslateUi

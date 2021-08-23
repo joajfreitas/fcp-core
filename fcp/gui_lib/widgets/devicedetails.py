@@ -40,7 +40,6 @@ class Ui_DeviceDetails(object):
 
         self.horizontalLayout.addWidget(self.nameEdit)
 
-
         self.verticalLayout_3.addLayout(self.horizontalLayout)
 
         self.horizontalLayout_2 = QHBoxLayout()
@@ -54,7 +53,6 @@ class Ui_DeviceDetails(object):
         self.idEdit.setObjectName(u"idEdit")
 
         self.horizontalLayout_2.addWidget(self.idEdit)
-
 
         self.verticalLayout_3.addLayout(self.horizontalLayout_2)
 
@@ -94,14 +92,12 @@ class Ui_DeviceDetails(object):
 
         self.horizontalLayout_5.addWidget(self.cfgsButton)
 
-
         self.verticalLayout_3.addLayout(self.horizontalLayout_5)
 
         self.horizontalLayout_4 = QHBoxLayout()
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
 
         self.verticalLayout_3.addLayout(self.horizontalLayout_4)
-
 
         self.horizontalLayout_3.addLayout(self.verticalLayout_3)
 
@@ -115,26 +111,38 @@ class Ui_DeviceDetails(object):
 
         self.horizontalLayout_3.addLayout(self.cmdDetails)
 
-
         self.verticalLayout_5.addLayout(self.horizontalLayout_3)
 
-
         self.verticalLayout_2.addWidget(self.groupBox)
-
 
         self.retranslateUi(DeviceDetails)
 
         QMetaObject.connectSlotsByName(DeviceDetails)
+
     # setupUi
 
     def retranslateUi(self, DeviceDetails):
-        DeviceDetails.setWindowTitle(QCoreApplication.translate("DeviceDetails", u"DeviceDetails", None))
-        self.groupBox.setTitle(QCoreApplication.translate("DeviceDetails", u"Device", None))
-        self.nameLabel.setText(QCoreApplication.translate("DeviceDetails", u"name", None))
+        DeviceDetails.setWindowTitle(
+            QCoreApplication.translate("DeviceDetails", u"DeviceDetails", None)
+        )
+        self.groupBox.setTitle(
+            QCoreApplication.translate("DeviceDetails", u"Device", None)
+        )
+        self.nameLabel.setText(
+            QCoreApplication.translate("DeviceDetails", u"name", None)
+        )
         self.idLabel.setText(QCoreApplication.translate("DeviceDetails", u"id", None))
-        self.addButton.setText(QCoreApplication.translate("DeviceDetails", u"Add", None))
-        self.deleteDeviceButton.setText(QCoreApplication.translate("DeviceDetails", u"Delete", None))
-        self.cmdsButton.setText(QCoreApplication.translate("DeviceDetails", u"Cmds", None))
-        self.cfgsButton.setText(QCoreApplication.translate("DeviceDetails", u"Cfgs", None))
-    # retranslateUi
+        self.addButton.setText(
+            QCoreApplication.translate("DeviceDetails", u"Add", None)
+        )
+        self.deleteDeviceButton.setText(
+            QCoreApplication.translate("DeviceDetails", u"Delete", None)
+        )
+        self.cmdsButton.setText(
+            QCoreApplication.translate("DeviceDetails", u"Cmds", None)
+        )
+        self.cfgsButton.setText(
+            QCoreApplication.translate("DeviceDetails", u"Cfgs", None)
+        )
 
+    # retranslateUi

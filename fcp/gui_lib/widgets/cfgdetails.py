@@ -37,7 +37,6 @@ class Ui_CfgDetails(object):
 
         self.horizontalLayout_3.addWidget(self.nameEdit)
 
-
         self.verticalLayout.addLayout(self.horizontalLayout_3)
 
         self.horizontalLayout_2 = QHBoxLayout()
@@ -51,7 +50,6 @@ class Ui_CfgDetails(object):
         self.idEdit.setObjectName(u"idEdit")
 
         self.horizontalLayout_2.addWidget(self.idEdit)
-
 
         self.verticalLayout.addLayout(self.horizontalLayout_2)
 
@@ -67,7 +65,6 @@ class Ui_CfgDetails(object):
 
         self.horizontalLayout.addWidget(self.commentEdit)
 
-
         self.verticalLayout.addLayout(self.horizontalLayout)
 
         self.deleteCfgButton = QPushButton(self.groupBox)
@@ -75,21 +72,28 @@ class Ui_CfgDetails(object):
 
         self.verticalLayout.addWidget(self.deleteCfgButton)
 
-
         self.verticalLayout_2.addWidget(self.groupBox)
-
 
         self.retranslateUi(CfgDetails)
 
         QMetaObject.connectSlotsByName(CfgDetails)
+
     # setupUi
 
     def retranslateUi(self, CfgDetails):
-        CfgDetails.setWindowTitle(QCoreApplication.translate("CfgDetails", u"CfgDetails", None))
-        self.groupBox.setTitle(QCoreApplication.translate("CfgDetails", u"Config", None))
+        CfgDetails.setWindowTitle(
+            QCoreApplication.translate("CfgDetails", u"CfgDetails", None)
+        )
+        self.groupBox.setTitle(
+            QCoreApplication.translate("CfgDetails", u"Config", None)
+        )
         self.nameLabel.setText(QCoreApplication.translate("CfgDetails", u"name", None))
         self.idLabel_2.setText(QCoreApplication.translate("CfgDetails", u"id", None))
-        self.commentLabel.setText(QCoreApplication.translate("CfgDetails", u"comment", None))
-        self.deleteCfgButton.setText(QCoreApplication.translate("CfgDetails", u"Delete", None))
-    # retranslateUi
+        self.commentLabel.setText(
+            QCoreApplication.translate("CfgDetails", u"comment", None)
+        )
+        self.deleteCfgButton.setText(
+            QCoreApplication.translate("CfgDetails", u"Delete", None)
+        )
 
+    # retranslateUi
