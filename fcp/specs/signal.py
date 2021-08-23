@@ -5,8 +5,10 @@ from ..can import CANMessage
 
 from .node import Node
 
+
 class SignalValueError(Exception):
     pass
+
 
 class Signal(Node):
     """
@@ -136,6 +138,7 @@ class Signal(Node):
             self._name = name
         except Exception as e:
             return
+
     @start.setter
     def start(self, start: int) -> None:
         try:
@@ -240,23 +243,23 @@ class Signal(Node):
 
         :param d: Node dictionary
         """
-        for k,v in self.make_private(self, d).items():
-            self.__setattr__(k,v)
+        for k, v in self.make_private(self, d).items():
+            self.__setattr__(k, v)
 
     def bitmask(self, n):
         return 2 ** n - 1
 
     def encode(self, value) -> int:
-        if value>2**self.length:
+        if value > 2 ** self.length:
             raise SignalValueError()
-        value = (value-self.offset) / self.scale
+        value = (value - self.offset) / self.scale
         return (int(value) & self.bitmask(self.length)) << self.start
 
     def decode(self, msg: CANMessage):
         data64 = msg.get_data64()
         value = (data64 >> self.start) & self.bitmask(self.length)
         if self.type == "signed" and value >> (self.length - 1) == 1:
-            value = -((value ^ self.bitmask(self.length)) + 1);
+            value = -((value ^ self.bitmask(self.length)) + 1)
         return self.scale * value - self.offset
 
     def __hash__(self):

@@ -4,6 +4,7 @@ import datetime
 from .node import Node, Transmit
 from ..can import CANMessage
 
+
 class Config(Transmit):
     """Config node. Represents a Config.
 
@@ -31,7 +32,7 @@ class Config(Transmit):
     @property
     def name(self) -> str:
         return self._name
- 
+
     @property
     def id(self) -> int:
         return int(self._id)
@@ -82,9 +83,9 @@ class Config(Transmit):
 
         :param d: Node dictionary
         """
-        #self.__dict__.update(make_private(self, d))
-        for k,v in self.make_private(self, d).items():
-            self.__setattr__(k,v)
+        # self.__dict__.update(make_private(self, d))
+        for k, v in self.make_private(self, d).items():
+            self.__setattr__(k, v)
 
     def normalize(self):
         return
@@ -92,21 +93,19 @@ class Config(Transmit):
     def encode_set(self, src: int, dst: int, value: int) -> CANMessage:
         common = self.parent.parent.get_common()
         req_set = common.get_msg("req_set")
-        msg = req_set.encode({
-            "id": self.id,
-            "dst": dst,
-            "data": value
-        })
+        msg = req_set.encode({"id": self.id, "dst": dst, "data": value})
 
         return msg
 
     def encode_get(self, src: int, dst: int) -> CANMessage:
         common = self.parent.parent.get_common()
         req_set = common.get_msg("req_get")
-        msg = req_set.encode({
-            "id": self.id,
-            "dst": dst,
-        })
+        msg = req_set.encode(
+            {
+                "id": self.id,
+                "dst": dst,
+            }
+        )
 
         return msg
 

@@ -18,6 +18,8 @@ import json
 import logging
 import shutil
 
+from pathlib import Path
+
 from .specs import Spec
 from .template import Tpl
 from .generator import *
@@ -66,7 +68,11 @@ def c_gen(spec, templates, output, skel, logger):
         exit()
 
     for file in os.listdir(skel):
-        shutil.copy(os.path.join(skel, file), output, follow_symlinks=True)
+        src = Path(skel) / file
+        print(src)
+        if src.is_dir():
+            continue
+        shutil.copy(src, output, follow_symlinks=True)
 
     tpl = Tpl(logger, templates)
     status, err = tpl.check_tpl_dir()

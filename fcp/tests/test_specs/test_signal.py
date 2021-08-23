@@ -19,9 +19,11 @@ def signal(message):
 def test_signal_encode(signal):
     assert signal.encode(10) == 10
 
+
 def test_signal_encode_scale(signal):
     signal.scale = 0.1
     assert signal.encode(10) == 100
+
 
 def test_signal_encode_offset(signal):
     signal.scale = 10
@@ -30,7 +32,8 @@ def test_signal_encode_offset(signal):
     signal.scale = 1
     signal.offset = 0
 
-@given(s = st.integers(min_value=0))
+
+@given(s=st.integers(min_value=0))
 def test_decode_signal_encode(signal, s):
     try:
         data64 = signal.encode(s)

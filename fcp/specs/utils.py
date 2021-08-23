@@ -1,5 +1,6 @@
 from typing import *
 
+
 def normalize(xs: Dict[str, Any], key: Callable[[Any], str] = None):
     """Update xs dictionary keys according to key.
         By default key is `lambda x : x.name`

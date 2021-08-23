@@ -6,6 +6,7 @@ from .message import Message
 from .config import Config
 from .cmd import Command
 
+
 class Common(Node):
     def __init__(
         self,
@@ -47,7 +48,6 @@ class Common(Node):
         except Exception as e:
             return
 
-
     def add_msg(self, msg: Message) -> bool:
         if msg == None:
             return False
@@ -62,7 +62,6 @@ class Common(Node):
         for msg_name, msg in self.msgs.items():
             if msg_name == name:
                 return msg
-
 
     def compile(self) -> Dict[str, Any]:
         """Transform python class node to its dictionary representation.

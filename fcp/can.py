@@ -113,9 +113,7 @@ class CANMessage:
 
     def encode_socketcan(self):
         msg = can.Message(
-            arbitration_id=self.sid,
-            data = self.get_data8(),
-            is_extended_id = False
+            arbitration_id=self.sid, data=self.get_data8(), is_extended_id=False
         )
 
         return msg
@@ -200,12 +198,10 @@ class CANMessage:
 
     @staticmethod
     def decode_socketcan(msg):
-        data = sum([b<<(i*8) for i,b in enumerate(msg.data)])
+        data = sum([b << (i * 8) for i, b in enumerate(msg.data)])
         return CANMessage(
-            sid=msg.arbitration_id,
-            dlc=msg.dlc,
-            timestamp=msg.timestamp,
-            data64=data)
+            sid=msg.arbitration_id, dlc=msg.dlc, timestamp=msg.timestamp, data64=data
+        )
 
     def __repr__(self):
         return f"<CANMessage sid={self.sid}, dlc={self.dlc}, data={self.get_data16()}>"

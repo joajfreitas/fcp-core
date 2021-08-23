@@ -136,7 +136,9 @@ def write_dbc_cmd(json_file: str, dbc: str):
 @click.argument("skel")
 @click.option("--noformat", is_flag=True, default=False)
 @click.option("--force", is_flag=True, default=False)
-def c_gen_cmd(templates: str, output: str, json_file: str, skel: str, noformat: bool, force: bool):
+def c_gen_cmd(
+    templates: str, output: str, json_file: str, skel: str, noformat: bool, force: bool
+):
     """Transform FCP json into a C library.
     :param templates: jinja template directory.
     :param output: output directory.
@@ -218,6 +220,7 @@ def docs(json_file: str, out: str, link_location: str):
     spec = get_spec(json_file)
     generate_docs(spec, out, link_location, logger)
 
+
 @click.command("fix")
 @click.argument("src")
 @click.argument("dst")
@@ -235,10 +238,10 @@ def fix(src: str, dst: str):
                 if sig.mux_count == 0:
                     sig.mux_count = 1
 
-
     d = spec.compile()
     with open(dst, "w") as f:
         f.write(json.dumps(d, indent=4))
+
 
 @click.command("json_to_fcp2")
 @click.argument("json_file")
@@ -260,11 +263,10 @@ def fcp2_to_json(fcpv2: str, fcpv1: str):
         f.write(json.dumps(spec.compile(), indent=4))
 
 
-
 @click.group(invoke_without_command=True)
 @click.option("--version", is_flag=True, default=False)
 def main(version):
-    """CLI utility for managment of FCP JSON files. """
+    """CLI utility for managment of FCP JSON files."""
 
     if len(sys.argv) == 1:
         print("fcp cli util.\nVersion:", VERSION, "\nFor usage see fcp --help")

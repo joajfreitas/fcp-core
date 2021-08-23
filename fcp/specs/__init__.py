@@ -11,4 +11,3 @@ from .log import Log
 from .spec import Spec
 from .spec import decompose_id
 from .spec import make_sid
-

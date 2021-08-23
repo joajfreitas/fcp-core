@@ -7,6 +7,7 @@ from .cmd import Command
 from .config import Config
 from .utils import normalize
 
+
 class Device(Node):
     """Device node, Represents a CAN device.
 
@@ -63,7 +64,6 @@ class Device(Node):
         except Exception as e:
             return
 
-
     def add_cmd(self, cmd: Command) -> None:
         self.cmds[cmd.name] = cmd
 
@@ -109,7 +109,7 @@ class Device(Node):
         for k, v in self.make_private(self, d).items():
             f = self.__setattr__(k, v)
 
-        #self.__dict__.update()
+        # self.__dict__.update()
 
         for k, v in msgs.items():
             msg = Message(self)
@@ -198,7 +198,7 @@ class Device(Node):
         return True
 
     def normalize(self):
-        """ Update messages, commands and configs dictionary keys.  """
+        """Update messages, commands and configs dictionary keys."""
         normalize(self.msgs)
         normalize(self.cmds)
         normalize(self.cfgs)
@@ -225,4 +225,3 @@ class Device(Node):
 
     def __repr__(self):
         return f"<Device name={self.name} id={self.id}>"
-

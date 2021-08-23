@@ -47,18 +47,21 @@ class Ui_LogWidget(object):
 
         self.verticalLayout_3.addWidget(self.addLogButton)
 
-
         self.verticalLayout.addWidget(self.groupBox)
-
 
         self.retranslateUi(LogWidget)
 
         QMetaObject.connectSlotsByName(LogWidget)
+
     # setupUi
 
     def retranslateUi(self, LogWidget):
-        LogWidget.setWindowTitle(QCoreApplication.translate("LogWidget", u"LogWidget", None))
+        LogWidget.setWindowTitle(
+            QCoreApplication.translate("LogWidget", u"LogWidget", None)
+        )
         self.groupBox.setTitle(QCoreApplication.translate("LogWidget", u"Logs", None))
-        self.addLogButton.setText(QCoreApplication.translate("LogWidget", u"Add Log", None))
-    # retranslateUi
+        self.addLogButton.setText(
+            QCoreApplication.translate("LogWidget", u"Add Log", None)
+        )
 
+    # retranslateUi

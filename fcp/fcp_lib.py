@@ -52,6 +52,7 @@ def conv_endianess(value: int, signal: Signal):
     if length == 2:
         return swap16(value)
 
+
 class Fcp:
     def __init__(self, spec):
         self.messages = {}
@@ -65,7 +66,6 @@ class Fcp:
         elif type(spec) is Spec:
             self.spec = spec
 
-
         for device in spec.devices.values():
             for msg in device.msgs.values():
                 self.messages[msg.name] = msg
@@ -74,7 +74,8 @@ class Fcp:
             self.messages[msg.name] = msg
 
     def encode_msg(
-        self, msg_name: str, signals: Dict[str, float], src: int = None) -> CANMessage:
+        self, msg_name: str, signals: Dict[str, float], src: int = None
+    ) -> CANMessage:
         msg = self.messages.get(msg_name)
         return msg.encode(signals, src)
 
@@ -125,7 +126,6 @@ class Fcp:
 
         return None
 
-
     def decode_log(self, signal):
         for name, log in self.spec.logs.items():
             if log.id == signal["id"]:
@@ -173,7 +173,8 @@ class Fcp:
 
         return Ok(cfg.encode_set(src, device.id, value))
 
-class Proxy():
+
+class Proxy:
     def __init__(self, socket, addrs):
         self.socket = socket
         self.addrs = []
@@ -188,7 +189,8 @@ class Proxy():
         for addr in self.addrs:
             self.socket.sendto(msg.encode_json(), addr)
 
-class FcpCom():
+
+class FcpCom:
     def __init__(self, fcp: Fcp, proxy: Proxy, id: int = 31):
         self.fcp = fcp
         self.proxy = proxy
@@ -256,7 +258,6 @@ class FcpCom():
         except queue.Empty as e:
             return Err("Timeout")
 
-
     def run(self):
         while True:
             if self.terminate == True:
@@ -290,4 +291,3 @@ class FcpCom():
                 if q is not None:
                     q.put(ret)
                 pass
-

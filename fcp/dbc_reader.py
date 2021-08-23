@@ -119,8 +119,8 @@ def default_common_cfg_msg(spec):
 def default_common_cmd_msg(spec):
     common = spec.get_common()
     cmd_args_msg = Message(parent=common, name="send_cmd", id=1)
-    dst =  Signal(parent=cmd_args_msg, name="dst", start=0, length=5)
-    id =   Signal(parent=cmd_args_msg, name="id", start=8, length=8)
+    dst = Signal(parent=cmd_args_msg, name="dst", start=0, length=5)
+    id = Signal(parent=cmd_args_msg, name="id", start=8, length=8)
     arg1 = Signal(parent=cmd_args_msg, start=16, length=16, name="arg1")
     arg2 = Signal(parent=cmd_args_msg, start=32, length=16, name="arg2")
     arg3 = Signal(parent=cmd_args_msg, start=48, length=16, name="arg3")
@@ -134,7 +134,7 @@ def default_common_cmd_msg(spec):
     spec.common.add_msg(cmd_args_msg)
 
     cmd_return = Message(parent=common, name="return_cmd", id=2)
-    id =   Signal(parent=cmd_return, name="id", start=8, length=8)
+    id = Signal(parent=cmd_return, name="id", start=8, length=8)
     ret1 = Signal(parent=cmd_return, start=16, length=16, name="ret1")
     ret2 = Signal(parent=cmd_return, start=32, length=16, name="ret2")
     ret3 = Signal(parent=cmd_return, start=48, length=16, name="ret3")
@@ -154,13 +154,21 @@ def default_common(spec):
 
 
 def default_spec_logs(spec):
-    log_error = Log(parent=spec,
-        id=0, name="wrong_log_id", n_args=0, string="Log code was not found"
+    log_error = Log(
+        parent=spec,
+        id=0,
+        name="wrong_log_id",
+        n_args=0,
+        string="Log code was not found",
     )
     spec.add_log(log_error)
 
-    cfg_error = Log(parent=spec,
-        id=1, name="wrong_cfg_id", n_args=0, string="Cfg code was not found"
+    cfg_error = Log(
+        parent=spec,
+        id=1,
+        name="wrong_cfg_id",
+        n_args=0,
+        string="Cfg code was not found",
     )
 
     spec.add_log(cfg_error)
@@ -200,18 +208,20 @@ def read_dbc(dbc, json_file, device_config):
 
         device = Device(parent=spec, id=dev_id, name=device_name, msgs={})
 
-        msg = Message(parent=device, name=message.name, id=msg_id, dlc=message.length, signals={})
+        msg = Message(
+            parent=device, name=message.name, id=msg_id, dlc=message.length, signals={}
+        )
 
         err = spec.add_device(device)
         err = spec.devices[device.name].add_msg(msg)
 
         for signal in message.signals:
             t = find_type(signal)
-            #print(
-                #signal.multiplexer_signal, signal.is_multiplexer, signal.multiplexer_ids
-            #)
+            # print(
+            # signal.multiplexer_signal, signal.is_multiplexer, signal.multiplexer_ids
+            # )
             sig = Signal(
-                parent = msg,
+                parent=msg,
                 name=signal.name,
                 start=signal.start,
                 length=signal.length,
@@ -227,7 +237,6 @@ def read_dbc(dbc, json_file, device_config):
                 mux_count=1,
             )
             err = spec.devices[device.name].get_msg(message.name).add_signal(sig)
-
 
     default_configs(spec)
     j = spec.compile()

@@ -72,6 +72,5 @@ class DeviceDetails(NodeDetails):
         self.ui.verticalLayout.addWidget(m)
         self.children.append(m)
 
-
         undo_action = UndoAdd(node, m, m.delete, self.add_node)
         self.gui.undo_redo.push(undo_action)

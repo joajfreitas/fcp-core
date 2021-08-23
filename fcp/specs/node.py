@@ -2,7 +2,8 @@ from typing import *
 
 from ..can import CANMessage
 
-class Node():
+
+class Node:
     @property
     def spec(self):
         if type(self.parent) is Spec:
@@ -14,7 +15,7 @@ class Node():
         return self.parent.get_spec()
 
     def filter_private(self, d: Dict[str, Any]) -> Dict[str, Any]:
-        return {k:v for (k,v) in d.items() if k.startswith('_')}
+        return {k: v for (k, v) in d.items() if k.startswith("_")}
 
     def make_private(self, obj, d: Dict[str, Any]) -> Dict[str, Any]:
         new_d = {}
@@ -24,10 +25,11 @@ class Node():
         return new_d
 
     def make_public(self, obj, d: Dict[str, Any]) -> Dict[str, Any]:
-        return {k[1:] if k.startswith('_') else k:v for (k,v) in d.items()}
+        return {k[1:] if k.startswith("_") else k: v for (k, v) in d.items()}
 
     def normalize(self):
         return
+
 
 class Transmit(Node):
     def encode(self):
