@@ -40,7 +40,7 @@ def params_conv(params):
 
 class FcpVisitor(NodeVisitor):
     def visit_spec(self, node, visited_children):
-        d = {"log": {}, "device": {}, "enum": {}}
+        d = {"log": {}, "device": {}, "enum": {}, "type": {}}
 
         for child in visited_children:
             type, child = child[0]
@@ -210,6 +210,16 @@ class FcpVisitor(NodeVisitor):
             .replace("*/", "")
         )
 
+
+    def visit_type(self, node, visited_children):
+        comment, _, _, name, _, arguments, _ = visited_children
+        print(arguments)
+        return ("type", {"comment": comment.text, "name": name.text})
+
+    def visit_argument(self, node, visited_children):
+        name, _, value, _ = visited_children
+        return {"name": name.text, "value": value}
+
     def generic_visit(self, node, visited_children):
         """The generic visit method."""
         return visited_children or node
@@ -218,7 +228,7 @@ class FcpVisitor(NodeVisitor):
 def fcp_v2(file):
     grammar = Grammar(
         """
-        spec = (device / log / enum)*
+        spec = (device / log / enum / type)*
 
         ws        = ~"\s*"
         colon     = ws? ":" ws?
@@ -254,6 +264,9 @@ def fcp_v2(file):
 
         enum = comment? "enum" name colon params lbrace (enum_value)+ rbrace
         enum_value = name colon number semicomma
+
+        argument = name colon name comma
+        type = comment? ws? "type" name lbrace argument* rbrace
         """
     )
 

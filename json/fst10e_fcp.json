@@ -329,10 +329,24 @@
                     }
                 }
             },
+            "cfgs": {
+                "version": {
+                    "name": "version",
+                    "id": 0,
+                    "comment": "",
+                    "type": "unsigned"
+                },
+                "max_torque_fl": {
+                    "name": "max_torque_fl",
+                    "id": 3,
+                    "comment": "",
+                    "type": "unsigned"
+                }
+            },
             "cmds": {
                 "set_fans_right": {
                     "name": "set_fans_right",
-                    "n_args": 2,
+                    "n_args": 3,
                     "comment": "",
                     "id": 0,
                     "args": {},
@@ -340,7 +354,7 @@
                 },
                 "set_ntcs_right": {
                     "name": "set_ntcs_right",
-                    "n_args": 1,
+                    "n_args": 3,
                     "comment": "receives number of ntcs to be used, the ntcs are turned on in numerical order",
                     "id": 1,
                     "args": {},
@@ -356,7 +370,7 @@
                 },
                 "set_pwm_3_right": {
                     "name": "set_pwm_3_right",
-                    "n_args": 2,
+                    "n_args": 3,
                     "comment": "Sets PWM3 duty cycle",
                     "id": 4,
                     "args": {},
@@ -364,7 +378,7 @@
                 },
                 "set_pwm_2_right": {
                     "name": "set_pwm_2_right",
-                    "n_args": 2,
+                    "n_args": 3,
                     "comment": "Sets PWM2 duty cycle",
                     "id": 3,
                     "args": {},
@@ -372,25 +386,11 @@
                 },
                 "set_pwm_1_right": {
                     "name": "set_pwm_1_right",
-                    "n_args": 2,
+                    "n_args": 3,
                     "comment": "Sets PWM1 duty cycle",
                     "id": 2,
                     "args": {},
                     "rets": {}
-                }
-            },
-            "cfgs": {
-                "version": {
-                    "name": "version",
-                    "id": 0,
-                    "comment": "",
-                    "type": "unsigned"
-                },
-                "max_torque_fl": {
-                    "name": "max_torque_fl",
-                    "id": 3,
-                    "comment": "",
-                    "type": "unsigned"
                 }
             }
         },
@@ -723,10 +723,24 @@
                     }
                 }
             },
+            "cfgs": {
+                "version": {
+                    "name": "version",
+                    "id": 0,
+                    "comment": "",
+                    "type": "unsigned"
+                },
+                "max_torque_fl": {
+                    "name": "max_torque_fl",
+                    "id": 3,
+                    "comment": "",
+                    "type": "unsigned"
+                }
+            },
             "cmds": {
                 "set_fans_left": {
                     "name": "set_fans_left",
-                    "n_args": 2,
+                    "n_args": 3,
                     "comment": "",
                     "id": 0,
                     "args": {},
@@ -734,7 +748,7 @@
                 },
                 "set_ntcs_left": {
                     "name": "set_ntcs_left",
-                    "n_args": 1,
+                    "n_args": 3,
                     "comment": "receives number of ntcs to be used, the ntcs are turned on in numerical order",
                     "id": 1,
                     "args": {},
@@ -750,7 +764,7 @@
                 },
                 "set_pwm3_left": {
                     "name": "set_pwm3_left",
-                    "n_args": 2,
+                    "n_args": 3,
                     "comment": "Sets PWM3 duty cycle",
                     "id": 4,
                     "args": {},
@@ -758,7 +772,7 @@
                 },
                 "set_pwm2_left": {
                     "name": "set_pwm2_left",
-                    "n_args": 2,
+                    "n_args": 3,
                     "comment": "Sets PWM2 duty cycle",
                     "id": 3,
                     "args": {},
@@ -766,25 +780,11 @@
                 },
                 "set_pwm1_left": {
                     "name": "set_pwm1_left",
-                    "n_args": 2,
+                    "n_args": 3,
                     "comment": "Sets PWM1 duty cycle",
                     "id": 2,
                     "args": {},
                     "rets": {}
-                }
-            },
-            "cfgs": {
-                "version": {
-                    "name": "version",
-                    "id": 0,
-                    "comment": "",
-                    "type": "unsigned"
-                },
-                "max_torque_fl": {
-                    "name": "max_torque_fl",
-                    "id": 3,
-                    "comment": "",
-                    "type": "unsigned"
                 }
             }
         },
@@ -1313,7 +1313,7 @@
                             "scale": 1.0,
                             "offset": 0.0,
                             "unit": "",
-                            "comment": "Inverters have HV ",
+                            "comment": "Inverters have HV",
                             "min_value": 0.0,
                             "max_value": 1.0,
                             "type": "unsigned",
@@ -1607,12 +1607,12 @@
                             "name": "soc_derrating_on",
                             "start": 59,
                             "length": 1,
-                            "scale": 1,
-                            "offset": 0,
+                            "scale": 1.0,
+                            "offset": 0.0,
                             "unit": "",
                             "comment": "1 if SOC derrating is ON",
-                            "min_value": 0,
-                            "max_value": 1,
+                            "min_value": 0.0,
+                            "max_value": 1.0,
                             "type": "unsigned",
                             "byte_order": "little_endian",
                             "mux": "",
@@ -1623,12 +1623,12 @@
                             "name": "pl_on",
                             "start": 61,
                             "length": 1,
-                            "scale": 1,
-                            "offset": 0,
+                            "scale": 1.0,
+                            "offset": 0.0,
                             "unit": "",
                             "comment": "1 if power limiter is ON",
-                            "min_value": 0,
-                            "max_value": 1,
+                            "min_value": 0.0,
+                            "max_value": 1.0,
                             "type": "unsigned",
                             "byte_order": "little_endian",
                             "mux": "",
@@ -2825,118 +2825,6 @@
                     }
                 }
             },
-            "cmds": {
-                "set_regen_on": {
-                    "name": "set_regen_on",
-                    "n_args": 0,
-                    "comment": "Set regeneration on",
-                    "id": 0,
-                    "args": {},
-                    "rets": {}
-                },
-                "save_flash": {
-                    "name": "save_flash",
-                    "n_args": 1,
-                    "comment": "Save all parameters in flash",
-                    "id": 1,
-                    "args": {},
-                    "rets": {}
-                },
-                "ext_input0": {
-                    "name": "ext_input0",
-                    "n_args": 3,
-                    "comment": "Setpoints for test bench mode motor 0",
-                    "id": 2,
-                    "args": {},
-                    "rets": {}
-                },
-                "ext_input1": {
-                    "name": "ext_input1",
-                    "n_args": 3,
-                    "comment": "Setpoints for external input mode motor 1",
-                    "id": 3,
-                    "args": {},
-                    "rets": {}
-                },
-                "ext_input2": {
-                    "name": "ext_input2",
-                    "n_args": 3,
-                    "comment": "Setpoints for external input mode motor 2",
-                    "id": 4,
-                    "args": {},
-                    "rets": {}
-                },
-                "ext_input3": {
-                    "name": "ext_input3",
-                    "n_args": 3,
-                    "comment": "Setpoints for external input mode motor 3",
-                    "id": 5,
-                    "args": {},
-                    "rets": {}
-                },
-                "input_mode": {
-                    "name": "input_mode",
-                    "n_args": 1,
-                    "comment": "Input mode command",
-                    "id": 6,
-                    "args": {},
-                    "rets": {}
-                },
-                "set_pl": {
-                    "name": "set_pl",
-                    "n_args": 1,
-                    "comment": "Derating power limiter status",
-                    "id": 7,
-                    "args": {},
-                    "rets": {}
-                },
-                "lap_count": {
-                    "name": "lap_count",
-                    "n_args": 1,
-                    "comment": "Derating power limiter status",
-                    "id": 8,
-                    "args": {
-                        "": {
-                            "name": "",
-                            "id": 1,
-                            "comment": "",
-                            "type": "unsigned"
-                        }
-                    },
-                    "rets": {}
-                },
-                "add": {
-                    "name": "add",
-                    "n_args": 3,
-                    "comment": "sums all arguments",
-                    "id": 9,
-                    "args": {
-                        "": {
-                            "name": "",
-                            "id": 2,
-                            "comment": "",
-                            "type": "unsigned"
-                        }
-                    },
-                    "rets": {}
-                },
-                "rtd_on": {
-                    "name": "rtd_on",
-                    "n_args": 0,
-                    "comment": "requests rtd on",
-                    "id": 10,
-                    "args": {},
-                    "rets": {}
-                },
-                "rtd_off": {
-                    "name": "rtd_off",
-                    "n_args": 0,
-                    "comment": "requests rtd off",
-                    "id": 0,
-                    "args": {},
-                    "rets": {}
-                }
-            },
             "cfgs": {
                 "version": {
                     "name": "version",
@@ -3124,6 +3012,118 @@
                     "comment": "Sets SOC derrating ON/OFF",
                     "type": "unsigned"
                 }
+            },
+            "cmds": {
+                "set_regen_on": {
+                    "name": "set_regen_on",
+                    "n_args": 3,
+                    "comment": "Set regeneration on",
+                    "id": 0,
+                    "args": {},
+                    "rets": {}
+                },
+                "save_flash": {
+                    "name": "save_flash",
+                    "n_args": 3,
+                    "comment": "Save all parameters in flash",
+                    "id": 1,
+                    "args": {},
+                    "rets": {}
+                },
+                "ext_input0": {
+                    "name": "ext_input0",
+                    "n_args": 3,
+                    "comment": "Setpoints for test bench mode motor 0",
+                    "id": 2,
+                    "args": {},
+                    "rets": {}
+                },
+                "ext_input1": {
+                    "name": "ext_input1",
+                    "n_args": 3,
+                    "comment": "Setpoints for external input mode motor 1",
+                    "id": 3,
+                    "args": {},
+                    "rets": {}
+                },
+                "ext_input2": {
+                    "name": "ext_input2",
+                    "n_args": 3,
+                    "comment": "Setpoints for external input mode motor 2",
+                    "id": 4,
+                    "args": {},
+                    "rets": {}
+                },
+                "ext_input3": {
+                    "name": "ext_input3",
+                    "n_args": 3,
+                    "comment": "Setpoints for external input mode motor 3",
+                    "id": 5,
+                    "args": {},
+                    "rets": {}
+                },
+                "input_mode": {
+                    "name": "input_mode",
+                    "n_args": 3,
+                    "comment": "Input mode command",
+                    "id": 6,
+                    "args": {},
+                    "rets": {}
+                },
+                "set_pl": {
+                    "name": "set_pl",
+                    "n_args": 3,
+                    "comment": "Derating power limiter status",
+                    "id": 7,
+                    "args": {},
+                    "rets": {}
+                },
+                "lap_count": {
+                    "name": "lap_count",
+                    "n_args": 3,
+                    "comment": "Derating power limiter status",
+                    "id": 8,
+                    "args": {
+                        "": {
+                            "name": "",
+                            "id": 1,
+                            "comment": "",
+                            "type": "unsigned"
+                        }
+                    },
+                    "rets": {}
+                },
+                "add": {
+                    "name": "add",
+                    "n_args": 3,
+                    "comment": "sums all arguments",
+                    "id": 9,
+                    "args": {
+                        "": {
+                            "name": "",
+                            "id": 2,
+                            "comment": "",
+                            "type": "unsigned"
+                        }
+                    },
+                    "rets": {}
+                },
+                "rtd_on": {
+                    "name": "rtd_on",
+                    "n_args": 3,
+                    "comment": "requests rtd on",
+                    "id": 10,
+                    "args": {},
+                    "rets": {}
+                },
+                "rtd_off": {
+                    "name": "rtd_off",
+                    "n_args": 3,
+                    "comment": "requests rtd off",
+                    "id": 0,
+                    "args": {},
+                    "rets": {}
+                }
             }
         },
         "dash": {
@@ -3213,24 +3213,6 @@
                     }
                 }
             },
-            "cmds": {
-                "se_calibrate": {
-                    "name": "se_calibrate",
-                    "n_args": 3,
-                    "comment": "Zeroes the offset of the steering wheel.",
-                    "id": 0,
-                    "args": {},
-                    "rets": {}
-                },
-                "write_flash": {
-                    "name": "write_flash",
-                    "n_args": 3,
-                    "comment": "Writes parameters in flash memory.",
-                    "id": 1,
-                    "args": {},
-                    "rets": {}
-                }
-            },
             "cfgs": {
                 "version": {
                     "name": "version",
@@ -3249,6 +3231,24 @@
                     "id": 2,
                     "comment": "steering encoder's offset",
                     "type": "unsigned"
+                }
+            },
+            "cmds": {
+                "se_calibrate": {
+                    "name": "se_calibrate",
+                    "n_args": 3,
+                    "comment": "Zeroes the offset of the steering wheel.",
+                    "id": 0,
+                    "args": {},
+                    "rets": {}
+                },
+                "write_flash": {
+                    "name": "write_flash",
+                    "n_args": 3,
+                    "comment": "Writes parameters in flash memory.",
+                    "id": 1,
+                    "args": {},
+                    "rets": {}
                 }
             }
         },
@@ -3807,48 +3807,6 @@
                     }
                 }
             },
-            "cmds": {
-                "brake_zero": {
-                    "name": "brake_zero",
-                    "n_args": 0,
-                    "comment": "brake is not beeing pressed",
-                    "id": 0,
-                    "args": {},
-                    "rets": {}
-                },
-                "brake_max": {
-                    "name": "brake_max",
-                    "n_args": 0,
-                    "comment": "brake is fully pressed",
-                    "id": 1,
-                    "args": {},
-                    "rets": {}
-                },
-                "accel_zero": {
-                    "name": "accel_zero",
-                    "n_args": 0,
-                    "comment": "accelerator is not beeing pressed",
-                    "id": 2,
-                    "args": {},
-                    "rets": {}
-                },
-                "accel_max": {
-                    "name": "accel_max",
-                    "n_args": 0,
-                    "comment": "accelerator is fully pressed",
-                    "id": 3,
-                    "args": {},
-                    "rets": {}
-                },
-                "save_eeprom": {
-                    "name": "save_eeprom",
-                    "n_args": 0,
-                    "comment": "",
-                    "id": 4,
-                    "args": {},
-                    "rets": {}
-                }
-            },
             "cfgs": {
                 "version": {
                     "name": "version",
@@ -3981,6 +3939,48 @@
                     "id": 21,
                     "comment": "BPSe max force (N) limit",
                     "type": "unsigned"
+                }
+            },
+            "cmds": {
+                "brake_zero": {
+                    "name": "brake_zero",
+                    "n_args": 3,
+                    "comment": "brake is not beeing pressed",
+                    "id": 0,
+                    "args": {},
+                    "rets": {}
+                },
+                "brake_max": {
+                    "name": "brake_max",
+                    "n_args": 3,
+                    "comment": "brake is fully pressed",
+                    "id": 1,
+                    "args": {},
+                    "rets": {}
+                },
+                "accel_zero": {
+                    "name": "accel_zero",
+                    "n_args": 3,
+                    "comment": "accelerator is not beeing pressed",
+                    "id": 2,
+                    "args": {},
+                    "rets": {}
+                },
+                "accel_max": {
+                    "name": "accel_max",
+                    "n_args": 3,
+                    "comment": "accelerator is fully pressed",
+                    "id": 3,
+                    "args": {},
+                    "rets": {}
+                },
+                "save_eeprom": {
+                    "name": "save_eeprom",
+                    "n_args": 3,
+                    "comment": "",
+                    "id": 4,
+                    "args": {},
+                    "rets": {}
                 }
             }
         },
@@ -4797,101 +4797,6 @@
                     }
                 }
             },
-            "cmds": {
-                "save_flash": {
-                    "name": "save_flash",
-                    "n_args": 1,
-                    "comment": "Save all parameters in flash",
-                    "id": 0,
-                    "args": {},
-                    "rets": {}
-                },
-                "toggle_verbose": {
-                    "name": "toggle_verbose",
-                    "n_args": 1,
-                    "comment": "Toggle verbose",
-                    "id": 1,
-                    "args": {},
-                    "rets": {}
-                },
-                "toggle_fans": {
-                    "name": "toggle_fans",
-                    "n_args": 1,
-                    "comment": "Toggle fans",
-                    "id": 2,
-                    "args": {},
-                    "rets": {}
-                },
-                "toggle_charge": {
-                    "name": "toggle_charge",
-                    "n_args": 1,
-                    "comment": "Toggle charging",
-                    "id": 3,
-                    "args": {},
-                    "rets": {}
-                },
-                "fake_error": {
-                    "name": "fake_error",
-                    "n_args": 1,
-                    "comment": "make fake erro",
-                    "id": 4,
-                    "args": {},
-                    "rets": {}
-                },
-                "reset_error": {
-                    "name": "reset_error",
-                    "n_args": 1,
-                    "comment": "reset ams error",
-                    "id": 5,
-                    "args": {},
-                    "rets": {}
-                },
-                "recalibrate_soc": {
-                    "name": "recalibrate_soc",
-                    "n_args": 2,
-                    "comment": "recalibrate_soc",
-                    "id": 6,
-                    "args": {},
-                    "rets": {}
-                },
-                "common_ts": {
-                    "name": "common_ts",
-                    "n_args": 1,
-                    "comment": "Toogle TS state on/off",
-                    "id": 18,
-                    "args": {
-                        "": {
-                            "name": "ts_step",
-                            "id": 0,
-                            "comment": "step: 0(toggle), 1(ebs/dash), 2(dash)",
-                            "type": "unsigned"
-                        },
-                        "ts_step": {
-                            "name": "ts_step",
-                            "id": 0,
-                            "comment": "step: 0(toggle), 1(ebs/dash), 2(dash)",
-                            "type": "unsigned"
-                        }
-                    },
-                    "rets": {}
-                },
-                "get_cell_config": {
-                    "name": "get_cell_config",
-                    "n_args": 3,
-                    "comment": "Gets the number of stacks and cells",
-                    "id": 19,
-                    "args": {},
-                    "rets": {}
-                },
-                "set_pwm_fan_side": {
-                    "name": "set_pwm_fan_side",
-                    "n_args": 1,
-                    "comment": "set_pwm_fan_side",
-                    "id": 7,
-                    "args": {},
-                    "rets": {}
-                }
-            },
             "cfgs": {
                 "version": {
                     "name": "version",
@@ -4952,6 +4857,95 @@
                     "id": 9,
                     "comment": "Auto calibration time threshold",
                     "type": "unsigned"
+                }
+            },
+            "cmds": {
+                "save_flash": {
+                    "name": "save_flash",
+                    "n_args": 3,
+                    "comment": "Save all parameters in flash",
+                    "id": 0,
+                    "args": {},
+                    "rets": {}
+                },
+                "toggle_verbose": {
+                    "name": "toggle_verbose",
+                    "n_args": 3,
+                    "comment": "Toggle verbose",
+                    "id": 1,
+                    "args": {},
+                    "rets": {}
+                },
+                "toggle_fans": {
+                    "name": "toggle_fans",
+                    "n_args": 3,
+                    "comment": "Toggle fans",
+                    "id": 2,
+                    "args": {},
+                    "rets": {}
+                },
+                "toggle_charge": {
+                    "name": "toggle_charge",
+                    "n_args": 3,
+                    "comment": "Toggle charging",
+                    "id": 3,
+                    "args": {},
+                    "rets": {}
+                },
+                "fake_error": {
+                    "name": "fake_error",
+                    "n_args": 3,
+                    "comment": "make fake erro",
+                    "id": 4,
+                    "args": {},
+                    "rets": {}
+                },
+                "reset_error": {
+                    "name": "reset_error",
+                    "n_args": 3,
+                    "comment": "reset ams error",
+                    "id": 5,
+                    "args": {},
+                    "rets": {}
+                },
+                "recalibrate_soc": {
+                    "name": "recalibrate_soc",
+                    "n_args": 3,
+                    "comment": "recalibrate_soc",
+                    "id": 6,
+                    "args": {},
+                    "rets": {}
+                },
+                "common_ts": {
+                    "name": "common_ts",
+                    "n_args": 3,
+                    "comment": "Toogle TS state on/off",
+                    "id": 18,
+                    "args": {
+                        "ts_step": {
+                            "name": "ts_step",
+                            "id": 0,
+                            "comment": "",
+                            "type": "unsigned"
+                        }
+                    },
+                    "rets": {}
+                },
+                "get_cell_config": {
+                    "name": "get_cell_config",
+                    "n_args": 3,
+                    "comment": "Gets the number of stacks and cells",
+                    "id": 19,
+                    "args": {},
+                    "rets": {}
+                },
+                "set_pwm_fan_side": {
+                    "name": "set_pwm_fan_side",
+                    "n_args": 3,
+                    "comment": "set_pwm_fan_side",
+                    "id": 7,
+                    "args": {},
+                    "rets": {}
                 }
             }
         },
@@ -5042,6 +5036,7 @@
                     }
                 }
             },
+            "cfgs": {},
             "cmds": {
                 "random_command": {
                     "name": "random_command",
@@ -5049,12 +5044,6 @@
                     "comment": "This is a random command for testing",
                     "id": 10,
                     "args": {
-                        "": {
-                            "name": "Random Argument for random command",
-                            "id": 20,
-                            "comment": "",
-                            "type": "unsigned"
-                        },
                         "Random Argument for random command": {
                             "name": "Random Argument for random command",
                             "id": 20,
@@ -5064,8 +5053,7 @@
                     },
                     "rets": {}
                 }
-            },
-            "cfgs": {}
+            }
         },
         "interface": {
             "name": "interface",
@@ -5122,8 +5110,8 @@
                     }
                 }
             },
-            "cmds": {},
-            "cfgs": {}
+            "cfgs": {},
+            "cmds": {}
         },
         "dcu": {
             "name": "dcu",
@@ -5500,17 +5488,17 @@
                     }
                 }
             },
+            "cfgs": {},
             "cmds": {
                 "as_emergency_buzzer": {
                     "name": "as_emergency_buzzer",
-                    "n_args": 1,
+                    "n_args": 3,
                     "comment": "sounds buzzer when in AS Emergency",
                     "id": 0,
                     "args": {},
                     "rets": {}
                 }
-            },
-            "cfgs": {}
+            }
         },
         "hw": {
             "name": "hw",
@@ -5809,16 +5797,6 @@
                     }
                 }
             },
-            "cmds": {
-                "save_falsh": {
-                    "name": "save_falsh",
-                    "n_args": 1,
-                    "comment": "",
-                    "id": 0,
-                    "args": {},
-                    "rets": {}
-                }
-            },
             "cfgs": {
                 "version": {
                     "name": "version",
@@ -5873,6 +5851,16 @@
                     "id": 5,
                     "comment": "Thermophile AMPOP Gain",
                     "type": "unsigned"
+                }
+            },
+            "cmds": {
+                "save_falsh": {
+                    "name": "save_falsh",
+                    "n_args": 3,
+                    "comment": "",
+                    "id": 0,
+                    "args": {},
+                    "rets": {}
                 }
             }
         },
@@ -6081,8 +6069,8 @@
                     }
                 }
             },
-            "cmds": {},
-            "cfgs": {}
+            "cfgs": {},
+            "cmds": {}
         },
         "sw": {
             "name": "sw",
@@ -6212,19 +6200,27 @@
                     }
                 }
             },
+            "cfgs": {
+                "version": {
+                    "name": "version",
+                    "id": 0,
+                    "comment": "",
+                    "type": "unsigned"
+                },
+                "luminosity": {
+                    "name": "luminosity",
+                    "id": 1,
+                    "comment": "",
+                    "type": "unsigned"
+                }
+            },
             "cmds": {
                 "leds_set_bitfield": {
                     "name": "leds_set_bitfield",
-                    "n_args": 1,
+                    "n_args": 3,
                     "comment": "",
                     "id": 3,
                     "args": {
-                        "": {
-                            "name": "led_values",
-                            "id": 0,
-                            "comment": "",
-                            "type": "unsigned"
-                        },
                         "led_values": {
                             "name": "led_values",
                             "id": 0,
@@ -6236,7 +6232,7 @@
                 },
                 "leds_set_all": {
                     "name": "leds_set_all",
-                    "n_args": 0,
+                    "n_args": 3,
                     "comment": "",
                     "id": 2,
                     "args": {},
@@ -6280,25 +6276,11 @@
                 },
                 "leds_clear": {
                     "name": "leds_clear",
-                    "n_args": 0,
+                    "n_args": 3,
                     "comment": "",
                     "id": 1,
                     "args": {},
                     "rets": {}
-                }
-            },
-            "cfgs": {
-                "version": {
-                    "name": "version",
-                    "id": 0,
-                    "comment": "",
-                    "type": "unsigned"
-                },
-                "luminosity": {
-                    "name": "luminosity",
-                    "id": 1,
-                    "comment": "",
-                    "type": "unsigned"
                 }
             }
         },
@@ -6638,24 +6620,6 @@
                     }
                 }
             },
-            "cmds": {
-                "as_as_state": {
-                    "name": "as_as_state",
-                    "n_args": 1,
-                    "comment": "sets state",
-                    "id": 1,
-                    "args": {},
-                    "rets": {}
-                },
-                "as_as_mission": {
-                    "name": "as_as_mission",
-                    "n_args": 1,
-                    "comment": "sets mission",
-                    "id": 0,
-                    "args": {},
-                    "rets": {}
-                }
-            },
             "cfgs": {
                 "DV_driving_dynamics_1": {
                     "name": "DV_driving_dynamics_1",
@@ -6674,6 +6638,24 @@
                     "id": 2,
                     "comment": "",
                     "type": "unsigned"
+                }
+            },
+            "cmds": {
+                "as_as_state": {
+                    "name": "as_as_state",
+                    "n_args": 3,
+                    "comment": "sets state",
+                    "id": 1,
+                    "args": {},
+                    "rets": {}
+                },
+                "as_as_mission": {
+                    "name": "as_as_mission",
+                    "n_args": 3,
+                    "comment": "sets mission",
+                    "id": 0,
+                    "args": {},
+                    "rets": {}
                 }
             }
         },
@@ -6851,10 +6833,11 @@
                     }
                 }
             },
+            "cfgs": {},
             "cmds": {
                 "ebs_as_state": {
                     "name": "ebs_as_state",
-                    "n_args": 1,
+                    "n_args": 3,
                     "comment": "request to change AS state",
                     "id": 0,
                     "args": {},
@@ -6862,14 +6845,13 @@
                 },
                 "ebs_as_mission": {
                     "name": "ebs_as_mission",
-                    "n_args": 1,
+                    "n_args": 3,
                     "comment": "sets AS mission",
                     "id": 1,
                     "args": {},
                     "rets": {}
                 }
-            },
-            "cfgs": {}
+            }
         },
         "res": {
             "name": "res",
@@ -6933,8 +6915,8 @@
                     }
                 }
             },
-            "cmds": {},
-            "cfgs": {}
+            "cfgs": {},
+            "cmds": {}
         },
         "xsens": {
             "name": "xsens",
@@ -7172,7 +7154,7 @@
                             "name": "Q0",
                             "start": 0,
                             "length": 16,
-                            "scale": 3.05185e-05,
+                            "scale": 3.05185,
                             "offset": 0.0,
                             "unit": "",
                             "comment": "Quaternion Q0 (Qw).",
@@ -7188,7 +7170,7 @@
                             "name": "Q1",
                             "start": 16,
                             "length": 16,
-                            "scale": 3.05185e-05,
+                            "scale": 3.05185,
                             "offset": 0.0,
                             "unit": "",
                             "comment": "Quaternion Q1 (Qx).",
@@ -7204,7 +7186,7 @@
                             "name": "Q2",
                             "start": 32,
                             "length": 16,
-                            "scale": 3.05185e-05,
+                            "scale": 3.05185,
                             "offset": 0.0,
                             "unit": "",
                             "comment": "Quaternion Q2 (Qy).",
@@ -7220,7 +7202,7 @@
                             "name": "Q3",
                             "start": 48,
                             "length": 16,
-                            "scale": 3.05185e-05,
+                            "scale": 3.05185,
                             "offset": 0.0,
                             "unit": "",
                             "comment": "Quaternion Q3 (Qz).",
@@ -7302,7 +7284,7 @@
                             "name": "lat",
                             "start": 0,
                             "length": 32,
-                            "scale": 5.9605e-08,
+                            "scale": 5.9605,
                             "offset": 0.0,
                             "unit": "degree",
                             "comment": "Xsens: GPS latitude.",
@@ -7318,7 +7300,7 @@
                             "name": "lon",
                             "start": 32,
                             "length": 32,
-                            "scale": 1.1921e-07,
+                            "scale": 1.1921,
                             "offset": 0.0,
                             "unit": "degree",
                             "comment": "Xsens: GPS longitude.",
@@ -7343,7 +7325,7 @@
                             "name": "altEllipsoid",
                             "start": 0,
                             "length": 32,
-                            "scale": 3.0518e-05,
+                            "scale": 3.0518,
                             "offset": 0.0,
                             "unit": "m",
                             "comment": "Xsens: GPS Altitude.",
@@ -7450,7 +7432,7 @@
                             "name": "Pressure",
                             "start": 0,
                             "length": 32,
-                            "scale": 3.0518e-05,
+                            "scale": 3.0518,
                             "offset": 0.0,
                             "unit": "",
                             "comment": "",
@@ -7817,7 +7799,7 @@
                             "name": "delta_x",
                             "start": 0,
                             "length": 16,
-                            "scale": 1.5259e-05,
+                            "scale": 1.5259,
                             "offset": 0.0,
                             "unit": "",
                             "comment": "",
@@ -7833,7 +7815,7 @@
                             "name": "delta_y",
                             "start": 16,
                             "length": 16,
-                            "scale": 1.5259e-05,
+                            "scale": 1.5259,
                             "offset": 0.0,
                             "unit": "",
                             "comment": "",
@@ -7849,7 +7831,7 @@
                             "name": "delta_z",
                             "start": 32,
                             "length": 16,
-                            "scale": 1.5259e-05,
+                            "scale": 1.5259,
                             "offset": 0.0,
                             "unit": "",
                             "comment": "",
@@ -7864,8 +7846,8 @@
                     }
                 }
             },
-            "cmds": {},
-            "cfgs": {}
+            "cfgs": {},
+            "cmds": {}
         },
         "etas": {
             "name": "etas",
@@ -8028,7 +8010,7 @@
                             "name": "EKF_x_1",
                             "start": 0,
                             "length": 21,
-                            "scale": 1e-07,
+                            "scale": 1.0,
                             "offset": 0.0,
                             "unit": "",
                             "comment": "",
@@ -8044,7 +8026,7 @@
                             "name": "EKF_x_2",
                             "start": 21,
                             "length": 21,
-                            "scale": 1e-07,
+                            "scale": 1.0,
                             "offset": 0.0,
                             "unit": "",
                             "comment": "",
@@ -8085,7 +8067,7 @@
                             "name": "EKF_x_5",
                             "start": 21,
                             "length": 21,
-                            "scale": 1e-07,
+                            "scale": 1.0,
                             "offset": 0.0,
                             "unit": "",
                             "comment": "",
@@ -8117,7 +8099,7 @@
                             "name": "EKF_x_4",
                             "start": 0,
                             "length": 21,
-                            "scale": 1e-07,
+                            "scale": 1.0,
                             "offset": 0.0,
                             "unit": "",
                             "comment": "",
@@ -8174,7 +8156,7 @@
                             "name": "EKF_x_15_r",
                             "start": 42,
                             "length": 22,
-                            "scale": 1e-05,
+                            "scale": 1.0,
                             "offset": 0.0,
                             "unit": "",
                             "comment": "yaw rate",
@@ -8199,7 +8181,7 @@
                             "name": "EKF_x_10",
                             "start": 0,
                             "length": 21,
-                            "scale": 1e-07,
+                            "scale": 1.0,
                             "offset": 0.0,
                             "unit": "",
                             "comment": "",
@@ -8215,7 +8197,7 @@
                             "name": "EKF_x_11",
                             "start": 21,
                             "length": 21,
-                            "scale": 1e-07,
+                            "scale": 1.0,
                             "offset": 0.0,
                             "unit": "",
                             "comment": "",
@@ -8256,7 +8238,7 @@
                             "name": "EKF_x_7",
                             "start": 0,
                             "length": 21,
-                            "scale": 1e-07,
+                            "scale": 1.0,
                             "offset": 0.0,
                             "unit": "",
                             "comment": "",
@@ -8272,7 +8254,7 @@
                             "name": "EKF_x_8",
                             "start": 21,
                             "length": 21,
-                            "scale": 1e-07,
+                            "scale": 1.0,
                             "offset": 0.0,
                             "unit": "",
                             "comment": "",
@@ -8871,7 +8853,6 @@
                     }
                 }
             },
-            "cmds": {},
             "cfgs": {
                 "regen_on": {
                     "name": "regen_on",
@@ -9023,7 +9004,8 @@
                     "comment": "",
                     "type": "unsigned"
                 }
-            }
+            },
+            "cmds": {}
         },
         "prog_mux": {
             "name": "prog_mux",
@@ -9055,22 +9037,22 @@
                     }
                 }
             },
-            "cmds": {
-                "set_channel": {
-                    "name": "set_channel",
-                    "n_args": 1,
-                    "comment": "Change prog_mux channel",
-                    "id": 0,
-                    "args": {},
-                    "rets": {}
-                }
-            },
             "cfgs": {
                 "version": {
                     "name": "version",
                     "id": 0,
                     "comment": "",
                     "type": "unsigned"
+                }
+            },
+            "cmds": {
+                "set_channel": {
+                    "name": "set_channel",
+                    "n_args": 3,
+                    "comment": "Change prog_mux channel",
+                    "id": 0,
+                    "args": {},
+                    "rets": {}
                 }
             }
         },
@@ -9120,10 +9102,11 @@
                     }
                 }
             },
+            "cfgs": {},
             "cmds": {
                 "rear_left_reference": {
                     "name": "rear_left_reference",
-                    "n_args": 0,
+                    "n_args": 3,
                     "comment": "sets left potentiometer value as reference",
                     "id": 0,
                     "args": {},
@@ -9131,14 +9114,13 @@
                 },
                 "rear_right_reference": {
                     "name": "rear_right_reference",
-                    "n_args": 0,
+                    "n_args": 3,
                     "comment": "sets right potentiometer value as reference",
                     "id": 1,
                     "args": {},
                     "rets": {}
                 }
-            },
-            "cfgs": {}
+            }
         },
         "du_front": {
             "name": "du_front",
@@ -9158,7 +9140,7 @@
                             "scale": 1.0,
                             "offset": 0.0,
                             "unit": "",
-                            "comment": "Dynamic Unit: Suspension travel FL, directly from ADC. ",
+                            "comment": "Dynamic Unit: Suspension travel FL, directly from ADC.",
                             "min_value": 0.0,
                             "max_value": 4096.0,
                             "type": "unsigned",
@@ -9186,10 +9168,11 @@
                     }
                 }
             },
+            "cfgs": {},
             "cmds": {
                 "front_left_reference": {
                     "name": "front_left_reference",
-                    "n_args": 0,
+                    "n_args": 3,
                     "comment": "sets left potentiometer value as reference",
                     "id": 0,
                     "args": {},
@@ -9197,14 +9180,13 @@
                 },
                 "front_right_reference": {
                     "name": "front_right_reference",
-                    "n_args": 0,
+                    "n_args": 3,
                     "comment": "sets right potentiometer value as reference",
                     "id": 1,
                     "args": {},
                     "rets": {}
                 }
-            },
-            "cfgs": {}
+            }
         },
         "lv_bms": {
             "name": "lv_bms",
@@ -9788,8 +9770,8 @@
                     }
                 }
             },
-            "cmds": {},
-            "cfgs": {}
+            "cfgs": {},
+            "cmds": {}
         },
         "strain_gauges": {
             "name": "strain_gauges",
@@ -9910,101 +9892,101 @@
                     }
                 }
             },
-            "cmds": {},
-            "cfgs": {}
+            "cfgs": {},
+            "cmds": {}
         }
     },
     "logs": {
         "wrong_log_id": {
             "id": 0,
             "name": "wrong_log_id",
-            "n_args": 0,
+            "n_args": 3,
             "comment": "",
-            "string": "Log code was not found"
+            "string": "\"Log code was not found\""
         },
         "wrong_cfg_id": {
             "id": 1,
             "name": "wrong_cfg_id",
-            "n_args": 0,
+            "n_args": 3,
             "comment": "",
-            "string": "Cfg code was not found"
+            "string": "\"Cfg code was not found\""
         },
         "high_temp": {
             "id": 2,
             "name": "high_temp",
-            "n_args": 1,
+            "n_args": 3,
             "comment": "",
-            "string": "Temp exceeds %d"
+            "string": "\"Temp exceeds %d\""
         },
         "wrong_cmd_id": {
             "id": 3,
             "name": "wrong_cmd_id",
-            "n_args": 1,
-            "comment": "Cmd id is not valid",
-            "string": "Cmd id is not valid"
+            "n_args": 3,
+            "comment": "",
+            "string": "\"Cmd id is not valid\""
         },
         "trap_handler_type": {
             "id": 4,
             "name": "trap_handler_type",
-            "n_args": 2,
+            "n_args": 3,
             "comment": "",
-            "string": "Error type %d"
+            "string": "\"Error type %d\""
         },
         "reset_message": {
             "id": 5,
             "name": "reset_message",
-            "n_args": 1,
+            "n_args": 3,
             "comment": "",
-            "string": "Device was reset"
+            "string": "\"Device was reset\""
         },
         "ntc_number": {
             "id": 6,
             "name": "ntc_number",
-            "n_args": 1,
-            "comment": "Returns number of NTCs",
-            "string": "There are %d NTCs"
+            "n_args": 3,
+            "comment": "",
+            "string": "\"There are %d NTCs\""
         },
         "flow_state": {
             "id": 7,
             "name": "flow_state",
-            "n_args": 1,
-            "comment": "Returns flow sensor state (on/off)",
-            "string": ""
+            "n_args": 3,
+            "comment": "",
+            "string": "\"\""
         },
         "motor_state": {
             "id": 8,
             "name": "motor_state",
-            "n_args": 1,
-            "comment": "Return motor state",
-            "string": ""
+            "n_args": 3,
+            "comment": "",
+            "string": "\"\""
         },
         "rtd_on": {
             "id": 9,
             "name": "rtd_on",
-            "n_args": 1,
-            "comment": "rtd on",
-            "string": "RTD On"
+            "n_args": 3,
+            "comment": "",
+            "string": "\"RTD On\""
         },
         "rtd_off": {
             "id": 10,
             "name": "rtd_off",
-            "n_args": 1,
-            "comment": "rtd off",
-            "string": "RTD Off"
+            "n_args": 3,
+            "comment": "",
+            "string": "\"RTD Off\""
         },
         "ts_state": {
             "id": 11,
             "name": "ts_state",
-            "n_args": 2,
-            "comment": "TS state",
-            "string": "TS is %d. Error: %d "
+            "n_args": 3,
+            "comment": "",
+            "string": "\"TS is %d. Error: %d \""
         },
         "iib_wtd_ext": {
             "id": 12,
             "name": "iib_wtd_ext",
-            "n_args": 1,
-            "comment": "No watchdog value for external input on iib",
-            "string": "No watchdog value found for external input."
+            "n_args": 3,
+            "comment": "",
+            "string": "\"No watchdog value found for external input.\""
         }
     },
     "enums": {},
@@ -10495,5 +10477,5 @@
             }
         }
     },
-    "version": "0.2"
+    "version": "0.3"
 }
