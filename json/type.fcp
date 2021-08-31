@@ -1,0 +1,4 @@
+type sometype {
+	length: sixteen,
+	endianess: little,
+}

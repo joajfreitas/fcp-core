@@ -116,6 +116,10 @@ class Message(Transmit):
 
         :param d: Node dictionary
         """
+
+        if d["name"] == "send_cmd":
+            print(d)
+
         signals = d["signals"]
         for k, v in self.make_private(self, d).items():
             self.__setattr__(k, v)
