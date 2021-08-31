@@ -14,9 +14,22 @@ from .specs import Device, Log, Message, Config, Signal, Command
 def message_allocation(signals):
     message = []
     for name, sig in signals.items():
-        message.append((sig.get("start"), sig.get("length")))
+        message.append((name, sig.get("start"), sig.get("length")))
 
-    print(message)
+    allocated = []
+    start = 0
+    for signal in message:
+        if signal[1] is None:
+            allocated.append((signal[0], start, signal[2]))
+            start += signal[2]
+        else:
+            allocated.append(signal)
+            start = signal[1] + signal[2]
+
+    print(allocated)
+    for name, start, _ in allocated:
+       signals[name]["start"] = start
+
     return signals
 
 def param_conv(key, value):
