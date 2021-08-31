@@ -1,6 +1,9 @@
- - fix - fixes the mux count issue
- - Warn of new fcp versions in GUI
+done: 
  - Show release notes in GUI
- - Complete undo implementation
+ - fix - fixes the mux count issue
  - TESTS
+
+todo:
+ - Warn of new fcp versions in GUI
+ - Complete undo implementation
  - magic number in logs

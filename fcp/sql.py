@@ -3,7 +3,7 @@ from typing import *
 from appdirs import *
 from pathlib import Path
 import sys
-import hjson
+import json
 
 from hashlib import sha1
 
