@@ -11,6 +11,13 @@ from jinja2 import Template
 
 from .specs import Device, Log, Message, Config, Signal, Command
 
+def message_allocation(signals):
+    message = []
+    for name, sig in signals.items():
+        message.append((sig.get("start"), sig.get("length")))
+
+    print(message)
+    return signals
 
 def param_conv(key, value):
     value = [v.strip() for v in value]
@@ -39,12 +46,27 @@ def params_conv(params):
 
 
 class FcpVisitor(NodeVisitor):
+    def __init__(self):
+        self.types = {}
+
+    def params_conv(self, params):
+        params = [param_conv(key, value) for key, value in params.items()]
+        params = {k: v for d in params for k, v in d.items()}
+
+        if 'type' in params.keys() and params['type'] not in ["unsigned", "signed", "float", "double"]:
+            t = self.types[params['type'].replace('"', '')]["type"]
+            for k,v in t.items():
+                params[k] = v
+
+        return params
+
     def visit_spec(self, node, visited_children):
         d = {"log": {}, "device": {}, "enum": {}, "type": {}}
 
         for child in visited_children:
-            type, child = child[0]
-            d[type][child["name"]] = child
+            if child[0] is not None:
+                type, child = child[0]
+                d[type][child["name"]] = child
 
         common = d["device"].get("common")
         if common is not None:
@@ -133,6 +155,9 @@ class FcpVisitor(NodeVisitor):
         comment, _, name, _, params, _, signals, _ = visited_children
 
         sigs = {sig["name"]: sig for sig in signals}
+        sigs = message_allocation(sigs)
+
+        #print([sig.keys() for sig in sigs.values()])
 
         params = params_conv(params)
 
@@ -148,7 +173,7 @@ class FcpVisitor(NodeVisitor):
 
     def visit_signal(self, node, visited_children):
         comment, _, name, _, params, _ = visited_children
-        params = params_conv(params)
+        params = self.params_conv(params)
 
         return {
             "name": name.text.strip(),
@@ -213,12 +238,16 @@ class FcpVisitor(NodeVisitor):
 
     def visit_type(self, node, visited_children):
         comment, _, _, name, _, arguments, _ = visited_children
-        print(arguments)
-        return ("type", {"comment": comment.text, "name": name.text})
+        t = {"type": "unsigned", "length": 16, "byte_order": "little_endian"}
+        for k, v in arguments:
+            t[k] = v
+
+        self.types[name.text.strip()] = {"type": t}
+        #return ("type", {"comment": comment.text, "name": name.text, "type": t})
 
     def visit_argument(self, node, visited_children):
-        name, _, value, _ = visited_children
-        return {"name": name.text, "value": value}
+        _, name, _, value, _ = visited_children
+        return (name.text, value[0].text)
 
     def generic_visit(self, node, visited_children):
         """The generic visit method."""
@@ -265,8 +294,8 @@ def fcp_v2(file):
         enum = comment? "enum" name colon params lbrace (enum_value)+ rbrace
         enum_value = name colon number semicomma
 
-        argument = name colon name comma
-        type = comment? ws? "type" name lbrace argument* rbrace
+        argument = ws? name colon (string / number) comma
+        type = comment? ws? "type" name lbrace (argument)* rbrace
         """
     )
 

@@ -243,6 +243,7 @@ class Signal(Node):
 
         :param d: Node dictionary
         """
+
         for k, v in self.make_private(self, d).items():
             self.__setattr__(k, v)
 

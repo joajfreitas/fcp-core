@@ -1,3 +1,7 @@
+type uint16_t {
+	length: 16,
+	byte_order: "little",
+}
 
 device ccu_right: id(25) {
     
@@ -2804,9 +2808,6 @@ device lv_bms: id(27) {
         signal owc_cell_status: size(32, 8);
         
     }
-    
-
-    
 }
 device strain_gauges: id(28) {
     
@@ -2837,10 +2838,8 @@ device strain_gauges: id(28) {
         signal adc_values_5: size(0, 16);
         
     }
-    
-
-    
 }
+
 device common: id(0) {
     
     /**/
@@ -2940,7 +2939,7 @@ device common: id(0) {
     message send_cmd: id(1) | dlc(8) | period(0) {
         
         /**/
-        signal arg1: size(16, 16)| sat(0.0, 65535.0);
+        signal arg1: type("uint16_t") | sat(0.0, 65535.0);
         
         /**/
         signal arg2: size(32, 16)| sat(0.0, 65535.0);
@@ -2955,12 +2954,6 @@ device common: id(0) {
         signal id: size(8, 8)| sat(0.0, 255.0);
         
     }
-}
-
-type uint16_t {
-    "type": "unsigned",
-	"length": "16",
-	"endianess": "little",
 }
 
 log wrong_log_id: id(0) | str("Log code was not found");
