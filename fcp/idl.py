@@ -13,14 +13,19 @@ from jinja2 import Template
 
 from .specs import Device, Log, Message, Config, Signal, Command
 
-def check_validity(message, vars, combination):
-    for i, var1, comb1 in zip(range(len(vars)), vars,combination):
-        if comb1 + var1[2] > 64:
+def check_validity(message, combination):
+    message = sorted(message, key=lambda x: (int(x[1]) + 1) if x[1] is not None else 0)
+
+    bound = [start for _, start, _ in message if start is not None]
+    v = list(combination) + bound
+
+    for i, var1, comb1 in zip(range(len(message)), message, v):
+        if int(comb1) + int(var1[2]) > 64:
             return False
-        for j, var2, comb2 in zip(range(len(vars)), vars, combination):
+        for j, var2, comb2 in zip(range(len(message)-i), message, v):
             if i == j:
                 continue
-            if (comb1 <= comb2 and comb2 < (comb1 + var1[2])) == True:
+            if (int(comb1) <= int(comb2) and int(comb2) < (int(comb1) + int(var1[2]))) == True:
                 return False
 
     return True
@@ -45,27 +50,26 @@ def message_allocation(signals):
 
     vars = [msg for msg in message if msg[1] is None]
     l = len(vars)
-    combinations = list(product(range(0,64), repeat=l))
-    combinations = list(filter(lambda x : check_validity(message, vars, x), combinations))
-    costs = [cost_function(message, vars, x) for x in combinations]
-    best = combinations[costs.index(min(costs))]
+    print("options")
+    combinations = product(range(0,64), repeat=l)
+    print("checking validity")
+    combinations = filter(lambda x : check_validity(message, x), combinations)
+    print("checking validity done")
 
-    for var, start in zip(vars, best):
+    print("computing costs")
+
+    best_solution = None
+    best_cost = 1000
+    for i, comb in enumerate(combinations):
+        cost = cost_function(message, vars, comb)
+        if cost < best_cost:
+            best_cost = cost
+            best_solution = comb
+
+    print("computing costs done")
+
+    for var, start in zip(vars, best_solution):
         signals[var[0]]["start"] = start
-
-    #allocated = []
-    #start = 0
-    #for signal in message:
-    #    if signal[1] is None:
-    #        allocated.append((signal[0], start, signal[2]))
-    #        start += signal[2]
-    #    else:
-    #        allocated.append(signal)
-    #        start = signal[1] + signal[2]
-
-    #print(allocated)
-    #for name, start, _ in allocated:
-    #   signals[name]["start"] = start
 
     return signals
 
