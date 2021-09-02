@@ -4,6 +4,8 @@ from pprint import pprint
 
 from enum import Enum
 
+from itertools import product
+
 from parsimonious import NodeVisitor
 from parsimonious.grammar import Grammar
 
@@ -11,24 +13,59 @@ from jinja2 import Template
 
 from .specs import Device, Log, Message, Config, Signal, Command
 
+def check_validity(message, vars, combination):
+    for i, var1, comb1 in zip(range(len(vars)), vars,combination):
+        if comb1 + var1[2] > 64:
+            return False
+        for j, var2, comb2 in zip(range(len(vars)), vars, combination):
+            if i == j:
+                continue
+            if (comb1 <= comb2 and comb2 < (comb1 + var1[2])) == True:
+                return False
+
+    return True
+
+def cost_function(message, vars, combination):
+    stack = []
+    steps16 = [0, 16, 32, 48]
+    for start in combination:
+        diffs = [abs(start - step) for step in steps16]
+        m = min(diffs)
+        stack.append(m)
+        steps16.pop(diffs.index(m))
+
+
+    return sum(stack)
+
+
 def message_allocation(signals):
     message = []
     for name, sig in signals.items():
         message.append((name, sig.get("start"), sig.get("length")))
 
-    allocated = []
-    start = 0
-    for signal in message:
-        if signal[1] is None:
-            allocated.append((signal[0], start, signal[2]))
-            start += signal[2]
-        else:
-            allocated.append(signal)
-            start = signal[1] + signal[2]
+    vars = [msg for msg in message if msg[1] is None]
+    l = len(vars)
+    combinations = list(product(range(0,64), repeat=l))
+    combinations = list(filter(lambda x : check_validity(message, vars, x), combinations))
+    costs = [cost_function(message, vars, x) for x in combinations]
+    best = combinations[costs.index(min(costs))]
 
-    print(allocated)
-    for name, start, _ in allocated:
-       signals[name]["start"] = start
+    for var, start in zip(vars, best):
+        signals[var[0]]["start"] = start
+
+    #allocated = []
+    #start = 0
+    #for signal in message:
+    #    if signal[1] is None:
+    #        allocated.append((signal[0], start, signal[2]))
+    #        start += signal[2]
+    #    else:
+    #        allocated.append(signal)
+    #        start = signal[1] + signal[2]
+
+    #print(allocated)
+    #for name, start, _ in allocated:
+    #   signals[name]["start"] = start
 
     return signals
 
