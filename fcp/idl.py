@@ -13,6 +13,7 @@ from jinja2 import Template
 
 from .specs import Device, Log, Message, Config, Signal, Command
 
+
 def check_validity(message, combination):
     message = sorted(message, key=lambda x: (int(x[1]) + 1) if x[1] is not None else 0)
 
@@ -22,13 +23,16 @@ def check_validity(message, combination):
     for i, var1, comb1 in zip(range(len(message)), message, v):
         if int(comb1) + int(var1[2]) > 64:
             return False
-        for j, var2, comb2 in zip(range(len(message)-i), message, v):
+        for j, var2, comb2 in zip(range(len(message) - i), message, v):
             if i == j:
                 continue
-            if (int(comb1) <= int(comb2) and int(comb2) < (int(comb1) + int(var1[2]))) == True:
+            if (
+                int(comb1) <= int(comb2) and int(comb2) < (int(comb1) + int(var1[2]))
+            ) == True:
                 return False
 
     return True
+
 
 def cost_function(message, vars, combination):
     stack = []
@@ -38,7 +42,6 @@ def cost_function(message, vars, combination):
         m = min(diffs)
         stack.append(m)
         steps16.pop(diffs.index(m))
-
 
     return sum(stack)
 
@@ -51,9 +54,9 @@ def message_allocation(signals):
     vars = [msg for msg in message if msg[1] is None]
     l = len(vars)
     print("options")
-    combinations = product(range(0,64), repeat=l)
+    combinations = product(range(0, 64), repeat=l)
     print("checking validity")
-    combinations = filter(lambda x : check_validity(message, x), combinations)
+    combinations = filter(lambda x: check_validity(message, x), combinations)
     print("checking validity done")
 
     print("computing costs")
@@ -72,6 +75,7 @@ def message_allocation(signals):
         signals[var[0]]["start"] = start
 
     return signals
+
 
 def param_conv(key, value):
     value = [v.strip() for v in value]
@@ -107,9 +111,14 @@ class FcpVisitor(NodeVisitor):
         params = [param_conv(key, value) for key, value in params.items()]
         params = {k: v for d in params for k, v in d.items()}
 
-        if 'type' in params.keys() and params['type'] not in ["unsigned", "signed", "float", "double"]:
-            t = self.types[params['type'].replace('"', '')]["type"]
-            for k,v in t.items():
+        if "type" in params.keys() and params["type"] not in [
+            "unsigned",
+            "signed",
+            "float",
+            "double",
+        ]:
+            t = self.types[params["type"].replace('"', "")]["type"]
+            for k, v in t.items():
                 params[k] = v
 
         return params
@@ -211,7 +220,7 @@ class FcpVisitor(NodeVisitor):
         sigs = {sig["name"]: sig for sig in signals}
         sigs = message_allocation(sigs)
 
-        #print([sig.keys() for sig in sigs.values()])
+        # print([sig.keys() for sig in sigs.values()])
 
         params = params_conv(params)
 
@@ -289,7 +298,6 @@ class FcpVisitor(NodeVisitor):
             .replace("*/", "")
         )
 
-
     def visit_type(self, node, visited_children):
         comment, _, _, name, _, arguments, _ = visited_children
         t = {"type": "unsigned", "length": 16, "byte_order": "little_endian"}
@@ -297,7 +305,7 @@ class FcpVisitor(NodeVisitor):
             t[k] = v
 
         self.types[name.text.strip()] = {"type": t}
-        #return ("type", {"comment": comment.text, "name": name.text, "type": t})
+        # return ("type", {"comment": comment.text, "name": name.text, "type": t})
 
     def visit_argument(self, node, visited_children):
         _, name, _, value, _ = visited_children
