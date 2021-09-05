@@ -126,4 +126,19 @@ def test_message_allocation_many_variables():
     assert result == message_allocation(given)
 
 def test_idl_types_simple_read():
-    assert 1 == 1
+    type = """
+    type uint16_t {
+        type: "unsigned",
+        length: 16,
+    }
+    device dev : id(1) {
+        message msg : id(1) | dlc(8) {
+            signal sig : type("uint16_t");
+        }
+    }
+    """
+
+    spec = fcp_v2(type)
+    sig = spec.get("devices").get("dev").get("msgs").get("msg").get("signals").get("sig")
+    assert '"unsigned"' == sig.get("type")
+    assert '16' == sig.get("length")

@@ -230,7 +230,7 @@ class FcpVisitor(NodeVisitor):
             {
                 "name": name.text.strip(),
                 "signals": sigs,
-                "description": comment[0],
+                "description": "", #comment[0],
                 **params,
             },
         )
@@ -239,9 +239,11 @@ class FcpVisitor(NodeVisitor):
         comment, _, name, _, params, _ = visited_children
         params = self.params_conv(params)
 
+        print(comment)
+
         return {
             "name": name.text.strip(),
-            "comment": comment[0],
+            "comment": "", #if comment is None else comment[0],
             **params,
         }
 
