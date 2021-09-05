@@ -21,6 +21,7 @@ def check_validity(message, combination):
     v = list(combination) + bound
 
     for i, var1, comb1 in zip(range(len(message)), message, v):
+        print(comb1, var1[2])
         if int(comb1) + int(var1[2]) > 64:
             return False
         for j, var2, comb2 in zip(range(len(message) - i), message, v):
@@ -53,13 +54,12 @@ def message_allocation(signals):
 
     vars = [msg for msg in message if msg[1] is None]
     l = len(vars)
-    print("options")
-    combinations = product(range(0, 64), repeat=l)
-    print("checking validity")
-    combinations = filter(lambda x: check_validity(message, x), combinations)
-    print("checking validity done")
 
-    print("computing costs")
+    if l == 0:
+        return signals
+
+    combinations = product(range(0, 64), repeat=l)
+    combinations = filter(lambda x: check_validity(message, x), combinations)
 
     best_solution = None
     best_cost = 1000
@@ -68,8 +68,6 @@ def message_allocation(signals):
         if cost < best_cost:
             best_cost = cost
             best_solution = comb
-
-    print("computing costs done")
 
     for var, start in zip(vars, best_solution):
         signals[var[0]]["start"] = start
@@ -83,8 +81,10 @@ def param_conv(key, value):
         return {"frequency": value[0]}
     elif key == "str":
         return {"string": value[0]}
-    elif key == "size":
-        return {"start": value[0], "length": value[1]}
+    elif key == "start":
+        return {"start": value[0]}
+    elif key == "length":
+        return {"length": value[0]}
     elif key == "sat":
         return {"min_value": value[0], "max_value": value[1]}
     elif key == "endianess":
@@ -108,6 +108,7 @@ class FcpVisitor(NodeVisitor):
         self.types = {}
 
     def params_conv(self, params):
+        print(params)
         params = [param_conv(key, value) for key, value in params.items()]
         params = {k: v for d in params for k, v in d.items()}
 
@@ -248,6 +249,7 @@ class FcpVisitor(NodeVisitor):
         params = {}
 
         for children in visited_children:
+            print(children)
             name, args = children
             params[name] = args
 
@@ -368,7 +370,12 @@ def fcp_v2(file):
     except Exception as e:
         print(f"exception: {e}")
 
+
+    #try:
     v = fcp_vis.visit(ast)
+    #except Exception as e:
+    #    print(e)
+    #    sys.exit(1)
     # print("v:", v)
     return v
 
@@ -388,7 +395,7 @@ device {{device.name}}: id({{device.id}}) {
     message {{msg.name}}: id({{msg.id}}) | dlc({{msg.dlc}}) | period({{msg.frequency}}) {
         {% for sig in msg.signals.values() %}
         /*{{sig.comment}}*/
-        signal {{sig.name}}: size({{sig.start}}, {{sig.length}})
+        signal {{sig.name}}: start({{sig.start}}) | length({{sig.length}})
         {%- if sig.type != "unsigned" -%}
         type({{sig.type}})
         {%- endif -%}

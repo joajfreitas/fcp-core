@@ -4,9 +4,12 @@ import pytest
 
 import os
 
+from pathlib import Path
+
 
 def test_f():
-    for path in os.listdir("fcp/tests/v2_samples"):
+    samples = Path("fcp/tests/v2_samples")
+    for path in samples.iterdir():
         spec = Spec()
         j = fcp_v2_from_file(path)
         spec.decompile(j)
