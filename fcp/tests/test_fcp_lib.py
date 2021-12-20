@@ -1,4 +1,7 @@
+from attr import s
 import pytest
+
+from fcp.validator import validate
 
 from ..fcp_lib import *
 from ..can import CANMessage
@@ -11,6 +14,8 @@ def fcp():
 
     spec = Spec()
     spec.decompile(j)
+    if len(validate(spec)) != 0:
+        return None
     return Fcp(spec)
 
 
@@ -19,13 +24,18 @@ def test_msg(fcp):
     return fcp.encode_msg("iib_motor", {"temp_motor": 10})
 
 
-def test_encode_msg(fcp, test_msg):
+def test_encode_msg(fcp):
     msg = fcp.encode_msg("iib_motor", {"temp_motor": 10})
     assert type(msg) is CANMessage
     assert msg.get_dev_id() == 16
 
 
 def test_decode_msg(fcp, test_msg):
+    name, signals = fcp.decode_msg(test_msg)
+    assert name == "iib_motor"
+    assert signals["temp_motor0"] == 10
+
+def test_decode_muxed_msg(fcp, test_msg):
     name, signals = fcp.decode_msg(test_msg)
     assert name == "iib_motor"
     assert signals["temp_motor0"] == 10
