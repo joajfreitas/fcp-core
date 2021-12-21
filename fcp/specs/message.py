@@ -190,12 +190,11 @@ class Message(Transmit):
         mux = ""
         signals = {}
         for name, signal in self.signals.items():
-            aux = signal.decode(msg)
             is_muxed = 0
             if signal.mux_count != 1:
                 is_muxed = 1
                 mux = signal.mux
-            signals[name] = (aux, is_muxed)
+            signals[name] = (signal.decode(msg), is_muxed)
 
         if mux != "":
             mux_value = str(int(signals[mux][0]))
