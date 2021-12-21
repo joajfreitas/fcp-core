@@ -58,6 +58,7 @@ def test_decode_mux_signal(fcp, test_mux_signal):
     name, signals = fcp.decode_msg(test_mux_signal)
     assert name == "iib_diff"
     assert "iib_diff_value2" in signals.keys()
+    assert "iib_diff_steer_ang" in signals.keys()
 
 
 def test_encode_cmd(fcp):
