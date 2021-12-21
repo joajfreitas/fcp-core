@@ -35,22 +35,26 @@ def test_decode_msg(fcp, test_msg):
     assert name == "iib_motor"
     assert signals["temp_motor0"] == 10
 
+
 @pytest.fixture
 def test_muxed_msg(fcp):
     return fcp.encode_msg("iib_diff", {"iib_diff_steer_ang": 0})
 
+
 def test_decode_muxed_msg(fcp, test_muxed_msg):
-    '''Test if non multiplexed signal is mistakenly interpreted as multiplexed signal in message with other multiplexed signals'''
+    """Test if non multiplexed signal is mistakenly interpreted as multiplexed signal in message with other multiplexed signals"""
     name, signals = fcp.decode_msg(test_muxed_msg)
     assert name == "iib_diff"
     assert "iib_diff_steer_ang" in signals.keys()
+
 
 @pytest.fixture
 def test_mux_signal(fcp):
     return fcp.encode_msg("iib_diff", {"n_iib_diff": 2})
 
+
 def test_decode_mux_signal(fcp, test_mux_signal):
-    '''Test if multiplexer signal is correct and not defaulted from another value with mux_count = 1'''
+    """Test if multiplexer signal is correct and not defaulted from another value with mux_count = 1"""
     name, signals = fcp.decode_msg(test_mux_signal)
     assert name == "iib_diff"
     assert "iib_diff_value2" in signals.keys()
