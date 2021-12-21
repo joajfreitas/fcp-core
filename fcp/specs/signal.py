@@ -259,7 +259,7 @@ class Signal(Node):
         data64 = msg.get_data64()
         value = (data64 >> self.start) & self.bitmask(self.length)
         if self.type == "signed" and value >> (self.length - 1) == 1:
-            value = -((value ^ self.bitmask(self.length)) + 1)
+            value = -((value ^ self.bitmask(self.length)) + 1);
         return self.scale * value - self.offset
 
     def __hash__(self):

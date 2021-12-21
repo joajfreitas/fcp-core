@@ -60,7 +60,7 @@ def nag_intro():
         return
     j = json.loads(r.text)
     releases = list(j["releases"].keys())
-    releases.sort(key=lambda s: [int(u) for u in s.split(".")])
+    releases.sort(key=lambda s: [int(u) for u in s.split('.')])
     upstream_version = releases[-1]
 
     out = ""
