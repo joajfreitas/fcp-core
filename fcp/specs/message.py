@@ -190,15 +190,18 @@ class Message(Transmit):
         mux = ""
         signals = {}
         for name, signal in self.signals.items():
+            is_muxed = 0
             if signal.mux_count != 1:
+                is_muxed = 1
                 mux = signal.mux
-            signals[name] = signal.decode(msg)
+            signals[name] = (signal.decode(msg), is_muxed)
 
         if mux != "":
-            mux_value = str(int(signals[mux]))
-            signals = {
-                k + (mux_value if k != mux else ""): v for (k, v) in signals.items()
-            }
+            mux_value = str(int(signals[mux][0]))
+        else:
+            mux_value = None
+
+        signals = {k + (mux_value if v[1] else ""): v[0] for (k, v) in signals.items()}
 
         return self.name, signals
 
