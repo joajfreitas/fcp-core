@@ -45,6 +45,16 @@ def test_decode_muxed_msg(fcp, test_muxed_msg):
     assert name == "iib_diff"
     assert "iib_diff_steer_ang" in signals.keys()
 
+@pytest.fixture
+def test_mux_signal(fcp):
+    return fcp.encode_msg("iib_diff", {"n_iib_diff": 2})
+
+def test_decode_mux_signal(fcp, test_mux_signal):
+    '''Test if multiplexer signal is correct and not defaulted from another value with mux_count = 1'''
+    name, signals = fcp.decode_msg(test_mux_signal)
+    assert name == "iib_diff"
+    assert "iib_diff_value2" in signals.keys()
+
 
 def test_encode_cmd(fcp):
     msg = fcp.encode_cmd(10, "iib", "set_regen_on", [1, 2, 3])
