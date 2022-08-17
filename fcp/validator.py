@@ -142,7 +142,7 @@ def msg_mux(msg):
             msg, f"Cannot find mux signal in multiplexed message got {muxeds[0]}"
         )
 
-    if 2 ** mux.length < mux.mux_count:
+    if 2**mux.length < mux.mux_count:
         return fail_msg(msg, f"Mux cannot fit all possible multiplexed values")
 
 
@@ -253,7 +253,7 @@ def cmd_n_args(cmd):
 
 @check_decorator("spec")
 def spec_overlapping_dev_ids(spec):
-    ids = [dev.id for dev in spec.devices.values()]
+    ids = [dev.id for dev in spec.devices]
     ids_set = set(ids)
 
     if len(ids_set) != len(ids):
@@ -333,7 +333,7 @@ def validate(spec):
     failed = []
     failed += check("spec", spec)
 
-    for log in spec.logs.values():
+    for log in spec.logs:
         failed += check("log", log)
     for message in spec.common.msgs.values():
         failed += check("msg", message)

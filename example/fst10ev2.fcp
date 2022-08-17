@@ -1,0 +1,1813 @@
+device ccu_right;
+device ccu_left;
+device iib;
+device dash;
+device te;
+device master;
+device telemetry;
+device interface;
+device dcu;
+device hw;
+device isabel;
+device sw;
+device sta;
+device as;
+device ebs;
+device res;
+device xsens;
+device etas;
+device ami;
+device prog_mux;
+device du_rear;
+device du_front;
+device lv_bms;
+device strain_gauges;
+device pdu;
+
+message tach_right: device("ccu_right") | id(1145) | dlc(6) { 
+	/*CCU: right flow sensor frequency measurement.*/
+	signal frequency_right : start(16) | length(16);
+	/*CCU: right flow sensor period measurement.*/
+	signal period_right : start(32) | length(16);
+	/*CCU: right flow sensor*/
+	signal flow_right : start(0) | length(16) | scale(0.1, 0.0);
+}
+
+message temp1_right: device("ccu_right") | id(1081) | dlc(8) { 
+	/*CCU: ntc1 right.*/
+	signal ntc1_right : start(0) | length(16) | scale(0.1, 0.0);
+	/*CCU: ntc2 right.*/
+	signal ntc2_right : start(16) | length(16) | scale(0.1, 0.0);
+	/*CCU: ntc3 right.*/
+	signal ntc3_right : start(32) | length(16) | scale(0.1, 0.0);
+	/*CCU: ntc4 right.*/
+	signal ntc4_right : start(48) | length(16) | scale(0.1, 0.0);
+}
+
+message temp2_right: device("ccu_right") | id(1113) | dlc(8) { 
+	/*CCU: ntc5 right.*/
+	signal ntc5_right : start(0) | length(16) | scale(0.1, 0.0);
+	/*CCU: ntc6 right.*/
+	signal ntc6_right : start(16) | length(16) | scale(0.1, 0.0);
+	/*CCU: ntc7 right.*/
+	signal ntc7_right : start(32) | length(16) | scale(0.1, 0.0);
+	/*CCU_ ntc8 right.*/
+	signal ntc8_right : start(48) | length(16) | scale(0.1, 0.0);
+}
+
+message ccu_status_right: device("ccu_right") | id(1177) | dlc(6) { 
+	signal motor_status_right : start(0) | length(16);
+	signal ntc_status_right : start(32) | length(16);
+	signal max_motor_temp_right : start(48) | length(16);
+	signal fan_pwm_level_right : start(17) | length(7) | scale(0.01, 0.0) | sat(0.0, 100.0);
+	signal iib_motor_wdt_right : start(16) | length(1);
+	signal ccu_right_pump_status : start(24) | length(3) | sat(0.0, 3.0);
+	signal ccu_right_fan_status : start(27) | length(3) | sat(0.0, 3.0);
+}
+
+config version: device("ccu_right") | id(0) | type("unsigned") ;
+config max_torque_fl: device("ccu_right") | id(3) | type("unsigned") ;
+
+command set_fans_right: device("ccu_right") | id(0);
+
+/*receives number of ntcs to be used, the ntcs are turned on in numerical order*/
+command set_ntcs_right: device("ccu_right") | id(1);
+
+command set_flow_right: device("ccu_right") | id(5);
+
+/*Sets PWM3 duty cycle*/
+command set_pwm_3_right: device("ccu_right") | id(4);
+
+/*Sets PWM2 duty cycle*/
+command set_pwm_2_right: device("ccu_right") | id(3);
+
+/*Sets PWM1 duty cycle*/
+command set_pwm_1_right: device("ccu_right") | id(2);
+
+message tach_left: device("ccu_left") | id(1144) | dlc(6) { 
+	signal frequency_left : start(16) | length(16);
+	signal period_left : start(32) | length(16);
+	signal flow_left : start(0) | length(16) | scale(0.1, 0.0);
+}
+
+message temp1_left: device("ccu_left") | id(1080) | dlc(8) { 
+	/*CCU: ntc1 left.*/
+	signal ntc1_left : start(0) | length(16) | scale(0.1, 0.0);
+	/*CCU: ntc2 left.*/
+	signal ntc2_left : start(16) | length(16) | scale(0.1, 0.0);
+	/*CCU: ntc3 left.*/
+	signal ntc3_left : start(32) | length(16) | scale(0.1, 0.0);
+	/*CCU: ntc4 left.*/
+	signal ntc4_left : start(48) | length(16) | scale(0.1, 0.0);
+}
+
+message temp2_left: device("ccu_left") | id(1112) | dlc(8) { 
+	/*CCU: ntc5 left.*/
+	signal ntc5_left : start(0) | length(16) | scale(0.1, 0.0);
+	/*CCU: ntc6 left.*/
+	signal ntc6_left : start(16) | length(16) | scale(0.1, 0.0);
+	/*CCU: ntc7 left.*/
+	signal ntc7_left : start(32) | length(16) | scale(0.1, 0.0);
+	/*CCU: ntc8 left.*/
+	signal ntc8_left : start(48) | length(16) | scale(0.1, 0.0);
+}
+
+message ccu_status_left: device("ccu_left") | id(1176) | dlc(6) { 
+	signal ntc_status_left : start(32) | length(16);
+	signal motor_status_left : start(0) | length(16);
+	signal iib_motor_wdt_left : start(16) | length(1);
+	signal max_motor_temp_left : start(48) | length(16);
+	signal fan_pwm_level_left : start(17) | length(7) | scale(0.01, 0.0) | sat(0.0, 100.0);
+	signal ccu_left_fan_status : start(27) | length(3) | sat(0.0, 3.0);
+	signal ccu_left_pump_status : start(24) | length(3) | sat(0.0, 3.0);
+}
+
+config version: device("ccu_left") | id(0) | type("unsigned") ;
+config max_torque_fl: device("ccu_left") | id(3) | type("unsigned") ;
+
+command set_fans_left: device("ccu_left") | id(0);
+
+/*receives number of ntcs to be used, the ntcs are turned on in numerical order*/
+command set_ntcs_left: device("ccu_left") | id(1);
+
+/*toggles flow sensor state*/
+command set_flow_left: device("ccu_left") | id(5);
+
+/*Sets PWM3 duty cycle*/
+command set_pwm3_left: device("ccu_left") | id(4);
+
+/*Sets PWM2 duty cycle*/
+command set_pwm2_left: device("ccu_left") | id(3);
+
+/*Sets PWM1 duty cycle*/
+command set_pwm1_left: device("ccu_left") | id(2);
+
+message iib_motor: device("iib") | id(1232) | dlc(8) { 
+	/*Motor temperature*/
+	signal temp_motor : start(0) | length(8) | sat(0.0, 1250.0) | mux("n_motor_info", 4);
+	/*iib_motor mux*/
+	signal n_motor_info : start(14) | length(2) | sat(0.0, 3.0);
+	/*Motor speed in [RPM]. Downsampled from amk_actual_values.*/
+	signal motor_speed : start(16) | length(16) | sat(0.0, 20000.0) | mux("n_motor_info", 4);
+	/*Motor current in [A]*/
+	signal motor_current : start(32) | length(16) | sat(-105.0, 105.0) | type("signed") | mux("n_motor_info", 4);
+	/*Motor torque*/
+	signal motor_torque : start(48) | length(16) | sat(-21000.0, 21000.0) | type("signed") | mux("n_motor_info", 4);
+}
+
+message iib_inv: device("iib") | id(1264) | dlc(8) { 
+	/*Status of the inverter (activate/deactive)*/
+	signal inv_active : start(0) | length(1) | sat(0.0, 1.0) | mux("n_inv_info", 4);
+	/*Inverter enable bit 1.*/
+	signal BE_1 : start(1) | length(1) | sat(0.0, 1.0) | mux("n_inv_info", 4);
+	/*Inverter enable bit 2.*/
+	signal BE_2 : start(2) | length(1) | sat(0.0, 1.0) | mux("n_inv_info", 4);
+	/*iib_inv message mux.*/
+	signal n_inv_info : start(3) | length(2) | sat(0.0, 3.0);
+	/*Status of the derating*/
+	signal inv_derating_on : start(5) | length(1) | sat(0.0, 1.0) | mux("n_inv_info", 4);
+	/*If max temperature was passed*/
+	signal inv_max_passed : start(6) | length(1) | sat(0.0, 1.0) | mux("n_inv_info", 4);
+	/*If igbt deratign is on*/
+	signal igbt_derating_on : start(7) | length(1) | sat(0.0, 1.0) | mux("n_inv_info", 4);
+	/*if igbt max temp was passed*/
+	signal igbt_max_passed : start(8) | length(1) | sat(0.0, 1.0) | mux("n_inv_info", 4);
+	/*if motor derating is on*/
+	signal motor_derating_on : start(9) | length(1) | sat(0.0, 1.0) | mux("n_inv_info", 4);
+	/*if motor temperature was passed*/
+	signal motor_max_passed : start(10) | length(1) | sat(0.0, 1.0) | mux("n_inv_info", 4);
+	/*if i2t overload is active*/
+	signal i2t_overload_active : start(11) | length(1) | sat(0.0, 1.0) | mux("n_inv_info", 4);
+	/*if i2t has cooldown on*/
+	signal i2t_cooldown_on : start(12) | length(1) | sat(0.0, 1.0) | mux("n_inv_info", 4);
+	/*Inverter's IGBT temp*/
+	signal inv_temp_igbt : start(16) | length(16) | sat(0.0, 125.0) | mux("n_inv_info", 4);
+	/*Inverters Temperature*/
+	signal inv_temp : start(32) | length(16) | sat(0.0, 660.0) | mux("n_inv_info", 4);
+	/*Inverter error info*/
+	signal inv_error : start(48) | length(16) | mux("n_inv_info", 4);
+}
+
+message iib_limits: device("iib") | id(1296) | dlc(8) { 
+	/*Inverter max safety power*/
+	signal max_sfty_power : start(0) | length(8) | sat(-35000.0, 35000.0) | type("signed") | mux("n_inv_limits", 4);
+	/*Number of the Inverter*/
+	signal n_inv_limits : start(14) | length(2) | sat(0.0, 3.0);
+	/*Max operating power*/
+	signal max_op_power : start(16) | length(16) | sat(-35000.0, 35000.0) | type("signed") | mux("n_inv_limits", 4);
+	/*Max safety Torque*/
+	signal max_sfty_torque : start(32) | length(16) | sat(-21000.0, 21000.0) | type("signed") | mux("n_inv_limits", 4);
+	/*Max Operating Torque*/
+	signal max_op_torque : start(48) | length(16) | sat(-21000.0, 21000.0) | type("signed") | mux("n_inv_limits", 4);
+}
+
+message iib_car: device("iib") | id(1328) | dlc(8) { 
+	/*Torque Encoder Status*/
+	signal car_te_ok : start(0) | length(1) | sat(0.0, 1.0);
+	/*An ARM setpoint message was received*/
+	signal car_arm_msg : start(3) | length(1) | sat(0.0, 1.0);
+	/*Shutdown Circuit 1 detection*/
+	signal car_sdc1 : start(4) | length(1) | sat(0.0, 1.0);
+	/*Shutdown Circuit 2 detection*/
+	signal car_sdc2 : start(5) | length(1) | sat(0.0, 1.0);
+	/*Car Ready-to-Drive status*/
+	signal car_rtd : start(6) | length(1) | sat(0.0, 1.0);
+	/*Inverters have HV */
+	signal inv_hv : start(7) | length(1) | sat(0.0, 1.0);
+	/*TSAL status*/
+	signal car_tsal : start(8) | length(1) | sat(0.0, 1.0);
+	/*Torque Encoder percentage*/
+	signal te_perc : start(16) | length(16);
+	/*IIB operating mode*/
+	signal iib_input_mode : start(32) | length(16) | sat(0.0, 3.0);
+	/*BMS voltage*/
+	signal bms_voltage : start(48) | length(16) | sat(0.0, 670.0);
+	/*Arm stupid status*/
+	signal car_etas_stupid : start(2) | length(1) | sat(0.0, 1.0);
+	/*External input watchdog exceeded*/
+	signal car_ext_exceed : start(1) | length(1) | sat(0.0, 1.0);
+}
+
+message iib_info: device("iib") | id(1200) | dlc(8) { 
+	/*IIB ambient temperature*/
+	signal iib_air_tmp : start(0) | length(16) | sat(0.0, 60.0) | type("signed");
+	/*Discharge Temperature*/
+	signal iib_disch_tmp : start(16) | length(16) | sat(0.0, 100.0);
+	/*Max safety RPM*/
+	signal max_sfty_rpm : start(32) | length(16) | sat(0.0, 20000.0);
+	/*If IIB fan is on*/
+	signal iib_fan_on : start(48) | length(1) | sat(0.0, 1.0);
+	/*if CUA has power*/
+	signal cua_power : start(49) | length(1) | sat(0.0, 1.0);
+	/*if CUA has power*/
+	signal cub_power : start(50) | length(1) | sat(0.0, 1.0);
+	/*If inverters are ready-to-drive*/
+	signal inv_rtd : start(51) | length(1) | sat(0.0, 1.0);
+	/*Inverter on.*/
+	signal inv_on : start(52) | length(1) | sat(0.0, 1.0);
+	/*IIB regeneration enable bit.*/
+	signal regen_on : start(53) | length(1) | sat(0.0, 1.0);
+	/*IIB debug enable bit*/
+	signal iib_debug_mode : start(54) | length(1) | sat(0.0, 1.0);
+	/*IIB latch error.*/
+	signal iib_error_latch : start(55) | length(4) | sat(0.0, 16.0) | type("signed");
+	/*1 if SOC derrating is ON*/
+	signal soc_derrating_on : start(59) | length(1) | sat(0.0, 1.0);
+	/*1 if power limiter is ON*/
+	signal pl_on : start(61) | length(1) | sat(0.0, 1.0);
+}
+
+message iib_debug1_info: device("iib") | id(1392) | dlc(8) { 
+	/*iib_debug1_info message mux.*/
+	signal n_iib_debug1 : start(0) | length(2) | sat(0.0, 3.0);
+	/*An ARM message setpoint was received*/
+	signal debug1_arm_msg : start(2) | length(1) | sat(0.0, 1.0);
+	/*Inverter node address.*/
+	signal debug1_node_address : start(3) | length(4) | mux("n_iib_debug1", 4);
+	/*Torque Encoder is alive again.*/
+	signal debug1_te_realive : start(7) | length(1) | sat(0.0, 1.0);
+	/*Maximum i2t current.*/
+	signal debug1_max_i2t_current : start(16) | length(16) | mux("n_iib_debug1", 4);
+	/*I2t saturation time.*/
+	signal debug1_i2t_sat_time : start(32) | length(16) | mux("n_iib_debug1", 4);
+	/*Cooldown on time.*/
+	signal debug1_cldwn_on_time : start(48) | length(16) | mux("n_iib_debug1", 4);
+}
+
+message iib_debug2_info: device("iib") | id(1424) | dlc(8) { 
+	/*iib_debug2_info message mux.*/
+	signal n_debug2_info : start(0) | length(2) | sat(0.0, 3.0);
+	/*AMK system ready bit.*/
+	signal debug2_inv_sys_rdy : start(8) | length(1) | sat(0.0, 1.0) | type("signed") | mux("n_debug2_info", 4);
+	/*AMK inverter error bit.*/
+	signal debug2_inv_err : start(9) | length(1) | sat(0.0, 1.0) | type("signed") | mux("n_debug2_info", 4);
+	/*AMK inverters warning bit.*/
+	signal debug2_inv_warn : start(10) | length(1) | sat(0.0, 1.0) | type("signed") | mux("n_debug2_info", 4);
+	/*AMK quit DC ON bit.*/
+	signal debug2_inv_quit_dc_on : start(11) | length(1) | sat(0.0, 1.0) | type("signed") | mux("n_debug2_info", 4);
+	/*AMK inverter DC ON bit.*/
+	signal debug2_inv_dc_on : start(12) | length(1) | sat(0.0, 1.0) | type("signed") | mux("n_debug2_info", 4);
+	/*AMK inverter quit inverter on bit.*/
+	signal debug2_inv_quit_inv_on : start(13) | length(1) | sat(0.0, 1.0) | type("signed") | mux("n_debug2_info", 4);
+	/*AMK inverter on bit.*/
+	signal debug2_inv_on : start(14) | length(1) | sat(0.0, 1.0) | type("signed") | mux("n_debug2_info", 4);
+	/*AMK derating on bit.*/
+	signal debug2_derating : start(15) | length(1) | sat(0.0, 1.0) | type("signed") | mux("n_debug2_info", 4);
+	/*msg1 id from AMK.*/
+	signal debug2_msg1_id : start(16) | length(16) | type("signed") | mux("n_debug2_info", 4);
+	/*msg2 id from AMK.*/
+	signal debug2_msg2_id : start(32) | length(16) | mux("n_debug2_info", 4);
+	/*Reference id from AMK.*/
+	signal debug2_redid : start(48) | length(16) | mux("n_debug2_info", 4);
+}
+
+message iib_regen_limits: device("iib") | id(1456) | dlc(8) { 
+	/*iib_regen_limits message mux.*/
+	signal n_motor_regen : start(0) | length(2) | sat(0.0, 3.0);
+	/*Maximum regeneration safety torque.*/
+	signal regen_max_sfty_torque : start(16) | length(16) | sat(0.0, 21000.0) | mux("n_motor_regen", 4);
+	/*Maximum regeneration operational torque*/
+	signal regen_max_op_torque : start(32) | length(16) | sat(0.0, 21000.0) | mux("n_motor_regen", 4);
+	/*Maximum regeneration safety power.*/
+	signal regen_max_sfty_pwr : start(48) | length(16) | mux("n_motor_regen", 4);
+}
+
+message iib_amk_values_1: device("iib") | id(1616) | dlc(8) { 
+	/*iib_amk_values_1 mux.*/
+	signal n_amk_values1 : start(0) | length(2) | sat(0.0, 3.0);
+	/*AMK system ready.*/
+	signal amk_sys_rdy : start(8) | length(1) | sat(0.0, 1.0) | mux("n_amk_values1", 4);
+	/*AMK error bit.*/
+	signal amk_err : start(9) | length(1) | sat(0.0, 1.0) | mux("n_amk_values1", 4);
+	/*AMK warning bit.*/
+	signal amk_warn : start(10) | length(1) | sat(0.0, 1.0) | mux("n_amk_values1", 4);
+	/*AMK quit dc on bit. Signals HV presence in inverter.*/
+	signal amk_quit_dc_on : start(11) | length(1) | sat(0.0, 1.0) | mux("n_amk_values1", 4);
+	/*AMK dc on bit. Signals HV presence in inverter.*/
+	signal amk_dc_on : start(12) | length(1) | sat(0.0, 1.0) | mux("n_amk_values1", 4);
+	/*AMK quit inverter on but.*/
+	signal amk_quit_inv_on : start(13) | length(1) | sat(0.0, 1.0) | mux("n_amk_values1", 4);
+	/*AMK inverter on bit.*/
+	signal amk_inv_on : start(14) | length(1) | sat(0.0, 1.0) | mux("n_amk_values1", 4);
+	/*AMK derating on bit. Signals activation of deratings.*/
+	signal amk_derating : start(15) | length(1) | sat(0.0, 1.0) | mux("n_amk_values1", 4);
+	/*Target speed for the motor in [RPM].*/
+	signal amk_actual_speed : start(16) | length(16) | unit("rpm") | sat(0.0, 20000.0) | type("signed") | mux("n_amk_values1", 4);
+	/*AMK torque current. Current measurement, can be used to measure torque. Conversion: $torque = current*107.5/16384*0.26$.*/
+	signal amk_torque_c : start(32) | length(16) | sat(-105.0, 105.0) | type("signed") | mux("n_amk_values1", 4);
+	/*AMK magnetizing current*/
+	signal amk_magn_c : start(48) | length(16) | type("signed") | mux("n_amk_values1", 4);
+}
+
+message iib_amk_values_2: device("iib") | id(1648) | dlc(8) { 
+	/*AMK motor temperature.*/
+	signal amk_temp_motor : start(2) | length(14) | mux("n_amk_values2", 4);
+	/*AMK inverter temperature*/
+	signal amk_temp_inverter : start(16) | length(16) | mux("n_amk_values2", 4);
+	/*AMK error info.*/
+	signal amk_error_info : start(32) | length(16) | mux("n_amk_values2", 4);
+	/*AMK IGBT temperature.*/
+	signal amk_temp_igbt : start(48) | length(16) | mux("n_amk_values2", 4);
+	/*amk_actual_values mux.*/
+	signal n_amk_values2 : start(0) | length(2) | sat(0.0, 3.0);
+}
+
+message iib_debug_amk: device("iib") | id(1680) | dlc(8) { 
+	/*iib_debug_amk message mux.*/
+	signal n_debug_amk : start(0) | length(2) | sat(0.0, 3.0);
+	/*AMK Control word inverter on.*/
+	signal debug_b_inv_on : start(8) | length(1) | sat(0.0, 1.0) | mux("n_debug_amk", 4);
+	/*AMK Control word dc on.*/
+	signal debug_b_dc_on : start(9) | length(1) | sat(0.0, 1.0) | mux("n_debug_amk", 4);
+	/*AMK Control word enable.*/
+	signal debug_b_enable : start(10) | length(1) | sat(0.0, 1.0) | mux("n_debug_amk", 4);
+	/*AMK Control word error reset.*/
+	signal debug_b_err_rst : start(11) | length(1) | sat(0.0, 1.0) | mux("n_debug_amk", 4);
+	/*Debug AMK desired RPM.*/
+	signal debug_dsr_rpm : start(16) | length(16) | sat(0.0, 20000.0) | mux("n_debug_amk", 4);
+	/*Debug AMK desired negative torque.*/
+	signal debug_dsr_t_n : start(32) | length(16) | type("signed") | mux("n_debug_amk", 4);
+	/*Debug AMK desired positive torque.*/
+	signal debug_dsr_t_p : start(48) | length(16) | sat(0.0, 20000.0) | type("signed") | mux("n_debug_amk", 4);
+}
+
+message iib_reset: device("iib") | id(944) | dlc(2) { 
+	/*IIB RCON bit. http://ww1.microchip.com/downloads/en/DeviceDoc/S8.pdf*/
+	signal iib_rcon : start(0) | length(16) | sat(0.0, 1.0);
+}
+
+message iib_trap: device("iib") | id(976) | dlc(4) { 
+	/*IIB trap type. Trap types: https://gitlab.com/projectofst/opensource/software10e/-/blob/master/lib/hal/lib_pic33e/trap.h*/
+	signal iib_trap_type : start(0) | length(16);
+	/*IIB trap line*/
+	signal iib_trap_line : start(16) | length(16);
+}
+
+message iib_diff: device("iib") | id(1776) | dlc(8) { 
+	/*iib_diff message mux.*/
+	signal n_iib_diff : start(14) | length(2) | sat(0.0, 3.0);
+	/*Torque reduction applied by differential controller.*/
+	signal iib_diff_value : start(16) | length(16) | type("signed") | mux("n_iib_diff", 4);
+	/*Resulting positive torque positive after application of differential controller.*/
+	signal iib_diff_t_p : start(32) | length(16) | mux("n_iib_diff", 4);
+	/*Steering angle used by differential controller.*/
+	signal iib_diff_steer_ang : start(48) | length(16) | type("signed");
+	/*Differential controller gain.*/
+	signal iib_diff_gain : start(0) | length(14);
+}
+
+message iib_status: device("iib") | id(1040) | dlc(8) { 
+	/*AMK system ready.*/
+	signal iib_status_sys_rdy : start(8) | length(1) | sat(0.0, 1.0);
+	/*AMK error.*/
+	signal iib_status_err : start(9) | length(1) | sat(0.0, 1.0);
+	/*AMK warning.*/
+	signal iib_status_warn : start(10) | length(1) | sat(0.0, 1.0);
+	/*AMK quit dc on.*/
+	signal iib_status_quit_dc_on : start(11) | length(1) | sat(0.0, 1.0);
+	/*AMK dc on.*/
+	signal iib_status_dc_on : start(12) | length(1) | sat(0.0, 1.0);
+	/*AMK quit inverter on.*/
+	signal iib_status_quit_inv_on : start(13) | length(1) | sat(0.0, 1.0);
+	/*AMK inverter on.*/
+	signal iib_status_inv_on : start(14) | length(1) | sat(0.0, 1.0);
+	/*AMK derating on.*/
+	signal iib_status_derating_on : start(15) | length(1) | sat(0.0, 1.0);
+	/*IIB max car power limit.*/
+	signal max_car_pwr : start(16) | length(16) | sat(0.0, 100.0);
+}
+
+message pre_eff: device("iib") | id(1360) | dlc(8) { 
+	/*Positive torque before application of efficiency table.*/
+	signal pre_eff_t_p : start(0) | length(16) | sat(0.0, 20000.0) | mux("n_pre_eff", 4);
+	/*Negative torque before application of efficiency table.*/
+	signal pre_eff_t_n : start(16) | length(16) | sat(-20000.0, 0.0) | type("signed") | mux("n_pre_eff", 4);
+	/*pre-eff message mux.*/
+	signal n_pre_eff : start(32) | length(2) | sat(0.0, 3.0);
+}
+
+/*git version commit*/
+config version: device("iib") | id(0) | type("unsigned") ;
+/*IIB regeneration on*/
+config regen_on: device("iib") | id(1) | type("unsigned") ;
+/*Max operating torque FL wheel*/
+config torque_fl: device("iib") | id(2) | type("unsigned") ;
+/*Max operating torque FR wheel*/
+config torque_fr: device("iib") | id(3) | type("unsigned") ;
+/*Max operating torque RL wheel*/
+config torque_rl: device("iib") | id(4) | type("unsigned") ;
+/*Max operating torque RR wheel*/
+config torque_rr: device("iib") | id(5) | type("unsigned") ;
+/*Max operating power FL wheel*/
+config pwr_fl: device("iib") | id(6) | type("unsigned") ;
+/*Max operating power FR wheel*/
+config pwr_fr: device("iib") | id(7) | type("unsigned") ;
+/*Max operating power RL wheel*/
+config pwr_rl: device("iib") | id(8) | type("unsigned") ;
+/*Max operating power RR wheel*/
+config pwr_rr: device("iib") | id(9) | type("unsigned") ;
+/*iib debug mode*/
+config debug_mode: device("iib") | id(10) | type("unsigned") ;
+/*IIB input mode*/
+config input_mode: device("iib") | id(11) | type("unsigned") ;
+/*max rpm*/
+config rpm: device("iib") | id(12) | type("unsigned") ;
+/*max regen torque FL wheel*/
+config regen_torque_fl: device("iib") | id(13) | type("unsigned") ;
+/*max regen torque FR wheel*/
+config regen_torque_fr: device("iib") | id(14) | type("unsigned") ;
+/*max regen torque RL wheel*/
+config regen_torque_rl: device("iib") | id(15) | type("unsigned") ;
+/*Max regen torque RR wheel*/
+config regen_torque_rr: device("iib") | id(16) | type("unsigned") ;
+/*AMK control mode*/
+config amk_control_mode: device("iib") | id(17) | type("unsigned") ;
+/*Max regen power FL wheel*/
+config max_regen_pwr_fl: device("iib") | id(18) | type("unsigned") ;
+/*Max regen power FR wheel*/
+config max_regen_pwr_fr: device("iib") | id(19) | type("unsigned") ;
+/*Max regen power RL wheel*/
+config regen_pwr_rl: device("iib") | id(20) | type("unsigned") ;
+/*Max regen power RR wheel*/
+config regen_pwr_rr: device("iib") | id(21) | type("unsigned") ;
+/*Derating Power Limiter ON*/
+config pl_on: device("iib") | id(22) | type("unsigned") ;
+/*Max total car power*/
+config max_car_pwr: device("iib") | id(23) | type("unsigned") ;
+/*Min total car power [kW]*/
+config min_car_pwr: device("iib") | id(24) | type("unsigned") ;
+/*Min power for derating soc curve calculation [kW]*/
+config minp_drt_soc: device("iib") | id(25) | type("unsigned") ;
+/*Max power for derating soc curve calculation [kW]*/
+config maxp_drt_soc: device("iib") | id(26) | type("unsigned") ;
+/*Number of cycles to do endurance mode*/
+config endurance_cycles: device("iib") | id(27) | type("unsigned") ;
+/*Desired SOC to end the endurance*/
+config final_soc: device("iib") | id(28) | type("unsigned") ;
+/*Differential gain*/
+config diff_gain: device("iib") | id(29) | type("unsigned") ;
+/*Sets SOC derrating ON/OFF*/
+config soc_derrating_on: device("iib") | id(30) | type("unsigned") ;
+
+/*Set regeneration on*/
+command set_regen_on: device("iib") | id(0);
+
+/*Save all parameters in flash*/
+command save_flash: device("iib") | id(1);
+
+/*Setpoints for test bench mode motor 0*/
+command ext_input0: device("iib") | id(2);
+
+/*Setpoints for external input mode motor 1*/
+command ext_input1: device("iib") | id(3);
+
+/*Setpoints for external input mode motor 2*/
+command ext_input2: device("iib") | id(4);
+
+/*Setpoints for external input mode motor 3*/
+command ext_input3: device("iib") | id(5);
+
+/*Input mode command*/
+command input_mode: device("iib") | id(6);
+
+/*Derating power limiter status*/
+command set_pl: device("iib") | id(7);
+
+/*Derating power limiter status*/
+command lap_count: device("iib") | id(8) | n_args(1){
+arg : id(1);
+}
+
+/*sums all arguments*/
+command add: device("iib") | id(9) | n_args(1){
+arg : id(2);
+}
+
+/*requests rtd on*/
+command rtd_on: device("iib") | id(10);
+
+/*requests rtd off*/
+command rtd_off: device("iib") | id(0);
+
+message dash_se: device("dash") | id(1098) | dlc(2) { 
+	/*Dash Steering encoder signal.*/
+	signal dash_se : start(0) | length(16) | sat(-180.0, 180.0) | type("signed");
+}
+
+message dash_status: device("dash") | id(1034) | dlc(2) { 
+	/*Dash shutdown circuit detection.*/
+	signal dash_sdc : start(0) | length(1) | sat(0.0, 1.0);
+	/*Dash RTD state.*/
+	signal dash_rtd : start(1) | length(1) | sat(0.0, 1.0);
+	/*Dash TS state.*/
+	signal dash_ts : start(2) | length(1) | sat(0.0, 1.0);
+}
+
+/*dash version*/
+config version: device("dash") | id(0) | type("unsigned") ;
+/*position frequency*/
+config se_update_freq: device("dash") | id(1) | type("unsigned") ;
+/*steering encoder's offset*/
+config se_offset: device("dash") | id(2) | type("unsigned") ;
+
+/*Zeroes the offset of the steering wheel.*/
+command se_calibrate: device("dash") | id(0);
+
+/*Writes parameters in flash memory.*/
+command write_flash: device("dash") | id(1);
+
+/*changes light state*/
+command dash_light: device("dash") | id(2);
+
+message te_main: device("te") | id(329) | dlc(8) { 
+	/*APPS0 short circuit detection bit.*/
+	signal te_status_cc_apps0 : start(0) | length(1) | sat(0.0, 1.0);
+	/*APPS1 short circuit detection bit.*/
+	signal te_status_cc_apps1 : start(1) | length(1) | sat(0.0, 1.0);
+	/*BPS electric short circuit detection bit.*/
+	signal te_status_cc_bpse0 : start(2) | length(1) | sat(0.0, 1.0);
+	/*BPS Pressure 0 short circuit detection bit.*/
+	signal te_status_cc_bpsp0 : start(3) | length(1) | sat(0.0, 1.0);
+	/*BPS Pressure 1 short circuit detection bit.*/
+	signal te_status_cc_bpsp1 : start(4) | length(1) | sat(0.0, 1.0);
+	/*APPS0 overshoot detection bit.*/
+	signal te_status_os_apps0 : start(5) | length(1) | sat(0.0, 1.0);
+	/*APPS1 overshot detection bit.*/
+	signal te_status_os_apps1 : start(6) | length(1) | sat(0.0, 1.0);
+	/*BPS eletric overshoot detection bit.*/
+	signal te_status_os_bpse : start(7) | length(1) | sat(0.0, 1.0);
+	/*FSG2022 EV 2.3 APPS/Brake pedal implausibility check.*/
+	signal te_status_imp_apps_bps_timer_exceeded : start(9) | length(1) | sat(0.0, 1.0);
+	/*Hard braking status bit.*/
+	signal te_status_hb : start(10) | length(1) | sat(0.0, 1.0);
+	/*TE shutdown circuit detection.*/
+	signal te_status_sdc : start(11) | length(1) | sat(0.0, 1.0);
+	/*TE verbose status bit.*/
+	signal te_status_verbose : start(12) | length(1) | sat(0.0, 1.0);
+	/*FSG2022 EV 2.3 APPS/Brake pedal implausibility check, without 500ms timer.*/
+	signal te_status_imp_apps_bps : start(14) | length(1) | sat(0.0, 1.0);
+	/*BPS pressure overshoot detection bit.*/
+	signal te_os_bpsp0 : start(15) | length(1) | sat(0.0, 1.0);
+	/*APPS value.*/
+	signal te_main_APPS : start(16) | length(16) | scale(0.01, 0.0) | unit("%") | sat(0.0, 100.0);
+	/*BPS pressure value.*/
+	signal te_main_BPSp : start(32) | length(16) | scale(0.01, 0.0) | unit("%") | sat(0.0, 100.0);
+	/*BPS eletric value.*/
+	signal te_main_BPSe : start(48) | length(16) | scale(0.01, 0.0) | unit("%") | sat(0.0, 100.0);
+	/*T 11.8.8 - If an implausibility occurs between the values of the APPSs and persists for more than 100 ms, status bit.*/
+	signal te_status_imp_apps_timer_exceeded : start(8) | length(1) | sat(0.0, 1.0);
+	/*T 11.8.8 - If an implausibility occurs between the values of the APPSs and persists for more than 100 ms, status bit without 100ms timer.*/
+	signal te_status_imp_apps : start(13) | length(1) | sat(0.0, 1.0);
+}
+
+message te_limit: device("te") | id(1129) | dlc(4) { 
+	/*Limit answer header*/
+	signal te_limit_header : start(0) | length(16);
+	/*TE data limit*/
+	signal te_data_limit : start(16) | length(16);
+}
+
+message te_press: device("te") | id(1161) | dlc(4) { 
+	/*Brake pressure front.*/
+	signal te_press_f : start(0) | length(16) | scale(0.01, 0.0) | unit("bar") | sat(0.0, 160.0);
+	/*Brake pressure rear.*/
+	signal te_press_r : start(16) | length(16) | scale(0.01, 0.0) | unit("bar") | sat(0.0, 160.0);
+}
+
+message te_forces: device("te") | id(1193) | dlc(8) { 
+	/*Accelarator torque*/
+	signal te_accel_t : start(0) | length(16);
+	/*Brake pressure.*/
+	signal te_brk_press : start(16) | length(16);
+	/*Brake eletric*/
+	signal te_brk_ele : start(32) | length(16);
+}
+
+message te_apps: device("te") | id(1033) | dlc(8) { 
+	/*APPS0 position sensor measurement, directly from ADC..*/
+	signal te_apps0 : start(0) | length(16) | scale(0.01, 0.0) | sat(0.0, 100.0);
+	/*APPS1 position sensor measurement, directly from ADC.*/
+	signal te_apps1 : start(16) | length(16) | scale(0.01, 0.0) | sat(0.0, 100.0);
+}
+
+message te_verbose1: device("te") | id(1065) | dlc(8) { 
+	/*APPS0 position sensor measurement, directly from ADC..*/
+	signal te_apps0 : start(0) | length(16) | sat(0.0, 100.0);
+	/*APPS1 position sensor measurement, directly from ADC.*/
+	signal te_apps1 : start(16) | length(16) | sat(0.0, 100.0);
+	/*BPS0 position sensor measurement, directly from ADC.*/
+	signal te_bps0 : start(32) | length(16) | sat(0.0, 100.0);
+	/*BPS1 position sensor measurement, directly from ADC.*/
+	signal te_bps1 : start(48) | length(16) | sat(0.0, 100.0);
+}
+
+message te_verbose2: device("te") | id(1097) | dlc(8) { 
+	signal te_be : start(0) | length(16) | sat(0.0, 100.0);
+	signal te_hard_braking : start(16) | length(16) | sat(0.0, 100.0);
+	signal te_Implausibility_APPS_Timer_Exceeded : start(32) | length(1) | sat(0.0, 100.0);
+	signal te_Implausibility_APPS_BPS_Timer_Exceeded : start(33) | length(1) | sat(0.0, 100.0);
+}
+
+config version: device("te") | id(0) | type("unsigned") ;
+/*Hard Braking threshold pressure*/
+config hb_treshold: device("te") | id(1) | type("unsigned") ;
+/*APPS0 GND limit*/
+config apps0_gnd: device("te") | id(2) | type("unsigned") ;
+/*APPS0 VCC limit*/
+config apps0_vcc: device("te") | id(3) | type("unsigned") ;
+/*APPS0 0 force (N) limit*/
+config apps0_0N: device("te") | id(4) | type("unsigned") ;
+/*APPS0 max force (N) limit*/
+config apps0_maxN: device("te") | id(5) | type("unsigned") ;
+/*APPS1 GND timit*/
+config apps1_gnd: device("te") | id(6) | type("unsigned") ;
+/*APPS1 VCC limit*/
+config apps1_vcc: device("te") | id(7) | type("unsigned") ;
+/*APPS1 0 force (N) limit*/
+config apps1_0N: device("te") | id(8) | type("unsigned") ;
+/*APPS1 max force (N) limit*/
+config apps1_maxN: device("te") | id(9) | type("unsigned") ;
+/*BPS0 VCC limit*/
+config bps0_vcc: device("te") | id(11) | type("unsigned") ;
+/*BPS0 GND timit*/
+config bps0_gnd: device("te") | id(10) | type("unsigned") ;
+/*BPS0 0 force (N) limit*/
+config bps0_0N: device("te") | id(12) | type("unsigned") ;
+/*BPS0 max force (N) limit*/
+config bps0_maxN: device("te") | id(13) | type("unsigned") ;
+/*BPS1 GND timit*/
+config bps1_gnd: device("te") | id(14) | type("unsigned") ;
+/*BPS1 VCC limit*/
+config bps1_vcc: device("te") | id(15) | type("unsigned") ;
+/*BPS1 0 force (N) limit*/
+config bps1_0N: device("te") | id(16) | type("unsigned") ;
+/*BPS1 max force (N) limit*/
+config bps1_maxN: device("te") | id(17) | type("unsigned") ;
+/*BE GND timit*/
+config be_gnd: device("te") | id(18) | type("unsigned") ;
+/*BE VCC limit*/
+config be_vcc: device("te") | id(19) | type("unsigned") ;
+/*BE 0 force (N) limit*/
+config be_0N: device("te") | id(20) | type("unsigned") ;
+/*BPSe max force (N) limit*/
+config be_maxN: device("te") | id(21) | type("unsigned") ;
+
+/*brake is not beeing pressed*/
+command brake_zero: device("te") | id(0);
+
+/*brake is fully pressed*/
+command brake_max: device("te") | id(1);
+
+/*accelerator is not beeing pressed*/
+command accel_zero: device("te") | id(2);
+
+/*accelerator is fully pressed*/
+command accel_max: device("te") | id(3);
+
+command save_eeprom: device("te") | id(4);
+
+message cell_tmp_info: device("master") | id(1806) | dlc(8) { 
+	/*Lowest cell temperature.*/
+	signal cell_min_tmp : start(0) | length(16) | unit("C");
+	/*Average temperature of all cells.*/
+	signal cell_mean_tmp : start(16) | length(16) | unit("C");
+	/*Highest cell temperature.*/
+	signal cell_max_tmp : start(32) | length(16) | unit("C");
+	/*Id of stack that contains the cell with the highest temperature.*/
+	signal hottest_cell_stack : start(48) | length(8);
+	/*Id of cell withing the stack that has the highest temperature.*/
+	signal hottest_cell : start(56) | length(8);
+}
+
+message master_status: device("master") | id(494) | dlc(8) { 
+	/*AMS ok status bit.*/
+	signal master_status_ams_ok : start(0) | length(1) | sat(0.0, 1.0);
+	/*IMD ok status bit.*/
+	signal master_status_imd_ok : start(1) | length(1) | sat(0.0, 1.0);
+	/*IMD ok status bit, latched.*/
+	signal master_status_imd_latch : start(2) | length(1) | sat(0.0, 1.0);
+	/*AMS ok status bit, latched.*/
+	signal master_status_ams_latch : start(3) | length(1) | sat(0.0, 1.0);
+	/*AIR positive status.*/
+	signal master_status_air_p : start(4) | length(1) | sat(0.0, 1.0);
+	/*AIR negative status.*/
+	signal master_status_air_n : start(5) | length(1) | sat(0.0, 1.0);
+	/*Precharge relay status.*/
+	signal master_status_precharge : start(6) | length(1) | sat(0.0, 2.0);
+	/*Discharge relay status.*/
+	signal master_status_discharge : start(7) | length(1) | sat(0.0, 1.0);
+	/*Master shutdown circuit detection 1 bit. Between DCU and IMD.*/
+	signal master_status_sdc1 : start(8) | length(1) | sat(0.0, 1.0);
+	/*Master shutdown circuit detection 2 bit. Between IMD between AMS.*/
+	signal master_status_sdc2 : start(9) | length(1) | sat(0.0, 1.0);
+	/*Master shutdown circuit detection 3 bit. Between AMS and DCU*/
+	signal master_status_sdc3 : start(10) | length(1) | sat(0.0, 1.0);
+	/*Master shutdown circuit detection 4 bit. Between TSMS and AIR.*/
+	signal master_status_tsms_relays : start(11) | length(1) | sat(0.0, 1.0);
+	/*Shutdown circuit voltage detection. Signals shutdown circuit above minimum threshold.*/
+	signal master_status_sdc_above : start(12) | length(1) | sat(0.0, 1.0);
+	/*Shutdown circuit open status bit.*/
+	signal master_status_sdc_open : start(13) | length(1) | sat(0.0, 1.0);
+	/*Master verbose status bit.*/
+	signal master_status_verbose : start(14) | length(1) | sat(0.0, 1.0);
+	/*Master tractive system enabled status bit.*/
+	signal master_status_ts_on : start(15) | length(1) | sat(0.0, 1.0);
+	/*Finished precharge detenction. Precharge End Sig.*/
+	signal master_pes : start(16) | length(16);
+	/*Battery ID (Car number)*/
+	signal bat_id : start(32) | length(16);
+}
+
+message master_em: device("master") | id(1870) | dlc(8) { 
+	/*Master energy meter tractive system voltage.*/
+	signal master_em_voltage : start(0) | length(16) | unit("V");
+	/*Master energy meter tractive system current.*/
+	signal master_em_current : start(16) | length(16) | unit("A");
+	/*Master energy meter tractive system power.*/
+	signal master_em_power : start(32) | length(16) | unit("W");
+	/*Master energy meter battery state of charge.*/
+	signal master_em_soc : start(48) | length(16) | unit("%");
+}
+
+message cell_v_info: device("master") | id(1838) | dlc(8) { 
+	/*Minimum cell voltage.*/
+	signal cell_min_v : start(0) | length(16) | unit("V");
+	/*Average voltage of all cells.*/
+	signal cell_mean_v : start(16) | length(16) | unit("V");
+	/*Maximum cell voltage.*/
+	signal cell_max_v : start(32) | length(16) | unit("V");
+	/*Id of stack that is the balancing target.*/
+	signal bal_trg_stack : start(48) | length(8);
+	/*Id of cell that is the balancing target inside the stack.*/
+	signal bal_trg_cell : start(56) | length(8);
+}
+
+message master_ts: device("master") | id(398) | dlc(1) { 
+	/*Master TS state.*/
+	signal master_ts_state : start(0) | length(1);
+	/*Master ts off reason.*/
+	signal master_ts_off_reason : start(1) | length(7);
+}
+
+message cell_verb_info: device("master") | id(2030) | dlc(8) { 
+	/*Cell id depending on stack number.*/
+	signal verb_cell_id : start(0) | length(16) | sat(0.0, 1.0);
+	/*Cell voltage.*/
+	signal verb_cell_v : start(16) | length(16) | mux("verb_cell_id", 140);
+	/*Cell temperature.*/
+	signal verb_cell_tmp : start(32) | length(16) | mux("verb_cell_id", 140);
+	/*Cell State Of Charge*/
+	signal verb_cell_soc : start(48) | length(16) | mux("verb_cell_id", 140);
+}
+
+message slave_verb_info1: device("master") | id(1998) | dlc(8) { 
+	/*Stack ID*/
+	signal verb_stack_id1 : start(0) | length(16);
+	/*Slave discharge channel fault mask*/
+	signal slave_verb_dcfm : start(16) | length(16) | mux("verb_stack_id1", 10);
+	/*Slave temperature fault mask*/
+	signal slave_verb_tfm : start(48) | length(16) | mux("verb_stack_id1", 10);
+	/*slave OWC cell status*/
+	signal slave_verb_owc : start(32) | length(16) | mux("verb_stack_id1", 10);
+}
+
+message slave_verb_info2: device("master") | id(1966) | dlc(8) { 
+	/*Stack ID*/
+	signal verb_stack_id2 : start(0) | length(16);
+	/*Slave discharge channel state*/
+	signal slave_verb_dcs : start(16) | length(16) | mux("verb_stack_id2", 10);
+	/*Slave Discharge channel temperature*/
+	signal slave_verb_dct : start(32) | length(16) | mux("verb_stack_id2", 10);
+	/*ï»¿mperature*/
+	signal slave_verb_bmt : start(48) | length(16) | mux("verb_stack_id2", 10);
+}
+
+/*git version commit*/
+config version: device("master") | id(0) | type("unsigned") ;
+/*Cell Min Temperature*/
+config cell_min_t: device("master") | id(2) | type("unsigned") ;
+/*Cell Max Voltage*/
+config cell_max_v: device("master") | id(3) | type("unsigned") ;
+/*Cell Min Voltage*/
+config cell_min_v: device("master") | id(4) | type("unsigned") ;
+/*Battery Max Voltage*/
+config bat_max_v: device("master") | id(5) | type("unsigned") ;
+/*Battery Charging Delta*/
+config bat_charge_delta: device("master") | id(6) | type("unsigned") ;
+/*Max Discharge Channel Temp*/
+config max_disch_channel_t: device("master") | id(7) | type("unsigned") ;
+/*Cell Max temperature*/
+config cell_max_t: device("master") | id(1) | type("unsigned") ;
+/*Aparent Cell Nominal Capacity*/
+config aparent_cell_nominal_capacity: device("master") | id(8) | type("unsigned") ;
+/*Auto calibration time threshold*/
+config auto_calibration_time_threshold: device("master") | id(9) | type("unsigned") ;
+
+/*Save all parameters in flash*/
+command save_flash: device("master") | id(0);
+
+/*Toggle verbose*/
+command toggle_verbose: device("master") | id(1);
+
+/*Toggle fans*/
+command toggle_fans: device("master") | id(2);
+
+/*Toggle charging*/
+command toggle_charge: device("master") | id(3);
+
+/*make fake erro*/
+command fake_error: device("master") | id(4);
+
+/*reset ams error*/
+command reset_error: device("master") | id(5);
+
+/*recalibrate_soc*/
+command recalibrate_soc: device("master") | id(6);
+
+/*Toogle TS state on/off*/
+command common_ts: device("master") | id(18) | n_args(2){
+/*step: 0(toggle), 1(ebs/dash), 2(dash)*/
+arg ts_step: id(0);
+/*step: 0(toggle), 1(ebs/dash), 2(dash)*/
+arg ts_step: id(0);
+}
+
+/*Gets the number of stacks and cells*/
+command get_cell_config: device("master") | id(19);
+
+/*set_pwm_fan_side*/
+command set_pwm_fan_side: device("master") | id(7);
+
+message telemetry_status: device("telemetry") | id(1041) | dlc(2) { 
+	/*Status info of telemetry*/
+	signal status_info : start(0) | length(16) | sat(0.0, 1.0);
+}
+
+message flash_message: device("telemetry") | id(1073) | dlc(8) { 
+	/*device*/
+	signal device : start(0) | length(16);
+	/*parameter*/
+	signal parameter : start(16) | length(16);
+	/*parameter value*/
+	signal value : start(32) | length(16);
+}
+
+
+/*This is a random command for testing*/
+command random_command: device("telemetry") | id(10) | n_args(2){
+arg Random Argument for random command: id(20);
+arg Random Argument for random command: id(20);
+}
+
+message disconnect_from_server: device("interface") | id(1087) | dlc(2) { 
+	/*Disconnects from Server*/
+	signal disconnect : start(0) | length(1) | sat(0.0, 1.0);
+}
+
+message presence: device("interface") | id(1055) | dlc(2) { 
+	/*Telemetry client is present*/
+	signal presence : start(0) | length(1) | sat(0.0, 1.0);
+}
+
+
+message message_status: device("dcu") | id(1032) | dlc(8) { 
+	/*DCU shutdown circuit detection: Main Hoop -> Front..*/
+	signal Detection_SC_MH_Front : start(1) | length(1);
+	/*DCU shutdown circuit detection: BSPD -> AMS.*/
+	signal Detection_SC_BSPD_AMS : start(2) | length(1);
+	/*DCU power detection: AMS.*/
+	signal Detection_VCC_AMS : start(4) | length(1) | sat(0.0, 1.0);
+	/*DCU power detection: AMS Fans.*/
+	signal Detection_VCC_FANS_AMS : start(5) | length(1) | sat(0.0, 1.0);
+	/*DCU power detection: TSAL.*/
+	signal Detection_VCC_TSAL : start(6) | length(1) | sat(0.0, 1.0);
+	/*DCU TSAL blue sig.*/
+	signal Blue_sig : start(18) | length(1) | sat(0.0, 1.0);
+	/*DRS legacy.*/
+	signal Dcdc_switch : start(19) | length(1) | sat(0.0, 1.0);
+	/*DCU Brake light signal.*/
+	signal BL_sig : start(20) | length(1) | sat(0.0, 1.0);
+	/*DCU buzzer signal.*/
+	signal Buzz_sig : start(21) | length(1) | sat(0.0, 1.0);
+	/*DCU shutdown circuit: origin -> Main Hoop.*/
+	signal Detection_SC_Origin_MH : start(3) | length(1) | sat(0.0, 1.0);
+	/*DCU power detection: Inverter control unit A.*/
+	signal Detection_VCC_CUA : start(7) | length(1) | sat(0.0, 1.0);
+	/*DCU power detection: Competition data logger.*/
+	signal Detection_VCC_EM : start(8) | length(1);
+	/*DCU power detection: pumps.*/
+	signal Detection_VCC_PUMPS : start(9) | length(1);
+	/*DCU power detection: fans.*/
+	signal Detection_VCC_FANS : start(10) | length(1) | sat(0.0, 1.0);
+	/*DCU power detection: Inverter control unit B.*/
+	signal Detection_VCC_CUB : start(11) | length(1) | sat(0.0, 1.0);
+	/*DCU power detection: Low voltage essentials.*/
+	signal Detection_VCC_CAN_E : start(13) | length(1) | sat(0.0, 1.0);
+	/*DCU power detection: DCU + Logger.*/
+	signal Detection_VCC_DATA : start(15) | length(1) | sat(0.0, 1.0);
+	/*DCU power detection: Brakelight.*/
+	signal Detecion_VCC_BL : start(14) | length(1) | sat(0.0, 1.0);
+	/*DCU Shutdown Circuit detection: Front -> BSPD.*/
+	signal Detection_SC_Front_BSPD : start(0) | length(1) | sat(0.0, 1.0);
+}
+
+message dcu_message_current_voltage: device("dcu") | id(1064) | dlc(8) { 
+	/*DCU Low voltage measurement.*/
+	signal LV_voltage : start(32) | length(16) | unit("V") | sat(0.0, 1.0);
+	/*DCU tractive system current measurement.*/
+	signal HV_current : start(16) | length(16) | unit("A") | sat(0.0, 1.0) | type("signed");
+	/*DCU low voltage system current measurement.*/
+	signal LV_current : start(0) | length(16) | unit("A") | sat(0.0, 1.0) | type("signed");
+}
+
+
+/*sounds buzzer when in AS Emergency*/
+command as_emergency_buzzer: device("dcu") | id(0);
+
+message hw_status_fl: device("hw") | id(1299) | dlc(8) { 
+	/*Hot Wheels: heartbeat FL.*/
+	signal hw_alive_fl : start(0) | length(2) | sat(0.0, 1.0);
+	/*How Wheels: Upright temperature FL.*/
+	signal hw_ur_temp_fl : start(16) | length(16) | unit("C");
+	/*Hot Wheels: Brake disk thermopile FL.*/
+	signal hw_bd_tp_fl : start(32) | length(16);
+	/*Hot wheels: Brake disk thermopile ntc FL.*/
+	signal hw_bd_ntc_fl : start(48) | length(16);
+}
+
+message hw_status_fr: device("hw") | id(1331) | dlc(8) { 
+	/*Hot wheels: heartbeat FR.*/
+	signal hw_alive_fr : start(0) | length(2) | sat(0.0, 1.0);
+	/*Hot wheels: Up Right temperature FR.*/
+	signal hw_ur_temp_fr : start(16) | length(16);
+	/*Hot wheels: Brake disk thermopile FR.*/
+	signal hw_bd_tp_fr : start(32) | length(16);
+	/*Hot wheels: Brake disk thermopile ntc FR.*/
+	signal hw_bd_ntc_fr : start(48) | length(16);
+}
+
+message hw_status_rl: device("hw") | id(1363) | dlc(8) { 
+	/*Hot wheels: heartbeat RL.*/
+	signal hw_alive_rl : start(0) | length(2) | sat(0.0, 1.0);
+	/*Hot wheels: Up Right temperature RL.*/
+	signal hw_ur_temp_rl : start(16) | length(16);
+	/*Hot wheels: Brake disk thermopile RL.*/
+	signal hw_bd_tp_rl : start(32) | length(16);
+	/*Hot wheels: Brake disk thermopile ntc RL.*/
+	signal hw_bd_ntc_rl : start(48) | length(16);
+}
+
+message hw_status_rr: device("hw") | id(1395) | dlc(8) { 
+	/*Hot wheels: heartbeat RR.*/
+	signal hw_alive_rr : start(0) | length(2) | sat(0.0, 1.0);
+	/*Hot wheels: Up Right temperature RR.*/
+	signal hw_ur_temp_rr : start(16) | length(16);
+	/*Hot wheels: Brake disk termophile RR.*/
+	signal hw_bd_tp_rr : start(32) | length(16);
+	/*Hot wheels: Brake disk thermopile ntc RR.*/
+	signal hw_bd_ntc_rr : start(48) | length(16);
+}
+
+/*version*/
+config version: device("hw") | id(0) | type("unsigned") ;
+/*Brake disk NTC B parameter*/
+config bd_b_param: device("hw") | id(1) | type("unsigned") ;
+/*Brake disk ntc resistance*/
+config bd_ntc_r: device("hw") | id(2) | type("unsigned") ;
+/*Brake disk ntc series resistor*/
+config bd_r: device("hw") | id(3) | type("unsigned") ;
+/*Thermopile S parameter*/
+config bd_tp_s: device("hw") | id(4) | type("unsigned") ;
+/*Up Right NTC B parameter*/
+config ur_b_param: device("hw") | id(6) | type("unsigned") ;
+/*Up Right NTC resistance*/
+config ur_ntc_r: device("hw") | id(7) | type("unsigned") ;
+/*Up Right NTC series resistor*/
+config ur_r: device("hw") | id(8) | type("unsigned") ;
+/*Thermophile AMPOP Gain*/
+config bd_tp_g: device("hw") | id(5) | type("unsigned") ;
+
+command save_falsh: device("hw") | id(0);
+
+message isa_current: device("isabel") | id(1053) | dlc(6) { 
+	/*Isabel measurements: Tractive system DC current.*/
+	signal isa_current : start(16) | length(32) | unit("mA") | sat(-32000000.0, 32000000.0) | type("signed");
+}
+
+message isa_voltage_1: device("isabel") | id(1085) | dlc(6) { 
+	/*Isabel measurements: battery voltage before AIR.*/
+	signal isa_voltage_1 : start(16) | length(32) | unit("mV") | sat(0.0, 32000000.0) | type("signed");
+}
+
+message isa_voltage_2: device("isabel") | id(1117) | dlc(6) { 
+	/*Isabel measurements: battery voltage 2.*/
+	signal isa_voltage_2 : start(16) | length(32) | unit("mV") | sat(0.0, 32000000.0) | type("signed");
+}
+
+message isa_voltage_3: device("isabel") | id(1149) | dlc(6) { 
+	/*Isabel measurements: battery voltage 3.*/
+	signal isa_voltage_3 : start(16) | length(32) | unit("mV") | sat(0.0, 32000000.0) | type("signed");
+}
+
+message isa_temperature: device("isabel") | id(1181) | dlc(6) { 
+	/*Isabel temperature*/
+	signal isa_temperature : start(16) | length(32) | unit("0.1C") | sat(-500.0, 2000.0) | type("signed");
+}
+
+message isa_power: device("isabel") | id(1213) | dlc(6) { 
+	/*Isabel measurements: battery power.*/
+	signal isa_power : start(16) | length(32) | unit("W") | sat(0.0, 1024000000.0) | type("signed");
+}
+
+message isa_charge: device("isabel") | id(1245) | dlc(6) { 
+	/*Isabel measurements: battery charge*/
+	signal isa_charge : start(16) | length(32) | unit("As") | sat(-72000000000000.0, 72000000000000.0) | type("signed");
+}
+
+message isa_energy: device("isabel") | id(1277) | dlc(6) { 
+	/*Isabel measruements: battery energy.*/
+	signal isa_energy : start(16) | length(32) | unit("Wh") | sat(-72000000000000.0, 72000000000000.0) | type("signed");
+}
+
+
+message sw_status: device("sw") | id(1036) | dlc(2) { 
+	/*Status Message Mechanical Encoder 0 Position.*/
+	signal status_me0_pos : start(0) | length(4) | sat(0.0, 8.0);
+	/*Status Message Mechanical Encoder 1 Position.*/
+	signal status_me1_pos : start(4) | length(4) | sat(0.0, 8.0);
+	/*Status Message Mechanical Encoder 2 Position.*/
+	signal status_me2_pos : start(8) | length(4) | sat(0.0, 8.0);
+}
+
+message sw_selector: device("sw") | id(1068) | dlc(8) { 
+	/*Selector identifier*/
+	signal sw_selector_mux : start(0) | length(16);
+	signal sw_selector_value : start(16) | length(16) | mux("sw_selector_mux", 3);
+}
+
+message sw_button: device("sw") | id(1100) | dlc(8) { 
+	signal sw_button_mux : start(0) | length(16);
+}
+
+config version: device("sw") | id(0) | type("unsigned") ;
+config luminosity: device("sw") | id(1) | type("unsigned") ;
+
+command leds_set_bitfield: device("sw") | id(3) | n_args(2){
+arg led_values: id(0);
+arg led_values: id(0);
+}
+
+command leds_set_all: device("sw") | id(2);
+
+/*Set SW LEDs status*/
+command leds_set: device("sw") | id(0) | n_args(2){
+arg led_id: id(1);
+arg led_value: id(1);
+}
+
+command leds_clear_all: device("sw") | id(4) | n_args(1){
+arg : id(0);
+}
+
+command leds_clear: device("sw") | id(1);
+
+message sta_status: device("sta") | id(1035) | dlc(8) { 
+	/*status word*/
+	signal statusword : start(0) | length(16);
+}
+
+message sta_position: device("sta") | id(1067) | dlc(8) { 
+	/*current position*/
+	signal position_actual : start(0) | length(32) | type("signed");
+	/*demanded position*/
+	signal position_demand : start(32) | length(32) | type("signed");
+}
+
+message sta_power: device("sta") | id(1099) | dlc(8) { 
+	/*torque in mNm*/
+	signal torque : start(0) | length(16) | type("signed");
+	/*drawn current in mA*/
+	signal current : start(16) | length(16) | type("signed");
+}
+
+message sta_TPDO1: device("sta") | id(1771) | dlc(8) { 
+	signal statusword : start(0) | length(16);
+}
+
+message sta_TPDO2: device("sta") | id(1803) | dlc(8) { 
+	signal position_actual : start(32) | length(32) | type("signed");
+	signal torque_actual : start(16) | length(16) | type("signed");
+}
+
+message sta_TPDO3: device("sta") | id(1835) | dlc(8) { 
+	signal velocity_actual : start(0) | length(32);
+	signal position_demand : start(32) | length(32) | type("signed");
+}
+
+
+message DV_driving_dynamics_1: device("as") | id(13) | dlc(8) { 
+	signal speed_actual : start(0) | length(8) | sat(0.0, 128.0);
+	signal speed_target : start(8) | length(8) | sat(0.0, 128.0);
+	signal steering_angle_actual : start(16) | length(8) | scale(0.5, 0.0) | sat(-150.0, 150.0) | type("signed");
+	signal steering_angle_target : start(24) | length(8) | scale(0.5, 0.0) | sat(-150.0, 150.0) | type("signed");
+	signal brake_hydr_actual : start(32) | length(8) | sat(0.0, 100.0);
+	signal brake_hydr_target : start(40) | length(8) | sat(0.0, 100.0);
+	signal motor_momentum_actual : start(48) | length(8) | sat(-100.0, 100.0) | type("signed");
+	signal motor_momentum_target : start(56) | length(8) | sat(-100.0, 100.0) | type("signed");
+}
+
+message DV_driving_dynamics_2: device("as") | id(45) | dlc(6) { 
+	signal acc_longitudinal : start(0) | length(16) | scale(0.001953125, 0.0) | sat(-20.0, 20.0) | type("signed");
+	signal acc_lateral : start(16) | length(16) | scale(0.001953125, 0.0) | sat(-20.0, 20.0) | type("signed");
+	signal yaw_rate : start(32) | length(16) | scale(0.0078125, 0.0) | sat(-100.0, 100.0) | type("signed");
+}
+
+message DV_system_status: device("as") | id(77) | dlc(5) { 
+	signal AS_state : start(0) | length(3) | sat(1.0, 5.0);
+	signal EBS_state : start(3) | length(2) | sat(1.0, 3.0);
+	signal AMI_state : start(5) | length(3) | sat(1.0, 6.0);
+	signal steering_state : start(8) | length(1) | sat(0.0, 1.0);
+	signal service_brake : start(9) | length(2) | sat(1.0, 3.0);
+	signal lap_counter : start(11) | length(4) | sat(0.0, 15.0);
+	signal cone_count_actual : start(15) | length(8) | sat(0.0, 256.0);
+	signal cones_count_all : start(23) | length(17) | sat(0.0, 500.0);
+}
+
+config DV_driving_dynamics_1: device("as") | id(0) | type("unsigned") ;
+config DV_driving_dynamics_2: device("as") | id(1) | type("unsigned") ;
+config DV_system_status: device("as") | id(2) | type("unsigned") ;
+
+/*sets state*/
+command as_as_state: device("as") | id(1);
+
+/*sets mission*/
+command as_as_mission: device("as") | id(0);
+
+message ebs_status: device("ebs") | id(1778) | dlc(8) { 
+	signal ebs_as_state : start(0) | length(3) | sat(0.0, 4.0);
+	signal ebs_ebs_state : start(3) | length(2) | sat(0.0, 2.0);
+	signal ebs_assi_state : start(5) | length(3) | sat(0.0, 4.0);
+	signal ebs_sound : start(8) | length(1) | sat(0.0, 1.0);
+	signal ebs_ts : start(9) | length(1) | sat(0.0, 1.0);
+	signal ebs_r2d : start(10) | length(1) | sat(0.0, 1.0);
+	signal ebs_sta : start(11) | length(1) | sat(0.0, 1.0);
+	signal ebs_asms : start(12) | length(1) | sat(0.0, 1.0);
+	signal ebs_go_signal : start(13) | length(1) | sat(0.0, 1.0);
+	/*RES pressed or not*/
+	signal ebs_res : start(14) | length(1) | sat(0.0, 1.0);
+	signal ebs_as_mission : start(15) | length(3) | sat(0.0, 6.0);
+	signal ebs_ebs_startup_phase : start(18) | length(3) | sat(0.0, 6.0);
+	signal ebs_np_scd : start(21) | length(1) | sat(0.0, 1.0);
+	signal ebs_togglewtd : start(22) | length(1) | sat(0.0, 1.0);
+	signal ebs_ebs_acq_state : start(23) | length(2) | sat(0.0, 2.0);
+	signal ebs_np_as_close_sdc : start(25) | length(1) | sat(0.0, 1.0);
+	signal ebs_np_as_driving_mode : start(26) | length(1) | sat(0.0, 1.0);
+	signal ebs_np_ts_cockpit : start(27) | length(1) | sat(0.0, 1.0);
+	signal ebs_np_ts_external : start(28) | length(1) | sat(0.0, 1.0);
+	signal ebs_np_watchdog : start(29) | length(1) | sat(0.0, 1.0);
+	signal ebs_det_vcc_pc : start(30) | length(1) | sat(0.0, 1.0);
+	signal ebs_det_sdc : start(31) | length(1) | sat(0.0, 1.0);
+	signal ebs_sta_power : start(32) | length(1) | sat(0.0, 1.0);
+	signal ebs_sta_power_read : start(33) | length(1) | sat(0.0, 1.0);
+	signal ebs_set_ebs_valve : start(34) | length(1) | sat(0.0, 1.0);
+	signal ebs_finish_speed : start(35) | length(1) | sat(0.0, 1.0);
+	/*ebs_ro_rdy*/
+	signal ebs_ro_rdy : start(36) | length(1) | sat(0.0, 1.0);
+	/*ebs_ro_manual*/
+	signal ebs_ro_manual : start(37) | length(1) | sat(0.0, 1.0);
+	/*ebs_ro_off*/
+	signal ebs_ro_off : start(38) | length(1) | sat(0.0, 1.0);
+	/*ebs_ro_emerg*/
+	signal ebs_ro_emerg : start(39) | length(1) | sat(0.0, 1.0);
+	/*ebs_ro_driv*/
+	signal ebs_ro_driv : start(40) | length(1) | sat(0.0, 1.0);
+	/*reason to switch to emergency*/
+	signal x_to_emergency_reason : start(41) | length(4) | sat(0.0, 1.0);
+	/*bps 2*/
+	signal ebs_bps2 : start(48) | length(8) | scale(0.1, 0.0) | sat(0.0, 255.0);
+	/*bps 1*/
+	signal ebs_bps1 : start(56) | length(8) | scale(0.1, 0.0) | sat(0.0, 255.0);
+}
+
+/*asf signals*/
+message ebs_asf: device("ebs") | id(1810) | dlc(8) { 
+	signal toggle_watchdog : start(1) | length(1);
+	signal AS_driving_mode : start(2) | length(1);
+	signal AS_close_SDC : start(3) | length(1);
+	signal SDC_is_ready : start(4) | length(1);
+	signal AS_trigger_EBS : start(5) | length(1);
+	signal AS_car_stopped : start(6) | length(1);
+	signal AS_mission_finished : start(7) | length(1);
+	signal EBS_error : start(8) | length(1);
+	signal ASMS_state : start(9) | length(1);
+	signal TS_state : start(0) | length(1) | sat(0.0, 1.0);
+	signal bp1 : start(32) | length(8) | scale(0.1, 0.0);
+	signal bp2 : start(40) | length(8) | scale(0.1, 0.0);
+	signal bp3 : start(48) | length(8) | scale(0.1, 0.0);
+	signal bp4 : start(56) | length(8) | scale(0.1, 0.0);
+	signal AS_mission : start(10) | length(3);
+	signal AS_state : start(13) | length(3);
+	signal EBS_state : start(16) | length(2);
+	signal RES_status : start(18) | length(2);
+}
+
+message ebs_res: device("ebs") | id(1842) | dlc(8) { 
+	signal radio_quality : start(0) | length(8);
+	signal interruption_signal : start(8) | length(1);
+}
+
+
+/*request to change AS state*/
+command ebs_as_state: device("ebs") | id(0);
+
+/*sets AS mission*/
+command ebs_as_mission: device("ebs") | id(1);
+
+/*canopen nmt presence*/
+command nmt_presence: device("ebs") | id(2);
+
+message status: device("res") | id(1039) | dlc(2) { 
+	/*res go*/
+	signal res_go : start(0) | length(1);
+	/*res emergency*/
+	signal res_emergency : start(1) | length(1);
+	/*radio quality*/
+	signal radio_quality : start(8) | length(8);
+}
+
+
+message XCID_Error: device("xsens") | id(1076) | dlc(1) { 
+	signal error_code : start(0) | length(8) | endianess("big_endian");
+}
+
+message XCID_GroupCounter: device("xsens") | id(1172) | dlc(2) { 
+	/*Xsens: CAN Frame counter.*/
+	signal GroupCounter : start(0) | length(16) | endianess("big_endian");
+}
+
+message XCID_SampleTimeUs: device("xsens") | id(1140) | dlc(4) { 
+	/*Xsens: Time stamp in Us.*/
+	signal SampleTimeUs : start(0) | length(32) | endianess("big_endian");
+}
+
+message XCID_UTC: device("xsens") | id(1204) | dlc(8) { 
+	/*Xsens: GPS date - year.*/
+	signal YEAR : start(0) | length(8) | endianess("big_endian");
+	/*Xsens: GPS date - month.*/
+	signal MONTH : start(8) | length(8) | endianess("big_endian");
+	/*Xsens: GPS date - day.*/
+	signal DAY : start(16) | length(8) | endianess("big_endian");
+	/*Xsens: GPS date - hour.*/
+	signal HOUR : start(24) | length(8) | endianess("big_endian");
+	/*Xsens: GPS date - minute.*/
+	signal MIN : start(32) | length(8) | endianess("big_endian");
+	/*Xsens: GPS date - seconds.*/
+	signal SEC : start(40) | length(8) | endianess("big_endian");
+	/*10^-4 scalled to seconds*/
+	signal TENTHMS : start(48) | length(16) | scale(0.0001, 0.0) | unit("Xsens: GPS date - tenth of millisecond") | endianess("big_endian");
+}
+
+message XCID_StatusWord: device("xsens") | id(1236) | dlc(4) { 
+	/*Xsens: status word.*/
+	signal StatusWord : start(0) | length(32) | endianess("big_endian");
+}
+
+message XCDI_Quaternion: device("xsens") | id(1268) | dlc(8) { 
+	/*Quaternion Q0 (Qw).*/
+	signal Q0 : start(0) | length(16) | scale(3.05185e-05, 0.0) | sat(-1.0, 1.0) | type("signed") | endianess("big_endian");
+	/*Quaternion Q1 (Qx).*/
+	signal Q1 : start(16) | length(16) | scale(3.05185e-05, 0.0) | sat(-1.0, 1.0) | type("signed") | endianess("big_endian");
+	/*Quaternion Q2 (Qy).*/
+	signal Q2 : start(32) | length(16) | scale(3.05185e-05, 0.0) | sat(-1.0, 1.0) | type("signed") | endianess("big_endian");
+	/*Quaternion Q3 (Qz).*/
+	signal Q3 : start(48) | length(16) | scale(3.05185e-05, 0.0) | sat(-1.0, 1.0) | type("signed") | endianess("big_endian");
+}
+
+message XCDI_EulerAngles: device("xsens") | id(1300) | dlc(6) { 
+	/*Xsens: Euler angles - Roll with resolution 0.0078.*/
+	signal Roll : start(0) | length(16) | scale(0.0078, 0.0) | unit("degree") | sat(-180.0, 180.0) | type("signed") | endianess("big_endian");
+	/*Xsens: Euler angles - Pitch with resolution 0.0078.*/
+	signal Pitch : start(16) | length(16) | scale(0.0078, 0.0) | unit("degree") | sat(-90.0, 90.0) | type("signed") | endianess("big_endian");
+	/*Xsens: Yaw with resolution 0.0078*/
+	signal Yaw : start(32) | length(16) | scale(0.0078, 0.0) | unit("degree") | type("signed") | endianess("big_endian");
+}
+
+message XCDI_Latitude: device("xsens") | id(1684) | dlc(8) { 
+	/*Xsens: GPS latitude.*/
+	signal lat : start(0) | length(32) | scale(5.9605e-08, 0.0) | unit("degree") | sat(-90.0, 90.0) | type("signed") | endianess("big_endian");
+	/*Xsens: GPS longitude.*/
+	signal lon : start(32) | length(32) | scale(1.1921e-07, 0.0) | unit("degree") | sat(-180.0, 180.0) | type("signed") | endianess("big_endian");
+}
+
+message XCDI_AltitudeEllipsoid: device("xsens") | id(1748) | dlc(4) { 
+	/*Xsens: GPS Altitude.*/
+	signal altEllipsoid : start(0) | length(32) | scale(3.0518e-05, 0.0) | unit("m") | sat(0.0, 50000.0) | endianess("big_endian");
+}
+
+message XCDI_VelocityXYZ: device("xsens") | id(1812) | dlc(6) { 
+	/*Xsens: velocity Z.*/
+	signal velZ : start(32) | length(16) | scale(0.0156, 0.0) | unit("m/s") | sat(-500.0, 500.0) | type("signed") | endianess("big_endian");
+	/*Xsens: velocity Y.*/
+	signal velY : start(16) | length(16) | scale(0.0156, 0.0) | unit("m/s") | sat(-500.0, 500.0) | type("signed") | endianess("big_endian");
+	/*Xsens: velocity X.*/
+	signal velX : start(0) | length(16) | scale(0.0156, 0.0) | unit("m/s") | sat(-500.0, 500.0) | type("signed") | endianess("big_endian");
+}
+
+message XCDI_Temperature: device("xsens") | id(1556) | dlc(2) { 
+	signal Temperature : start(0) | length(16) | scale(0.0039, 0.0) | sat(-40.0, 85.0) | type("signed") | endianess("big_endian");
+}
+
+message XCDI_BaroPressure: device("xsens") | id(1588) | dlc(4) { 
+	signal Pressure : start(0) | length(32) | scale(3.0518e-05, 0.0) | sat(30000.0, 125000.0) | endianess("big_endian");
+}
+
+message XCDI_RateOfTurn: device("xsens") | id(1396) | dlc(6) { 
+	/*Xsens: gyro X.*/
+	signal gyrX : start(0) | length(16) | scale(0.002, 0.0) | sat(-35.0, 35.0) | type("signed") | endianess("big_endian");
+	/*Xsens: gyro Y.*/
+	signal gyrY : start(16) | length(16) | scale(0.002, 0.0) | sat(-35.0, 35.0) | type("signed") | endianess("big_endian");
+	/*Xsens: gyro Z.*/
+	signal gyrZ : start(32) | length(16) | scale(0.002, 0.0) | sat(-35.0, 35.0) | type("signed") | endianess("big_endian");
+}
+
+message XCDI_Acceleration: device("xsens") | id(1460) | dlc(6) { 
+	/*Xsens: Acceleration in X axis.*/
+	signal accX : start(0) | length(16) | scale(0.0039, 0.0) | unit("m/s^2") | sat(-100.0, 100.0) | type("signed") | endianess("big_endian");
+	/*Xsens: Acceleration in Y axis.*/
+	signal accY : start(16) | length(16) | scale(0.0039, 0.0) | unit("m/s^2") | sat(-100.0, 100.0) | type("signed") | endianess("big_endian");
+	/*Xsens: Acceleration in Z axis.*/
+	signal accZ : start(32) | length(16) | scale(0.0039, 0.0) | unit("m/s^2") | sat(-100.0, 100.0) | type("signed") | endianess("big_endian");
+}
+
+message XCDI_MagneticField: device("xsens") | id(1524) | dlc(6) { 
+	signal magX : start(0) | length(16) | scale(0.00097656, 0.0) | sat(-32.0, 32.0) | type("signed") | endianess("big_endian");
+	signal magY : start(16) | length(16) | scale(0.00097656, 0.0) | sat(-32.0, 32.0) | type("signed") | endianess("big_endian");
+	signal magZ : start(32) | length(16) | scale(0.00097656, 0.0) | sat(-32.0, 32.0) | type("signed") | endianess("big_endian");
+}
+
+message XCDI_RateOfTurnHR: device("xsens") | id(1620) | dlc(6) { 
+	/*High Rate*/
+	signal gyrX_HR : start(0) | length(16) | scale(0.002, 0.0) | sat(-35.0, 35.0) | type("signed") | endianess("big_endian");
+	/*High Rate*/
+	signal gyrY_HR : start(16) | length(16) | scale(0.002, 0.0) | sat(-35.0, 35.0) | type("signed") | endianess("big_endian");
+	/*High Rate*/
+	signal gyrZ_HR : start(32) | length(16) | scale(0.002, 0.0) | sat(-35.0, 35.0) | type("signed") | endianess("big_endian");
+}
+
+message XCDI_AccelerationHR: device("xsens") | id(1652) | dlc(6) { 
+	/*High Rate*/
+	signal accY_HR : start(16) | length(16) | scale(0.0039, 0.0) | sat(-100.0, 100.0) | type("signed") | endianess("big_endian");
+	/*High Rate*/
+	signal accX_HR : start(0) | length(16) | scale(0.0039, 0.0) | sat(-100.0, 100.0) | type("signed") | endianess("big_endian");
+	signal accZ_HR : start(32) | length(16) | scale(0.0039, 0.0) | sat(-100.0, 100.0) | type("signed") | endianess("big_endian");
+}
+
+message XCDI_FreeAcceleration: device("xsens") | id(1492) | dlc(6) { 
+	signal freeAccX : start(0) | length(16) | scale(0.0039, 0.0) | sat(-100.0, 100.0) | type("signed") | endianess("big_endian");
+	signal freeAccY : start(16) | length(16) | scale(0.0039, 0.0) | sat(-100.0, 100.0) | type("signed") | endianess("big_endian");
+	signal freeAccZ : start(32) | length(16) | scale(0.0039, 0.0) | sat(-100.0, 100.0) | type("signed") | endianess("big_endian");
+}
+
+message XCDI_DeltaV: device("xsens") | id(1844) | dlc(7) { 
+	signal delta_x : start(0) | length(16) | scale(1.5259e-05, 0.0) | sat(-0.5, 0.5) | type("signed") | endianess("big_endian");
+	signal delta_y : start(16) | length(16) | scale(1.5259e-05, 0.0) | sat(-0.5, 0.5) | type("signed") | endianess("big_endian");
+	signal delta_z : start(32) | length(16) | scale(1.5259e-05, 0.0) | sat(-0.5, 0.5) | type("signed") | endianess("big_endian");
+}
+
+
+/*Desired torque from controllers on ETAS*/
+message etas_tq: device("etas") | id(1109) | dlc(8) { 
+	signal etas_trq_FL : start(0) | length(16) | type("signed");
+	signal etas_trq_FR : start(16) | length(16) | type("signed");
+	signal etas_trq_RL : start(32) | length(16) | type("signed");
+	signal etas_trq_RR : start(48) | length(16) | type("signed");
+}
+
+message etas_mode: device("etas") | id(1045) | dlc(8) { 
+	/*Torque Vectoring Mode*/
+	signal etas_mode_TV : start(0) | length(16);
+	/*Traction Control mode*/
+	signal etas_mode_TC : start(16) | length(16);
+	/*Torque Distributor mode*/
+	signal etas_mode_TD : start(32) | length(16);
+	/*Safety mode*/
+	signal etas_mode_sft : start(48) | length(16);
+}
+
+message etas_EKF_1: device("etas") | id(1461) | dlc(8) { 
+	signal EKF_x_1 : start(0) | length(21) | scale(1e-07, 0.0) | type("signed");
+	signal EKF_x_2 : start(21) | length(21) | scale(1e-07, 0.0) | type("signed");
+	signal EKF_x_3 : start(42) | length(22) | scale(0.0001, 0.0);
+}
+
+message etas_EKF_2: device("etas") | id(1493) | dlc(8) { 
+	signal EKF_x_5 : start(21) | length(21) | scale(1e-07, 0.0) | type("signed");
+	signal EKF_x_6 : start(42) | length(22) | scale(0.0001, 0.0) | type("signed");
+	signal EKF_x_4 : start(0) | length(21) | scale(1e-07, 0.0) | type("signed");
+}
+
+message etas_EKF_5: device("etas") | id(1589) | dlc(8) { 
+	/*velocity x*/
+	signal EKF_x_13_vx : start(0) | length(21) | scale(0.0001, 0.0) | type("signed");
+	/*velocity y*/
+	signal EKF_x_14_vy : start(21) | length(21) | scale(0.0001, 0.0) | type("signed");
+	/*yaw rate*/
+	signal EKF_x_15_r : start(42) | length(22) | scale(1e-05, 0.0) | type("signed");
+}
+
+message etas_EKF_4: device("etas") | id(1557) | dlc(8) { 
+	signal EKF_x_10 : start(0) | length(21) | scale(1e-07, 0.0) | type("signed");
+	signal EKF_x_11 : start(21) | length(21) | scale(1e-07, 0.0) | type("signed");
+	signal EKF_x_12 : start(42) | length(22) | scale(0.0001, 0.0) | type("signed");
+}
+
+message etas_EKF_3: device("etas") | id(1525) | dlc(8) { 
+	signal EKF_x_7 : start(0) | length(21) | scale(1e-07, 0.0) | type("signed");
+	signal EKF_x_8 : start(21) | length(21) | scale(1e-07, 0.0) | type("signed");
+	signal EKF_x_9 : start(42) | length(22) | scale(0.0001, 0.0) | type("signed");
+}
+
+message etas_EKF_6: device("etas") | id(1621) | dlc(8) { 
+	signal EKF_P_sum : start(0) | length(64) | type("double");
+}
+
+message etas_params: device("etas") | id(1269) | dlc(6) { 
+	signal etas_p_TV_desired : start(0) | length(3);
+	signal etas_p_TC_desired : start(3) | length(3);
+	/*Turn regen on (1) or off (0)*/
+	signal etas_regen_on : start(6) | length(1);
+	/*Allow or not for wheel to regen while pressing accelerator*/
+	signal etas_YRC_regen_on_acc : start(7) | length(1);
+	/*Max allowed power output*/
+	signal etas_max_pwr : start(8) | length(17);
+	/*Max allowed power*/
+	signal etas_max_regen_pwr : start(25) | length(17);
+	/*Init variable. Change to anything other than 1 to restore defaults*/
+	signal etas_param_init : start(42) | length(6);
+}
+
+message etas_params_mtr: device("etas") | id(1301) | dlc(6) { 
+	signal etas_mtr_pwr_F : start(0) | length(16);
+	signal etas_mtr_pwr_R : start(16) | length(16);
+	signal etas_max_RPM : start(32) | length(16);
+}
+
+message YRC_trq_limits: device("etas") | id(1333) | dlc(8) { 
+	/*Max torque rear (1000 = 1Nm)*/
+	signal YRC_max_trq_R : start(16) | length(16);
+	/*Max torque front (1000 = 1Nm)*/
+	signal YRC_min_trq_F : start(32) | length(16);
+	/*Min torque rear (1000 = 1Nm)*/
+	signal YRC_min_trq_R : start(48) | length(16);
+	/*Min torque front (1000 = 1Nm)*/
+	signal YRC_max_trq_F : start(0) | length(16);
+}
+
+message YRC_params: device("etas") | id(1365) | dlc(8) { 
+	signal YRC_kp : start(0) | length(16);
+	signal YRC_ku : start(16) | length(8);
+	signal YRC_grip_factor : start(24) | length(8);
+	signal YRC_steer_factor : start(32) | length(8);
+	signal YRC_EM_pwr_lim : start(40) | length(17);
+}
+
+message YRC_status: device("etas") | id(1237) | dlc(8) { 
+	/*Desired Yaw Rate from YRC*/
+	signal YRC_desired_yawrate : start(0) | length(16) | scale(0.001, 0.0) | type("signed");
+	signal QP_exitflag : start(16) | length(4) | type("signed");
+}
+
+message PL_params: device("etas") | id(1397) | dlc(8) { 
+	signal PL_max_pwr : start(0) | length(32);
+	signal PL_kp_gain : start(32) | length(16);
+	signal PL_ki_gain : start(48) | length(16);
+}
+
+message EM_params: device("etas") | id(1429) | dlc(8) { 
+	signal EM_enable : start(0) | length(1);
+	signal EM_total_laps : start(1) | length(8);
+	signal EM_curr_lap : start(9) | length(8);
+	signal EM_init_pwr_lim : start(18) | length(17);
+	signal EM_pwr_lim : start(36) | length(17);
+	signal etas_cell_temp_derating : start(53) | length(8);
+}
+
+/*Turn on or off regen*/
+config regen_on: device("etas") | id(3) | type("unsigned") ;
+/*Yaw rate controller max torque front*/
+config YRC_trq_max_F: device("etas") | id(5) | type("unsigned") ;
+/*Yaw rate controller max torque rear*/
+config YRC_trq_max_R: device("etas") | id(6) | type("unsigned") ;
+config YRC_trq_min_R: device("etas") | id(8) | type("unsigned") ;
+/*Max power per motor (Front)*/
+config mtr_pwr_max_F: device("etas") | id(9) | type("unsigned") ;
+/*Max power per motor (Rear)*/
+config mtr_pwr_max_R: device("etas") | id(10) | type("unsigned") ;
+/*Torque Vectoring Operation mode*/
+config TV_des_mode: device("etas") | id(1) | type("unsigned") ;
+/*Traction controller operation mode*/
+config TC_des_mode: device("etas") | id(2) | type("unsigned") ;
+/*Maximum power in regeneration (negative)*/
+config regen_pwr_max: device("etas") | id(12) | type("unsigned") ;
+config RPM_max: device("etas") | id(13) | type("unsigned") ;
+/*Check sum. Set to 0 to reset to defaults*/
+config check_sum: device("etas") | id(0) | type("unsigned") ;
+config YRC_acc_neg_trq: device("etas") | id(4) | type("unsigned") ;
+config YRC_kp_gain: device("etas") | id(14) | type("unsigned") ;
+config YRC_ku: device("etas") | id(15) | type("unsigned") ;
+config max_pwr: device("etas") | id(11) | type("unsigned") ;
+config YRC_trq_min_F: device("etas") | id(7) | type("unsigned") ;
+config YRC_grip_factor: device("etas") | id(16) | type("unsigned") ;
+config YRC_steer_factor: device("etas") | id(17) | type("unsigned") ;
+config PL_pwr_limit: device("etas") | id(18) | type("unsigned") ;
+config PL_ki: device("etas") | id(20) | type("unsigned") ;
+config PL_kp: device("etas") | id(19) | type("unsigned") ;
+config EM_enable: device("etas") | id(21) | type("unsigned") ;
+config EM_total_laps: device("etas") | id(22) | type("unsigned") ;
+config EM_curr_lap: device("etas") | id(23) | type("unsigned") ;
+config EM_pwr_lim: device("etas") | id(24) | type("unsigned") ;
+
+/*ami button press*/
+message button: device("ami") | id(58) | dlc(8) { 
+	/*button pressed*/
+	signal pressed : start(0) | length(1) | sat(0.0, 1.0);
+}
+
+/*rear suspension potentiometers (been acting sus latley)*/
+message suspot_rear: device("ami") | id(90) | dlc(8) { 
+	/*left potentiometer*/
+	signal left_potentiometer : start(0) | length(16) | sat(0.0, 255.0);
+	/*right potentiometer*/
+	signal right_potentiometer : start(16) | length(16) | sat(0.0, 255.0);
+}
+
+/*git version commit*/
+config version: device("ami") | id(0) | type("unsigned") ;
+
+/*A status message*/
+message prog_mux_status: device("prog_mux") | id(1030) | dlc(8) { 
+	/*The selected channel*/
+	signal prog_mux_channel : start(0) | length(16) | sat(0.0, 8.0);
+}
+
+config version: device("prog_mux") | id(0) | type("unsigned") ;
+
+/*Change prog_mux channel*/
+command set_channel: device("prog_mux") | id(0);
+
+/*adc values from rear suspension potentiometers*/
+message adc_values_rear: device("du_rear") | id(1047) | dlc(4) { 
+	/*Dynamic Unit: Suspension travel RL, directly from ADC.*/
+	signal adc_rear_left : start(0) | length(16) | sat(0.0, 4096.0);
+	/*Dynamic Unit: Suspension travel RR, directly from ADC.*/
+	signal adc_rear_right : start(16) | length(16) | sat(0.0, 4096.0);
+}
+
+
+/*sets left potentiometer value as reference*/
+command rear_left_reference: device("du_rear") | id(0);
+
+/*sets right potentiometer value as reference*/
+command rear_right_reference: device("du_rear") | id(1);
+
+/*ADC values from front suspension potentiometers.*/
+message adc_values_front: device("du_front") | id(1046) | dlc(4) { 
+	/*Dynamic Unit: Suspension travel FL, directly from ADC. */
+	signal adc_front_left : start(0) | length(16) | sat(0.0, 4096.0);
+	/*Dynamic Unit: Suspension travel FR, directly from ADC.*/
+	signal adc_front_right : start(16) | length(16) | sat(0.0, 4096.0);
+}
+
+
+/*sets left potentiometer value as reference*/
+command front_left_reference: device("du_front") | id(0);
+
+/*sets right potentiometer value as reference*/
+command front_right_reference: device("du_front") | id(1);
+
+message lv_bms_status: device("lv_bms") | id(1851) | dlc(8) { 
+	signal lv_bms_charging : start(2) | length(1);
+	signal lv_bms_verbose : start(1) | length(1);
+	signal lv_bms_balance_ok : start(3) | length(1);
+}
+
+message lv_bms_soc: device("lv_bms") | id(2011) | dlc(8) { 
+	signal lv_bms_soc_pct : start(0) | length(8);
+}
+
+message lv_bms_cell_info_temps: device("lv_bms") | id(1787) | dlc(8) { 
+	signal temp_id : start(0) | length(8);
+	signal temp_value : start(8) | length(8) | mux("temp_id", 8);
+}
+
+message lv_bms_cell_info_voltage: device("lv_bms") | id(2043) | dlc(8) { 
+	signal volt_id : start(0) | length(8);
+	signal volt_value : start(8) | length(16) | mux("volt_id", 8);
+}
+
+message lv_bms_summary_volt_1: device("lv_bms") | id(1659) | dlc(8) { 
+	signal batt_volt : start(0) | length(16);
+	signal max_volt : start(16) | length(16);
+	signal max_volt_cell : start(32) | length(8);
+}
+
+message lv_bms_summary_volt_2: device("lv_bms") | id(1691) | dlc(8) { 
+	signal min_volt : start(0) | length(16);
+	signal min_volt_cell : start(16) | length(8);
+	signal max_min_delta : start(24) | length(16);
+	signal mean_volt : start(40) | length(16);
+}
+
+message lv_bms_summary_temp: device("lv_bms") | id(1723) | dlc(8) { 
+	signal max_temp : start(0) | length(16);
+	signal max_temp_cell : start(16) | length(8);
+	signal min_temp : start(24) | length(16);
+	signal min_temp_cell : start(40) | length(8);
+	signal mean_temp : start(48) | length(16);
+}
+
+message lv_bms_ltc_info_1: device("lv_bms") | id(1915) | dlc(8) { 
+	signal cell_pu_id : start(0) | length(8);
+	signal cell_pu_value : start(8) | length(16) | mux("cell_pu_id", 8);
+	signal cell_pd_id : start(24) | length(8);
+	signal cell_pd_value : start(32) | length(8) | mux("cell_pd_id", 8);
+	signal owc_diff_id : start(40) | length(8);
+	signal owc_diff_value : start(48) | length(16) | mux("owc_diff_id", 8);
+}
+
+message lv_bms_ltc_info_2: device("lv_bms") | id(1627) | dlc(8) { 
+	signal owc_sequence : start(0) | length(8);
+	signal cell_connection_fault_mask : start(8) | length(8);
+	signal temp_fault_mask : start(16) | length(8);
+	signal num_valid_cell_ntc : start(24) | length(8);
+	signal owc_cell_status : start(32) | length(8);
+}
+
+
+message sg_adc_values_1: device("strain_gauges") | id(1052) | dlc(8) { 
+	signal adc_values_1 : start(0) | length(16);
+	signal adc_values_2 : start(16) | length(16);
+	signal adc_values_3 : start(32) | length(16);
+	signal adc_values_4 : start(48) | length(16);
+}
+
+message sg_adc_values_2: device("strain_gauges") | id(1084) | dlc(4) { 
+	signal adc_values_6 : start(16) | length(16);
+	signal adc_values_5 : start(0) | length(16);
+}
+
+
+/*pdu detections message, include fuses and shutdown circuit*/
+message pdu_detections: device("pdu") | id(2019) | dlc(8) { 
+	signal fuse_0 : start(0) | length(1) | sat(0.0, 1.0);
+	signal fuse_1 : start(1) | length(1) | sat(0.0, 1.0);
+	signal fuse_2 : start(2) | length(1) | sat(0.0, 1.0);
+	signal fuse_3 : start(3) | length(1) | sat(0.0, 1.0);
+	signal fuse_4 : start(4) | length(1) | sat(0.0, 1.0);
+	signal fuse_5 : start(5) | length(1) | sat(0.0, 1.0);
+	signal fuse_6 : start(6) | length(1) | sat(0.0, 1.0);
+	signal fuse_7 : start(7) | length(1) | sat(0.0, 1.0);
+	signal fuse_8 : start(8) | length(1) | sat(0.0, 1.0);
+	signal fuse_9 : start(9) | length(1) | sat(0.0, 1.0);
+	signal fuse_10 : start(10) | length(1) | sat(0.0, 1.0);
+	signal fuse_11 : start(11) | length(1) | sat(0.0, 1.0);
+	signal fuse_12 : start(12) | length(1) | sat(0.0, 1.0);
+	signal fuse_13 : start(13) | length(1) | sat(0.0, 1.0);
+	signal fuse_14 : start(14) | length(1) | sat(0.0, 1.0);
+	signal fuse_15 : start(15) | length(1) | sat(0.0, 1.0);
+	signal fuse_16 : start(16) | length(1) | sat(0.0, 1.0);
+	signal fuse_17 : start(17) | length(1) | sat(0.0, 1.0);
+	signal shutdown_0 : start(18) | length(1);
+	signal shutdown_1 : start(19) | length(1);
+	signal shutdown_2 : start(20) | length(1);
+	signal shutdown_3 : start(21) | length(1);
+	signal shutdown_4 : start(22) | length(1);
+	signal shutdown_5 : start(23) | length(1);
+}
+
+/*io values-> 11 means output, 0x is the input value*/
+message pdu_io: device("pdu") | id(1987) | dlc(8) { 
+	signal io_0 : start(0) | length(2) | sat(0.0, 1.0);
+	signal io_1 : start(2) | length(2) | sat(0.0, 1.0);
+	signal io_2 : start(4) | length(2) | sat(0.0, 1.0);
+	signal io_3 : start(6) | length(2) | sat(0.0, 1.0);
+	signal io_4 : start(8) | length(2) | sat(0.0, 1.0);
+	signal io_5 : start(10) | length(2) | sat(0.0, 1.0);
+	signal io_6 : start(12) | length(2) | sat(0.0, 1.0);
+	signal io_7 : start(14) | length(2) | sat(0.0, 1.0);
+	signal io_8 : start(16) | length(2) | sat(0.0, 1.0);
+	signal io_9 : start(18) | length(2) | sat(0.0, 1.0);
+	signal io_10 : start(20) | length(2) | sat(0.0, 1.0);
+	signal io_11 : start(22) | length(2) | sat(0.0, 1.0);
+}
+
+message pdu_adc: device("pdu") | id(1955) | dlc(8) { 
+	signal pdu_adc_id : start(0) | length(16) | sat(0.0, 1.0);
+	signal pdu_adc : start(16) | length(16) | sat(0.0, 1.0) | mux("pdu_adc_id", 10);
+}
+
+/*as implementation on pdu*/
+message pdu_as: device("pdu") | id(1923) | dlc(8) { 
+	signal pdu_as_state : start(0) | length(16) | sat(0.0, 5.0);
+	/*AS mission selection*/
+	signal as_mission : start(16) | length(16) | sat(0.0, 6.0);
+	/*AS mission selection*/
+	signal ebs_bps1 : start(32) | length(16) | sat(0.0, 255.0);
+	/*AS mission selection*/
+	signal ebs_bps2 : start(48) | length(16) | sat(0.0, 255.0);
+}
+
+/*git version commit*/
+config version: device("pdu") | id(0) | type("unsigned") ;
+
+command add: device("pdu") | id(0);
+
+/*sounds buzzer when in AS Emergency*/
+command as_emergency_buzzer: device("pdu") | id(1);
+
+/*request to change AS state*/
+command ebs_as_state: device("pdu") | id(2);
+
+/*sets AS mission*/
+command ebs_as_mission: device("pdu") | id(3);
+
+/*change assi mode*/
+command assi_change_mode: device("pdu") | id(4);
+
+/*change brake light state*/
+command toggle_brake_light: device("pdu") | id(5);
+
+/*chang pump left(0) and pum right(1) state*/
+command toggle_pumps: device("pdu") | id(6);
+
+command debug_ebs_np_watchdog: device("pdu") | id(7);
+
+command debug_ebs_np_as_mode: device("pdu") | id(8);
+
+command debug_ebs_np_ts_cock: device("pdu") | id(9);
+
+command debug_ebs_np_ts_ext: device("pdu") | id(10);
+
+command debug_ebs_np_close_sdc: device("pdu") | id(11);
+
+log wrong_log_id: id(0) | str("Log code was not found");
+log wrong_cfg_id: id(1) | str("Cfg code was not found");
+log high_temp: id(2) | str("Temp exceeds %d") | n_args(1);
+/*Cmd id is not valid*/
+log wrong_cmd_id: id(3) | str("Cmd id is not valid") | n_args(1);
+log trap_handler_type: id(4) | str("Error type %d") | n_args(2);
+log reset_message: id(5) | str("Device was reset") | n_args(1);
+/*Returns number of NTCs*/
+log ntc_number: id(6) | str("There are %d NTCs") | n_args(1);
+/*Returns flow sensor state (on/off)*/
+log flow_state: id(7) | str("") | n_args(1);
+/*Return motor state*/
+log motor_state: id(8) | str("") | n_args(1);
+/*rtd on*/
+log rtd_on: id(9) | str("RTD On") | n_args(1);
+/*rtd off*/
+log rtd_off: id(10) | str("RTD Off") | n_args(1);
+/*TS state*/
+log ts_state: id(11) | str("TS is %d. Error: %d ") | n_args(2);
+/*No watchdog value for external input on iib*/
+log iib_wtd_ext: id(12) | str("No watchdog value found for external input.") | n_args(1);

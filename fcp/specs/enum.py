@@ -1,21 +1,19 @@
 from typing import *
 import datetime
+from serde import Model, fields
 
 from .node import Node
 from .utils import normalize
 from .enum_value import EnumValue
 
 
-class Enum(Node):
+class Enum(Model):
     """Fcp Enum. C lookalike for FCP type definitions with name-value
     associations.
     """
 
-    def __init__(self, parent: "Spec" = None) -> None:
-        self.parent = parent
-        self._name = ""
-        self.enumeration = {}
-        self.creation_date = datetime.datetime.now()
+    name: fields.Str()
+    enumeration: fields.Dict(fields.Str(), fields.Int())
 
     def compile(self) -> Dict[str, Any]:
         enums = {k: v.compile() for (k, v) in self.enumeration.items()}

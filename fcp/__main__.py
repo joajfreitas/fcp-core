@@ -6,6 +6,7 @@ import json
 import subprocess
 import os
 from pathlib import Path
+import traceback
 
 import click
 
@@ -14,9 +15,10 @@ from .dbc_writer import write_dbc
 from .c_generator import c_gen
 from .validator import validate, format_error
 from .specs import Spec
+from .specs.v1 import FcpV1, fcp_v1_to_v2
 from .docs import generate_docs
 from .version import VERSION
-from .idl import spec_to_fcp_v2, fcp_v2_from_file, fcp_v2
+from .idl import fcp_v2
 
 
 def setup_logging() -> logging.Logger:
@@ -56,28 +58,30 @@ def report_validate(failed, force):
     return False
 
 
-def get_spec(json_file: str, force: bool = False) -> Spec:
+def get_spec(schema_path: str, force: bool = False) -> Spec:
     """Create Spec from json file path.
     :param json_file: path to the json file.
     :param logger: logger.
     :return: Spec.
     """
+    try:
+        path = Path(schema_path)
+        if path.suffix == ".json":
+            with open(path) as f:
+                spec = Spec.from_json(f.read())
+        elif path.suffix == ".fcp":
+            with open(path) as f:
+                spec = fcp_v2(f.read())
 
-    spec = Spec()
+        # failed = validate(spec)
+        # if report_validate(failed, force):
+        #    exit()
 
-    path = Path(json_file)
-    if path.suffix == ".json":
-        with open(json_file) as f:
-            j = json.loads(f.read())
-    elif path.suffix == ".fcp":
-        j = fcp_v2_from_file(json_file)
+        return spec
 
-    spec.decompile(j)
-    failed = validate(spec)
-    if report_validate(failed, force):
-        exit()
-
-    return spec
+    except Exception as e:
+        print(traceback.format_exc())
+        print("error", e.message, ":", e.value)
 
 
 @click.command(name="read-dbc")
@@ -178,15 +182,22 @@ def validate_cmd(json_file: str):
     """
 
     logger = setup_logging()
-    spec = get_spec(json_file)
+    with open(json_file) as f:
+        spec = FcpV1.from_json(f.read())
 
-    failed = validate(spec)
-    if len(failed) == 0:
-        print("✓ JSON validated")
-    else:
-        print("❌")
-        for level, msg in failed:
-            print(format_error(level, msg))
+    spec = spec.to_v2()
+
+    print(spec.to_fcp())
+    # spec = get_spec(json_file)
+    # print(spec)
+
+    # failed = validate(spec)
+    # if len(failed) == 0:
+    #    print("✓ JSON validated")
+    # else:
+    #    print("❌")
+    #    for level, msg in failed:
+    #        print(format_error(level, msg))
 
 
 @click.command(name="gui")
@@ -247,11 +258,20 @@ def fix(src: str, dst: str):
 @click.argument("json_file")
 @click.argument("output")
 def json_to_fcp2(json_file: str, output: str):
-    spec = get_spec(json_file)
-    v2 = spec_to_fcp_v2(spec)
+
+    with open(json_file) as f:
+        fcp_v1 = FcpV1.from_json(f.read())
+
+    fcp_v2 = fcp_v1_to_v2(fcp_v1)
 
     with open(output, "w") as f:
-        f.write(v2)
+        f.write(fcp_v2.to_idl())
+
+    # spec = get_spec(json_file)
+    # v2 = spec_to_fcp_v2(spec)
+
+    # with open(output, "w") as f:
+    #    f.write(v2)
 
 
 @click.command("fcp2_to_json")

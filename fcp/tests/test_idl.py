@@ -3,7 +3,6 @@ import copy
 from ..idl import *
 
 
-
 @pytest.mark.skip(reason="fails by taking too much time in CI")
 def test_message_allocation_ordered_missing_one():
     given = {
@@ -76,6 +75,7 @@ def test_message_allocation_unordered_missing_all():
 
     assert result == message_allocation(given)
 
+
 @pytest.mark.skip(reason="fails by taking too much time in CI")
 def test_message_allocation_many_variables():
     given = {
@@ -125,6 +125,7 @@ def test_message_allocation_many_variables():
 
     assert result == message_allocation(given)
 
+
 def test_idl_types_simple_read():
     type = """
     type uint16_t {
@@ -139,6 +140,8 @@ def test_idl_types_simple_read():
     """
 
     spec = fcp_v2(type)
-    sig = spec.get("devices").get("dev").get("msgs").get("msg").get("signals").get("sig")
+    sig = (
+        spec.get("devices").get("dev").get("msgs").get("msg").get("signals").get("sig")
+    )
     assert '"unsigned"' == sig.get("type")
-    assert '16' == sig.get("length")
+    assert "16" == sig.get("length")

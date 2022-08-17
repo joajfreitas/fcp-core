@@ -1,10 +1,11 @@
 from typing import *
 import datetime
+from serde import Model, fields
 
 from .node import Node
 
 
-class Argument(Node):
+class Argument(Model):
     """Argument node. Represents a Command Argument.
 
     :param name: Name of the Argument.
@@ -12,76 +13,79 @@ class Argument(Node):
     :param comment: description of the Argument.
     """
 
-    def __init__(
-        self,
-        parent: "Command" = None,
-        name: str = "",
-        id: int = 0,
-        comment: str = "",
-        type: str = "unsigned",
-    ):
-        self.parent = parent
-        self._name = name
-        self._id = id
-        self._comment = comment
-        self._type = type
+    name: fields.Str()
+    id: fields.Int()
+    comment: fields.Str()
+    type: fields.Optional(fields.Str(default="unsigned"))
 
-        self.creation_date = datetime.datetime.now()
+    def to_idl(self):
+        def show(value, default, fmt):
+            if value == default:
+                return ""
+            else:
+                return fmt.format((value))
 
-    @property
-    def name(self) -> str:
-        return self._name
+        output = show(self.comment, "", "/*{}*/\n")
+        output += f"arg {self.name}: "
+        output += f"id({self.id}) | "
+        output += show(self.type, "unsigned", "type({}) | ")
 
-    @property
-    def comment(self) -> str:
-        return self._comment
+        return output[:-3] + ";"
 
-    @property
-    def id(self) -> int:
-        return self._id
+    # @property
+    # def name(self) -> str:
+    #    return self._name
 
-    @property
-    def type(self) -> str:
-        return self._type
+    # @property
+    # def comment(self) -> str:
+    #    return self._comment
 
-    @name.setter
-    def name(self, name: str) -> None:
-        try:
-            self._name = name
-        except Exception as e:
-            return
+    # @property
+    # def id(self) -> int:
+    #    return self._id
 
-    @comment.setter
-    def comment(self, comment: str) -> None:
-        try:
-            self._comment = comment
-        except Exception as e:
-            return
+    # @property
+    # def type(self) -> str:
+    #    return self._type
 
-    @id.setter
-    def id(self, id: int) -> None:
-        try:
-            self._id = int(id)
-        except Exception as e:
-            return
+    # @name.setter
+    # def name(self, name: str) -> None:
+    #    try:
+    #        self._name = name
+    #    except Exception as e:
+    #        return
 
-    @type.setter
-    def type(self, type: str) -> None:
-        self._type = type
+    # @comment.setter
+    # def comment(self, comment: str) -> None:
+    #    try:
+    #        self._comment = comment
+    #    except Exception as e:
+    #        return
 
-    def compile(self) -> Dict[str, Any]:
-        """Transform python class node to its dictionary representation.
+    # @id.setter
+    # def id(self, id: int) -> None:
+    #    try:
+    #        self._id = int(id)
+    #    except Exception as e:
+    #        return
 
-        :return: A dictionary containing the node parameters
-        """
-        d = self.make_public(self, self.filter_private(self.__dict__))
-        return d
+    # @type.setter
+    # def type(self, type: str) -> None:
+    #    self._type = type
 
-    def decompile(self, d: Dict[str, Any]) -> None:
-        """Transform node dictionary representation into a python class.
+    # def compile(self) -> Dict[str, Any]:
+    #    """Transform python class node to its dictionary representation.
 
-        :param d: Node dictionary
-        """
-        # self.__dict__.update(make_private(self, d))
-        for k, v in self.make_private(self, d).items():
-            self.__setattr__(k, v)
+    #    :return: A dictionary containing the node parameters
+    #    """
+    #    d = self.make_public(self, self.filter_private(self.__dict__))
+    #    return d
+
+    # def decompile(self, d: Dict[str, Any]) -> None:
+    #    """Transform node dictionary representation into a python class.
+
+    #    :param d: Node dictionary
+    #    """
+    #    # self.__dict__.update(make_private(self, d))
+    #    for k, v in self.make_private(self, d).items():
+    #        self.__setattr__(k, v)

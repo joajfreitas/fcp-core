@@ -1,5 +1,6 @@
 from typing import *
 import datetime
+from serde import Model, fields
 
 from ..can import CANMessage
 from .node import Node, Transmit
@@ -8,7 +9,7 @@ from ..can import CANMessage
 from .utils import normalize
 
 
-class Message(Transmit):
+class Message(Model):
     """Message node, Represents a CAN message, similar to a DBC message.
 
     :param name: Name of the Message.
@@ -19,156 +20,35 @@ class Message(Transmit):
     isn't automatically sent.
     """
 
-    def __init__(
-        self,
-        parent: "Device" = None,
-        name: str = "",
-        id: int = 0,
-        dlc: int = 8,
-        signals: Dict[str, Signal] = None,
-        frequency: int = 0,
-        description: str = "",
-    ):
+    id: fields.Int()
+    name: fields.Str()
+    dlc: fields.Int()
+    signals: fields.List(Signal)
+    description: fields.Str()
+    device: fields.Str()
 
-        assert parent is not None
-        self.parent = parent
+    def to_fcp(self):
+        return (
+            f"struct {self.name} {{\n"
+            + "\n".join([signal.to_fcp() for signal in self.signals])
+            + "\n}\n"
+        )
 
-        self._id = id or max([msg.id for msg in self.parent.msgs.values()] + [0]) + 1
-        self._name = name or ("msg" + str(self.id))
-        self._dlc = dlc
-        self.signals = {} if signals == None else signals
-        self._frequency = frequency
-        self._description = description
+    def to_idl(self) -> str:
+        def show(value, default, fmt):
+            if value == default:
+                return ""
+            else:
+                return fmt.format((value))
 
-        self.creation_date = datetime.datetime.now()
+        output = show(self.description, "", "/*{}*/\n")
+        output += f'message {self.name}: device("{self.device}") | id({self.id}) | dlc({self.dlc}) {{ \n'
+        for signal in self.signals:
+            output += signal.to_idl() + "\n"
 
-    @property
-    def name(self) -> str:
-        return self._name
+        output += "}\n"
 
-    @property
-    def id(self) -> int:
-        return self._id
-
-    @property
-    def dlc(self) -> int:
-        return self._dlc
-
-    @property
-    def frequency(self) -> int:
-        return self._frequency
-
-    @property
-    def description(self) -> str:
-        return self._description
-
-    @name.setter
-    def name(self, name: str) -> None:
-        try:
-            self._name = name
-        except Exception as e:
-            return
-
-    @id.setter
-    def id(self, id: int) -> None:
-        try:
-            self._id = int(id)
-        except Exception as e:
-            return
-
-    @dlc.setter
-    def dlc(self, dlc: int) -> None:
-        try:
-            self._dlc = int(dlc)
-        except Exception as e:
-            return
-
-    @frequency.setter
-    def frequency(self, frequency: int) -> None:
-        try:
-            self._frequency = int(frequency)
-        except Exception as e:
-            return
-
-    @description.setter
-    def description(self, description: str) -> None:
-        try:
-            self._description = description
-        except Exception as e:
-            return
-
-    def compile(self) -> Dict[str, Any]:
-        """Transform python class node to its dictionary representation.
-
-        :return: A dictionary containing the node parameters
-        """
-
-        sigs = {}
-        for k, v in self.signals.items():
-            sigs[k] = v.compile()
-
-        d = self.make_public(self, self.filter_private(self.__dict__))
-        d["signals"] = sigs
-        return d
-
-    def decompile(self, d: Dict[str, Any]) -> None:
-        """Transform node dictionary representation into a python class.
-
-        :param d: Node dictionary
-        """
-
-        if d["name"] == "send_cmd":
-            print(d)
-
-        signals = d["signals"]
-        for k, v in self.make_private(self, d).items():
-            self.__setattr__(k, v)
-
-        for key, value in signals.items():
-            sig = Signal(self)
-            sig.decompile(value)
-            self.signals[key] = sig
-
-    def add_signal(self, signal: Signal) -> bool:
-        """Add a Signal to Message.
-
-        :param signal: Signal to be added
-        :return: Operation success status: True - Success, False - Failure
-        """
-
-        if signal == None:
-            return False
-
-        if signal.name in self.signals.keys():
-            self.signals[signal.name].mux_count += 1
-            return True
-
-        self.signals[signal.name] = signal
-
-        return True
-
-    def get_signal(self, name: str) -> Optional[Signal]:
-        """Get a Signal from Message by its name.
-
-        :param name: Signal name.
-        :return: Signal or None if not found.
-        """
-        return self.signals.get(name)
-
-    def rm_signal(self, name: str) -> bool:
-        """Remove a Signal from Spec.
-
-        :param signal: Signal to be removed.
-        """
-        if self.get_signal(name) is None:
-            return False
-
-        del self.signals[name]
-        return True
-
-    def normalize(self):
-        """Update signals dictionary keys."""
-        normalize(self.signals)
+        return output
 
     def encode(self, signals, src=None):
         assert not ((src is None) and (type(self.parent) == "Common"))

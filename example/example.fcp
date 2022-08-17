@@ -1,0 +1,20 @@
+import iib;
+
+enum master_state {
+	OFF = 0;
+	ON  = 1;
+	INVALID = 2;
+}
+
+struct master_ts {
+	master_ts_state: u1;
+	master_ts_off_reason: u7;
+}
+
+struct slave_verb_info2 {
+	verb_stack_id2: u16 | mux;
+	slave_verb_dcs: u16 | muxed;
+	slave_verb_dcs: u16 | muxed;
+	slave_verb_dct: u16 | muxed;
+	slave_verb_bmt: u16 | muxed;
+}

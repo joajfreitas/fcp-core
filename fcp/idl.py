@@ -1,6 +1,7 @@
 import re
 import sys
 from pprint import pprint
+import traceback
 
 from enum import Enum
 
@@ -11,96 +12,67 @@ from parsimonious.grammar import Grammar
 
 from jinja2 import Template
 
-from .specs import Device, Log, Message, Config, Signal, Command
+from .specs import Spec, Device, Log, Message, Config, Signal, Command
 
-
-def check_validity(message, combination):
-    message = sorted(message, key=lambda x: (int(x[1]) + 1) if x[1] is not None else 0)
-
-    bound = [start for _, start, _ in message if start is not None]
-    v = list(combination) + bound
-
-    for i, var1, comb1 in zip(range(len(message)), message, v):
-        print(comb1, var1[2])
-        if int(comb1) + int(var1[2]) > 64:
-            return False
-        for j, var2, comb2 in zip(range(len(message) - i), message, v):
-            if i == j:
-                continue
-            if (
-                int(comb1) <= int(comb2) and int(comb2) < (int(comb1) + int(var1[2]))
-            ) == True:
-                return False
-
-    return True
-
-
-def cost_function(message, vars, combination):
-    stack = []
-    steps16 = [0, 16, 32, 48]
-    for start in combination:
-        diffs = [abs(start - step) for step in steps16]
-        m = min(diffs)
-        stack.append(m)
-        steps16.pop(diffs.index(m))
-
-    return sum(stack)
-
-
-def message_allocation(signals):
-    message = []
-    for name, sig in signals.items():
-        message.append((name, sig.get("start"), sig.get("length")))
-
-    vars = [msg for msg in message if msg[1] is None]
-    l = len(vars)
-
-    if l == 0:
-        return signals
-
-    combinations = product(range(0, 64), repeat=l)
-    combinations = filter(lambda x: check_validity(message, x), combinations)
-
-    best_solution = None
-    best_cost = 1000
-    for i, comb in enumerate(combinations):
-        cost = cost_function(message, vars, comb)
-        if cost < best_cost:
-            best_cost = cost
-            best_solution = comb
-
-    for var, start in zip(vars, best_solution):
-        signals[var[0]]["start"] = start
-
-    return signals
+# from .specs import Param
 
 
 def param_conv(key, value):
     value = [v.strip() for v in value]
+
     if key == "period":
-        return {"frequency": value[0]}
+        yield ("frequency", value[0])
     elif key == "str":
-        return {"string": value[0]}
+        yield ("string", value[0][1:-1])
     elif key == "start":
-        return {"start": value[0]}
+        yield ("start", value[0])
     elif key == "length":
-        return {"length": value[0]}
+        yield ("length", value[0])
     elif key == "sat":
-        return {"min_value": value[0], "max_value": value[1]}
+        yield ("min_value", value[0])
+        yield ("max_value", value[1])
     elif key == "endianess":
-        return {"byte_order": value[0][1:-1] + "_endian"}
+        yield ("byte_order", value[0][1:-1] + "_endian")
     elif key == "mux":
-        return {"mux": value[0][1:-1], "mux_count": value[1]}
+        yield ("mux", value[0][1:-1])
+        yield ("mux_count", value[1])
     elif key == "unit":
-        return {"unit": value[0][1:-1]}
+        yield ("unit", value[0][1:-1])
+    elif key == "device":
+        yield ("device", value[0][1:-1])
     else:
-        return {key: value[0]}
-    return {key: value}
+        yield (key, value[0])
 
 
 def params_conv(params):
-    params = [param_conv(key, value) for key, value in params.items()]
-    return {k: v for d in params for k, v in d.items()}
+    print("input", params)
+    params_spec = {
+        "id": {"type": int},
+        "dlc": {"type": int},
+        "start": {"type": int},
+        "length": {"type": int},
+        "scale": {"type": float},
+        "offset": {"type": float},
+        "min_value": {"type": float},
+        "max_value": {"type": float},
+        "n_args": {"type": int},
+        "mux_count": {"type": int},
+    }
+
+    def typecast(x):
+        name, value = x
+        spec = params_spec.get(name)
+        if spec is None:
+            return (name, value)
+
+        return (name, spec["type"](value))
+
+    params = [
+        param for key, value in params.items() for param in param_conv(key, value)
+    ]
+    params = [typecast(param) for param in params]
+    print("output", {param[0]: param[1] for param in params})
+    return {param[0]: param[1] for param in params}
 
 
 class FcpVisitor(NodeVisitor):
@@ -108,7 +80,6 @@ class FcpVisitor(NodeVisitor):
         self.types = {}
 
     def params_conv(self, params):
-        print(params)
         params = [param_conv(key, value) for key, value in params.items()]
         params = {k: v for d in params for k, v in d.items()}
 
@@ -125,44 +96,42 @@ class FcpVisitor(NodeVisitor):
         return params
 
     def visit_spec(self, node, visited_children):
-        d = {"log": {}, "device": {}, "enum": {}, "type": {}}
+        d = {
+            "log": [],
+            "device": [],
+            "config": [],
+            "command": [],
+            "message": [],
+            "enum": [],
+            "type": [],
+        }
 
         for child in visited_children:
             if child[0] is not None:
                 type, child = child[0]
-                d[type][child["name"]] = child
+                d[type].append(child)
 
-        common = d["device"].get("common")
-        if common is not None:
-            del d["device"]["common"]
+        # common = d["device"].get("common")
+        # if common is not None:
+        #    del d["device"]["common"]
 
         return {
             "logs": d["log"],
             "devices": d["device"],
+            "messages": d["message"],
+            "configs": d["config"],
+            "commands": d["command"],
             "enums": d["enum"],
-            "common": common,
             "version": "0.3",
         }
 
     def visit_device(self, node, visited_children):
-        _, _, name, _, params, _, childs, _ = visited_children
-
-        d = {"config": {}, "message": {}, "command": {}}
-
-        for child in childs:
-            type, child = child[0]
-            d[type][child["name"]] = child
-
-        params = params_conv(params)
+        _, _, name, _ = visited_children
 
         return (
             "device",
             {
                 "name": name.text.strip(),
-                "msgs": d["message"],
-                "cfgs": d["config"],
-                "cmds": d["command"],
-                **params,
             },
         )
 
@@ -170,11 +139,12 @@ class FcpVisitor(NodeVisitor):
         comment, _, name, _, params, _ = visited_children
         params = params_conv(params)
 
+        comment = comment[0] if isinstance(comment, list) and comment[0] else ""
         return (
             "config",
             {
                 "name": name.text.strip(),
-                "comment": comment[0],
+                "comment": comment,
                 **params,
             },
         )
@@ -182,14 +152,16 @@ class FcpVisitor(NodeVisitor):
     def visit_command(self, node, visited_children):
         comment, _, name, _, params, cmd_args = visited_children
         params = params_conv(params)
+        params["id"] = int(params["id"])
+        comment = comment[0] if isinstance(comment, list) and comment[0] else ""
 
         return (
             "command",
             {
                 "name": name.text.strip(),
-                "args": {arg["name"]: arg for arg in cmd_args},
-                "rets": {},
-                "comment": comment[0],
+                "args": cmd_args,
+                "rets": [],
+                "comment": comment,
                 **params,
             },
         )
@@ -204,12 +176,14 @@ class FcpVisitor(NodeVisitor):
             return []
 
     def visit_cmd_arg(self, node, visited_children):
-        _, _, name, _, params, _ = visited_children
+        comment, _, name, _, params, _ = visited_children
         params = params_conv(params)
+        comment = comment[0] if isinstance(comment, list) and comment[0] else ""
 
         return (
             "cmd_arg",
             {
+                "comment": comment,
                 "name": name.text.strip(),
                 **params,
             },
@@ -218,32 +192,31 @@ class FcpVisitor(NodeVisitor):
     def visit_message(self, node, visited_children):
         comment, _, name, _, params, _, signals, _ = visited_children
 
-        sigs = {sig["name"]: sig for sig in signals}
-        sigs = message_allocation(sigs)
-
-        # print([sig.keys() for sig in sigs.values()])
+        sigs = [sig for sig in signals]
+        # sigs = message_allocation(sigs)
 
         params = params_conv(params)
+        comment = comment[0] if isinstance(comment, list) and comment[0] else ""
 
         return (
             "message",
             {
                 "name": name.text.strip(),
                 "signals": sigs,
-                "description": "", #comment[0],
+                "description": comment,  # comment[0],
                 **params,
             },
         )
 
     def visit_signal(self, node, visited_children):
         comment, _, name, _, params, _ = visited_children
-        params = self.params_conv(params)
+        params = params_conv(params)
 
-        print(comment)
+        comment = comment[0] if isinstance(comment, list) and comment[0] else ""
 
         return {
             "name": name.text.strip(),
-            "comment": "", #if comment is None else comment[0],
+            "comment": comment,  # if comment is None else comment[0],
             **params,
         }
 
@@ -251,7 +224,6 @@ class FcpVisitor(NodeVisitor):
         params = {}
 
         for children in visited_children:
-            print(children)
             name, args = children
             params[name] = args
 
@@ -270,7 +242,6 @@ class FcpVisitor(NodeVisitor):
         comment, _, name, _, params, _ = visited_children
         comment = comment[0] if type(comment) == list else ""
         params = params_conv(params)
-
         return ("log", {"name": name.text.strip(), "comment": comment, **params})
 
     def visit_enum_value(self, node, visited_children):
@@ -320,10 +291,10 @@ class FcpVisitor(NodeVisitor):
         return visited_children or node
 
 
-def fcp_v2(file):
+def fcp_v2(file) -> Spec:
     grammar = Grammar(
         """
-        spec = (device / log / enum / type)*
+        spec = (device / message / config / command / log / enum / type)*
 
         ws        = ~"\s*"
         colon     = ws? ":" ws?
@@ -346,7 +317,7 @@ def fcp_v2(file):
         param = name lpar arg* rpar pipe?
         params = param*
 
-        device = ws? "device" name colon params lbrace (message / command / config)+ rbrace
+        device = ws? "device" name semicomma
 
         message = comment? "message" name colon params lbrace signal* rbrace
         signal = comment? "signal" name colon params semicomma
@@ -372,83 +343,11 @@ def fcp_v2(file):
     except Exception as e:
         print(f"exception: {e}")
 
+    try:
+        v = fcp_vis.visit(ast)
+    except Exception as e:
+        print(traceback.format_exc())
+        # print(e)
+        sys.exit(1)
 
-    #try:
-    v = fcp_vis.visit(ast)
-    #except Exception as e:
-    #    print(e)
-    #    sys.exit(1)
-    # print("v:", v)
-    return v
-
-
-def fcp_v2_from_file(file):
-    with open(file) as f:
-        return fcp_v2(f.read())
-
-
-def spec_to_fcp_v2(spec):
-    template = Template(
-        """
-{% for device in devs -%}
-device {{device.name}}: id({{device.id}}) {
-    {% for msg in device.msgs.values() %}
-    /*{{msg.description}}*/
-    message {{msg.name}}: id({{msg.id}}) | dlc({{msg.dlc}}) | period({{msg.frequency}}) {
-        {% for sig in msg.signals.values() %}
-        /*{{sig.comment}}*/
-        signal {{sig.name}}: start({{sig.start}}) | length({{sig.length}})
-        {%- if sig.type != "unsigned" -%}
-        type({{sig.type}})
-        {%- endif -%}
-        {%- if not (sig.min_value == 0.0 and sig.max_value == 0.0) -%}
-        | sat({{sig.min_value}}, {{sig.max_value}})
-        {%- endif -%}
-        {%- if not (sig.scale == 1.0 and sig.offset == 0.0) -%}
-        | scale({{sig.scale}}, {{sig.offset}})
-        {%- endif -%}
-        {%- if sig.unit != "" -%}
-        | unit("{{sig.unit}}")
-        {%- endif -%}
-        {%- if sig.byte_order != "little_endian" -%}
-        | endianess("{{"little" if "little" in sig.byte_order else "big"}}")
-        {% endif -%}
-        {%- if not (sig.mux == "" and sig.mux_count == 1) -%}
-        | mux("{{sig.mux}}", {{sig.mux_count}})
-        {%- endif -%};
-        {% endfor %}
-    }
-    {% endfor %}
-
-    {% for cfg in device.cfgs.values() %}
-    /*{{cfg.comment}}*/
-    config {{cfg.name}}: id({{cfg.id}}) | type({{cfg.type}});
-    {% endfor -%}
-
-    {% for cmd in device.cmds.values() %}
-    /*{{cmd.comment}}*/
-    command {{cmd.name}}: id({{cmd.id}}) {
-    {% for arg in cmd.args.values() %}
-        /*{{arg.comment}}*/
-        arg {{arg.name}}: id({{arg.id}}) | type({{arg.type}});
-    {% endfor %}
-    {% for ret  in cmd.rets.values() %}
-        ret {{arg.name}}: id({{arg.id}}) | type({{arg.type}})
-    {% endfor %}
-    }
-    {% endfor %}
-}
-{% endfor %}
-
-{% for log in spec.logs.values() %}
-log {{log.name}}: id({{log.id}}) | str("{{log.string}}");
-{% endfor -%}
-"""
-    )
-
-    return template.render(
-        {
-            "spec": spec,
-            "devs": list(spec.devices.values()) + [spec.common],
-        }
-    )
+    return Spec.from_dict(v)

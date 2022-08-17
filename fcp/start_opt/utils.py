@@ -258,7 +258,7 @@ def normalize(dist):
 
 def norm(X, n=2):
     """Return the n-norm of vector X"""
-    return sum([x ** n for x in X]) ** (1 / n)
+    return sum([x**n for x in X]) ** (1 / n)
 
 
 def clip(x, lowest, highest):

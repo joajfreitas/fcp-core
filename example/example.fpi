@@ -1,0 +1,14 @@
+device master;
+
+broadcast master_ts {
+	id : 30;
+	dlc : 8;
+	device: master;
+}
+
+
+broadcast master_status {
+	id : 31;
+	dlc : 8;
+	device: master;
+}
