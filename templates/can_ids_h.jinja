@@ -31,19 +31,19 @@
 #define LOG_{{log.name.upper()}} {{log.id}}
 {%- endfor %}
 
-{% for device in devices %}
+{% for device in spec.devices.values() %}
 #include "{{device.name}}_can.h"
 {%- endfor %}
 #include "common.h"
 
 /* DEVICE IDs */
-{%- for device in devices %} 
+{%- for device in spec.devices.values() %} 
 #define DEVICE_ID_{{device.name.upper()}}	{{device.id}} 
 {%- endfor %}
 
 /* CAN Structure */
 typedef struct _{{spec.signature}} {
-{%- for device in devices %}
+{%- for device in spec.devices.values() %}
 	#ifndef NO_{{device.name.upper()}}
 	{{device.signature}} {{device.name}};
 	#endif

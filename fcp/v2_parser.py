@@ -40,7 +40,7 @@ fpi_parser = Lark(
     field: identifier ":" (value) ";"
     value : SIGNED_NUMBER | CNAME
 
-    device : "device" identifier ";"
+    device : "device" identifier "{" field* "}"
 
     imports: "import" identifier ";"
 
@@ -183,7 +183,7 @@ class FpiTransformer(Transformer):
     @v_args(tree=True)
     def device(self, tree):
         args = tree.children
-        return AstNode("device", {"name": args[0]}, tree)
+        return AstNode("device", {"name": args[0], "fields": args[1]}, tree)
 
     def start(self, args):
         return Module("__main__", args)
@@ -259,6 +259,7 @@ class Enum:
 class Device:
     def __init__(self, name, data):
         self.name = name
+        self.id = data["fields"].data["value"]
 
     @staticmethod
     def read(node: AstNode):
@@ -269,10 +270,12 @@ class Broadcast:
     def __init__(self, name, data):
         self.name = name
         self.data = data
+        self.data.update({field.name(): field for field in self.data["fields"]})
 
     @staticmethod
     def read(node: AstNode):
         return Broadcast(node.name(), node.data)
+
 
 class FcpSpec:
     def __init__(self, fcp):
@@ -287,7 +290,9 @@ class FcpSpec:
 
 def convert(module):
     return {
-        "broadcast": [Broadcast.read(broadcast) for broadcast in module["broadcast"].values()],
+        "broadcast": [
+            Broadcast.read(broadcast) for broadcast in module["broadcast"].values()
+        ],
         "device": [Device.read(device) for device in module["device"].values()],
         "struct": [Struct.read(struct) for struct in module["struct"].values()],
         "enum": [Enum.read(enum) for enum in module["enum"].values()],
@@ -302,7 +307,6 @@ def get_fcp():
     fcp = FcpV2Transformer(fcp_filename).transform(ast)
     fcp = deduplicate(resolve_imports(fcp))
 
-
     fpi_filename = sys.argv[2]
     with open(fpi_filename) as f:
         ast = fpi_parser.parse(f.read())
@@ -311,6 +315,7 @@ def get_fcp():
     fpi = deduplicate(resolve_imports(fpi))
 
     return FcpSpec(convert(merge(fcp, fpi)))
+
 
 if __name__ == "__main__":
     pprint(get_fcp())
