@@ -13,16 +13,16 @@ class CodeGenerator:
     def __init__(self):
         pass
 
-    def gen(self, fcp, templates, output_path="output"):
+    def gen(self, fcp, templates, skels, output_path="output"):
         output_path = pathlib.Path(output_path)
         os.makedirs(output_path, exist_ok=True)
 
-        for path, content in self.generate(fcp, templates).items():
+        for path, content in self.generate(fcp, templates, skels).items():
             print(output_path / path)
             with open(output_path / path, "w") as f:
                 f.write(content)
 
-    def generate(self, fcp):
+    def generate(self, fcp, skel):
         pass
 
 
@@ -114,13 +114,16 @@ class CGenerator(CodeGenerator):
             device=device,
         )
 
-    def generate(self, fcp, templates):
+    def generate(self, fcp, templates={}, skels={}):
         spec = self.config(fcp)
         fileset = {
             "can_ids.h": self.generate_can_ids_h(templates.get("can_ids_h"), spec),
             "can_ids.c": self.generate_can_ids_c(templates.get("can_ids_c"), spec),
             "common.c": self.generate_common_c(templates.get("common_c"), spec),
             "common.h": self.generate_common_h(templates.get("common_h"), spec),
+            "candata.h": skels["candata.h"],
+            "signal_parser.c": skels["signal_parser.c"],
+            "signal_parser.h": skels["signal_parser.h"],
         }
 
         for dev in fcp.get_devices():
@@ -141,7 +144,13 @@ def main():
         with open(template) as f:
             templates[template.stem] = Template(f.read())
 
-    generator.gen(fcp, templates)
+    skels = {}
+    for skel in os.listdir("skel"):
+        skel_path = pathlib.Path("skel") / skel
+        with open(skel_path) as f:
+            skels[skel] = f.read()
+
+    generator.gen(fcp, templates, skels)
 
 
 if __name__ == "__main__":
