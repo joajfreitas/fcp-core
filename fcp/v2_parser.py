@@ -1,5 +1,6 @@
 import sys
 import pathlib
+import traceback
 from pprint import pprint, pformat
 
 from lark import Lark, Transformer, v_args
@@ -10,8 +11,8 @@ fcp_parser = Lark(
 
     struct: "struct" identifier "{" field+ "}"
     field: identifier ":" param+ ";"
-    param: identifier "("* param_argument* ")"* "|"?
-    param_argument: identifier ","?
+    param: identifier "("? param_argument? ")"? "|"?
+    param_argument: value ","?
 
     enum: "enum" identifier "{" enum_field* "}"
     enum_field : identifier "="? value? ";"
@@ -19,8 +20,10 @@ fcp_parser = Lark(
     imports: "import" identifier ";"
 
     type: identifier
-    identifier: CNAME
-    value : SIGNED_NUMBER
+    identifier: string
+    string: CNAME
+    number: SIGNED_NUMBER
+    value : identifier | number
 
     %import common.WORD   // imports from terminal library
     %import common.CNAME   // imports from terminal library
@@ -38,7 +41,9 @@ fpi_parser = Lark(
 
     broadcast: "broadcast" identifier "{" field* "}"
     field: identifier ":" (value) ";"
-    value : SIGNED_NUMBER | CNAME
+    value : integer | string
+    integer: SIGNED_NUMBER
+    string: CNAME
 
     device : "device" identifier "{" field* "}"
 
@@ -66,11 +71,6 @@ class Struct:
     def __init__(self, name, fields):
         self.name = name
         self.fields = fields
-
-
-class FcpSpec:
-    def __init__(self, types, imports):
-        pass
 
 
 class AstNode:
@@ -102,25 +102,31 @@ class FcpV2Transformer(Transformer):
         self.path = self.filename.parent
 
     def identifier(self, args):
-        return args[0].value
+        return args[0]
 
     def type(self, args):
         return args[0]
 
     def param(self, args):
+        return tuple(args)
+
+    def param_argument(self, args):
         return args[0]
 
-    def field(self, args):
-        return {"name": args[0], "params": args[1:]}
+    @v_args(tree=True)
+    def field(self, tree):
+        name, *fields = tree.children
+        return AstNode("field", {"name": name, "fields": fields}, tree)
 
     @v_args(tree=True)
     def struct(self, tree):
-        args = tree.children
-        return AstNode("struct", {"name": args[0], "fields": args[1:]}, tree)
+        name, *fields = tree.children
+        return AstNode("struct", {"name": name, "fields": fields}, tree)
 
-    def enum_field(self, args):
-        name, value = args
-        return {"name": name, "value": value}
+    @v_args(tree=True)
+    def enum_field(self, tree):
+        name, value = tree.children
+        return AstNode("enum_field", {"name": name, "value": value}, tree)
 
     @v_args(tree=True)
     def enum(self, tree):
@@ -137,12 +143,21 @@ class FcpV2Transformer(Transformer):
                 )
         except Exception as e:
             print(f"Could not import {filename}")
+            print(e)
+            print(traceback.format_exc())
             sys.exit(1)
 
         return module
 
     def value(self, args):
+        return args[0]
+
+    def number(self, args):
+        return int(args[0].value)
+
+    def string(self, args):
         return args[0].value
+
 
     def start(self, args):
         return Module("__main__", args)
@@ -157,6 +172,12 @@ class FpiTransformer(Transformer):
         return args[0].value
 
     def value(self, args):
+        return args[0]
+
+    def integer(self, args):
+        return int(args[0].value)
+
+    def string(self, args):
         return args[0].value
 
     @v_args(tree=True)
@@ -239,42 +260,64 @@ def merge(fcp, fpi):
 class Struct:
     def __init__(self, name, data):
         self.name = name
-        self.data = data
+        self.fields = {field.name(): field.data["fields"] for field in data["fields"]}
 
     @staticmethod
     def read(node: AstNode):
         return Struct(node.name(), node.data)
+    
+    def to_dict(self):
+        return {"name": self.name, "fields": self.fields}
+
+    def __repr__(self):
+        return "<Struct>"
 
 
 class Enum:
     def __init__(self, name, data):
         self.name = name
-        self.data = data
+        self.fields = {field.name(): field.data["value"] for field in data["fields"]}
 
     @staticmethod
     def read(node: AstNode):
         return Enum(node.name(), node.data)
+    
+    def to_dict(self):
+        return {"name": self.name, "fields":  self.fields}
 
+    def __repr__(self):
+        return "<Enum>"
 
 class Device:
     def __init__(self, name, data):
         self.name = name
-        self.id = data["fields"].data["value"]
+        self.data = data
+        self.id = self.data["fields"].data["value"]
 
     @staticmethod
     def read(node: AstNode):
         return Device(node.name(), node.data)
 
+    def to_dict(self):
+        return {"name": self.name, "id": self.id}
+
+    def __repr__(self):
+        return "<Device>"
 
 class Broadcast:
     def __init__(self, name, data):
         self.name = name
-        self.data = data
-        self.data.update({field.name(): field for field in self.data["fields"]})
+        self.fields = {field.name(): field.data["value"] for field in data["fields"]}
 
     @staticmethod
     def read(node: AstNode):
         return Broadcast(node.name(), node.data)
+
+    def to_dict(self):
+        return {"name": self.name, "fields": self.fields}
+
+    def __repr__(self):
+        return "<Broadcast>"
 
 
 class FcpSpec:
@@ -286,6 +329,14 @@ class FcpSpec:
 
     def get_devices(self):
         return self.devices
+
+    def to_dict(self):
+        return {
+            "broadcasts": [broadcast.to_dict() for broadcast in self.broadcasts],
+            "devices": [device.to_dict() for device in self.devices],
+            "struct": [struct.to_dict() for struct in self.structs],
+            "enums": [enum.to_dict() for enum in self.enums],
+        }
 
 
 def convert(module):
@@ -299,15 +350,15 @@ def convert(module):
     }
 
 
-def get_fcp():
-    fcp_filename = sys.argv[1]
+def get_fcp(fcp, fpi):
+    fcp_filename = fcp
     with open(fcp_filename) as f:
         ast = fcp_parser.parse(f.read())
 
     fcp = FcpV2Transformer(fcp_filename).transform(ast)
     fcp = deduplicate(resolve_imports(fcp))
 
-    fpi_filename = sys.argv[2]
+    fpi_filename = fpi
     with open(fpi_filename) as f:
         ast = fpi_parser.parse(f.read())
 
@@ -318,4 +369,5 @@ def get_fcp():
 
 
 if __name__ == "__main__":
-    pprint(get_fcp())
+    fcp = get_fcp()
+    pprint(fcp.to_dict())

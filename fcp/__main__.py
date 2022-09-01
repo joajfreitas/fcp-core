@@ -7,6 +7,7 @@ import subprocess
 import os
 from pathlib import Path
 import traceback
+from pprint import pprint
 
 import click
 
@@ -19,6 +20,8 @@ from .specs.v1 import FcpV1, fcp_v1_to_v2
 from .docs import generate_docs
 from .version import VERSION
 from .idl import fcp_v2
+from .v2_parser import get_fcp
+from .codegen import GeneratorManager
 
 
 def setup_logging() -> logging.Logger:
@@ -133,26 +136,23 @@ def write_dbc_cmd(json_file: str, dbc: str):
     write_dbc(spec, dbc)
 
 
-@click.command(name="c_gen")
-@click.argument("templates")
+@click.command(name="generate")
+@click.argument("generator")
+@click.argument("fcp")
+@click.argument("fpi")
 @click.argument("output")
-@click.argument("json_file")
+@click.argument("templates")
 @click.argument("skel")
 @click.option("--noformat", is_flag=True, default=False)
 @click.option("--force", is_flag=True, default=False)
-def c_gen_cmd(
-    templates: str, output: str, json_file: str, skel: str, noformat: bool, force: bool
+def generate_cmd(
+        generator, fcp, fpi, output: str, templates: str, skel: str, noformat: bool, force: bool
 ):
-    """Transform FCP json into a C library.
-    :param templates: jinja template directory.
-    :param output: output directory.
-    :param json_file: FCP json file path.
-    :param skel: C skeleton directory.
-    """
     logger = setup_logging()
 
-    spec = get_spec(json_file, force)
-    c_gen(spec, templates, output, skel, logger)
+    fcp = get_fcp(fcp, fpi)
+    generator_manager = GeneratorManager()
+    generator_manager.generate(generator, templates, skel, fcp)
 
     if noformat == False:
         subprocess.run(
@@ -198,19 +198,6 @@ def validate_cmd(json_file: str):
     #    print("❌")
     #    for level, msg in failed:
     #        print(format_error(level, msg))
-
-
-@click.command(name="gui")
-@click.argument("file", required=False)
-def gui_cmd(file: str):
-    """Launch FCP json editor GUI.
-    :param file: Optional FCP json file path
-    """
-
-    from .gui import gui
-
-    logger = setup_logging()
-    gui(file)
 
 
 @click.command("docs")
@@ -282,6 +269,14 @@ def fcp2_to_json(fcpv2: str, fcpv1: str):
     with open(fcpv1, "w") as f:
         f.write(json.dumps(spec.compile(), indent=4))
 
+@click.command("parse")
+@click.argument("fcp")
+@click.argument("fpi")
+def parse(fcp, fpi):
+    fcp = get_fcp(fcp, fpi)
+    pprint(fcp.to_dict())
+
+
 
 @click.group(invoke_without_command=True)
 @click.option("--version", is_flag=True, default=False)
@@ -297,14 +292,14 @@ def main(version):
 
 main.add_command(read_dbc_cmd)
 main.add_command(write_dbc_cmd)
-main.add_command(c_gen_cmd)
+main.add_command(generate_cmd)
 main.add_command(init_cmd)
 main.add_command(validate_cmd)
-main.add_command(gui_cmd)
 main.add_command(docs)
 main.add_command(fix)
 main.add_command(json_to_fcp2)
 main.add_command(fcp2_to_json)
+main.add_command(parse)
 
 if __name__ == "__main__":
     main()
