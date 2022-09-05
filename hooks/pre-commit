@@ -2,3 +2,4 @@
 
 set -e
 hooks/check_release_notes
+hooks/black
