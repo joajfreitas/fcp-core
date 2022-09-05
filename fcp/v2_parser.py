@@ -158,7 +158,6 @@ class FcpV2Transformer(Transformer):
     def string(self, args):
         return args[0].value
 
-
     def start(self, args):
         return Module("__main__", args)
 
@@ -265,7 +264,7 @@ class Struct:
     @staticmethod
     def read(node: AstNode):
         return Struct(node.name(), node.data)
-    
+
     def to_dict(self):
         return {"name": self.name, "fields": self.fields}
 
@@ -281,12 +280,13 @@ class Enum:
     @staticmethod
     def read(node: AstNode):
         return Enum(node.name(), node.data)
-    
+
     def to_dict(self):
-        return {"name": self.name, "fields":  self.fields}
+        return {"name": self.name, "fields": self.fields}
 
     def __repr__(self):
         return "<Enum>"
+
 
 class Device:
     def __init__(self, name, data):
@@ -303,6 +303,7 @@ class Device:
 
     def __repr__(self):
         return "<Device>"
+
 
 class Broadcast:
     def __init__(self, name, data):

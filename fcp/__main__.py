@@ -1,13 +1,14 @@
 """ Main """
 
 import sys
-import logging
 import json
 import subprocess
 import os
 from pathlib import Path
 import traceback
 from pprint import pprint
+import logging
+import coloredlogs
 
 import click
 
@@ -24,24 +25,11 @@ from .v2_parser import get_fcp
 from .codegen import GeneratorManager
 
 
-def setup_logging() -> logging.Logger:
-    """Setup Logger.
-
-    :return: logger object.
-    """
-
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
-
-    handler = logging.FileHandler("fcp.log")
-    handler.setLevel(logging.DEBUG)
-
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+def setup_logging():
+    logging.getLogger().setLevel(logging.INFO)
+    coloredlogs.install(
+        fmt="%(asctime)s %(module)s:%(lineno)d %(levelname)s - %(message)s"
     )
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    return logger
 
 
 def report_validate(failed, force):
@@ -119,7 +107,6 @@ def read_dbc_cmd(dbc: str, json_file: str, device_config: str):
         "29": "isa"
     }```
     """
-    logger = setup_logging()
     read_dbc(dbc, json_file, device_config, logger)
 
 
@@ -146,10 +133,15 @@ def write_dbc_cmd(json_file: str, dbc: str):
 @click.option("--noformat", is_flag=True, default=False)
 @click.option("--force", is_flag=True, default=False)
 def generate_cmd(
-        generator, fcp, fpi, output: str, templates: str, skel: str, noformat: bool, force: bool
+    generator,
+    fcp,
+    fpi,
+    output: str,
+    templates: str,
+    skel: str,
+    noformat: bool,
+    force: bool,
 ):
-    logger = setup_logging()
-
     fcp = get_fcp(fcp, fpi)
     generator_manager = GeneratorManager()
     generator_manager.generate(generator, templates, skel, fcp)
@@ -160,7 +152,7 @@ def generate_cmd(
             cwd=os.path.abspath(output),
             shell=True,
         )
-        logger.info("clang-format clean up ✅")
+        logging.info("clang-format clean up ✅")
 
 
 @click.command(name="init")
@@ -170,7 +162,6 @@ def init_cmd(json_file: str):
     :param json_file: FCP json file path.
     """
 
-    logger = setup_logging()
     # init(json_file, logger)
 
 
@@ -181,7 +172,6 @@ def validate_cmd(json_file: str):
     :param json_file: FCP json file path.
     """
 
-    logger = setup_logging()
     with open(json_file) as f:
         spec = FcpV1.from_json(f.read())
 
@@ -212,8 +202,6 @@ def docs(json_file: str, out: str, link_location: str):
 
     if link_location == None:
         link_location = "."
-
-    logger = setup_logging()
 
     spec = get_spec(json_file)
     generate_docs(spec, out, link_location, logger)
@@ -269,13 +257,13 @@ def fcp2_to_json(fcpv2: str, fcpv1: str):
     with open(fcpv1, "w") as f:
         f.write(json.dumps(spec.compile(), indent=4))
 
+
 @click.command("parse")
 @click.argument("fcp")
 @click.argument("fpi")
 def parse(fcp, fpi):
     fcp = get_fcp(fcp, fpi)
     pprint(fcp.to_dict())
-
 
 
 @click.group(invoke_without_command=True)
@@ -302,4 +290,5 @@ main.add_command(fcp2_to_json)
 main.add_command(parse)
 
 if __name__ == "__main__":
+    setup_logging()
     main()

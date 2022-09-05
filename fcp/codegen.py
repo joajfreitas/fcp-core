@@ -8,6 +8,8 @@ import pkgutil
 
 from jinja2 import Template
 
+import logging
+
 
 class CodeGenerator:
     def __init__(self):
@@ -18,14 +20,12 @@ class CodeGenerator:
         os.makedirs(output_path, exist_ok=True)
 
         for path, content in self.generate(fcp, templates, skels).items():
-            print(output_path / path)
+            logging.info(output_path / path)
             with open(output_path / path, "w") as f:
                 f.write(content)
 
     def generate(self, fcp, skel):
         pass
-
-
 
 
 class GeneratorManager:
@@ -42,8 +42,10 @@ class GeneratorManager:
     def generate(self, generator, template_dir, skel_dir, fcp):
         generators = self.list_generators()
 
-        if "fcp_"+generator not in generators.keys():
-            print(f"{generator} not available. Currently available code generators: {[name[4:] for name in generators.keys()]}")
+        if "fcp_" + generator not in generators.keys():
+            print(
+                f"{generator} not available. Currently available code generators: {[name[4:] for name in generators.keys()]}"
+            )
             sys.exit(1)
 
         generator = generators["fcp_" + generator].Generator()
@@ -61,9 +63,6 @@ class GeneratorManager:
                 skels[skel] = f.read()
 
         generator.gen(fcp, templates, skels)
-
-
-
 
 
 if __name__ == "__main__":
