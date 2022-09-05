@@ -10,7 +10,15 @@ black:
   needs: []
   script:
     - pip install black
-    - black --check fcp
+    - ./hooks/black
+
+pylint:
+  image: joajfreitas/arch-python
+  stage: check
+  needs: []
+  script:
+    - pip install pylint
+    - ./hooks/pylint
 
 test:
   image: joajfreitas/arch-python
