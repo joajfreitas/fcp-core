@@ -21,9 +21,16 @@ class Device(Model):
     """
 
     name: fields.Str()
+    id: fields.Int()
+
+    def get_name(self):
+        return self.name
+
+    def get_type(self):
+        return "device"
 
     def to_idl(self):
         return f"device {self.name};\n"
 
     def __repr__(self):
-        return f"<Device name={self.name}"
+        return f"<Device name={self.name} id={self.id}"

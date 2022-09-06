@@ -14,5 +14,11 @@ class Enum(Model):
     name: fields.Str()
     enumeration: fields.Dict(fields.Str(), fields.Int())
 
+    def get_name(self):
+        return self.name
+
+    def get_type(self):
+        return "enum"
+
     def __repr__(self):
         return "name: {}".format(self.name)

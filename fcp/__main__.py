@@ -84,9 +84,11 @@ def generate_cmd(
     noformat: bool,
     force: bool,
 ):
-    fcp = get_fcp(fcp, fpi)
+
+    fcp_v2 = get_fcp(fcp, fpi)
+
     generator_manager = GeneratorManager()
-    generator_manager.generate(generator, templates, skel, fcp)
+    generator_manager.generate(generator, templates, skel, fcp_v2)
 
     if noformat == False:
         subprocess.run(

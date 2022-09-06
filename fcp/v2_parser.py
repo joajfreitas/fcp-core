@@ -5,6 +5,8 @@ from pprint import pprint, pformat
 
 from lark import Lark, Transformer, v_args
 
+from .specs import Device, Broadcast, Signal, Struct, Enum, Spec
+
 fcp_parser = Lark(
     """
     start: (struct | enum | imports)*
@@ -83,6 +85,9 @@ class Module:
         self.filename = filename
         self.children = children
 
+    def __repr__(self):
+        return f"{self.filename}: {self.children}"
+
 
 class FcpV2Transformer(Transformer):
     def __init__(self, filename):
@@ -103,24 +108,28 @@ class FcpV2Transformer(Transformer):
 
     @v_args(tree=True)
     def field(self, tree):
-        name, *fields = tree.children
-        return AstNode("field", {"name": name, "fields": fields}, tree)
+        name, value = tree.children
+        # return ({name: value}, tree)
+        return Signal(name=name)
 
     @v_args(tree=True)
     def struct(self, tree):
         name, *fields = tree.children
-        return AstNode("struct", {"name": name, "fields": fields}, tree)
+        return (Struct(name=name, signals=fields), None)
 
     @v_args(tree=True)
     def enum_field(self, tree):
         name, value = tree.children
-        return AstNode("enum_field", {"name": name, "value": value}, tree)
+        return (name, value, None)
 
     @v_args(tree=True)
     def enum(self, tree):
         args = tree.children
         name, *fields = args
-        return AstNode("enum", {"name": name, "fields": fields}, tree)
+        return (
+            Enum(name=name, enumeration={name: value for name, value, _ in fields}),
+            None,
+        )
 
     def imports(self, args):
         filename = self.path / (args[0] + ".fcp")
@@ -135,7 +144,7 @@ class FcpV2Transformer(Transformer):
             print(traceback.format_exc())
             sys.exit(1)
 
-        return module
+        return (module, None)
 
     def value(self, args):
         return args[0]
@@ -170,12 +179,13 @@ class FpiTransformer(Transformer):
     @v_args(tree=True)
     def field(self, tree):
         name, value = tree.children
-        return AstNode("field", {"name": name, "value": value}, tree)
+        return ({name: value}, None)
 
     @v_args(tree=True)
     def broadcast(self, tree):
         name, *fields = tree.children
-        return AstNode("broadcast", {"name": name, "fields": fields}, tree)
+        fields = {name: value for field in fields for name, value in field[0].items()}
+        return (Broadcast(name=name, field=fields), None)
 
     def imports(self, args):
         filename = args[0] + ".fpi"
@@ -186,12 +196,13 @@ class FpiTransformer(Transformer):
             print(f"Could not import {filename}")
             sys.exit(1)
 
-        return module
+        return (module, None)
 
     @v_args(tree=True)
     def device(self, tree):
         args = tree.children
-        return AstNode("device", {"name": args[0], "fields": args[1]}, tree)
+        fields, fields_meta = args[1]
+        return (Device(name=args[0], id=fields["id"]), None)
 
     def start(self, args):
         return Module("__main__", args)
@@ -208,135 +219,50 @@ def resolve_imports(module):
 
     nodes = {}
 
-    for child in module.children:
+    for child, _ in module.children:
         if isinstance(child, Module):
             nodes = merge(nodes, resolve_imports(child))
         else:
             child.filename = module.filename
 
-            if child.type not in nodes.keys():
-                nodes[child.type] = []
+            if child.get_type() not in nodes.keys():
+                nodes[child.get_type()] = []
 
-            if child.name() in [node.name() for node in nodes[child.type]]:
-                previous_definition = nodes[child.type][child.name()]
+            if child.get_name() in [
+                node.get_name() for node in nodes[child.get_type()]
+            ]:
+                previous_definition = nodes[child.get_type()][child.name()]
                 print(
-                    f"Error: {child.name()} {module.filename}:{child.pos()} already defined."
+                    f"Error: {child.get_name()} {module.filename}:{child.pos()} already defined."
                 )
                 print(
                     f"Previously defined in {previous_definition.filename}:{previous_definition.pos()}"
                 )
                 sys.exit(1)
 
-            nodes[child.type].append(child)
+            nodes[child.get_type()].append(child)
 
     return nodes
 
 
 def deduplicate(module):
     return {
-        type: {node.name(): node for node in module[type]} for type in module.keys()
+        type: {node.get_name(): node for node in module[type]} for type in module.keys()
     }
 
 
 def merge(fcp, fpi):
     fcp.update(fpi)
-
     return fcp
 
 
-class Struct:
-    def __init__(self, name, data):
-        self.name = name
-        self.fields = {field.name(): field.data["fields"] for field in data["fields"]}
-
-    @staticmethod
-    def read(node: AstNode):
-        return Struct(node.name(), node.data)
-
-    def to_dict(self):
-        return {"name": self.name, "fields": self.fields}
-
-    def __repr__(self):
-        return "<Struct>"
-
-
-class Enum:
-    def __init__(self, name, data):
-        self.name = name
-        self.fields = {field.name(): field.data["value"] for field in data["fields"]}
-
-    @staticmethod
-    def read(node: AstNode):
-        return Enum(node.name(), node.data)
-
-    def to_dict(self):
-        return {"name": self.name, "fields": self.fields}
-
-    def __repr__(self):
-        return "<Enum>"
-
-
-class Device:
-    def __init__(self, name, data):
-        self.name = name
-        self.data = data
-        self.id = self.data["fields"].data["value"]
-
-    @staticmethod
-    def read(node: AstNode):
-        return Device(node.name(), node.data)
-
-    def to_dict(self):
-        return {"name": self.name, "id": self.id}
-
-    def __repr__(self):
-        return "<Device>"
-
-
-class Broadcast:
-    def __init__(self, name, data):
-        self.name = name
-        self.fields = {field.name(): field.data["value"] for field in data["fields"]}
-
-    @staticmethod
-    def read(node: AstNode):
-        return Broadcast(node.name(), node.data)
-
-    def to_dict(self):
-        return {"name": self.name, "fields": self.fields}
-
-    def __repr__(self):
-        return "<Broadcast>"
-
-
-class FcpSpec:
-    def __init__(self, fcp):
-        self.broadcasts = fcp["broadcast"]
-        self.devices = fcp["device"]
-        self.structs = fcp["struct"]
-        self.enums = fcp["enum"]
-
-    def get_devices(self):
-        return self.devices
-
-    def to_dict(self):
-        return {
-            "broadcasts": [broadcast.to_dict() for broadcast in self.broadcasts],
-            "devices": [device.to_dict() for device in self.devices],
-            "struct": [struct.to_dict() for struct in self.structs],
-            "enums": [enum.to_dict() for enum in self.enums],
-        }
-
-
 def convert(module):
-    return {
-        "broadcast": [
-            Broadcast.read(broadcast) for broadcast in module["broadcast"].values()
-        ],
-        "device": [Device.read(device) for device in module["device"].values()],
-        "struct": [Struct.read(struct) for struct in module["struct"].values()],
-        "enum": [Enum.read(enum) for enum in module["enum"].values()],
-    }
+    return Spec(
+        broadcasts=module["broadcast"].values(),
+        devices=module["device"].values(),
+        structs=module["struct"].values(),
+        enums=module["enum"].values(),
+    )
 
 
 def get_fcp(fcp, fpi):
@@ -354,4 +280,4 @@ def get_fcp(fcp, fpi):
     fpi = FpiTransformer(fpi_filename).transform(ast)
     fpi = deduplicate(resolve_imports(fpi))
 
-    return FcpSpec(convert(merge(fcp, fpi)))
+    return convert(merge(fcp, fpi))
