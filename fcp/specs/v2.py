@@ -54,7 +54,7 @@ class FcpV2(Model):
 
         sig_count = len([sig for struct in self.structs for sig in struct.signals])
 
-        return f"(Spec: devs={len(self.devices)}, broadcasts={len(self.broadcasts)}, structs={len(self.structs)}, sigs={sig_count}"
+        return f"(Spec: devs={len(self.devices)}, broadcasts={len(self.broadcasts)}, structs={len(self.structs)}, sigs={sig_count})"
 
 
 def decompose_id(sid: int) -> Tuple[int, int]:

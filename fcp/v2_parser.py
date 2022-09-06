@@ -108,9 +108,9 @@ class FcpV2Transformer(Transformer):
 
     @v_args(tree=True)
     def field(self, tree):
-        name, value = tree.children
-        # return ({name: value}, tree)
-        return Signal(name=name)
+        name, *values = tree.children
+        type = values[0][0]
+        return Signal(name=name, type=type)
 
     @v_args(tree=True)
     def struct(self, tree):
