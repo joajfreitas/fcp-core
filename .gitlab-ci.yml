@@ -21,13 +21,13 @@ pylint:
     - pip install pylint
     - ./hooks/pylint
 
-test:
-  image: joajfreitas/arch-python
-  stage: build
-  needs: []
-  script:
-    - pip install -r requirements.txt
-    - pytest -v fcp
+      #test:
+      #  image: joajfreitas/arch-python
+      #  stage: build
+      #  needs: []
+      #  script:
+      #    - pip install -r requirements.txt
+      #    - pytest -v fcp
 
 install:
   image: joajfreitas/arch-python
