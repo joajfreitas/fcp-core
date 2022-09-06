@@ -155,9 +155,7 @@ class CANMessage:
 
     @staticmethod
     def decode_CANmessage(message):
-        msg = CANMessage()
-        msg.sid = message.sid
-        msg.dlc = message.dlc
+        msg = CANMessage(sid=message.sid, dlc=message.dlc, timestamp=0)
         msg.data = [0, 0, 0, 0]
         for i in range(4):
             msg.data[i] = (message.data >> i * 16) & 0xFFFF

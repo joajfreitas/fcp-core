@@ -4,7 +4,7 @@ import datetime
 import time
 from serde import Model, fields
 
-from . import *
+from . import Device, Message, Config, Command, Signal, Enum, EnumValue, Log
 from .utils import normalize
 
 
@@ -24,6 +24,9 @@ class Spec(Model):
     logs: fields.List(Log)
     enums: fields.List(Enum)
     version: fields.Str()
+
+    def add_device(self, device):
+        self.devices.append(device)
 
     def to_fcp(self):
         return "\n".join([msg.to_fcp() for msg in self.messages])

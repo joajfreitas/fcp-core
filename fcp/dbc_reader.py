@@ -1,13 +1,4 @@
 """dbc-reader.
-
-Usage:
-  dbc-reader read <dbc> <json> [<device-config>]
-  dbc-reader (-h | --help)
-  dbc-reader --version
-
-Options:
-  -h --help     Show this screen.
-  --version     Show version.
 """
 
 import logging
@@ -212,8 +203,8 @@ def read_dbc(dbc, json_file, device_config):
             parent=device, name=message.name, id=msg_id, dlc=message.length, signals={}
         )
 
-        err = spec.add_device(device)
-        err = spec.devices[device.name].add_msg(msg)
+        spec.add_device(device)
+        spec.devices[device.name].add_msg(msg)
 
         for signal in message.signals:
             t = find_type(signal)
@@ -239,7 +230,7 @@ def read_dbc(dbc, json_file, device_config):
             err = spec.devices[device.name].get_msg(message.name).add_signal(sig)
 
     default_configs(spec)
-    j = spec.compile()
+    j = spec.to_dict()
     j["version"] = "0.2"
 
     with open(json_file, "w") as f:
@@ -250,7 +241,7 @@ def init(json_file, logger):
     spec = Spec()
     default_configs(spec)
     logger.info("added default configs ✅")
-    j = spec.compile()
+    j = spec.to_dict()
 
     with open(json_file, "w") as f:
         f.write(json.dumps(j, sort_keys=True, indent=4))

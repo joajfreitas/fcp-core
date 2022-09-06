@@ -15,12 +15,10 @@ import click
 from .dbc_reader import read_dbc
 from .dbc_writer import write_dbc
 from .c_generator import c_gen
-from .validator import validate, format_error
 from .specs import Spec
 from .specs.v1 import FcpV1, fcp_v1_to_v2
 from .docs import generate_docs
 from .version import VERSION
-from .idl import fcp_v2
 from .v2_parser import get_fcp
 from .codegen import GeneratorManager
 
@@ -30,49 +28,6 @@ def setup_logging():
     coloredlogs.install(
         fmt="%(asctime)s %(module)s:%(lineno)d %(levelname)s - %(message)s"
     )
-
-
-def report_validate(failed, force):
-    error = 0
-    if len(failed):
-        for level, msg in failed:
-            print(format_error(level, msg))
-
-            if level == "error":
-                error += 1
-
-        if error > 0:
-            if not force:
-                print("Too many error won't continue")
-                return True
-
-    return False
-
-
-def get_spec(schema_path: str, force: bool = False) -> Spec:
-    """Create Spec from json file path.
-    :param json_file: path to the json file.
-    :param logger: logger.
-    :return: Spec.
-    """
-    try:
-        path = Path(schema_path)
-        if path.suffix == ".json":
-            with open(path) as f:
-                spec = Spec.from_json(f.read())
-        elif path.suffix == ".fcp":
-            with open(path) as f:
-                spec = fcp_v2(f.read())
-
-        # failed = validate(spec)
-        # if report_validate(failed, force):
-        #    exit()
-
-        return spec
-
-    except Exception as e:
-        print(traceback.format_exc())
-        print("error", e.message, ":", e.value)
 
 
 @click.command(name="read-dbc")
@@ -107,20 +62,7 @@ def read_dbc_cmd(dbc: str, json_file: str, device_config: str):
         "29": "isa"
     }```
     """
-    read_dbc(dbc, json_file, device_config, logger)
-
-
-@click.command(name="write-dbc")
-@click.argument("json_file")
-@click.argument("dbc")
-def write_dbc_cmd(json_file: str, dbc: str):
-    """Transform FCP json file into a DBC
-    :param json_file: FCP json file path.
-    :param dbc: dbc file path.
-    """
-
-    spec = get_spec(json_file)
-    write_dbc(spec, dbc)
+    read_dbc(dbc, json_file, device_config)
 
 
 @click.command(name="generate")
@@ -190,45 +132,6 @@ def validate_cmd(json_file: str):
     #        print(format_error(level, msg))
 
 
-@click.command("docs")
-@click.argument("json_file")
-@click.argument("out")
-@click.argument("link_location", required=False)
-def docs(json_file: str, out: str, link_location: str):
-    """Generate FCP documentation.
-    :param json_file: FCP json file path.
-    :param out: output directory.
-    """
-
-    if link_location == None:
-        link_location = "."
-
-    spec = get_spec(json_file)
-    generate_docs(spec, out, link_location, logger)
-
-
-@click.command("fix")
-@click.argument("src")
-@click.argument("dst")
-def fix(src: str, dst: str):
-    print("Warning: This operation may lose some data")
-    spec = Spec()
-    with open(src) as f:
-        j = json.loads(f.read())
-
-    spec.decompile(j)
-
-    for dev in spec.devices.values():
-        for msg in dev.msgs.values():
-            for sig in msg.signals.values():
-                if sig.mux_count == 0:
-                    sig.mux_count = 1
-
-    d = spec.compile()
-    with open(dst, "w") as f:
-        f.write(json.dumps(d, indent=4))
-
-
 @click.command("json_to_fcp2")
 @click.argument("json_file")
 @click.argument("output")
@@ -247,15 +150,6 @@ def json_to_fcp2(json_file: str, output: str):
 
     # with open(output, "w") as f:
     #    f.write(v2)
-
-
-@click.command("fcp2_to_json")
-@click.argument("fcpv2")
-@click.argument("fcpv1")
-def fcp2_to_json(fcpv2: str, fcpv1: str):
-    spec = get_spec(fcpv2)
-    with open(fcpv1, "w") as f:
-        f.write(json.dumps(spec.compile(), indent=4))
 
 
 @click.command("parse")
@@ -279,16 +173,12 @@ def main(version):
 
 
 main.add_command(read_dbc_cmd)
-main.add_command(write_dbc_cmd)
 main.add_command(generate_cmd)
 main.add_command(init_cmd)
 main.add_command(validate_cmd)
-main.add_command(docs)
-main.add_command(fix)
 main.add_command(json_to_fcp2)
-main.add_command(fcp2_to_json)
 main.add_command(parse)
 
 if __name__ == "__main__":
     setup_logging()
-    main()
+    main()  # pylint: disable=no-value-for-parameter

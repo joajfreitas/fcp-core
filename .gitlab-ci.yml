@@ -17,6 +17,7 @@ pylint:
   stage: check
   needs: []
   script:
+    - pip install -r requirements.txt
     - pip install pylint
     - ./hooks/pylint
 

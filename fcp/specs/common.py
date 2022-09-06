@@ -63,35 +63,6 @@ class Common(Node):
             if msg_name == name:
                 return msg
 
-    def compile(self) -> Dict[str, Any]:
-        """Transform python class node to its dictionary representation.
-
-        :return: A dictionary containing the node parameters
-        """
-
-        msgs = {}
-        for msg_k, msg_v in self.msgs.items():
-            msgs[msg_k] = msg_v.compile()
-
-        att = self.make_public(self, self.filter_private(self.__dict__))
-        att["msgs"] = msgs
-        return att
-
-    def decompile(self, d: Dict[str, Any]) -> None:
-        """Transform node dictionary representation into a python class.
-
-        :param d: Node dictionary
-        """
-        msgs = d["msgs"]
-        del d["msgs"]
-
-        self.__dict__.update(self.make_private(self, d))
-
-        for key, value in msgs.items():
-            msg = Message(self)
-            msg.decompile(value)
-            self.msgs[key] = msg
-
     def __hash__(self):
         return hash((self.name, self.id, self.creation_date))
 

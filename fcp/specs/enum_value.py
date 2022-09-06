@@ -20,19 +20,6 @@ class EnumValue(Node):
 
         self.creation_date = datetime.datetime.now()
 
-    def compile(self) -> Dict[str, Any]:
-        d = make_public(self, filter_private(self.__dict__))
-        return d
-
-    def decompile(self, d: Dict[str, Any]) -> None:
-        """Transform node dictionary representation into a python class.
-
-        :param d: Node dictionary
-        """
-
-        for k, v in self.make_private(self, d).items():
-            self.__setattr__(k, v)
-
     @property
     def name(self) -> str:
         return self._name

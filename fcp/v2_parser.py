@@ -61,18 +61,6 @@ fpi_parser = Lark(
 )
 
 
-class Enum:
-    def __init__(self, name, fields):
-        self.name = name
-        self.fields = fields
-
-
-class Struct:
-    def __init__(self, name, fields):
-        self.name = name
-        self.fields = fields
-
-
 class AstNode:
     def __init__(self, type, data, tree):
         self.type = type
@@ -367,8 +355,3 @@ def get_fcp(fcp, fpi):
     fpi = deduplicate(resolve_imports(fpi))
 
     return FcpSpec(convert(merge(fcp, fpi)))
-
-
-if __name__ == "__main__":
-    fcp = get_fcp()
-    pprint(fcp.to_dict())

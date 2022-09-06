@@ -26,4 +26,4 @@ class Device(Model):
         return f"device {self.name};\n"
 
     def __repr__(self):
-        return f"<Device name={self.name} id={self.id}>"
+        return f"<Device name={self.name}"
