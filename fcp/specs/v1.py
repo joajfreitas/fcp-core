@@ -1,12 +1,12 @@
 import json
 from serde import Model, fields
 
-from .spec import Spec
+from .v2 import FcpV2
 from . import Signal, Log, Argument
-from .spec import Device as DeviceV2
-from .spec import Config as ConfigV2
-from .spec import Command as CommandV2
-from .spec import Message as MessageV2
+from .v2 import Device as DeviceV2
+from .v2 import Config as ConfigV2
+from .v2 import Command as CommandV2
+from .v2 import Message as MessageV2
 
 
 class Message(Model):
@@ -112,7 +112,7 @@ class FcpV1(Model):
             cmds += list([x.to_v2(device) for x in self.get_commands(device.name)])
             cfgs += list([x.to_v2(device) for x in self.get_configs(device.name)])
 
-        return Spec(
+        return FcpV2(
             devices=[device.to_v2() for device in self.devices.values()],
             messages=msgs,
             configs=cfgs,

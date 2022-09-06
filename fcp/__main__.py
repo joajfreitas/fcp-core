@@ -14,8 +14,7 @@ import click
 
 from .dbc_reader import read_dbc
 from .dbc_writer import write_dbc
-from .c_generator import c_gen
-from .specs import Spec
+from .specs import FcpV2
 from .specs.v1 import FcpV1, fcp_v1_to_v2
 from .docs import generate_docs
 from .version import VERSION

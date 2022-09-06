@@ -5,7 +5,7 @@ from pprint import pprint, pformat
 
 from lark import Lark, Transformer, v_args
 
-from .specs import Device, Broadcast, Signal, Struct, Enum, Spec
+from .specs import Device, Broadcast, Signal, Struct, Enum, FcpV2
 
 fcp_parser = Lark(
     """
@@ -257,7 +257,7 @@ def merge(fcp, fpi):
 
 
 def convert(module):
-    return Spec(
+    return FcpV2(
         broadcasts=module["broadcast"].values(),
         devices=module["device"].values(),
         structs=module["struct"].values(),

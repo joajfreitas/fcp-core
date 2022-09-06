@@ -23,7 +23,7 @@ def handle_key_not_found(d: dict, key: str):
     return d.get(key).items() if d.get(key) != None else []
 
 
-class Spec(Model):
+class FcpV2(Model):
     """FCP root node. Holds all Devices, Messages, Signals, Logs, Configs,
     Commands and Arguments.
     """

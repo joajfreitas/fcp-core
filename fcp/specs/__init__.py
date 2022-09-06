@@ -10,6 +10,6 @@ from .common import Common
 from .device import Device
 from .broadcast import Broadcast
 from .log import Log
-from .spec import Spec
-from .spec import decompose_id
-from .spec import make_sid
+from .v2 import FcpV2
+from .v2 import decompose_id
+from .v2 import make_sid

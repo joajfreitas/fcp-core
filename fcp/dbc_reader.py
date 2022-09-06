@@ -7,7 +7,7 @@ import cantools
 
 from .specs import Argument
 from .specs import (
-    Spec,
+    FcpV2,
     Device,
     Message,
     Signal,
@@ -185,7 +185,7 @@ def read_dbc(dbc, json_file, device_config):
 
     db = cantools.database.load_file(dbc)
 
-    spec = Spec()
+    spec = FcpV2()
 
     for message in db.messages:
         sid = message.frame_id
@@ -238,7 +238,7 @@ def read_dbc(dbc, json_file, device_config):
 
 
 def init(json_file, logger):
-    spec = Spec()
+    spec = FcpV2()
     default_configs(spec)
     logger.info("added default configs ✅")
     j = spec.to_dict()

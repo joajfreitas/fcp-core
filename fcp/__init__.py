@@ -1,4 +1,4 @@
-from .specs import Spec
+from .specs import FcpV2
 
 from .can import CANMessage
 
