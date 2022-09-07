@@ -7,6 +7,7 @@ import pathlib
 import pkgutil
 import sys
 
+from .result import Ok, Error
 
 class CodeGenerator:
     """Base class for generators."""
@@ -16,6 +17,9 @@ class CodeGenerator:
 
     def gen(self, fcp, templates, skels, output_path="output"):
         """Function called from fcp to trigger generator. Do not override."""
+
+        self.verify(fcp).unwrap()
+
         output_path = pathlib.Path(output_path)
         os.makedirs(output_path, exist_ok=True)
 
@@ -24,8 +28,15 @@ class CodeGenerator:
             with open(output_path / path, "w", encoding="utf-8") as file:
                 file.write(content)
 
+    def verify(self, fcp):
+        if fcp is not None:
+            return Ok(())
+        else:
+            return Error(["Received a None object instead of FcpV2"])
+
     def generate(self, fcp, templates, skel):
         """Function to override from generator. Implements actual code generation."""
+        return
 
 
 class GeneratorManager:

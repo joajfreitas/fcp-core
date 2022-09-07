@@ -20,6 +20,7 @@ from .docs import generate_docs
 from .version import VERSION
 from .v2_parser import get_fcp
 from .codegen import GeneratorManager
+from .verifier import Verifier
 
 
 def setup_logging():
@@ -85,6 +86,7 @@ def generate_cmd(
 ):
 
     fcp_v2 = get_fcp(fcp, fpi)
+    Verifier().verify(fcp_v2)
 
     generator_manager = GeneratorManager()
     generator_manager.generate(generator, templates, skel, fcp_v2)

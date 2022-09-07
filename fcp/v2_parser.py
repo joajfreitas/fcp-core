@@ -280,4 +280,5 @@ def get_fcp(fcp, fpi):
     fpi = FpiTransformer(fpi_filename).transform(ast)
     fpi = deduplicate(resolve_imports(fpi))
 
-    return convert(merge(fcp, fpi))
+    fcp_v2 = convert(merge(fcp, fpi))
+    return fcp_v2
