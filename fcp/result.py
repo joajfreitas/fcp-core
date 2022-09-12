@@ -1,5 +1,29 @@
 import logging
 import sys
+import traceback
+
+from functools import wraps
+
+
+class ResultShortcutError(Exception):
+    def __init__(self, error):
+        super().__init__()
+        self.error = error
+
+
+class OptionShortcutError(Exception):
+    pass
+
+
+def result_shortcut(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except ResultShortcutError as err:
+            return err.error
+
+    return wrapper
 
 
 class Result:
@@ -28,6 +52,9 @@ class Ok(Result):
         else:
             return result
 
+    def Q(self):
+        return self.value
+
     def __repr__(self):
         return "Ok"
 
@@ -38,6 +65,8 @@ class Error(Result):
 
     def unwrap(self):
         error = self.error if isinstance(self.error, list) else [self.error]
+
+        traceback.print_stack()
         for err in error:
             logging.error(err)
         sys.exit(1)
@@ -52,6 +81,9 @@ class Error(Result):
             return Error(v1 + v2)
         else:
             return self
+
+    def Q(self):
+        raise OptionShortcutError(self)
 
     def __repr__(self):
         error = self.error if isinstance(self.error, list) else [self.error]

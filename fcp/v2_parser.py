@@ -6,7 +6,7 @@ from pprint import pprint, pformat
 from lark import Lark, Transformer, v_args
 
 from .specs import Device, Broadcast, Signal, Struct, Enum, FcpV2
-from .result import Ok, Error
+from .result import Ok, Error, result_shortcut
 
 fcp_parser = Lark(
     """
@@ -229,7 +229,11 @@ def resolve_imports(module):
 
     for child, _ in module.children:
         if isinstance(child, Module):
-            nodes = merge(nodes, resolve_imports(child))
+            resolved = resolve_imports(child)
+            if resolved.is_err():
+                return resolved
+
+            nodes = merge(nodes, resolved.unwrap())
         else:
             child.filename = module.filename
 
@@ -247,48 +251,52 @@ def resolve_imports(module):
                 #    f"Previously defined in {previous_definition.filename}:{previous_definition.pos()}"
                 # )
 
-                print("Duplicated definitions")
-                sys.exit(1)
+                return Error("Duplicated definitions")
 
             nodes[child.get_type()].append(child)
 
-    return nodes
+    return Ok(nodes)
 
 
 def deduplicate(module):
-    return {
-        type: {node.get_name(): node for node in module[type]} for type in module.keys()
-    }
+    return Ok(
+        {
+            type: {node.get_name(): node for node in module[type]}
+            for type in module.keys()
+        }
+    )
 
 
 def merge(fcp, fpi):
     fcp.update(fpi)
-    return fcp
+    return Ok(fcp)
 
 
 def convert(module):
-    return FcpV2(
-        broadcasts=module["broadcast"].values(),
-        devices=module["device"].values(),
-        structs=module["struct"].values(),
-        enums=module["enum"].values(),
+    return Ok(
+        FcpV2(
+            broadcasts=module["broadcast"].values(),
+            devices=module["device"].values(),
+            structs=module["struct"].values(),
+            enums=module["enum"].values(),
+        )
     )
 
 
+@result_shortcut
 def get_fcp(fcp, fpi):
     fcp_filename = fcp
     with open(fcp_filename) as f:
         ast = fcp_parser.parse(f.read())
 
     fcp = FcpV2Transformer(fcp_filename).transform(ast)
-    fcp = deduplicate(resolve_imports(fcp))
+    fcp = deduplicate(resolve_imports(fcp).Q()).Q()
 
     fpi_filename = fpi
     with open(fpi_filename) as f:
         ast = fpi_parser.parse(f.read())
 
     fpi = FpiTransformer(fpi_filename).transform(ast)
-    fpi = deduplicate(resolve_imports(fpi))
+    fpi = deduplicate(resolve_imports(fpi).Q()).Q()
 
-    fcp_v2 = convert(merge(fcp, fpi))
-    return fcp_v2
+    return convert(merge(fcp, fpi).Q())

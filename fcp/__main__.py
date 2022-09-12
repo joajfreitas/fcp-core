@@ -85,7 +85,8 @@ def generate_cmd(
     force: bool,
 ):
 
-    fcp_v2 = get_fcp(fcp, fpi)
+    fcp_v2 = get_fcp(fcp, fpi).unwrap()
+
     result = Verifier().verify(fcp_v2)
     if result.is_err():
         print(result)
@@ -162,7 +163,7 @@ def json_to_fcp2(json_file: str, output: str):
 @click.argument("fcp")
 @click.argument("fpi")
 def parse(fcp, fpi):
-    fcp = get_fcp(fcp, fpi)
+    fcp = get_fcp(fcp, fpi).unwrap()
     pprint(fcp.to_dict())
 
 
