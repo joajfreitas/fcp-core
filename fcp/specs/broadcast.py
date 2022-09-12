@@ -3,6 +3,7 @@ import datetime
 from serde import Model, fields
 
 from .serde_extend import Any
+from .metadata import MetaData
 
 
 class Broadcast(Model):
@@ -10,6 +11,7 @@ class Broadcast(Model):
 
     name: fields.Str()
     field: fields.Dict(fields.Str(), Any())
+    meta: fields.Optional(MetaData)
 
     def get_name(self):
         return self.name

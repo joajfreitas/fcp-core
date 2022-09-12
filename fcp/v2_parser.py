@@ -7,6 +7,7 @@ from lark import Lark, Transformer, v_args
 
 from .specs import Device, Broadcast, Signal, Struct, Enum, FcpV2
 from .result import Ok, Error, result_shortcut
+from .specs.metadata import MetaData
 
 fcp_parser = Lark(
     """
@@ -60,25 +61,9 @@ fpi_parser = Lark(
     %ignore " "           // Disregard spaces in text
     %ignore "\\n"
     %ignore "\\t"
-"""
+""",
+    propagate_positions=True,
 )
-
-
-class AstNode:
-    def __init__(self, type, data, tree):
-        self.type = type
-        self.data = data
-        self.tree = tree
-        self.filename = None
-
-    def name(self):
-        return self.data["name"]
-
-    def pos(self):
-        return self.tree.meta.line, self.tree.meta.column
-
-    def __repr__(self):
-        return f"<AstNode {self.type} {self.name()}>"
 
 
 class Module:
@@ -116,20 +101,27 @@ class FcpV2Transformer(Transformer):
     @v_args(tree=True)
     def struct(self, tree):
         name, *fields = tree.children
-        return (Struct(name=name, signals=fields), None)
+        metadata = MetaData(
+            line=tree.meta.line, column=tree.meta.column, filename=self.filename.stem
+        )
+        return Struct(name=name, signals=fields, meta=metadata)
 
     @v_args(tree=True)
     def enum_field(self, tree):
         name, value = tree.children
-        return (name, value, None)
+        return name, value
 
     @v_args(tree=True)
     def enum(self, tree):
         args = tree.children
         name, *fields = args
-        return (
-            Enum(name=name, enumeration={name: value for name, value, _ in fields}),
-            None,
+        metadata = MetaData(
+            line=tree.meta.line, column=tree.meta.column, filename=self.filename.stem
+        )
+        return Enum(
+            name=name,
+            enumeration={name: value for name, value in fields},
+            meta=metadata,
         )
 
     def imports(self, args):
@@ -145,7 +137,7 @@ class FcpV2Transformer(Transformer):
             print(traceback.format_exc())
             sys.exit(1)
 
-        return (module, None)
+        return module
 
     def value(self, args):
         return args[0]
@@ -180,20 +172,23 @@ class FpiTransformer(Transformer):
     @v_args(tree=True)
     def field(self, tree):
         name, value = tree.children
-        return ({name: value}, None)
+        return {name: value}
 
     @v_args(tree=True)
     def broadcast(self, tree):
         name, *fields = tree.children
         fs = {}
         for field in fields:
-            for key, value in field[0].items():
+            for key, value in field.items():
                 if key in fs.keys():
                     print(f"duplicated key: {name} in broadcast {name}")
                     sys.exit(1)
                 fs[key] = value
 
-        return (Broadcast(name=name, field=fs), None)
+        meta = MetaData(
+            line=tree.meta.line, column=tree.meta.column, filename=self.filename.stem
+        )
+        return Broadcast(name=name, field=fs, meta=meta)
 
     def imports(self, args):
         filename = args[0] + ".fpi"
@@ -204,13 +199,16 @@ class FpiTransformer(Transformer):
             print(f"Could not import {filename}")
             sys.exit(1)
 
-        return (module, None)
+        return module
 
     @v_args(tree=True)
     def device(self, tree):
-        args = tree.children
-        fields, fields_meta = args[1]
-        return (Device(name=args[0], id=fields["id"]), None)
+        name, *fields = tree.children
+
+        meta = MetaData(
+            line=tree.meta.line, column=tree.meta.column, filename=self.filename.stem
+        )
+        return Device(name=name, id=fields[0]["id"], meta=meta)
 
     def start(self, args):
         return Module("__main__", args)
@@ -227,7 +225,7 @@ def resolve_imports(module):
 
     nodes = {}
 
-    for child, _ in module.children:
+    for child in module.children:
         if isinstance(child, Module):
             resolved = resolve_imports(child)
             if resolved.is_err():
@@ -287,16 +285,16 @@ def convert(module):
 def get_fcp(fcp, fpi):
     fcp_filename = fcp
     with open(fcp_filename) as f:
-        ast = fcp_parser.parse(f.read())
+        fcp_ast = fcp_parser.parse(f.read())
 
-    fcp = FcpV2Transformer(fcp_filename).transform(ast)
+    fcp = FcpV2Transformer(fcp_filename).transform(fcp_ast)
     fcp = deduplicate(resolve_imports(fcp).Q()).Q()
 
     fpi_filename = fpi
     with open(fpi_filename) as f:
-        ast = fpi_parser.parse(f.read())
+        fpi_ast = fpi_parser.parse(f.read())
 
-    fpi = FpiTransformer(fpi_filename).transform(ast)
+    fpi = FpiTransformer(fpi_filename).transform(fpi_ast)
     fpi = deduplicate(resolve_imports(fpi).Q()).Q()
 
     return convert(merge(fcp, fpi).Q())

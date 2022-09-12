@@ -4,6 +4,7 @@ from serde import Model, fields
 
 from ..can import CANMessage
 from .node import Node
+from .metadata import MetaData
 
 
 class SignalValueError(Exception):
@@ -43,6 +44,7 @@ class Signal(Model):
     byte_order: fields.Optional(fields.Str(default="little_endian"))
     mux: fields.Optional(fields.Str(default=""))
     mux_count: fields.Optional(fields.Int(default=1))
+    meta: fields.Optional(MetaData)
 
     def to_fcp(self):
         def get_type(type):

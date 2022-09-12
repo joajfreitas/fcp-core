@@ -7,6 +7,7 @@ from .message import Message
 from .cmd import Command
 from .config import Config
 from .utils import normalize
+from .metadata import MetaData
 
 
 class Device(Model):
@@ -22,6 +23,7 @@ class Device(Model):
 
     name: fields.Str()
     id: fields.Int()
+    meta: fields.Optional(MetaData)
 
     def get_name(self):
         return self.name

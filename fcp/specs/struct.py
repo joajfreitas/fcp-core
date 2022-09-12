@@ -3,6 +3,7 @@ import datetime
 from serde import Model, fields
 
 from .signal import Signal
+from .metadata import MetaData
 
 
 class Struct(Model):
@@ -10,6 +11,7 @@ class Struct(Model):
 
     name: fields.Str()
     signals: fields.List(Signal)
+    meta: fields.Optional(MetaData)
 
     def get_name(self):
         return self.name

@@ -4,6 +4,7 @@ from serde import Model, fields
 
 from .node import Node
 from .enum_value import EnumValue
+from .metadata import MetaData
 
 
 class Enum(Model):
@@ -13,6 +14,7 @@ class Enum(Model):
 
     name: fields.Str()
     enumeration: fields.Dict(fields.Str(), fields.Int())
+    meta: fields.Optional(MetaData)
 
     def get_name(self):
         return self.name
