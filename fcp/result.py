@@ -1,6 +1,7 @@
 import logging
 import sys
 
+
 class Result:
     def is_err(self):
         return isinstance(self, Error)
@@ -8,13 +9,7 @@ class Result:
     def is_ok(self):
         return isinstance(self, Ok)
 
-    def format(value):
-        if isinstance(value, list):
-            for v in value:
-                yield v
-        else:
-            yield value
-    
+
 class Ok(Result):
     def __init__(self, value):
         self.value = value
@@ -36,12 +31,14 @@ class Ok(Result):
     def __repr__(self):
         return "Ok"
 
+
 class Error(Result):
     def __init__(self, error):
         self.error = error
 
     def unwrap(self):
-        for err in Result.format(self.error):
+        error = self.error if isinstance(self.error, list) else [self.error]
+        for err in error:
             logging.error(err)
         sys.exit(1)
 
@@ -59,4 +56,3 @@ class Error(Result):
     def __repr__(self):
         error = self.error if isinstance(self.error, list) else [self.error]
         return "Error:\n" + "\n".join(error)
-

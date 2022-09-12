@@ -86,7 +86,10 @@ def generate_cmd(
 ):
 
     fcp_v2 = get_fcp(fcp, fpi)
-    Verifier().verify(fcp_v2)
+    result = Verifier().verify(fcp_v2)
+    if result.is_err():
+        print(result)
+        sys.exit(1)
 
     generator_manager = GeneratorManager()
     generator_manager.generate(generator, templates, skel, fcp_v2)

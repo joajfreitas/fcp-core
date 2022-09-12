@@ -6,6 +6,7 @@ from pprint import pprint, pformat
 from lark import Lark, Transformer, v_args
 
 from .specs import Device, Broadcast, Signal, Struct, Enum, FcpV2
+from .result import Ok, Error
 
 fcp_parser = Lark(
     """
@@ -184,8 +185,15 @@ class FpiTransformer(Transformer):
     @v_args(tree=True)
     def broadcast(self, tree):
         name, *fields = tree.children
-        fields = {name: value for field in fields for name, value in field[0].items()}
-        return (Broadcast(name=name, field=fields), None)
+        fs = {}
+        for field in fields:
+            for key, value in field[0].items():
+                if key in fs.keys():
+                    print(f"duplicated key: {name} in broadcast {name}")
+                    sys.exit(1)
+                fs[key] = value
+
+        return (Broadcast(name=name, field=fs), None)
 
     def imports(self, args):
         filename = args[0] + ".fpi"
@@ -231,13 +239,15 @@ def resolve_imports(module):
             if child.get_name() in [
                 node.get_name() for node in nodes[child.get_type()]
             ]:
-                previous_definition = nodes[child.get_type()][child.name()]
-                print(
-                    f"Error: {child.get_name()} {module.filename}:{child.pos()} already defined."
-                )
-                print(
-                    f"Previously defined in {previous_definition.filename}:{previous_definition.pos()}"
-                )
+                # previous_definition = [node for node in nodes[child.get_type()] if node.get_name() == child.get_name()]
+                # print(
+                #    f"Error: {child.get_name()} {module.filename}:{child.pos()} already defined."
+                # )
+                # print(
+                #    f"Previously defined in {previous_definition.filename}:{previous_definition.pos()}"
+                # )
+
+                print("Duplicated definitions")
                 sys.exit(1)
 
             nodes[child.get_type()].append(child)

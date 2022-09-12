@@ -9,6 +9,7 @@ import sys
 
 from .result import Ok, Error
 
+
 class CodeGenerator:
     """Base class for generators."""
 
