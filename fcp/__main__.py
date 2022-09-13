@@ -24,7 +24,7 @@ from .verifier import Verifier
 
 
 def setup_logging():
-    logging.getLogger().setLevel(logging.INFO)
+    logging.getLogger().setLevel(logging.DEBUG)
     coloredlogs.install(
         fmt="%(asctime)s %(module)s:%(lineno)d %(levelname)s - %(message)s"
     )
@@ -85,12 +85,10 @@ def generate_cmd(
     force: bool,
 ):
 
-    fcp_v2 = get_fcp(fcp, fpi).unwrap()
+    fcp_v2, sources = get_fcp(fcp, fpi)
+    fcp_v2 = fcp_v2.unwrap()
 
-    result = Verifier().verify(fcp_v2)
-    if result.is_err():
-        print(result)
-        sys.exit(1)
+    Verifier(sources).verify(fcp_v2).unwrap()
 
     generator_manager = GeneratorManager()
     generator_manager.generate(generator, templates, skel, fcp_v2)
@@ -159,14 +157,6 @@ def json_to_fcp2(json_file: str, output: str):
     #    f.write(v2)
 
 
-@click.command("parse")
-@click.argument("fcp")
-@click.argument("fpi")
-def parse(fcp, fpi):
-    fcp = get_fcp(fcp, fpi).unwrap()
-    pprint(fcp.to_dict())
-
-
 @click.group(invoke_without_command=True)
 @click.option("--version", is_flag=True, default=False)
 def main(version):
@@ -184,7 +174,6 @@ main.add_command(generate_cmd)
 main.add_command(init_cmd)
 main.add_command(validate_cmd)
 main.add_command(json_to_fcp2)
-main.add_command(parse)
 
 if __name__ == "__main__":
     setup_logging()

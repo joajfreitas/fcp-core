@@ -1,4 +1,4 @@
-from .enum import Enum
+from .enum import Enum, Enumeration
 from .enum_value import EnumValue
 from .arg import Argument
 from .signal import Signal, SignalValueError

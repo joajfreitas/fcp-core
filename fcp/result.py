@@ -66,9 +66,10 @@ class Error(Result):
     def unwrap(self):
         error = self.error if isinstance(self.error, list) else [self.error]
 
-        traceback.print_stack()
         for err in error:
-            logging.error(err)
+            print(err)
+
+        traceback.print_stack()
         sys.exit(1)
 
     def err(self):

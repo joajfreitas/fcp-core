@@ -2,56 +2,112 @@ import logging
 import sys
 from functools import reduce
 from collections import Counter
+from termcolor import colored, cprint
 
 from .result import Ok, Error
 
 
+class ErrorLogger:
+    def __init__(self, sources):
+        self.sources = sources
+
+    def highlight(self, source, prefix_with_line, prefix_without_line):
+        ss = ""
+        for i, line in enumerate(source.split("\n")):
+            prefix = prefix_with_line if i == 0 else prefix_without_line
+            ss += prefix + line + "\n"
+            line = line.replace("\t", "    ")
+            ss += (
+                prefix_without_line
+                + colored("~" * len(line), "red", attrs=["bold"])
+                + "\n"
+            )
+
+        return ss
+
+    def log_location(self, filename, line, column, source):
+        line_len = len(str(line))
+
+        prefix_with_line = colored(f"{line} | ", "blue", attrs=["bold"])
+        prefix_without_line = colored(" " * line_len + " | ", "blue", attrs=["bold"])
+
+        ss = (
+            " " * line_len
+            + colored(f"---> ", "blue", attrs=["bold"])
+            + f"{filename}:{line}:{column}"
+            + "\n"
+        )
+        ss += prefix_without_line + "\n"
+
+        ss += self.highlight(source, prefix_with_line, prefix_without_line)
+
+        return ss
+
+    def log_node(self, node):
+        source = self.sources[node.meta.filename]
+        return self.log_location(
+            node.meta.filename,
+            node.meta.line,
+            node.meta.column,
+            source[node.meta.start_pos : node.meta.end_pos],
+        )
+
+    def log_duplicates(self, error, duplicates):
+        return (
+            colored("error: ", "red", attrs=["bold"])
+            + colored(error, "white", attrs=["bold"])
+            + "\n"
+            + "\n".join(map(lambda x: self.log_node(x), duplicates))
+        )
+
+
 class Verifier:
-    def __init__(self):
+    def __init__(self, sources):
+        self.error_logger = ErrorLogger(sources)
         pass
 
-    @staticmethod
-    def check_fcp_v2_duplicate_typenames(fcp_v2):
+    def check_fcp_v2_duplicate_typenames(self, fcp_v2):
+        naming = lambda x: x.name
         duplicates = list(
-            Verifier.get_duplicates(
-                fcp_v2.structs + fcp_v2.enums, lambda x: x.name, lambda x: x.name
-            )
+            Verifier.get_duplicates(fcp_v2.structs + fcp_v2.enums, naming, naming)
         )
+
         if len(duplicates) == 0:
             return Ok(())
         else:
             return Error(
-                f"Found duplicate typenames in fcp configuration: {duplicates}"
+                self.error_logger.log_duplicates(
+                    "Found duplicate typenames in fcp configuration", duplicates
+                )
             )
 
-    @staticmethod
-    def check_fcp_v2_duplicate_broadcasts(fcp_v2):
-        duplicates = list(
-            Verifier.get_duplicates(
-                fcp_v2.broadcasts, lambda x: x.name, lambda x: x.name
-            )
-        )
+    def check_fcp_v2_duplicate_broadcasts(self, fcp_v2):
+        naming = lambda x: x.name
+        duplicates = list(Verifier.get_duplicates(fcp_v2.broadcasts, naming, naming))
         if len(duplicates) == 0:
             return Ok(())
         else:
             return Error(
-                f"Found duplicate broadcasts in fcp configuration: {duplicates}"
+                self.error_logger.log_duplicates(
+                    "Found duplicate broadcasts in fcp configuration",
+                    duplicates,
+                )
             )
 
-    @staticmethod
-    def check_struct_duplicate_signals(struct):
-        duplicates = list(
-            Verifier.get_duplicates(struct.signals, lambda x: x.name, lambda x: x.name)
-        )
+    def check_struct_duplicate_signals(self, struct):
+        naming = lambda x: x.name
+        duplicates = list(Verifier.get_duplicates(struct.signals, naming, naming))
         if len(duplicates) == 0:
             return Ok(())
         else:
             return Error(
-                f"Found duplicate singals in struct {struct.name}: {duplicates}"
+                self.error_logger.log_duplicates(
+                    f"Found duplicate signals in struct {struct.name}",
+                    duplicates,
+                )
             )
 
-    @staticmethod
-    def check_signal_type(signal):
+    def check_signal_type(self, signal):
         types = [
             signess + str(width) for signess in ["i", "u"] for width in range(1, 65)
         ]
@@ -60,13 +116,12 @@ class Verifier:
         if signal.type in types:
             return Ok(())
         else:
-            return Error(f"type {signal.type} is not a valid type")
+            return Error(self.error_logger.log_node(signal))
 
-    @staticmethod
-    def check_enum_duplicated_values(enum):
+    def check_enum_duplicated_values(self, enum):
         duplicates = list(
             Verifier.get_duplicates(
-                enum.enumeration.items(), lambda x: x[1], lambda x: x[0]
+                enum.enumeration, lambda x: x.value, lambda x: x.name
             )
         )
         if len(duplicates) == 0:
@@ -82,15 +137,15 @@ class Verifier:
         duplicates = list(filter(lambda x: x[1] > 1, count.items()))
 
         for duplicate in duplicates:
-            for name, value in zip(map(naming, container), selection):
+            for node, value in zip(container, selection):
                 if value == duplicate[0]:
-                    yield name
+                    yield node
 
     def apply_check(self, category, value):
         result = Ok(())
         for name, f in Verifier.__dict__.items():
             if name.startswith(f"check_{category}"):
-                result = result.compound(f(value))
+                result = result.compound(f(self, value))
 
         return result
 
