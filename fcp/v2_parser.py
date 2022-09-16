@@ -3,12 +3,40 @@ import pathlib
 import traceback
 from pprint import pprint, pformat
 import logging
+from termcolor import colored
 
-from lark import Lark, Transformer, v_args
+from lark import (
+    Lark,
+    Transformer,
+    v_args,
+    LarkError,
+    UnexpectedInput,
+    UnexpectedCharacters,
+)
 
 from .specs import Device, Broadcast, Signal, Struct, Enum, Enumeration, FcpV2
 from .result import Ok, Error, result_shortcut
 from .specs.metadata import MetaData
+from .verifier import ErrorLogger
+
+
+def format_lark_exception(exception, filename):
+    ss = (
+        colored("Error: ", "red", attrs=["bold"])
+        + colored("Cannot parse current file", "white", attrs=["bold"])
+        + "\n"
+    )
+    ss += (
+        colored(" --> ", "blue", attrs=["bold"])
+        + colored(
+            f"{filename}:{exception.line}:{exception.column}", "white", attrs=["bold"]
+        )
+        + "\n"
+    )
+    ss += exception._format_expected(exception.allowed)
+
+    return ss
+
 
 fcp_parser = Lark(
     """
@@ -98,6 +126,8 @@ class FcpV2Transformer(Transformer):
         with open(self.filename) as f:
             self.source = f.read()
 
+        self.error_logger = ErrorLogger({self.filename: self.source})
+
     def identifier(self, args):
         return args[0]
 
@@ -157,7 +187,7 @@ class FcpV2Transformer(Transformer):
                 )
                 module.filename = filename.name
         except Exception as e:
-            return Error(f"Could not import {filename}")
+            return Error(self.error_logger.error(f"Could not import {filename}"))
 
         return Ok(module)
 
@@ -185,6 +215,8 @@ class FpiTransformer(Transformer):
         with open(self.filename) as f:
             self.source = f.read()
 
+        self.error_logger = ErrorLogger({self.filename: self.source})
+
     def identifier(self, args):
         return args[0].value
 
@@ -209,7 +241,11 @@ class FpiTransformer(Transformer):
         for field in fields:
             for key, value in field.items():
                 if key in fs.keys():
-                    return Error(f"duplicated key: {name} in broadcast {name}")
+                    return Error(
+                        self.error_logger.error(
+                            f"duplicated key: {name} in broadcast {name}"
+                        )
+                    )
                 fs[key] = value
 
         meta = get_meta(tree, self)
@@ -222,7 +258,7 @@ class FpiTransformer(Transformer):
                 module = FpiTransformer(filename).transform(fpi_parser.parse(f.read()))
                 module.filename = filename.name
         except Exception as e:
-            return Error(f"Could not import {filename}")
+            return Error(self.error_logger.error(f"Could not import {filename}"))
 
         return Ok(module)
 
@@ -318,9 +354,23 @@ def get_sources(module):
 
 @result_shortcut
 def get_fcp(fcp, fpi):
+    error_logger = ErrorLogger({})
     fcp_filename = fcp
     with open(fcp_filename) as f:
-        fcp_ast = fcp_parser.parse(f.read())
+        try:
+            source = f.read()
+            error_logger.add_source(fcp_filename, source)
+            fcp_ast = fcp_parser.parse(source)
+        except UnexpectedCharacters as e:
+            return Error(
+                error_logger.log_surrounding(
+                    "Cannot parse current file",
+                    fcp_filename,
+                    e.line,
+                    e.column,
+                    e._format_expected(e.allowed),
+                )
+            )
 
     fcp = FcpV2Transformer(fcp_filename).transform(fcp_ast)
     fcp_sources = get_sources(fcp)
@@ -334,4 +384,4 @@ def get_fcp(fcp, fpi):
     fpi_sources = get_sources(fpi)
     fpi = deduplicate(resolve_imports(fpi).Q()).Q()
 
-    return convert(merge(fcp, fpi).Q()), fcp_sources | fpi_sources
+    return Ok((convert(merge(fcp, fpi).Q()), fcp_sources | fpi_sources))

@@ -3,7 +3,7 @@ device master {
 }
 
 broadcast master_ts {
-	id : 974;
+	id: 974;
 	dlc : 4;
 	device: master;
 	type: master_ts;
@@ -11,7 +11,7 @@ broadcast master_ts {
 
 
 broadcast master_status {
-	id : 1006;
+	id : 10;
 	dlc : 8;
 	device: master;
 	type: master_ts;

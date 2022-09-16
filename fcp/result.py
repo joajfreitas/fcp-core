@@ -11,10 +11,6 @@ class ResultShortcutError(Exception):
         self.error = error
 
 
-class OptionShortcutError(Exception):
-    pass
-
-
 def result_shortcut(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -72,6 +68,8 @@ class Error(Result):
         traceback.print_stack()
         sys.exit(1)
 
+        return (None, None)
+
     def err(self):
         return self.error
 
@@ -84,7 +82,7 @@ class Error(Result):
             return self
 
     def Q(self):
-        raise OptionShortcutError(self)
+        raise ResultShortcutError(self)
 
     def __repr__(self):
         error = self.error if isinstance(self.error, list) else [self.error]

@@ -3,13 +3,71 @@ import sys
 from functools import reduce
 from collections import Counter
 from termcolor import colored, cprint
+import functools
 
 from .result import Ok, Error
+
+
+class colors:
+    @staticmethod
+    def red(s):
+        return colored(s, "red")
+
+    @staticmethod
+    def yellow(s):
+        return colored(s, "yellow")
+
+    @staticmethod
+    def orange(s):
+        return colored(s, "orange")
+
+    @staticmethod
+    def blue(s):
+        return colored(s, "blue")
+
+    @staticmethod
+    def white(s):
+        return colored(s, "white")
+
+    @staticmethod
+    def boldred(s):
+        return colored(s, "red", attrs=["bold"])
+
+    @staticmethod
+    def boldyellow(s):
+        return colored(s, "yellow", attrs=["bold"])
+
+    @staticmethod
+    def boldorange(s):
+        return colored(s, "orange", attrs=["bold"])
+
+    @staticmethod
+    def boldblue(s):
+        return colored(s, "blue", attrs=["bold"])
+
+    @staticmethod
+    def boldwhite(s):
+        return colored(s, "white", attrs=["bold"])
+
+
+def simple_error(f):
+    # @functools.wraps(f)
+    def wrapper(obj, node):
+        cond, error = f(obj, node)
+        if not cond:
+            return Ok(())
+        else:
+            return Error(obj.error_logger.log_node(node, error))
+
+    return wrapper
 
 
 class ErrorLogger:
     def __init__(self, sources):
         self.sources = sources
+
+    def add_source(self, name, source):
+        self.sources[name] = source
 
     def highlight(self, source, prefix_with_line, prefix_without_line):
         ss = ""
@@ -25,15 +83,20 @@ class ErrorLogger:
 
         return ss
 
-    def log_location(self, filename, line, column, source):
+    def log_location(self, error, filename, line, column, source):
         line_len = len(str(line))
 
-        prefix_with_line = colored(f"{line} | ", "blue", attrs=["bold"])
-        prefix_without_line = colored(" " * line_len + " | ", "blue", attrs=["bold"])
+        prefix_with_line = colors.boldblue(f"{line} | ")
+        prefix_without_line = colors.boldblue(" " * line_len + " | ")
 
         ss = (
+            ""
+            if error == ""
+            else colors.boldred("error: ") + colors.boldwhite(error) + "\n"
+        )
+        ss += (
             " " * line_len
-            + colored(f"---> ", "blue", attrs=["bold"])
+            + colors.boldblue(f"---> ")
             + f"{filename}:{line}:{column}"
             + "\n"
         )
@@ -43,9 +106,10 @@ class ErrorLogger:
 
         return ss
 
-    def log_node(self, node):
+    def log_node(self, node, error=""):
         source = self.sources[node.meta.filename]
         return self.log_location(
+            error,
             node.meta.filename,
             node.meta.line,
             node.meta.column,
@@ -54,11 +118,33 @@ class ErrorLogger:
 
     def log_duplicates(self, error, duplicates):
         return (
-            colored("error: ", "red", attrs=["bold"])
-            + colored(error, "white", attrs=["bold"])
+            colors.boldblue("error: ")
+            + colors.boldwhite(error)
             + "\n"
             + "\n".join(map(lambda x: self.log_node(x), duplicates))
         )
+
+    def log_surrounding(self, error, filename, line, column, tip=""):
+
+        ss = self.error(error) + "\n"
+        lines = self.sources[filename].split("\n")
+        starting_line = line - 2 if line > 0 else 0
+        ending_line = line if line < len(lines) else len(lines)
+
+        prefix_with_line = colors.boldblue(f"{starting_line+1} | ")
+        prefix_without_line = colors.boldblue(" " * len(str(line)) + " | ")
+
+        source = "\n".join(lines[starting_line:ending_line])
+        print(source)
+
+        ss += self.highlight(source, prefix_with_line, prefix_without_line)
+
+        ss += tip
+
+        return ss
+
+    def error(self, error):
+        return colors.boldred("Error: ") + colors.boldwhite(error)
 
 
 class Verifier:
@@ -116,7 +202,14 @@ class Verifier:
         if signal.type in types:
             return Ok(())
         else:
-            return Error(self.error_logger.log_node(signal))
+            return Error(self.error_logger.log_node(signal, "Invalid signal type"))
+
+    @simple_error
+    def check_signal_name_is_identifier(self, signal):
+        return (
+            not signal.name.isidentifier(),
+            f"{signal.name} is not a valid identifier",
+        )
 
     def check_enum_duplicated_values(self, enum):
         duplicates = list(
@@ -128,6 +221,24 @@ class Verifier:
             return Ok(())
         else:
             return Error(f"Found duplicate values in enum {enum.name}: {duplicates}")
+
+    @simple_error
+    def check_enum_name_is_identifier(self, enum):
+        return not enum.name.isidentifier(), f"{enum.name} is not a valid identifier"
+
+    @simple_error
+    def check_broadcast_name_is_identifier(self, broadcast):
+        return (
+            not broadcast.name.isidentifier(),
+            f"{broadcast.name} is not a valid identifier",
+        )
+
+    @simple_error
+    def check_device_name_is_identifier(self, device):
+        return (
+            not device.name.isidentifier(),
+            f"{device.name} is not a valid identifier",
+        )
 
     @staticmethod
     def get_duplicates(container, selector, naming):

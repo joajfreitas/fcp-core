@@ -125,3 +125,5 @@ class GeneratorManager:
                 skels[skel] = file.read()
 
         generator.gen(fcp, templates, skels)
+
+        return Ok(())

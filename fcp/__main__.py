@@ -85,13 +85,13 @@ def generate_cmd(
     force: bool,
 ):
 
-    fcp_v2, sources = get_fcp(fcp, fpi)
+    fcp_v2, sources = get_fcp(fcp, fpi).unwrap()
     fcp_v2 = fcp_v2.unwrap()
 
     Verifier(sources).verify(fcp_v2).unwrap()
 
     generator_manager = GeneratorManager()
-    generator_manager.generate(generator, templates, skel, fcp_v2, sources)
+    generator_manager.generate(generator, templates, skel, fcp_v2, sources).unwrap()
 
     if noformat == False:
         subprocess.run(
