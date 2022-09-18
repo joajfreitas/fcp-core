@@ -1,6 +1,7 @@
 import json
 from serde import Model, fields
 from fcp.specs.broadcast import Broadcast, BroadcastSignal
+
 from fcp.specs.struct import Struct
 from .v2 import FcpV2
 from . import Log, Argument, Comment
@@ -148,6 +149,7 @@ class FcpV1(Model):
             return self.devices[device].cmds.values()
         else:
             return [cmd for dev in self.devices for cmd in dev.cmds]
+    
 
     # Poor function name since it is not a getter
     def get_struct(self, device, message):
