@@ -2,6 +2,7 @@ from typing import *
 import copy
 import datetime
 import time
+import logging
 from serde import Model, fields
 
 from . import (
@@ -37,9 +38,6 @@ class FcpV2(Model):
     def add_device(self, device):
         self.devices.append(device)
 
-    def to_fcp(self):
-        return "\n".join([struct.to_fcp() for struct in self.structs])
-
     def get_broadcasts(self, device=None):
         if device is None:
             return [broadcast for broadcast in self.broadcasts]
@@ -49,6 +47,12 @@ class FcpV2(Model):
                 for broadcast in self.broadcasts
                 if broadcast.field["device"] == device
             ]
+
+    def to_fcp(self):
+        return "\n\n".join([node.to_fcp() for node in self.enums + self.structs])
+
+    def to_fpi(self):
+        return "\n".join([node.to_fpi() for node in self.devices + self.broadcasts])
 
     def __repr__(self) -> str:
 

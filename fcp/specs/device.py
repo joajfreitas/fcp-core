@@ -31,8 +31,8 @@ class Device(Model):
     def get_type(self):
         return "device"
 
-    def to_idl(self):
-        return f"device {self.name};\n"
+    def to_fpi(self):
+        return f"device {self.name} {{\n\tid: {self.id};\n}}"
 
     def __repr__(self):
         return f"<Device name={self.name} id={self.id}"

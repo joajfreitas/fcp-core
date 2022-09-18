@@ -138,23 +138,22 @@ def validate_cmd(json_file: str):
 
 
 @click.command("json_to_fcp2")
-@click.argument("json_file")
+@click.argument("fcp")
+@click.argument("fpi")
 @click.argument("output")
-def json_to_fcp2(json_file: str, output: str):
+def json_to_fcp2(fcp: str, fpi: str, output: str):
 
-    with open(json_file) as f:
-        fcp_v1 = FcpV1.from_json(f.read())
+    fcp_v2, sources = get_fcp(fcp, fpi).unwrap()
+    fcp_v2 = fcp_v2.unwrap()
 
-    fcp_v2 = fcp_v1_to_v2(fcp_v1)
+    Verifier(sources).verify(fcp_v2).unwrap()
 
-    with open(output, "w") as f:
-        f.write(fcp_v2.to_idl())
+    output = Path(output)
+    with open(output / "main.fcp", "w") as f:
+        f.write(fcp_v2.to_fcp())
 
-    # spec = get_spec(json_file)
-    # v2 = spec_to_fcp_v2(spec)
-
-    # with open(output, "w") as f:
-    #    f.write(v2)
+    with open(output / "main.fpi", "w") as f:
+        f.write(fcp_v2.to_fpi())
 
 
 @click.group(invoke_without_command=True)

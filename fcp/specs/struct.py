@@ -28,11 +28,12 @@ class Struct(Model):
 
         return None
 
-    def to_fpi(self):
+    def to_fcp(self):
         return (
-            f"broadcast {self.name} {{\n"
-            + "\n".join([f"{name}: {field};" for name, field in self.signals.items()])
-            + "\n}\n"
+            (f"/*{self.comment.value}*/\n" if self.comment.value != "" else "")
+            + f"struct {self.name} {{\n"
+            + ";\n".join(map(lambda signal: signal.to_fcp(), self.signals))
+            + ";\n}"
         )
 
     def __repr__(self):

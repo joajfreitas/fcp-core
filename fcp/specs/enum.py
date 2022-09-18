@@ -30,5 +30,13 @@ class Enum(Model):
     def get_type(self):
         return "enum"
 
+    def to_fcp(self):
+        return (
+            (f"/*{self.comment.value}*/\n" if self.comment.value != "" else "")
+            + f"enum {self.name} {{\n\t"
+            + "\n\t".join([f"{enum.name}: {enum.value};" for enum in self.enumeration])
+            + "\n}"
+        )
+
     def __repr__(self):
         return "name: {}".format(self.name)

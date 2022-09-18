@@ -1,5 +1,7 @@
+import sys
 from typing import *
 import datetime
+import logging
 from serde import Model, fields
 
 from ..can import CANMessage
@@ -46,51 +48,12 @@ class Signal(Model):
     meta: fields.Optional(MetaData)
 
     def to_fcp(self):
-        def get_type(type):
-            if type == "unsigned":
-                if self.length == 1:
-                    return "bool"
-                return f"u{self.length}"
-            elif type == "signed":
-                if self.length == 1:
-                    return "bool"
-                return f"i{self.length}"
-            elif type == "float":
-                return "f32"
-            elif type == "double":
-                return "f64"
-            else:
-                print(type)
-                sys.exit(1)
-
-        type = get_type(self.type)
-        return f"\t{self.name}: {type}"
-
-    def to_idl(self):
-        def show(value, default, fmt):
-            if value == default:
-                return ""
-            else:
-                return fmt.format((value))
-
-        def show2(value1, default1, value2, default2, fmt):
-            if value1 == default1 and value2 == default2:
-                return ""
-            else:
-                return fmt.format(value1, value2)
-
-        output = ""
-        output += show(self.comment, "", "\t/*{}*/\n")
-        output += "\tsignal " + self.name + " : "
-        output += f"start({self.start}) | "
-        output += f"length({self.length}) | "
-        output += show2(self.scale, 1.0, self.offset, 0.0, "scale({}, {}) | ")
-        output += show(self.unit, "", 'unit("{}") | ')
-        output += show2(self.min_value, 0.0, self.max_value, 0.0, "sat({}, {}) | ")
-        output += show(self.type, "unsigned", 'type("{}") | ')
-        output += show(self.byte_order, "little_endian", 'endianess("{}") | ')
-        output += show2(self.mux, "", self.mux_count, 1, 'mux("{}", {}) | ')
-        return output[:-3] + ";"
+        unit = f'| unit("{self.unit}")' if self.unit is not None else ""
+        return (
+            (f"\t/*{self.comment.value}*/\n" if self.comment.value != "" else "")
+            + f"\t{self.name}: {self.type}"
+            + unit
+        )
 
     # @property
     # def name(self) -> str:

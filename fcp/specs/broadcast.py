@@ -18,6 +18,13 @@ class BroadcastSignal(Model):
     def get_type(self):
         return "broadcast_signal"
 
+    def to_fpi(self):
+        return (
+            f"\tsignal {self.name} {{\n\t\t"
+            + "\n\t\t".join([f"{name}: {param};" for name, param in self.field.items()])
+            + "\n\t}"
+        )
+
 
 class Broadcast(Model):
     """Broadcast object"""
@@ -59,8 +66,11 @@ class Broadcast(Model):
 
     def to_fpi(self):
         return (
-            f"broadcast {self.name} {{\n"
-            + "\n".join([f"{name}: {field};" for name, field in self.field.items()])
+            (f"/*{self.comment.value}*/\n" if self.comment.value != "" else "")
+            + f"broadcast {self.name} {{\n\t"
+            + "\n\t".join([f"{name}: {field};" for name, field in self.field.items()])
+            + "\n"
+            + "\n\t".join(signal.to_fpi() for signal in self.signals)
             + "\n}\n"
         )
 

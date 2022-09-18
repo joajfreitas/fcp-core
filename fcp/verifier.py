@@ -131,7 +131,6 @@ class ErrorLogger:
         prefix_without_line = colors.boldblue(" " * len(str(line)) + " | ")
 
         source = "\n".join(lines[starting_line:ending_line])
-        print(source)
 
         ss += self.highlight(source, prefix_with_line, prefix_without_line)
 

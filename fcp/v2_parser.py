@@ -184,7 +184,10 @@ class FcpV2Transformer(Transformer):
         meta = get_meta(tree, self)
         return Ok(
             Struct(
-                name=name, signals=[x.Q() for x in fields], meta=meta, comment=comment
+                name=name.value,
+                signals=[x.Q() for x in fields],
+                meta=meta,
+                comment=comment,
             )
         )
 
@@ -346,7 +349,7 @@ def resolve_imports(module):
 
         return merged
 
-    nodes = {}
+    nodes = {"enum": [], "struct": [], "broadcast": [], "device": []}
 
     for child in module.children:
         if isinstance(child, Module):
@@ -357,6 +360,7 @@ def resolve_imports(module):
             nodes = merge(nodes, resolved.unwrap())
         else:
             child.filename = module.filename
+
             if child.get_type() not in nodes.keys():
                 nodes[child.get_type()] = []
 
@@ -388,7 +392,9 @@ def deduplicate(module):
 
 
 def merge(fcp, fpi):
-    fcp.update(fpi)
+    fcp = {key: fcp[key] for key in fcp.keys() & {"struct", "enum"}}
+    fpi = {key: fpi[key] for key in fpi.keys() & {"device", "broadcast"}}
+    fcp = fcp | fpi
     return Ok(fcp)
 
 
