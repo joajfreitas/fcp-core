@@ -148,6 +148,8 @@ class FcpV1(Model):
             return self.devices[device].cmds.values()
         else:
             return [cmd for dev in self.devices for cmd in dev.cmds]
+
+    # Poor function name since it is not a getter
     def get_struct(self, device, message):
         message = self.devices[device].msgs[message]
         signals = [signal.to_v2() for signal in message.signals.values()]
@@ -175,6 +177,7 @@ class FcpV1(Model):
     def get_logs(self):
         return self.logs.values()
 
+    def to_v2(self):
         structs = []
         broadcast = []
 
@@ -190,7 +193,6 @@ class FcpV1(Model):
             enums=[],
             version="0.3",
         )
-
 
 def fcp_v1_to_v2(fcp_v1: FcpV1):
     return fcp_v1.to_v2()
