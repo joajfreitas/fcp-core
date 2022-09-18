@@ -58,6 +58,9 @@ class Signal(Model):
     # @property
     # def name(self) -> str:
     #    return self._name
+    @property
+    def scale(self) -> float:
+        return self._scale
 
     # @property
     # def start(self) -> int:
