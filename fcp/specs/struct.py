@@ -4,6 +4,7 @@ from serde import Model, fields
 
 from .signal import Signal
 from .metadata import MetaData
+from .comment import Comment
 
 
 class Struct(Model):
@@ -12,12 +13,20 @@ class Struct(Model):
     name: fields.Str()
     signals: fields.List(Signal)
     meta: fields.Optional(MetaData)
+    comment: Comment
 
     def get_name(self):
         return self.name
 
     def get_type(self):
         return "struct"
+
+    def get_signal(self, name):
+        for signal in self.signals:
+            if signal.name == name:
+                return signal
+
+        return None
 
     def to_fpi(self):
         return (

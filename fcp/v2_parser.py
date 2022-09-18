@@ -14,7 +14,17 @@ from lark import (
     UnexpectedCharacters,
 )
 
-from .specs import Device, Broadcast, Signal, Struct, Enum, Enumeration, FcpV2
+from .specs import (
+    Device,
+    Broadcast,
+    BroadcastSignal,
+    Signal,
+    Struct,
+    Enum,
+    Enumeration,
+    Comment,
+    FcpV2,
+)
 from .result import Ok, Error, result_shortcut
 from .specs.metadata import MetaData
 from .verifier import ErrorLogger
@@ -42,21 +52,23 @@ fcp_parser = Lark(
     """
     start: (struct | enum | imports)*
 
-    struct: "struct" identifier "{" field+ "}"
-    field: identifier ":" param+ ";"
+    struct: comment* "struct" identifier "{" field+ "}"
+    field: comment* identifier ":" param+ ";"
     param: identifier "("? param_argument? ")"? "|"?
     param_argument: value ","?
 
-    enum: "enum" identifier "{" enum_field* "}"
+    enum: comment* "enum" identifier "{" enum_field* "}"
     enum_field : identifier "="? value? ";"
 
     imports: "import" identifier ";"
 
     type: identifier
-    identifier: string
+    identifier: CNAME
     string: CNAME
     number: SIGNED_NUMBER
     value : identifier | number
+
+    comment : "/*" CNAME+ "*/"
 
     %import common.WORD   // imports from terminal library
     %import common.CNAME   // imports from terminal library
@@ -72,21 +84,26 @@ fpi_parser = Lark(
     """
     start: (broadcast | device | imports)*
 
-    broadcast: "broadcast" identifier "{" field* "}"
+    broadcast: comment* "broadcast" identifier "{" (field | signal)* "}"
     field: identifier ":" (value) ";"
-    value : integer | string
-    integer: SIGNED_NUMBER
+    value : integer | float | string
+    signal: "signal" identifier "{" field* "}"
+
+    integer: SIGNED_INT
+    float: SIGNED_NUMBER
     string: CNAME
 
     device : "device" identifier "{" field* "}"
 
+    comment : "/*" CNAME+ "*/"
     imports: "import" identifier ";"
 
     identifier: CNAME
 
-    %import common.WORD   // imports from terminal library
-    %import common.CNAME   // imports from terminal library
-    %import common.SIGNED_NUMBER   // imports from terminal library
+    %import common.WORD
+    %import common.CNAME
+    %import common.SIGNED_NUMBER
+    %import common.SIGNED_INT
     %ignore " "           // Disregard spaces in text
     %ignore "\\n"
     %ignore "\\t"
@@ -142,18 +159,31 @@ class FcpV2Transformer(Transformer):
 
     @v_args(tree=True)
     def field(self, tree):
-        name, *values = tree.children
+        if isinstance(tree.children[0], Comment):
+            comment, name, *values = tree.children
+        else:
+            name, *values = tree.children
+            comment = Comment("")
+
         type = values[0][0]
 
         meta = get_meta(tree, self)
-        return Ok(Signal(name=name, type=type, meta=meta))
+        return Ok(Signal(name=name, type=type, meta=meta, comment=comment))
 
     @v_args(tree=True)
     def struct(self, tree):
-        name, *fields = tree.children
+        if isinstance(tree.children[0], Comment):
+            comment, name, *fields = tree.children
+        else:
+            name, *fields = tree.children
+            comment = Comment("")
 
         meta = get_meta(tree, self)
-        return Ok(Struct(name=name, signals=[x.Q() for x in fields], meta=meta))
+        return Ok(
+            Struct(
+                name=name, signals=[x.Q() for x in fields], meta=meta, comment=comment
+            )
+        )
 
     @v_args(tree=True)
     def enum_field(self, tree):
@@ -165,25 +195,25 @@ class FcpV2Transformer(Transformer):
     @v_args(tree=True)
     def enum(self, tree):
         args = tree.children
-        name, *fields = args
+
+        if isinstance(args[0], Comment):
+            comment, name, *fields = args
+        else:
+            name, *fields = args
+            comment = Comment("")
 
         fields = [field.Q() for field in fields]
 
         meta = get_meta(tree, self)
-        return Ok(
-            Enum(
-                name=name,
-                enumeration=fields,
-                meta=meta,
-            )
-        )
+        return Ok(Enum(name=name, enumeration=fields, meta=meta, comment=comment))
 
+    @result_shortcut
     def imports(self, args):
         filename = self.path / (args[0] + ".fcp")
         try:
             with open(filename) as f:
-                module = FcpV2Transformer(filename).transform(
-                    fcp_parser.parse(f.read())
+                module = (
+                    FcpV2Transformer(filename).transform(fcp_parser.parse(f.read())).Q()
                 )
                 module.filename = filename.name
         except Exception as e:
@@ -200,11 +230,15 @@ class FcpV2Transformer(Transformer):
     def string(self, args):
         return args[0].value
 
+    def comment(self, args):
+        return Comment(" ".join(map(lambda x: x.value, args)))
+
     def start(self, args):
         args = [arg.Q() for arg in args]
+
         imports = list(filter(lambda x: isinstance(x, Module), args))
         not_imports = list(filter(lambda x: not isinstance(x, Module), args))
-        return Module(self.filename.name, not_imports, self.source, imports)
+        return Ok(Module(self.filename.name, not_imports, self.source, imports))
 
 
 class FpiTransformer(Transformer):
@@ -223,6 +257,9 @@ class FpiTransformer(Transformer):
     def value(self, args):
         return args[0]
 
+    def float(self, args):
+        return float(args[0].value)
+
     def integer(self, args):
         return int(args[0].value)
 
@@ -232,24 +269,43 @@ class FpiTransformer(Transformer):
     @v_args(tree=True)
     def field(self, tree):
         name, value = tree.children
-        return {name: value}
+        return (name, value)
+
+    @v_args(tree=True)
+    def signal(self, tree):
+        name, *fields = tree.children
+        fields = {name: value for name, value in fields}
+        meta = get_meta(tree, self)
+        return BroadcastSignal(name, fields, meta=meta)
 
     @v_args(tree=True)
     def broadcast(self, tree):
-        name, *fields = tree.children
-        fs = {}
-        for field in fields:
-            for key, value in field.items():
-                if key in fs.keys():
-                    return Error(
-                        self.error_logger.error(
-                            f"duplicated key: {name} in broadcast {name}"
-                        )
-                    )
-                fs[key] = value
+        if isinstance(tree.children[0], Comment):
+            comment, name, *fields = tree.children
+        else:
+            name, *fields = tree.children
+            comment = Comment("")
+
+        signals = filter(lambda x: isinstance(x, BroadcastSignal), fields)
+        fields = list(filter(lambda x: not isinstance(x, BroadcastSignal), fields))
+
+        field_names = [field[0] for field in fields]
+        if len(field_names) != len(set(field_names)):
+            return Error(self.error_logger.error(f"Duplicated key in broadcast {name}"))
 
         meta = get_meta(tree, self)
-        return Ok(Broadcast(name=name, field=fs, meta=meta))
+        return Ok(
+            Broadcast(
+                name=name,
+                field={name: value for name, value in fields},
+                signals=signals,
+                meta=meta,
+                comment=comment,
+            )
+        )
+
+    def comment(self, args):
+        return Comment(" ".join(map(lambda x: x.value, args)))
 
     def imports(self, args):
         filename = args[0] + ".fpi"
@@ -265,15 +321,17 @@ class FpiTransformer(Transformer):
     @v_args(tree=True)
     def device(self, tree):
         name, *fields = tree.children
+        fields = {name: value for name, value in fields}
 
         meta = get_meta(tree, self)
-        return Ok(Device(name=name, id=fields[0]["id"], meta=meta))
+        return Ok(Device(name=name, id=fields["id"], meta=meta))
 
+    @result_shortcut
     def start(self, args):
         args = [arg.Q() for arg in args]
         imports = list(filter(lambda x: isinstance(x, Module), args))
         not_imports = list(filter(lambda x: not isinstance(x, Module), args))
-        return Module(self.filename.name, not_imports, self.source, imports)
+        return Ok(Module(self.filename.name, not_imports, self.source, imports))
 
 
 def resolve_imports(module):
@@ -287,7 +345,6 @@ def resolve_imports(module):
 
     nodes = {}
 
-    logging.debug(module.children)
     for child in module.children:
         if isinstance(child, Module):
             resolved = resolve_imports(child)
@@ -297,7 +354,6 @@ def resolve_imports(module):
             nodes = merge(nodes, resolved.unwrap())
         else:
             child.filename = module.filename
-
             if child.get_type() not in nodes.keys():
                 nodes[child.get_type()] = []
 
@@ -344,6 +400,7 @@ def convert(module):
     )
 
 
+@result_shortcut
 def get_sources(module):
     sources = {module.filename: module.source}
     for mod in module.imports:
@@ -356,6 +413,7 @@ def get_sources(module):
 def get_fcp(fcp, fpi):
     error_logger = ErrorLogger({})
     fcp_filename = fcp
+
     with open(fcp_filename) as f:
         try:
             source = f.read()
@@ -372,7 +430,7 @@ def get_fcp(fcp, fpi):
                 )
             )
 
-    fcp = FcpV2Transformer(fcp_filename).transform(fcp_ast)
+    fcp = FcpV2Transformer(fcp_filename).transform(fcp_ast).Q()
     fcp_sources = get_sources(fcp)
     fcp = deduplicate(resolve_imports(fcp).Q()).Q()
 
@@ -380,7 +438,7 @@ def get_fcp(fcp, fpi):
     with open(fpi_filename) as f:
         fpi_ast = fpi_parser.parse(f.read())
 
-    fpi = FpiTransformer(fpi_filename).transform(fpi_ast)
+    fpi = FpiTransformer(fpi_filename).transform(fpi_ast).Q()
     fpi_sources = get_sources(fpi)
     fpi = deduplicate(resolve_imports(fpi).Q()).Q()
 

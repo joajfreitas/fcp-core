@@ -5,6 +5,7 @@ from serde import Model, fields
 from ..can import CANMessage
 from .node import Node
 from .metadata import MetaData
+from .comment import Comment
 
 
 class SignalValueError(Exception):
@@ -37,7 +38,7 @@ class Signal(Model):
     scale: fields.Optional(fields.Float(default=1.0))
     offset: fields.Optional(fields.Float(default=0.0))
     unit: fields.Optional(fields.Str())
-    comment: fields.Optional(fields.Str())
+    comment: fields.Optional(Comment)
     min_value: fields.Optional(fields.Float())
     max_value: fields.Optional(fields.Float())
     type: fields.Optional(fields.Str(default="unsigned"))

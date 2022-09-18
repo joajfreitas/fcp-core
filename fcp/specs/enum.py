@@ -5,6 +5,7 @@ from serde import Model, fields
 from .node import Node
 from .enum_value import EnumValue
 from .metadata import MetaData
+from .comment import Comment
 
 
 class Enumeration(Model):
@@ -21,6 +22,7 @@ class Enum(Model):
     name: fields.Str()
     enumeration: fields.List(Enumeration)
     meta: fields.Optional(MetaData)
+    comment: Comment
 
     def get_name(self):
         return self.name

@@ -52,12 +52,12 @@ class colors:
 
 def simple_error(f):
     # @functools.wraps(f)
-    def wrapper(obj, node):
-        cond, error = f(obj, node)
+    def wrapper(obj, *args):
+        cond, error = f(obj, *args)
         if not cond:
             return Ok(())
         else:
-            return Error(obj.error_logger.log_node(node, error))
+            return Error(obj.error_logger.log_node(args[0], error))
 
     return wrapper
 
@@ -75,11 +75,7 @@ class ErrorLogger:
             prefix = prefix_with_line if i == 0 else prefix_without_line
             ss += prefix + line + "\n"
             line = line.replace("\t", "    ")
-            ss += (
-                prefix_without_line
-                + colored("~" * len(line), "red", attrs=["bold"])
-                + "\n"
-            )
+            ss += prefix_without_line + colors.boldred("~" * len(line)) + "\n"
 
         return ss
 
@@ -147,7 +143,73 @@ class ErrorLogger:
         return colors.boldred("Error: ") + colors.boldwhite(error)
 
 
-class Verifier:
+class BaseVerifier:
+    """Base class for verifiers"""
+
+    def __init__(self, sources):
+        self.error_logger = ErrorLogger(sources)
+        pass
+
+    def apply_check(self, category, value):
+        result = Ok(())
+        for name, f in self.__class__.__dict__.items():
+            if name.startswith(f"check_{category}"):
+                if isinstance(value, tuple):
+                    result = result.compound(f(self, *value))
+                else:
+                    result = result.compound(f(self, value))
+
+        return result
+
+    def apply_checks(self, category, values):
+        results = list(map(lambda value: self.apply_check(category, value), values))
+        return reduce(lambda x, y: x.compound(y), results, Ok(()))
+
+    def verify(self, fcp_v2):
+        logging.debug("Running verifier")
+
+        result = Ok(())
+
+        result = result.compound(self.apply_check("fcp_v2", fcp_v2))
+        result = result.compound(
+            self.apply_checks("enum", map(lambda x: (x,), fcp_v2.enums))
+        )
+        result = result.compound(
+            self.apply_checks("struct", map(lambda x: (x,), fcp_v2.structs))
+        )
+        result = result.compound(
+            self.apply_checks("broadcast", map(lambda x: (x,), fcp_v2.broadcasts))
+        )
+
+        structs = {struct.name: struct for struct in fcp_v2.structs}
+        paired_structs = [
+            (structs[broadcast.field["type"]], broadcast)
+            for broadcast in fcp_v2.broadcasts
+        ]
+
+        paired_signals = []
+        for struct, broadcast in paired_structs:
+            struct_signals = {signal.name: signal for signal in struct.signals}
+            paired_signals += [
+                (struct_signals[broadcast_signal.name], broadcast_signal)
+                for broadcast_signal in broadcast.signals
+            ]
+
+        result = result.compound(self.apply_checks("paired_struct", paired_structs))
+        result = result.compound(self.apply_checks("paired_signal", paired_signals))
+
+        for broadcast in fcp_v2.broadcasts:
+            result = result.compound(
+                self.apply_checks("broadcast_signal", broadcast.signals)
+            )
+
+        for struct in fcp_v2.structs:
+            result = result.compound(self.apply_checks("signal", struct.signals))
+
+        return result
+
+
+class Verifier(BaseVerifier):
     def __init__(self, sources):
         self.error_logger = ErrorLogger(sources)
         pass
@@ -251,30 +313,3 @@ class Verifier:
             for node, value in zip(container, selection):
                 if value == duplicate[0]:
                     yield node
-
-    def apply_check(self, category, value):
-        result = Ok(())
-        for name, f in Verifier.__dict__.items():
-            if name.startswith(f"check_{category}"):
-                result = result.compound(f(self, value))
-
-        return result
-
-    def apply_checks(self, category, values):
-        results = map(lambda value: self.apply_check(category, value), values)
-        return reduce(lambda x, y: x.compound(y), results)
-
-    def verify(self, fcp_v2):
-        logging.info("Running verifier")
-
-        result = Ok(())
-
-        result = result.compound(self.apply_check("fcp_v2", fcp_v2))
-        result = result.compound(self.apply_checks("enum", fcp_v2.enums))
-        result = result.compound(self.apply_checks("struct", fcp_v2.structs))
-        result = result.compound(self.apply_checks("broadcast", fcp_v2.broadcasts))
-
-        for struct in fcp_v2.structs:
-            result = result.compound(self.apply_checks("signal", struct.signals))
-
-        return result

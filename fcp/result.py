@@ -51,6 +51,12 @@ class Ok(Result):
     def Q(self):
         return self.value
 
+    def __eq__(self, other):
+        if not isinstance(other, Ok):
+            return False
+
+        return self.value == other.value
+
     def __repr__(self):
         return "Ok"
 
@@ -83,6 +89,12 @@ class Error(Result):
 
     def Q(self):
         raise ResultShortcutError(self)
+
+    def __eq__(self, other):
+        if not isinstance(other, Error):
+            return False
+
+        return self.error == other.error
 
     def __repr__(self):
         error = self.error if isinstance(self.error, list) else [self.error]

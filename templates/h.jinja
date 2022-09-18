@@ -58,9 +58,14 @@ extern const char *cfg_{{device.name}}_names[];
 
 /* Message Structures */
 {% for message in device.msgs.values() %}
-/* {{message.name}} */
+{%- if message.comment != "" %}
+/* {{message.comment}} */
+{%- endif%}
 typedef struct _{{message.type.lower()}} {
 	{%- for signal in message.signals.values() %}
+	{%- if signal.comment != ""%}
+	/*{{signal.comment}}*/
+	{%- endif%}
 	{%- if signal.mux_count > 1 %}
 	{{signal.dst_type}} {{signal.name}}[{{signal.mux_count}}];
 	{%- else %}
