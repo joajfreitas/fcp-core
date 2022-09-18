@@ -54,7 +54,7 @@ fcp_parser = Lark(
 
     struct: comment* "struct" identifier "{" field+ "}"
     field: comment* identifier ":" param+ ";"
-    param: identifier "("? param_argument? ")"? "|"?
+    param: identifier "("? param_argument* ")"? "|"?
     param_argument: value ","?
 
     enum: comment* "enum" identifier "{" enum_field* "}"
@@ -64,15 +64,16 @@ fcp_parser = Lark(
 
     type: identifier
     identifier: CNAME
-    string: CNAME
+    string: ESCAPED_STRING
     number: SIGNED_NUMBER
-    value : identifier | number
+    value : identifier | number | string
 
     comment : "/*" CNAME+ "*/"
 
     %import common.WORD   // imports from terminal library
     %import common.CNAME   // imports from terminal library
     %import common.SIGNED_NUMBER   // imports from terminal library
+    %import common.ESCAPED_STRING   // imports from terminal library
     %ignore " "           // Disregard spaces in text
     %ignore "\\n"
     %ignore "\\t"
@@ -167,8 +168,10 @@ class FcpV2Transformer(Transformer):
 
         type = values[0][0]
 
+        params = {name.value: value for name, value in values[1:]}
+
         meta = get_meta(tree, self)
-        return Ok(Signal(name=name, type=type, meta=meta, comment=comment))
+        return Ok(Signal(name=name, type=type, meta=meta, comment=comment, **params))
 
     @v_args(tree=True)
     def struct(self, tree):
@@ -228,7 +231,7 @@ class FcpV2Transformer(Transformer):
         return int(args[0].value)
 
     def string(self, args):
-        return args[0].value
+        return args[0].value[1:-1]
 
     def comment(self, args):
         return Comment(" ".join(map(lambda x: x.value, args)))

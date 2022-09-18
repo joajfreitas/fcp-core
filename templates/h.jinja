@@ -63,13 +63,13 @@ extern const char *cfg_{{device.name}}_names[];
 {%- endif%}
 typedef struct _{{message.type.lower()}} {
 	{%- for signal in message.signals.values() %}
-	{%- if signal.comment != ""%}
-	/*{{signal.comment}}*/
+	{%- if signal.comment != "" or signal.unit != None%}
+	/*{{signal.comment}} [{{signal.unit}}]*/
 	{%- endif%}
 	{%- if signal.mux_count > 1 %}
-	{{signal.dst_type}} {{signal.name}}[{{signal.mux_count}}];
+	{{signal.dst_type}} {{signal.name}}[{{signal.mux_count}}]; 
 	{%- else %}
-	{{signal.dst_type}} {{signal.name}};
+	{{signal.dst_type}} {{signal.name}}; 
 	{%- endif %}
 	{%- endfor %}
 } {{message.type.lower()}}; 

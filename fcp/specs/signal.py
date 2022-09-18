@@ -28,8 +28,6 @@ class Signal(Model):
     :param type: Type of the Signal's data.
     :param mux: Name of the mux Signal. None if the Signal doesn't belong to a multiplexed Message.
     :param mux_count: Number of signals that the mux can reference for this Muxed signal.
-
-
     """
 
     name: fields.Str()
