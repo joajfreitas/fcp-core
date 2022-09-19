@@ -31,6 +31,16 @@
 #define LOG_{{log.name.upper()}} {{log.id}}
 {%- endfor %}
 
+
+/* ENUMS */
+{%- for enum in spec.enums %}
+typedef enum _{{enum.name}} {
+    {%- for enumeration in enum.enumeration %}
+    {{enum.name.upper()}}_{{enumeration.name}} = {{enumeration.value}},
+    {%- endfor %}
+} {{enum.name}};
+{% endfor %}
+
 {% for device in spec.devices.values() %}
 #include "{{device.name}}_can.h"
 {%- endfor %}
