@@ -176,6 +176,5 @@ main.add_command(validate_cmd)
 main.add_command(json_to_fcp2)
 
 if __name__ == "__main__":
-    main()
     setup_logging()
     main()  # pylint: disable=no-value-for-parameter
