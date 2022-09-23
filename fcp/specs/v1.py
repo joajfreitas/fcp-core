@@ -32,35 +32,36 @@ class Signal(Model):
     """
 
     name: fields.Str()
-    start: fields.Optional(fields.Int()) #
+    start: fields.Optional(fields.Int())  #
     length: fields.Optional(fields.Int())
-    scale: fields.Optional(fields.Float(default=1.0)) #
-    offset: fields.Optional(fields.Float(default=0.0)) #
-    unit: fields.Optional(fields.Str()) 
+    scale: fields.Optional(fields.Float(default=1.0))  #
+    offset: fields.Optional(fields.Float(default=0.0))  #
+    unit: fields.Optional(fields.Str())
     comment: fields.Optional(fields.Str())
-    min_value: fields.Optional(fields.Float()) 
+    min_value: fields.Optional(fields.Float())
     max_value: fields.Optional(fields.Float())
-    type: fields.Optional(fields.Str(default="unsigned")) #
-    byte_order: fields.Optional(fields.Str(default="little_endian")) #
-    mux: fields.Optional(fields.Str(default="")) #
-    mux_count: fields.Optional(fields.Int(default=1)) # 
+    type: fields.Optional(fields.Str(default="unsigned"))  #
+    byte_order: fields.Optional(fields.Str(default="little_endian"))  #
+    mux: fields.Optional(fields.Str(default=""))  #
+    mux_count: fields.Optional(fields.Int(default=1))  #
 
     def to_v2(self) -> SignalV2:
         return SignalV2(
-            name=self.name, 
+            name=self.name,
             start=self.start,
-            length=self.length, 
+            length=self.length,
             scale=self.scale,
             offset=self.offset,
-            unit=self.unit, 
+            unit=self.unit,
             comment=Comment(self.comment),
             min_value=self.min_value,
             max_value=self.max_value,
-            type=self.type, 
+            type=self.type,
             byte_order=self.byte_order,
             mux=self.mux,
             mux_count=self.mux_count,
         )
+
 
 class Message(Model):
     name: fields.Str()
@@ -78,6 +79,7 @@ class Message(Model):
             description=self.description,
             device=device.name,
         )
+
 
 class Command(Model):
     name: fields.Str()
@@ -98,6 +100,7 @@ class Command(Model):
             device=device.name,
         )
 
+
 class Config(Model):
     name: fields.Str()
     id: fields.Int()
@@ -113,6 +116,7 @@ class Config(Model):
             device=device.name,
         )
 
+
 class Device(Model):
 
     msgs: fields.Dict(fields.Str(), Message)
@@ -126,6 +130,7 @@ class Device(Model):
             name=self.name,
             id=self.id,
         )
+
 
 class FcpV1(Model):
     devices: fields.Dict(fields.Str(), Device)
@@ -149,33 +154,36 @@ class FcpV1(Model):
             return self.devices[device].cmds.values()
         else:
             return [cmd for dev in self.devices for cmd in dev.cmds]
-    
 
     # Poor function name since it is not a getter
     def get_struct(self, device, message):
         message = self.devices[device].msgs[message]
         signals = [signal.to_v2() for signal in message.signals.values()]
-        return Struct(message.name, signals, comment = Comment(message.description))\
+        return Struct(message.name, signals, comment=Comment(message.description))
 
     # Poor function name since it is not a getter
     def get_broadcast(self, device, message):
         signals = []
-        message = self.devices[device].msgs[message] 
-        field = {'id': message.id, 'dlc': message.dlc}
-        signals +=  list([self.get_broadcast_signal(signal) for signal in message.signals.values()])
+        message = self.devices[device].msgs[message]
+        field = {"id": message.id, "dlc": message.dlc}
+        signals += list(
+            [self.get_broadcast_signal(signal) for signal in message.signals.values()]
+        )
         comment = Comment(message.description)
-        return Broadcast(message.name, field, signals, comment = comment)
+        return Broadcast(message.name, field, signals, comment=comment)
 
     def get_broadcast_signal(self, signal):
-        field = {'start':signal.start,
-                    'scale': signal.scale,
-                    'offset': signal.offset,
-                    'type': signal.type,
-                    'byte_order': signal.byte_order,
-                    'mux': signal.mux,
-                    'mux_count': signal.mux_count}
+        field = {
+            "start": signal.start,
+            "scale": signal.scale,
+            "offset": signal.offset,
+            "type": signal.type,
+            "byte_order": signal.byte_order,
+            "mux": signal.mux,
+            "mux_count": signal.mux_count,
+        }
         return BroadcastSignal(signal.name, field)
-       
+
     def get_logs(self):
         return self.logs.values()
 
@@ -185,16 +193,17 @@ class FcpV1(Model):
 
         for device in self.devices.values():
             for message in device.msgs.values():
-                structs.append(self.get_struct(device.name, message.name)) 
+                structs.append(self.get_struct(device.name, message.name))
                 broadcast.append(self.get_broadcast(device.name, message.name))
 
         return FcpV2(
             devices=[device.to_v2() for device in self.devices.values()],
             structs=structs,
-            broadcasts=broadcast, 
+            broadcasts=broadcast,
             enums=[],
             version="0.3",
         )
+
 
 def fcp_v1_to_v2(fcp_v1: FcpV1):
     return fcp_v1.to_v2()
