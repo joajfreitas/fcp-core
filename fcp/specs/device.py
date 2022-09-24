@@ -2,8 +2,6 @@ from typing import *
 import datetime
 from serde import Model, fields
 
-# from .node import Node
-from .message import Message
 from .cmd import Command
 from .config import Config
 from .utils import normalize

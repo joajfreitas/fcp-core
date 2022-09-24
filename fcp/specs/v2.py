@@ -7,7 +7,6 @@ from serde import Model, fields
 
 from . import (
     Device,
-    Message,
     Config,
     Command,
     Signal,

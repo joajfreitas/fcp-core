@@ -19,9 +19,21 @@ class BroadcastSignal(Model):
         return "broadcast_signal"
 
     def to_fpi(self):
+        def default(name):
+            defaults = {
+                "mux": "",
+            }
+            return defaults.get(name) or ""
+
         return (
             f"\tsignal {self.name} {{\n\t\t"
-            + "\n\t\t".join([f"{name}: {param};" for name, param in self.field.items()])
+            + "\n\t\t".join(
+                [
+                    f"{name}: {param};"
+                    for name, param in self.field.items()
+                    if param != default(name)
+                ]
+            )
             + "\n\t}"
         )
 

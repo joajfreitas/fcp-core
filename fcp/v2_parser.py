@@ -68,12 +68,13 @@ fcp_parser = Lark(
     number: SIGNED_NUMBER
     value : identifier | number | string
 
-    comment : "/*" CNAME+ "*/"
+    comment : C_COMMENT
 
     %import common.WORD   // imports from terminal library
     %import common.CNAME   // imports from terminal library
     %import common.SIGNED_NUMBER   // imports from terminal library
     %import common.ESCAPED_STRING   // imports from terminal library
+    %import common.C_COMMENT // imports from terminal library
     %ignore " "           // Disregard spaces in text
     %ignore "\\n"
     %ignore "\\t"
@@ -96,7 +97,7 @@ fpi_parser = Lark(
 
     device : "device" identifier "{" field* "}"
 
-    comment : "/*" CNAME+ "*/"
+    comment : C_COMMENT
     imports: "import" identifier ";"
 
     identifier: CNAME
@@ -105,6 +106,7 @@ fpi_parser = Lark(
     %import common.CNAME
     %import common.SIGNED_NUMBER
     %import common.SIGNED_INT
+    %import common.C_COMMENT // imports from terminal library
     %ignore " "           // Disregard spaces in text
     %ignore "\\n"
     %ignore "\\t"
@@ -237,7 +239,7 @@ class FcpV2Transformer(Transformer):
         return args[0].value[1:-1]
 
     def comment(self, args):
-        return Comment(" ".join(map(lambda x: x.value, args)))
+        return Comment(args[0].value.replace("/*", "").replace("*/", ""))
 
     def start(self, args):
         args = [arg.Q() for arg in args]
@@ -311,7 +313,7 @@ class FpiTransformer(Transformer):
         )
 
     def comment(self, args):
-        return Comment(" ".join(map(lambda x: x.value, args)))
+        return Comment(args[0].value.replace("/*", "").replace("*/", ""))
 
     def imports(self, args):
         filename = args[0] + ".fpi"

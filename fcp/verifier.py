@@ -181,6 +181,7 @@ class BaseVerifier:
         )
 
         structs = {struct.name: struct for struct in fcp_v2.structs}
+
         paired_structs = [
             (structs[broadcast.field["type"]], broadcast)
             for broadcast in fcp_v2.broadcasts

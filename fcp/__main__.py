@@ -12,8 +12,6 @@ import coloredlogs
 
 import click
 
-from .dbc_reader import read_dbc
-from .dbc_writer import write_dbc
 from .specs import FcpV2
 from .specs.v1 import FcpV1, fcp_v1_to_v2
 
@@ -29,41 +27,6 @@ def setup_logging():
     coloredlogs.install(
         fmt="%(asctime)s %(module)s:%(lineno)d %(levelname)s - %(message)s"
     )
-
-
-@click.command(name="read-dbc")
-@click.argument("dbc")
-@click.argument("json_file")
-@click.argument("device_config")
-def read_dbc_cmd(dbc: str, json_file: str, device_config: str):
-    """Transform a DBC file into FCP json.
-    :param dbc: dbc file path.
-    :param json_file: FCP json file path.
-    :param device_config: json with device name configuration.
-
-    device_config example:
-
-    ```json
-    {
-        "0": "amk_0",
-        "1": "amk_1",
-        "2": "amk_2",
-        "3": "amk_3",
-        "8": "dcu",
-        "9": "te",
-        "10": "dash",
-        "13": "arm",
-        "14": "bms_master",
-        "15": "bms_verbose",
-        "16": "iib",
-        "20": "ahrsf",
-        "21": "ahrsr",
-        "22": "gpsf",
-        "23": "gpsr",
-        "29": "isa"
-    }```
-    """
-    read_dbc(dbc, json_file, device_config)
 
 
 @click.command(name="generate")
@@ -143,19 +106,11 @@ def validate_cmd(json_file: str):
 @click.argument("output")
 def json_to_fcp2(json: str, output: str):
 
-    #fcp_v2, sources = get_fcp(fcp, fpi).unwrap()
-
+    logging.info(f"Convertion fcp v1 -> fcp v2. {json} -> {output}")
     with open(json) as f:
         fcp_v1 = FcpV1.from_json(f.read())
 
-    print(fcp_v1)
-    
     fcp_v2 = fcp_v1.to_v2()
-
-    print(fcp_v2)
-
-
-    #Verifier(sources).verify(fcp_v2).unwrap()
 
     output = Path(output)
     with open(output / "main.fcp", "w") as f:
@@ -177,9 +132,7 @@ def main(version):
     pass
 
 
-main.add_command(read_dbc_cmd)
 main.add_command(generate_cmd)
-main.add_command(init_cmd)
 main.add_command(validate_cmd)
 main.add_command(json_to_fcp2)
 

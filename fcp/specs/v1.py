@@ -8,29 +8,11 @@ from . import Log, Argument, Comment
 from .v2 import Device as DeviceV2
 from .v2 import Config as ConfigV2
 from .v2 import Command as CommandV2
-from .v2 import Message as MessageV2
+
 from . import Signal as SignalV2
 
 
 class Signal(Model):
-    """
-    Signal node. Represents a CAN signal, similar to a DBC signal.
-
-    :param name: Name of the Signal.
-    :param start: Start bit
-    :param length: Signal bit size.
-    :param scale: Scaling applied to the signal's data.
-    :param offset: Offset applied to the signal's data.
-    :param unit: Unit of the Signal after applying scaling and offset.
-    :param comment: Description of the Signal.
-    :param min_value: Minimum value allowed to the Signal's data.
-    :param max_value: Maximum value allowed to the Signal's data.
-    :param type: Type of the Signal's data.
-    :param mux: Name of the mux Signal. None if the Signal doesn't belong to a multiplexed Message.
-    :param mux_count: Number of signals that the mux can reference for this Muxed signal.
-
-    """
-
     name: fields.Str()
     start: fields.Optional(fields.Int())  #
     length: fields.Optional(fields.Int())
@@ -46,6 +28,16 @@ class Signal(Model):
     mux_count: fields.Optional(fields.Int(default=1))  #
 
     def to_v2(self) -> SignalV2:
+        def convert_type(type, length):
+            if type == "unsigned":
+                return "u" + str(length)
+            elif type == "signed":
+                return "i" + str(length)
+            elif type == "float":
+                return "f32"
+            elif type == "double":
+                return "f64"
+
         return SignalV2(
             name=self.name,
             start=self.start,
@@ -56,7 +48,7 @@ class Signal(Model):
             comment=Comment(self.comment),
             min_value=self.min_value,
             max_value=self.max_value,
-            type=self.type,
+            type=convert_type(self.type, self.length),
             byte_order=self.byte_order,
             mux=self.mux,
             mux_count=self.mux_count,
@@ -69,16 +61,6 @@ class Message(Model):
     dlc: fields.Int()
     signals: fields.Dict(fields.Str(), Signal)
     description: fields.Str()
-
-    def to_v2(self, device) -> MessageV2:
-        return MessageV2(
-            id=self.id * 32 + device.id,
-            name=self.name,
-            dlc=self.dlc,
-            signals=list(self.signals.values()),
-            description=self.description,
-            device=device.name,
-        )
 
 
 class Command(Model):
@@ -164,8 +146,14 @@ class FcpV1(Model):
     # Poor function name since it is not a getter
     def get_broadcast(self, device, message):
         signals = []
-        message = self.devices[device].msgs[message]
-        field = {"id": message.id, "dlc": message.dlc}
+        device = self.devices[device]
+        message = device.msgs[message]
+        field = {
+            "id": device.id + 32 * message.id,
+            "dlc": message.dlc,
+            "type": message.name,
+            "device": device.name,
+        }
         signals += list(
             [self.get_broadcast_signal(signal) for signal in message.signals.values()]
         )
