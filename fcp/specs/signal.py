@@ -48,7 +48,11 @@ class Signal(Model):
     meta: fields.Optional(MetaData)
 
     def to_fcp(self):
-        unit = f'| unit("{self.unit}")' if self.unit is not None else ""
+        unit = (
+            f' | unit("{self.unit}")'
+            if self.unit is not None and self.unit != ""
+            else ""
+        )
         return (
             (f"\t/*{self.comment.value}*/\n" if self.comment.value != "" else "")
             + f"\t{self.name}: {self.type}"

@@ -1,4 +1,5 @@
 import json
+from itertools import accumulate
 from serde import Model, fields
 from fcp.specs.broadcast import Broadcast, BroadcastSignal
 
@@ -140,37 +141,55 @@ class FcpV1(Model):
     # Poor function name since it is not a getter
     def get_struct(self, device, message):
         message = self.devices[device].msgs[message]
-        signals = [signal.to_v2() for signal in message.signals.values()]
+        signals = sorted(message.signals.values(), key=lambda x: x.start)
+        signals = [signal.to_v2() for signal in signals]
         return Struct(message.name, signals, comment=Comment(message.description))
 
     # Poor function name since it is not a getter
-    def get_broadcast(self, device, message):
-        signals = []
-        device = self.devices[device]
-        message = device.msgs[message]
+    def get_broadcast(self, device, message, struct):
         field = {
             "id": device.id + 32 * message.id,
             "dlc": message.dlc,
-            "type": message.name,
+            "type": struct.name,
             "device": device.name,
         }
-        signals += list(
-            [self.get_broadcast_signal(signal) for signal in message.signals.values()]
-        )
-        comment = Comment(message.description)
-        return Broadcast(message.name, field, signals, comment=comment)
 
-    def get_broadcast_signal(self, signal):
-        field = {
-            "start": signal.start,
-            "scale": signal.scale,
-            "offset": signal.offset,
-            "type": signal.type,
-            "byte_order": signal.byte_order,
-            "mux": signal.mux,
-            "mux_count": signal.mux_count,
+        signals = sorted(message.signals.values(), key=lambda x: x.start)
+
+        message_starts = [signal.start for signal in signals]
+        lengths = [signal.length for signal in signals]
+        starts = [0] + list(accumulate(lengths))[:-1]
+
+        defaults = {
+            "mux": "",
+            "mux_count": 1,
+            "scale": 1.0,
+            "offset": 0.0,
+            "byte_order": "little_endian",
+            "min_value": 0.0,
+            "max_value": 0.0,
         }
-        return BroadcastSignal(signal.name, field)
+
+        broadcast_signals = [
+            self.get_broadcast_signal(signal, defaults | {"start": starts[i]})
+            for i, signal in enumerate(signals)
+        ]
+        broadcast_signals = list(filter(lambda x: x is not None, broadcast_signals))
+        comment = Comment(message.description)
+        return Broadcast(message.name, field, broadcast_signals, comment=comment)
+
+    def get_broadcast_signal(self, signal, defaults={}):
+        signal = signal.to_dict()
+        field = {
+            name: signal[name]
+            for name, value in defaults.items()
+            if value != signal[name]
+        }
+
+        if len(field) == 0:
+            return None
+        else:
+            return BroadcastSignal(signal["name"], field)
 
     def get_logs(self):
         return self.logs.values()
@@ -181,8 +200,9 @@ class FcpV1(Model):
 
         for device in self.devices.values():
             for message in device.msgs.values():
-                structs.append(self.get_struct(device.name, message.name))
-                broadcast.append(self.get_broadcast(device.name, message.name))
+                struct = self.get_struct(device.name, message.name)
+                structs.append(struct)
+                broadcast.append(self.get_broadcast(device, message, struct))
 
         return FcpV2(
             devices=[device.to_v2() for device in self.devices.values()],

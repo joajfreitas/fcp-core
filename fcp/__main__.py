@@ -55,7 +55,9 @@ def generate_cmd(
     Verifier(sources).verify(fcp_v2).unwrap()
 
     generator_manager = GeneratorManager()
-    generator_manager.generate(generator, templates, skel, fcp_v2, sources).unwrap()
+    generator_manager.generate(
+        generator, templates, skel, fcp_v2, sources, output
+    ).unwrap()
 
     if noformat == False:
         subprocess.run(

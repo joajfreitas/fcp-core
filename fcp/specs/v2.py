@@ -51,7 +51,7 @@ class FcpV2(Model):
         return "\n\n".join([node.to_fcp() for node in self.enums + self.structs])
 
     def to_fpi(self):
-        return "\n".join([node.to_fpi() for node in self.devices + self.broadcasts])
+        return "\n\n".join([node.to_fpi() for node in self.devices + self.broadcasts])
 
     def __repr__(self) -> str:
 

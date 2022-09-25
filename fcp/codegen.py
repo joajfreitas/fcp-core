@@ -18,7 +18,7 @@ class CodeGenerator:
     def __init__(self):
         pass
 
-    def gen(self, fcp, templates, skels, output_path="output"):
+    def gen(self, fcp, templates, skels, output_path):
         """Function called from fcp to trigger generator. Do not override."""
 
         self.verify(fcp).unwrap()
@@ -70,7 +70,7 @@ class GeneratorManager:
         return generators["fcp_" + generator_name]
 
     @result_shortcut
-    def generate(self, generator, template_dir, skel_dir, fcp, sources):
+    def generate(self, generator, template_dir, skel_dir, fcp, sources, output_path):
         """Generate code"""
         verifier = self.get_generator(generator).Verifier(sources)
         generator = self.get_generator(generator).Generator()
@@ -86,9 +86,11 @@ class GeneratorManager:
         skels = {}
         for skel in os.listdir(skel_dir):
             skel_path = pathlib.Path(skel_dir) / skel
+            if not skel_path.is_file():
+                continue
             with open(skel_path, encoding="utf-8") as file:
                 skels[skel] = file.read()
 
-        generator.gen(fcp, templates, skels)
+        generator.gen(fcp, templates, skels, output_path)
 
         return Ok(())

@@ -1,5 +1,6 @@
 from typing import *
 import datetime
+import logging
 from serde import Model, fields
 
 from .serde_extend import Any
@@ -19,23 +20,27 @@ class BroadcastSignal(Model):
         return "broadcast_signal"
 
     def to_fpi(self):
-        def default(name):
+        def default(name, param):
             defaults = {
                 "mux": "",
+                "mux_count": 1,
+                "scale": 1.0,
+                "offset": 0.0,
+                "byte_order": "little_endian",
+                "start": 0,
+                "min_value": 0.0,
+                "max_value": 0.0,
             }
-            return defaults.get(name) or ""
 
-        return (
-            f"\tsignal {self.name} {{\n\t\t"
-            + "\n\t\t".join(
-                [
-                    f"{name}: {param};"
-                    for name, param in self.field.items()
-                    if param != default(name)
-                ]
-            )
-            + "\n\t}"
-        )
+            return defaults.get(name) != param
+
+        fields = [
+            f"{name}: {param};"
+            for name, param in self.field.items()
+            if (name not in {"type"}) and default(name, param)
+        ]
+
+        return f"\tsignal {self.name} {{\n\t\t" + "\n\t\t".join(fields) + "\n\t}"
 
 
 class Broadcast(Model):
@@ -82,7 +87,7 @@ class Broadcast(Model):
             + f"broadcast {self.name} {{\n\t"
             + "\n\t".join([f"{name}: {field};" for name, field in self.field.items()])
             + "\n"
-            + "\n\t".join(signal.to_fpi() for signal in self.signals)
+            + "\n".join(signal.to_fpi() for signal in self.signals)
             + "\n}\n"
         )
 
