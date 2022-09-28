@@ -2,7 +2,8 @@ from typing import *
 import datetime
 from serde import Model, fields
 
-from .node import Node
+from .metadata import MetaData
+from .comment import Comment
 
 
 class Log(Model):
@@ -17,11 +18,15 @@ class Log(Model):
 
     id: fields.Int()
     name: fields.Str()
-    n_args: fields.Optional(fields.Int())
-    comment: fields.Str()
+    comment: Comment
     string: fields.Str()
+    n_args: fields.Optional(fields.Int())
+    meta: fields.Optional(MetaData)
 
-    def to_idl(self):
+    def get_name(self):
+        return self.name
+
+    def to_fpi(self):
         def show(value, default, fmt):
             if value == default:
                 return ""
@@ -29,81 +34,11 @@ class Log(Model):
                 return fmt.format((value))
 
         output = show(self.comment, "", "/*{}*/\n")
-        output += f"log {self.name}: "
-        output += f"id({self.id}) | "
-        output += f'str("{self.string}") | '
-        output += show(self.n_args, 0, "n_args({}) | ")
-        return output[:-3] + ";"
-
-    # def compile(self) -> Dict[str, Any]:
-    #    """Transform python class node to its dictionary representation.
-
-    #    :return: A dictionary containing the node parameters
-    #    """
-    #    return self.make_public(self, self.filter_private(self.__dict__))
-
-    # def decompile(self, d: Dict[str, Any]) -> None:
-    #    """Transform node dictionary representation into a python class.
-
-    #    :param d: Node dictionary
-    #    """
-    #    for k, v in self.make_private(self, d).items():
-    #        self.__setattr__(k, v)
-
-    # @property
-    # def id(self) -> int:
-    #    return self._id
-
-    # @property
-    # def name(self) -> str:
-    #    return self._name
-
-    # @property
-    # def n_args(self) -> int:
-    #    return self._n_args
-
-    # @property
-    # def comment(self) -> str:
-    #    return self._comment
-
-    # @property
-    # def string(self) -> str:
-    #    return self._string
-
-    # @id.setter
-    # def id(self, id: int) -> None:
-    #    try:
-    #        self._id = int(id)
-    #    except Exception as e:
-    #        return
-
-    # @name.setter
-    # def name(self, name: str) -> None:
-    #    try:
-    #        self._name = name
-    #    except Exception as e:
-    #        return
-
-    # @n_args.setter
-    # def n_args(self, n_args: int) -> None:
-    #    try:
-    #        self._n_args = int(n_args)
-    #    except Exception as e:
-    #        return
-
-    # @comment.setter
-    # def comment(self, comment: str) -> None:
-    #    try:
-    #        self._comment = comment
-    #    except Exception as e:
-    #        return
-
-    # @string.setter
-    # def string(self, string: str) -> None:
-    #    try:
-    #        self._string = string
-    #    except Exception as e:
-    #        return
+        output += f"log {self.name} {{\n"
+        output += f"\tid: {self.id};\n"
+        output += f'\tstr: "{self.string}";\n'
+        output += show(self.n_args, 0, "\tn_args: {};\n")
+        return output + "}"
 
     def __repr__(self):
-        return f"<Log name: {self.name}, id: {self.id}, n_args: {self.n_args}>"
+        return f"<Log name={self.name}>"

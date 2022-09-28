@@ -90,7 +90,6 @@ def validate_cmd(json_file: str):
 
     spec = spec.to_v2()
 
-    print(spec.to_fcp())
     # spec = get_spec(json_file)
     # print(spec)
 

@@ -28,10 +28,13 @@ class FcpV2(Model):
     Commands and Arguments.
     """
 
-    devices: fields.List(Device)
     structs: fields.List(Struct)
-    broadcasts: fields.List(Broadcast)
     enums: fields.List(Enum)
+    devices: fields.List(Device)
+    broadcasts: fields.List(Broadcast)
+    commands: fields.List(Command)
+    configs: fields.List(Config)
+    logs: fields.List(Log)
     version: fields.Str(default="1.0")
 
     def add_device(self, device):
@@ -51,7 +54,16 @@ class FcpV2(Model):
         return "\n\n".join([node.to_fcp() for node in self.enums + self.structs])
 
     def to_fpi(self):
-        return "\n\n".join([node.to_fpi() for node in self.devices + self.broadcasts])
+        return "\n\n".join(
+            [
+                node.to_fpi()
+                for node in self.devices
+                + self.broadcasts
+                + self.commands
+                + self.configs
+                + self.logs
+            ]
+        )
 
     def __repr__(self) -> str:
 

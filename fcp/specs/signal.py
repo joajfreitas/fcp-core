@@ -4,8 +4,6 @@ import datetime
 import logging
 from serde import Model, fields
 
-from ..can import CANMessage
-from .node import Node
 from .metadata import MetaData
 from .comment import Comment
 

@@ -23,6 +23,9 @@ from .specs import (
     Enum,
     Enumeration,
     Comment,
+    Command,
+    Config,
+    Log,
     FcpV2,
 )
 from .result import Ok, Error, result_shortcut
@@ -84,16 +87,20 @@ fcp_parser = Lark(
 
 fpi_parser = Lark(
     """
-    start: (broadcast | device | imports)*
+    start: (broadcast | device | imports | log | command | config)*
 
     broadcast: comment* "broadcast" identifier "{" (field | signal)* "}"
     field: identifier ":" (value) ";"
-    value : integer | float | string
+    value : integer | float | string | identifier
     signal: "signal" identifier "{" field* "}"
+
+    log : comment* "log" identifier "{" field* "}"
+    command : comment* "command" identifier "{" field* "}"
+    config : comment* "config" identifier "{" field* "}"
 
     integer: SIGNED_INT
     float: SIGNED_NUMBER
-    string: CNAME
+    string: ESCAPED_STRING
 
     device : "device" identifier "{" field* "}"
 
@@ -105,6 +112,7 @@ fpi_parser = Lark(
     %import common.WORD
     %import common.CNAME
     %import common.SIGNED_NUMBER
+    %import common.ESCAPED_STRING   // imports from terminal library
     %import common.SIGNED_INT
     %import common.C_COMMENT // imports from terminal library
     %ignore " "           // Disregard spaces in text
@@ -333,6 +341,74 @@ class FpiTransformer(Transformer):
 
         meta = get_meta(tree, self)
         return Ok(Device(name=name, id=fields["id"], meta=meta))
+
+    @v_args(tree=True)
+    def log(self, tree):
+        if isinstance(tree.children[0], Comment):
+            comment, name, *fields = tree.children
+        else:
+            name, *fields = tree.children
+            comment = Comment("")
+
+        meta = get_meta(tree, self)
+        fields = {name: value for name, value in fields}
+        return Ok(
+            Log(
+                id=fields["id"],
+                name=name,
+                comment=comment,
+                string=fields["str"],
+                n_args=fields.get("n_args"),
+                meta=meta,
+            )
+        )
+
+    @v_args(tree=True)
+    def config(self, tree):
+        if isinstance(tree.children[0], Comment):
+            comment, name, *fields = tree.children
+        else:
+            name, *fields = tree.children
+            comment = Comment("")
+
+        logging.warning(fields)
+        fields = {name: value for name, value in fields}
+        meta = get_meta(tree, self)
+        logging.error(meta)
+        return Ok(
+            Config(
+                name,
+                fields["id"],
+                fields["type"],
+                fields["device"],
+                comment=comment,
+                meta=meta,
+            )
+        )
+
+    @v_args(tree=True)
+    def command(self, tree):
+        if isinstance(tree.children[0], Comment):
+            comment, name, *fields = tree.children
+        else:
+            name, *fields = tree.children
+            comment = Comment("")
+
+        fields = {name: value for name, value in fields}
+        meta = get_meta(tree, self)
+        logging.info(meta)
+        return Ok(
+            Command(
+                name,
+                fields.get("n_args"),
+                fields["id"],
+                [],
+                [],
+                fields.get("device"),
+                comment=comment,
+                meta=meta,
+            )
+        )
 
     @result_shortcut
     def start(self, args):
