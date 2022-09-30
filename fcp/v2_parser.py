@@ -87,7 +87,7 @@ fcp_parser = Lark(
 
 fpi_parser = Lark(
     """
-    start: (broadcast | device | imports | log | command | config)*
+    start: (broadcast | device | imports | log)*
 
     broadcast: comment* "broadcast" identifier "{" (field | signal)* "}"
     field: identifier ":" (value) ";"
@@ -102,7 +102,7 @@ fpi_parser = Lark(
     float: SIGNED_NUMBER
     string: ESCAPED_STRING
 
-    device : "device" identifier "{" field* "}"
+    device : "device" identifier "{" (field | command | config)* "}"
 
     comment : C_COMMENT
     imports: "import" identifier ";"
@@ -336,11 +336,27 @@ class FpiTransformer(Transformer):
 
     @v_args(tree=True)
     def device(self, tree):
-        name, *fields = tree.children
+        name, *children = tree.children
+
+        fields = filter(lambda x: not isinstance(x, Ok), children)
         fields = {name: value for name, value in fields}
 
+        children = filter(lambda x: isinstance(x, Ok), children)
+        children = [child.unwrap() for child in children]
+
+        commands = filter(lambda x: isinstance(x, Command), children)
+        configs = filter(lambda x: isinstance(x, Config), children)
+
         meta = get_meta(tree, self)
-        return Ok(Device(name=name, id=fields["id"], meta=meta))
+        return Ok(
+            Device(
+                name=name,
+                id=fields["id"],
+                commands=commands,
+                configs=configs,
+                meta=meta,
+            )
+        )
 
     @v_args(tree=True)
     def log(self, tree):
@@ -352,13 +368,15 @@ class FpiTransformer(Transformer):
 
         meta = get_meta(tree, self)
         fields = {name: value for name, value in fields}
+
+        n_args = fields.get("n_args") or 0
         return Ok(
             Log(
                 id=fields["id"],
                 name=name,
                 comment=comment,
                 string=fields["str"],
-                n_args=fields.get("n_args"),
+                n_args=n_args,
                 meta=meta,
             )
         )
@@ -371,10 +389,8 @@ class FpiTransformer(Transformer):
             name, *fields = tree.children
             comment = Comment("")
 
-        logging.warning(fields)
         fields = {name: value for name, value in fields}
         meta = get_meta(tree, self)
-        logging.error(meta)
         return Ok(
             Config(
                 name,
@@ -396,7 +412,6 @@ class FpiTransformer(Transformer):
 
         fields = {name: value for name, value in fields}
         meta = get_meta(tree, self)
-        logging.info(meta)
         return Ok(
             Command(
                 name,
@@ -471,7 +486,7 @@ def deduplicate(module):
 
 def merge(fcp, fpi):
     fcp = {key: fcp[key] for key in fcp.keys() & {"struct", "enum"}}
-    fpi = {key: fpi[key] for key in fpi.keys() & {"device", "broadcast"}}
+    fpi = {key: fpi[key] for key in fpi.keys() & {"device", "broadcast", "log"}}
     fcp = fcp | fpi
     return Ok(fcp)
 
@@ -483,6 +498,7 @@ def convert(module):
             devices=module["device"].values(),
             structs=module["struct"].values(),
             enums=module["enum"].values(),
+            logs=module["log"].values(),
         )
     )
 

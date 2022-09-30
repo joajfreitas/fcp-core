@@ -7,15 +7,6 @@ from .comment import Comment
 
 
 class Log(Model):
-    """Log protocol node.
-
-    :param id: Log integer identifier.
-    :param name: Name of the Log node.
-    :param n_args: Number of arguments in the Log node.
-    :param comment: Description of the Log node
-    :param string: Display string for the Log node.
-    """
-
     id: fields.Int()
     name: fields.Str()
     comment: Comment
@@ -25,6 +16,9 @@ class Log(Model):
 
     def get_name(self):
         return self.name
+
+    def get_type(self):
+        return "log"
 
     def to_fpi(self):
         def show(value, default, fmt):
@@ -37,7 +31,7 @@ class Log(Model):
         output += f"log {self.name} {{\n"
         output += f"\tid: {self.id};\n"
         output += f'\tstr: "{self.string}";\n'
-        output += show(self.n_args, 0, "\tn_args: {};\n")
+        output += show(self.n_args or 0, 0, "\tn_args: {};\n")
         return output + "}"
 
     def __repr__(self):

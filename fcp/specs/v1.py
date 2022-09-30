@@ -6,10 +6,11 @@ from fcp.specs.broadcast import Broadcast, BroadcastSignal
 
 from fcp.specs.struct import Struct
 from .v2 import FcpV2
-from . import Log, Argument, Comment
+from . import Argument, Comment
 from .v2 import Device as DeviceV2
 from .v2 import Config as ConfigV2
 from .v2 import Command as CommandV2
+from .v2 import Log as LogV2
 
 from . import Signal as SignalV2
 
@@ -65,6 +66,17 @@ class Message(Model):
     description: fields.Str()
 
 
+class Log(Model):
+    id: fields.Int()
+    name: fields.Str()
+    comment: fields.Str()
+    string: fields.Str()
+    n_args: fields.Optional(fields.Int())
+
+    def to_v2(self) -> LogV2:
+        return LogV2(self.id, self.name, self.string, comment=Comment(self.comment))
+
+
 class Command(Model):
     name: fields.Str()
     n_args: fields.Optional(fields.Int())
@@ -79,7 +91,7 @@ class Command(Model):
             id=self.id,
             args=list(self.args.values()),
             rets=list(self.rets.values()),
-            comment=self.comment,
+            comment=Comment(self.comment),
             n_args=self.n_args,
             device=device.name,
         )
@@ -96,14 +108,13 @@ class Config(Model):
         return ConfigV2(
             name=self.name,
             id=self.id,
-            comment=self.comment,
+            comment=Comment(self.comment),
             type=self.type,
             device=device.name,
         )
 
 
 class Device(Model):
-
     msgs: fields.Dict(fields.Str(), Message)
     cfgs: fields.Dict(fields.Str(), Config)
     cmds: fields.Dict(fields.Str(), Command)
@@ -114,6 +125,8 @@ class Device(Model):
         return DeviceV2(
             name=self.name,
             id=self.id,
+            commands=[cmd.to_v2(self) for cmd in self.cmds.values()],
+            configs=[cfg.to_v2(self) for cfg in self.cfgs.values()],
         )
 
 
@@ -127,20 +140,6 @@ class FcpV1(Model):
             return self.devices[device].msgs.values()
         else:
             return [msg for dev in self.devices for msg in dev.msgs]
-
-    def get_configs(self, device=None):
-        if device is not None:
-            return self.devices[device].cfgs.values()
-        else:
-            return [
-                config for dev in self.devices.values() for config in dev.cfgs.values()
-            ]
-
-    def get_commands(self, device=None):
-        if device is not None:
-            return self.devices[device].cmds.values()
-        else:
-            return [cmd for dev in self.devices.values() for cmd in dev.cmds.values()]
 
     def get_struct(self, device, message):
         message = self.devices[device].msgs[message]
@@ -198,13 +197,9 @@ class FcpV1(Model):
     def to_v2(self):
         structs = []
         broadcast = []
-        commands = []
-        configs = []
 
         for device in self.devices.values():
             logging.info(device.name)
-            commands += [cmd.to_v2(device) for cmd in self.get_commands(device.name)]
-            configs += [cfg.to_v2(device) for cfg in self.get_configs(device.name)]
 
             for message in device.msgs.values():
                 struct = self.get_struct(device.name, message.name)
@@ -216,9 +211,7 @@ class FcpV1(Model):
             structs=structs,
             devices=[device.to_v2() for device in self.devices.values()],
             broadcasts=broadcast,
-            commands=commands,
-            configs=configs,
-            logs=self.get_logs(),
+            logs=[log.to_v2() for log in self.get_logs()],
             version="0.3",
         )
 

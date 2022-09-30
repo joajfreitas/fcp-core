@@ -21,6 +21,8 @@ class Device(Model):
 
     name: fields.Str()
     id: fields.Int()
+    commands: fields.List(Command)
+    configs: fields.List(Config)
     meta: fields.Optional(MetaData)
 
     def get_name(self):
@@ -30,7 +32,13 @@ class Device(Model):
         return "device"
 
     def to_fpi(self):
-        return f"device {self.name} {{\n\tid: {self.id};\n}}"
+        return (
+            f"device {self.name} {{\n\tid: {self.id};\n\n"
+            + "\n".join([cmd.to_fpi() for cmd in self.commands])
+            + "\n"
+            + "\n".join([cfg.to_fpi() for cfg in self.configs])
+            + "}"
+        )
 
     def __repr__(self):
         return f"<Device name={self.name} id={self.id}"

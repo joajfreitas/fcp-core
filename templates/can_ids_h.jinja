@@ -27,7 +27,7 @@
 #define __CAN_IDS_H__
 
 /* LOG IDs */
-{%- for log in logs %}
+{%- for log in spec.logs %}
 #define LOG_{{log.name.upper()}} {{log.id}}
 {%- endfor %}
 

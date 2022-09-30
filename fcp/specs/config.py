@@ -33,13 +33,13 @@ class Config(Model):
             else:
                 return fmt.format((value))
 
-        output = show(self.comment, "", "/*{}*/\n")
-        output += f"config {self.name} {{\n"
-        output += f"\tdevice : {self.device};\n"
-        output += f"\tid : {self.id};\n"
-        output += f"\ttype : {self.type};\n"
+        output = show(self.comment.value, "", "\t/*{}*/\n")
+        output += f"\tconfig {self.name} {{\n"
+        output += f"\t\tdevice : {self.device};\n"
+        output += f"\t\tid : {self.id};\n"
+        output += f"\t\ttype : {self.type};\n"
 
-        return output + "}"
+        return output + "\t}\n"
 
     def __repr__(self):
         return f"<Config name={self.name}>"

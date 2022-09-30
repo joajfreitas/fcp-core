@@ -32,8 +32,6 @@ class FcpV2(Model):
     enums: fields.List(Enum)
     devices: fields.List(Device)
     broadcasts: fields.List(Broadcast)
-    commands: fields.List(Command)
-    configs: fields.List(Config)
     logs: fields.List(Log)
     version: fields.Str(default="1.0")
 
@@ -55,14 +53,7 @@ class FcpV2(Model):
 
     def to_fpi(self):
         return "\n\n".join(
-            [
-                node.to_fpi()
-                for node in self.devices
-                + self.broadcasts
-                + self.commands
-                + self.configs
-                + self.logs
-            ]
+            [node.to_fpi() for node in self.devices + self.broadcasts + self.logs]
         )
 
     def __repr__(self) -> str:
