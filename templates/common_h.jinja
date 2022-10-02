@@ -36,7 +36,7 @@
 
 
 {% for message in spec.common.msgs.values() %}
-typedef struct _{{message.type.lower()}} {
+typedef struct _msg_common_{{message.type.lower()}} {
 	{%- for signal in message.signals.values() %}
 	{%- if signal.mux_count > 1 %}
 	{{signal.dst_type}} {{signal.name}}[{{signal.mux_count}}];
@@ -44,12 +44,12 @@ typedef struct _{{message.type.lower()}} {
 	{{signal.dst_type}} {{signal.name}};
 	{%- endif %}
 	{%- endfor %}
-} {{message.type.lower()}}; 
+} msg_common_{{message.type.lower()}}; 
 {%- endfor %}
 
 typedef struct _{{spec.common.signature.lower()}} {
 {% for message in spec.common.msgs.values() %}
-	{{message.type.lower()}} {{message.name}};
+	msg_common_{{message.type.lower()}} {{message.name}};
 {%- endfor %}
 } {{spec.common.signature.lower()}};
 
@@ -61,13 +61,13 @@ typedef struct _{{spec.common.signature.lower()}} {
 
 
 {% for message in spec.common.msgs.values() %}
-{{message.type.lower()}} decode_common_{{message.name}}(CANdata msg);
+msg_common_{{message.type.lower()}} decode_common_{{message.name}}(CANdata msg);
 {%- endfor %}
 
 void decode_{{spec.common.name}}(CANdata msg, {{spec.common.signature}} *dev);
 
 {% for message in spec.common.msgs.values() %}
-CANdata encode_common_{{message.name}}({{message.type.lower()}}, uint16_t dev_id);
+CANdata encode_common_{{message.name}}(msg_common_{{message.type.lower()}}, uint16_t dev_id);
 {%- endfor %}
 
 {% for message in spec.common.msgs.values() %}

@@ -27,7 +27,7 @@ class Log(Model):
             else:
                 return fmt.format((value))
 
-        output = show(self.comment, "", "/*{}*/\n")
+        output = show(self.comment.value, "", "/*{}*/\n")
         output += f"log {self.name} {{\n"
         output += f"\tid: {self.id};\n"
         output += f'\tstr: "{self.string}";\n'

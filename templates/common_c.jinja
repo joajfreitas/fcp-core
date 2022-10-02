@@ -30,8 +30,8 @@
 
 
 {% for message in spec.common.msgs.values() %}
-{{message.type.lower()}} decode_common_{{message.name}}(CANdata msg) {
-	{{message.type.lower()}} msg_struct;
+msg_common_{{message.type.lower()}} decode_common_{{message.name}}(CANdata msg) {
+	msg_common_{{message.type.lower()}} msg_struct;
 
 	{%- for signal in message.signals.values() %}
 	{%- if signal.mux_count > 1 %}
@@ -57,7 +57,7 @@ void decode_{{spec.common.name}}(CANdata msg, {{spec.common.signature}} *dev) {
 }
 
 {% for message in spec.common.msgs.values() %}
-CANdata encode_common_{{message.name}}({{message.type.lower()}} msg, uint16_t dev_id) {
+CANdata encode_common_{{message.name}}(msg_common_{{message.type.lower()}} msg, uint16_t dev_id) {
 	uint64_t word = 0;
 	CANdata message;
 	message.msg_id = {{message.id}};

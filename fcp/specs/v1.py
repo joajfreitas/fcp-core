@@ -133,6 +133,7 @@ class Device(Model):
 class FcpV1(Model):
     devices: fields.Dict(fields.Str(), Device)
     logs: fields.Dict(fields.Str(), Log)
+    common: Device
     version: fields.Str()
 
     def get_messages(self, device=None):
@@ -142,7 +143,10 @@ class FcpV1(Model):
             return [msg for dev in self.devices for msg in dev.msgs]
 
     def get_struct(self, device, message):
-        message = self.devices[device].msgs[message]
+        if device == "common":
+            message = self.common.msgs[message]
+        else:
+            message = self.devices[device].msgs[message]
         signals = sorted(message.signals.values(), key=lambda x: x.start)
         signals = [signal.to_v2() for signal in signals]
         return Struct(message.name, signals, comment=Comment(message.description))
@@ -152,7 +156,7 @@ class FcpV1(Model):
             "id": device.id + 32 * message.id,
             "dlc": message.dlc,
             "type": struct.name,
-            "device": device.name,
+            "device": device.name if device.name != "common" else "all",
         }
 
         signals = sorted(message.signals.values(), key=lambda x: x.start)
@@ -198,7 +202,7 @@ class FcpV1(Model):
         structs = []
         broadcast = []
 
-        for device in self.devices.values():
+        for device in list(self.devices.values()) + [self.common]:
             logging.info(device.name)
 
             for message in device.msgs.values():
