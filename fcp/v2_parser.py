@@ -56,7 +56,8 @@ fcp_parser = Lark(
     start: (struct | enum | imports)*
 
     struct: comment* "struct" identifier "{" field+ "}"
-    field: comment* identifier ":" param+ ";"
+    field: comment* identifier field_id ":" param+ ";"
+    field_id: "@" number
     param: identifier "("? param_argument* ")"? "|"?
     param_argument: value ","?
 
@@ -180,12 +181,15 @@ class FcpV2Transformer(Transformer):
     def param_argument(self, args):
         return args[0]
 
+    def field_id(self, args):
+        return args[0]
+
     @v_args(tree=True)
     def field(self, tree):
         if isinstance(tree.children[0], Comment):
-            comment, name, *values = tree.children
+            comment, name, field_id, *values = tree.children
         else:
-            name, *values = tree.children
+            name, field_id, *values = tree.children
             comment = Comment("")
 
         type = values[0][0]
@@ -193,7 +197,16 @@ class FcpV2Transformer(Transformer):
         params = {name.value: value for name, value in values[1:]}
 
         meta = get_meta(tree, self)
-        return Ok(Signal(name=name, type=type, meta=meta, comment=comment, **params))
+        return Ok(
+            Signal(
+                name=name,
+                type=type,
+                field_id=field_id,
+                meta=meta,
+                comment=comment,
+                **params,
+            )
+        )
 
     @v_args(tree=True)
     def struct(self, tree):
@@ -537,7 +550,7 @@ def get_fcp(fcp, fpi):
         except UnexpectedCharacters as e:
             return Error(
                 error_logger.log_surrounding(
-                    "Cannot parse current file",
+                    f"Cannot parse current file: {fcp_filename}:{e.line}:{e.column}",
                     fcp_filename,
                     e.line,
                     e.column,

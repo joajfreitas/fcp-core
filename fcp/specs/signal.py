@@ -43,6 +43,7 @@ class Signal(Model):
     byte_order: fields.Optional(fields.Str(default="little_endian"))
     mux: fields.Optional(fields.Str(default=""))
     mux_count: fields.Optional(fields.Int(default=1))
+    field_id: fields.Int()
     meta: fields.Optional(MetaData)
 
     def to_fcp(self):
@@ -53,7 +54,7 @@ class Signal(Model):
         )
         return (
             (f"\t/*{self.comment.value}*/\n" if self.comment.value != "" else "")
-            + f"\t{self.name}: {self.type}"
+            + f"\t{self.name} @{self.field_id}: {self.type}"
             + unit
         )
 
