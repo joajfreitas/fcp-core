@@ -30,7 +30,7 @@ class Signal(Model):
     mux: fields.Optional(fields.Str(default=""))  #
     mux_count: fields.Optional(fields.Int(default=1))  #
 
-    def to_v2(self) -> SignalV2:
+    def to_v2(self, index) -> SignalV2:
         def convert_type(type, length):
             if type == "unsigned":
                 return "u" + str(length)
@@ -55,6 +55,7 @@ class Signal(Model):
             byte_order=self.byte_order,
             mux=self.mux,
             mux_count=self.mux_count,
+            field_id=index,
         )
 
 
@@ -148,7 +149,7 @@ class FcpV1(Model):
         else:
             message = self.devices[device].msgs[message]
         signals = sorted(message.signals.values(), key=lambda x: x.start)
-        signals = [signal.to_v2() for signal in signals]
+        signals = [signal.to_v2(index) for index, signal in enumerate(signals)]
         return Struct(message.name, signals, comment=Comment(message.description))
 
     def convert_to_broadcast(self, device, message, struct):
