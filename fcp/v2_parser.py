@@ -63,9 +63,9 @@ fcp_parser = Lark(
     enum: comment* "enum" identifier "{" enum_field* "}"
     enum_field : identifier "="? value? ";"
 
-    imports: "import" identifier ";"
+    imports: "import" import_identifier ";"
 
-    type: identifier
+    import_identifier: (UNDERSCORE|LETTER|DOT) (UNDERSCORE|LETTER|DIGIT|DOT)*
     identifier: CNAME
     string: ESCAPED_STRING
     number: SIGNED_NUMBER
@@ -73,8 +73,13 @@ fcp_parser = Lark(
 
     comment : C_COMMENT
 
+    UNDERSCORE : "_"
+    DOT : "."
+
     %import common.WORD   // imports from terminal library
     %import common.CNAME   // imports from terminal library
+    %import common.LETTER   // imports from terminal library
+    %import common.DIGIT   // imports from terminal library
     %import common.SIGNED_NUMBER   // imports from terminal library
     %import common.ESCAPED_STRING   // imports from terminal library
     %import common.C_COMMENT // imports from terminal library
@@ -156,11 +161,18 @@ class FcpV2Transformer(Transformer):
 
         self.error_logger = ErrorLogger({self.filename: self.source})
 
+    def dot(self, args):
+        return "."
+
+    def underscore(self, args):
+        return "_"
+
     def identifier(self, args):
         return args[0]
 
-    def type(self, args):
-        return args[0]
+    def import_identifier(self, args):
+        identifier = "".join([arg.value for arg in args])
+        return identifier
 
     def param(self, args):
         return tuple(args)
@@ -225,7 +237,7 @@ class FcpV2Transformer(Transformer):
 
     @result_shortcut
     def imports(self, args):
-        filename = self.path / (args[0] + ".fcp")
+        filename = self.path / (args[0].replace(".", "/") + ".fcp")
         try:
             with open(filename) as f:
                 module = (
@@ -442,7 +454,7 @@ def resolve_imports(module):
 
         return merged
 
-    nodes = {"enum": [], "struct": [], "broadcast": [], "device": []}
+    nodes = {"enum": [], "struct": [], "broadcast": [], "device": [], "log": []}
 
     for child in module.children:
         if isinstance(child, Module):
