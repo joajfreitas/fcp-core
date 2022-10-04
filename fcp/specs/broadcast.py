@@ -40,7 +40,7 @@ class BroadcastSignal(Model):
             if (name not in {"type"}) and default(name, param)
         ]
 
-        return f"\tsignal {self.name} {{\n\t\t" + "\n\t\t".join(fields) + "\n\t}"
+        return f"\tsignal {self.name} {{\n\t\t" + "\n\t\t".join(fields) + "\n\t};"
 
 
 class Broadcast(Model):
@@ -88,7 +88,7 @@ class Broadcast(Model):
             + "\n\t".join([f"{name}: {field};" for name, field in self.field.items()])
             + "\n"
             + "\n".join(signal.to_fpi() for signal in self.signals)
-            + "\n}\n"
+            + "\n};\n"
         )
 
     def __repr__(self):

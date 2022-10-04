@@ -55,13 +55,13 @@ fcp_parser = Lark(
     """
     start: (struct | enum | imports)*
 
-    struct: comment* "struct" identifier "{" field+ "}"
+    struct: comment* "struct" identifier "{" field+ "}" ";"
     field: comment* identifier field_id ":" param+ ";"
     field_id: "@" number
     param: identifier "("? param_argument* ")"? "|"?
     param_argument: value ","?
 
-    enum: comment* "enum" identifier "{" enum_field* "}"
+    enum: comment* "enum" identifier "{" enum_field* "}" ";"
     enum_field : identifier "="? value? ";"
 
     imports: "import" import_identifier ";"
@@ -95,20 +95,20 @@ fpi_parser = Lark(
     """
     start: (broadcast | device | imports | log)*
 
-    broadcast: comment* "broadcast" identifier "{" (field | signal)* "}"
+    broadcast: comment* "broadcast" identifier "{" (field | signal)* "}" ";"
     field: identifier ":" (value) ";"
     value : integer | float | string | identifier
-    signal: "signal" identifier "{" field* "}"
+    signal: "signal" identifier "{" field* "}" ";"
 
     log : comment* "log" identifier "{" field* "}"
-    command : comment* "command" identifier "{" field* "}"
-    config : comment* "config" identifier "{" field* "}"
+    command : comment* "command" identifier "{" field* "}" ";"
+    config : comment* "config" identifier "{" field* "}" ";"
 
     integer: SIGNED_INT
     float: SIGNED_NUMBER
     string: ESCAPED_STRING
 
-    device : "device" identifier "{" (field | command | config)* "}"
+    device : "device" identifier "{" (field | command | config)* "}" ";"
 
     comment : C_COMMENT
     imports: "import" identifier ";"

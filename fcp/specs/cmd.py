@@ -35,7 +35,7 @@ class Command(Model):
         output += f"\t\tdevice: {self.device};\n"
         output += f"\t\tid: {self.id};\n "
         output += show(len(self.args), 0, "\t\tn_args: {};\n")
-        output = output + "\t}\n"
+        output = output + "\t};\n"
         return output
 
         # if len(self.args) == 0 and len(self.rets) == 0:

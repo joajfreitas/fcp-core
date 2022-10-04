@@ -35,7 +35,7 @@ class Enum(Model):
             (f"/*{self.comment.value}*/\n" if self.comment.value != "" else "")
             + f"enum {self.name} {{\n\t"
             + "\n\t".join([f"{enum.name}: {enum.value};" for enum in self.enumeration])
-            + "\n}"
+            + "\n};"
         )
 
     def __repr__(self):

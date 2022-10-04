@@ -39,7 +39,7 @@ class Config(Model):
         output += f"\t\tid : {self.id};\n"
         output += f"\t\ttype : {self.type};\n"
 
-        return output + "\t}\n"
+        return output + "\t};\n"
 
     def __repr__(self):
         return f"<Config name={self.name}>"
