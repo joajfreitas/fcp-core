@@ -28,11 +28,11 @@ class Log(Model):
                 return fmt.format((value))
 
         output = show(self.comment.value, "", "/*{}*/\n")
-        output += f"log {self.name} {{\n"
-        output += f"\tid: {self.id};\n"
-        output += f'\tstr: "{self.string}";\n'
-        output += show(self.n_args or 0, 0, "\tn_args: {};\n")
-        return output + "}"
+        output += f"log {self.name} : "
+        output += f"id({self.id}) | "
+        output += f'str("{self.string}")'
+        output += show(self.n_args or 0, 0, " | n_args({})")
+        return output + ";"
 
     def __repr__(self):
         return f"<Log name={self.name}>"

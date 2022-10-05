@@ -31,11 +31,11 @@ class Command(Model):
                 return fmt.format((value))
 
         output = show(self.comment.value, "", "\t/*{}*/\n")
-        output += f"\tcommand {self.name} {{\n"
-        output += f"\t\tdevice: {self.device};\n"
-        output += f"\t\tid: {self.id};\n "
-        output += show(len(self.args), 0, "\t\tn_args: {};\n")
-        output = output + "\t};\n"
+        output += f"\tcommand {self.name} : "
+        output += f"device({self.device}) | "
+        output += f"id({self.id})"
+        output += show(len(self.args), 0, " | n_args({})")
+        output = output + ";"
         return output
 
         # if len(self.args) == 0 and len(self.rets) == 0:

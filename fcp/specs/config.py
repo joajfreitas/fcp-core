@@ -1,3 +1,4 @@
+import sys
 import logging
 from typing import *
 import datetime
@@ -25,21 +26,24 @@ class Config(Model):
         return self.name
 
     def to_fpi(self):
-        logging.info(self.device)
-
         def show(value, default, fmt):
             if value == default:
                 return ""
             else:
                 return fmt.format((value))
 
-        output = show(self.comment.value, "", "\t/*{}*/\n")
-        output += f"\tconfig {self.name} {{\n"
-        output += f"\t\tdevice : {self.device};\n"
-        output += f"\t\tid : {self.id};\n"
-        output += f"\t\ttype : {self.type};\n"
+        if self.type == "unsigned":
+            type = "u32"
+        else:
+            sys.exit(1)
 
-        return output + "\t};\n"
+        output = show(self.comment.value, "", "\t/*{}*/\n")
+        output += f"\tconfig {self.name} : "
+        output += f"{type} | "
+        output += f"device({self.device}) | "
+        output += f"id({self.id})"
+
+        return output + ";"
 
     def __repr__(self):
         return f"<Config name={self.name}>"

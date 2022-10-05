@@ -100,15 +100,19 @@ fpi_parser = Lark(
     value : integer | float | string | identifier
     signal: "signal" identifier "{" field* "}" ";"
 
-    log : comment* "log" identifier "{" field* "}"
-    command : comment* "command" identifier "{" field* "}" ";"
-    config : comment* "config" identifier "{" field* "}" ";"
+    log : comment* "log" identifier ":" param+ ";"
+    command : comment* "command" identifier ":" param+ ";"
+    config : comment* "config" identifier ":" param+ ";"
+
+    param: identifier param_args?  "|"?
+    param_args : "(" param_argument+ ")"
+    param_argument: value ","?
 
     integer: SIGNED_INT
     float: SIGNED_NUMBER
     string: ESCAPED_STRING
 
-    device : "device" identifier "{" (field | command | config)* "}" ";"
+    device : "device" identifier ":" param+ "{" (command | config)* "}" ";"
 
     comment : C_COMMENT
     imports: "import" identifier ";"
@@ -307,6 +311,15 @@ class FpiTransformer(Transformer):
     def string(self, args):
         return args[0].value
 
+    def param(self, args):
+        return tuple(args)
+
+    def param_args(self, args):
+        return args[0]
+
+    def param_argument(self, args):
+        return args[0]
+
     @v_args(tree=True)
     def field(self, tree):
         name, value = tree.children
@@ -414,14 +427,15 @@ class FpiTransformer(Transformer):
             name, *fields = tree.children
             comment = Comment("")
 
-        fields = {name: value for name, value in fields}
+        type = fields[0][0]
+        fields = {name: value for name, value in fields[1:]}
         meta = get_meta(tree, self)
         return Ok(
             Config(
                 name,
                 fields["id"],
-                fields["type"],
                 fields["device"],
+                type,
                 comment=comment,
                 meta=meta,
             )
