@@ -30,10 +30,11 @@ class Struct(Model):
 
     def to_fcp(self):
         return (
+            "struct",
             (f"/*{self.comment.value}*/\n" if self.comment.value != "" else "")
             + f"struct {self.name} {{\n"
             + ";\n".join(map(lambda signal: signal.to_fcp(), self.signals))
-            + ";\n};"
+            + ";\n};",
         )
 
     def __repr__(self):

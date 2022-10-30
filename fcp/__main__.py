@@ -20,6 +20,7 @@ from .version import VERSION
 from .v2_parser import get_fcp
 from .codegen import GeneratorManager
 from .verifier import Verifier
+from .fpi import FpiWriter, FcpWriter
 
 
 def setup_logging():
@@ -68,40 +69,6 @@ def generate_cmd(
         logging.info("clang-format clean up ✅")
 
 
-@click.command(name="init")
-@click.argument("json_file")
-def init_cmd(json_file: str):
-    """Create a basic FCP json file.
-    :param json_file: FCP json file path.
-    """
-
-    # init(json_file, logger)
-
-
-@click.command(name="validate")
-@click.argument("json_file")
-def validate_cmd(json_file: str):
-    """Verify correctness of FCP json file.
-    :param json_file: FCP json file path.
-    """
-
-    with open(json_file) as f:
-        spec = FcpV1.from_json(f.read())
-
-    spec = spec.to_v2()
-
-    # spec = get_spec(json_file)
-    # print(spec)
-
-    # failed = validate(spec)
-    # if len(failed) == 0:
-    #    print("✓ JSON validated")
-    # else:
-    #    print("❌")
-    #    for level, msg in failed:
-    #        print(format_error(level, msg))
-
-
 @click.command("json_to_fcp2")
 @click.argument("json")
 @click.argument("output")
@@ -113,12 +80,10 @@ def json_to_fcp2(json: str, output: str):
 
     fcp_v2 = fcp_v1.to_v2()
 
-    output = Path(output)
-    with open(output / "main.fcp", "w") as f:
-        f.write(fcp_v2.to_fcp())
-
-    with open(output / "main.fpi", "w") as f:
-        f.write(fcp_v2.to_fpi())
+    FcpWriter(output).write(fcp_v2.to_fcp())
+    FpiWriter(output).write(fcp_v2.to_fpi())
+    # with open(output / "main.fpi", "w") as f:
+    #    f.write(fcp_v2.to_fpi())
 
 
 @click.group(invoke_without_command=True)
@@ -134,7 +99,6 @@ def main(version):
 
 
 main.add_command(generate_cmd)
-main.add_command(validate_cmd)
 main.add_command(json_to_fcp2)
 
 if __name__ == "__main__":

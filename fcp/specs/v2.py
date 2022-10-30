@@ -49,12 +49,26 @@ class FcpV2(Model):
             ]
 
     def to_fcp(self):
-        return "\n\n".join([node.to_fcp() for node in self.enums + self.structs])
+        nodes = [node.to_fcp() for node in self.enums + self.structs]
+        fcp_structure = {}
+
+        for node in nodes:
+            if node[0] not in fcp_structure.keys():
+                fcp_structure[node[0]] = []
+            fcp_structure[node[0]].append(node[1])
+
+        return fcp_structure
 
     def to_fpi(self):
-        return "\n\n".join(
-            [node.to_fpi() for node in self.devices + self.broadcasts + self.logs]
-        )
+        nodes = [node.to_fpi() for node in self.devices + self.broadcasts + self.logs]
+        fpi_structure = {}
+
+        for node in nodes:
+            if node[0] not in fpi_structure.keys():
+                fpi_structure[node[0]] = []
+            fpi_structure[node[0]].append(node[1])
+
+        return fpi_structure
 
     def __repr__(self) -> str:
 

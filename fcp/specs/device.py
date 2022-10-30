@@ -33,11 +33,12 @@ class Device(Model):
 
     def to_fpi(self):
         return (
+            self.name,
             f"device {self.name} : id({self.id}) {{\n\t"
             + "\n".join([cmd.to_fpi() for cmd in self.commands])
             + "\n"
             + "\n".join([cfg.to_fpi() for cfg in self.configs])
-            + "};"
+            + "};",
         )
 
     def __repr__(self):

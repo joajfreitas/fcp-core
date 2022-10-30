@@ -32,7 +32,7 @@ class Log(Model):
         output += f"id({self.id}) | "
         output += f'str("{self.string}")'
         output += show(self.n_args or 0, 0, " | n_args({})")
-        return output + ";"
+        return ("log", output + ";")
 
     def __repr__(self):
         return f"<Log name={self.name}>"

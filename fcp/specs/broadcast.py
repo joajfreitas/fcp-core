@@ -83,12 +83,13 @@ class Broadcast(Model):
 
     def to_fpi(self):
         return (
+            self.field.get("device"),
             (f"/*{self.comment.value}*/\n" if self.comment.value != "" else "")
             + f"broadcast {self.name} {{\n\t"
             + "\n\t".join([f"{name}: {field};" for name, field in self.field.items()])
             + "\n"
             + "\n".join(signal.to_fpi() for signal in self.signals)
-            + "\n};\n"
+            + "\n};\n",
         )
 
     def __repr__(self):
