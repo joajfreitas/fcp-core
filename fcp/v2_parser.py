@@ -1,3 +1,4 @@
+import os
 import sys
 import pathlib
 import traceback
@@ -141,7 +142,7 @@ class Module:
         self.imports = imports
 
     def __repr__(self):
-        return f"{self.filename}: {self.children}"
+        return f"{self.filename}: {self.children}, imports:{len(self.imports)}"
 
 
 def get_meta(tree, parser):
@@ -362,10 +363,12 @@ class FpiTransformer(Transformer):
         return Comment(args[0].value.replace("/*", "").replace("*/", ""))
 
     def imports(self, args):
-        filename = args[0] + ".fpi"
+        filename = self.path / (args[0] + ".fpi")
         try:
             with open(filename) as f:
-                module = FpiTransformer(filename).transform(fpi_parser.parse(f.read()))
+                module = (
+                    FpiTransformer(filename).transform(fpi_parser.parse(f.read())).Q()
+                )
                 module.filename = filename.name
         except Exception as e:
             return Error(self.error_logger.error(f"Could not import {filename}"))
@@ -467,8 +470,10 @@ class FpiTransformer(Transformer):
     @result_shortcut
     def start(self, args):
         args = [arg.Q() for arg in args]
+
         imports = list(filter(lambda x: isinstance(x, Module), args))
         not_imports = list(filter(lambda x: not isinstance(x, Module), args))
+
         return Ok(Module(self.filename.name, not_imports, self.source, imports))
 
 
@@ -477,39 +482,29 @@ def resolve_imports(module):
         merged = {}
         keys = list(module1.keys()) + list(module2.keys())
         for key in keys:
-            merged[key] = module1.get(key) or [] + module2.get(key) or []
+            merged[key] = (module1.get(key) or []) + (module2.get(key) or [])
 
         return merged
 
     nodes = {"enum": [], "struct": [], "broadcast": [], "device": [], "log": []}
 
+    for child in module.imports:
+        resolved = resolve_imports(child)
+        if resolved.is_err():
+            return resolved
+
+        nodes = merge(nodes, resolved.unwrap())
+
     for child in module.children:
-        if isinstance(child, Module):
-            resolved = resolve_imports(child)
-            if resolved.is_err():
-                return resolved
+        child.filename = module.filename
 
-            nodes = merge(nodes, resolved.unwrap())
-        else:
-            child.filename = module.filename
+        if child.get_type() not in nodes.keys():
+            nodes[child.get_type()] = []
 
-            if child.get_type() not in nodes.keys():
-                nodes[child.get_type()] = []
+        if child.get_name() in [node.get_name() for node in nodes[child.get_type()]]:
+            return Error("Duplicated definitions")
 
-            if child.get_name() in [
-                node.get_name() for node in nodes[child.get_type()]
-            ]:
-                # previous_definition = [node for node in nodes[child.get_type()] if node.get_name() == child.get_name()]
-                # print(
-                #    f"Error: {child.get_name()} {module.filename}:{child.pos()} already defined."
-                # )
-                # print(
-                #    f"Previously defined in {previous_definition.filename}:{previous_definition.pos()}"
-                # )
-
-                return Error("Duplicated definitions")
-
-            nodes[child.get_type()].append(child)
+        nodes[child.get_type()].append(child)
 
     return Ok(nodes)
 
