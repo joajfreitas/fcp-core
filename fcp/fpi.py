@@ -11,9 +11,11 @@ class FpiWriter:
     def write(self, fpis):
         for filename, nodes in fpis.items():
             with open(self.output_path / (filename + ".fpi"), "w") as f:
+                f.write('version: "3"\n\n')
                 f.write("\n\n".join(nodes))
 
             with open(self.output_path / "main.fpi", "w") as f:
+                f.write('version: "3"\n\n')
                 f.write(self.write_main(fpis))
 
 

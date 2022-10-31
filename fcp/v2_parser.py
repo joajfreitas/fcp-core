@@ -54,7 +54,9 @@ def format_lark_exception(exception, filename):
 
 fcp_parser = Lark(
     """
-    start: (struct | enum | imports)*
+    start: preamble | (struct | enum | imports)*
+
+    preamble: "version" ":" string
 
     struct: comment* "struct" identifier "{" field+ "}" ";"
     field: comment* identifier field_id ":" param+ ";"
@@ -94,7 +96,9 @@ fcp_parser = Lark(
 
 fpi_parser = Lark(
     """
-    start: (broadcast | device | imports | log)*
+    start: preamble (broadcast | device | imports | log)*
+
+    preamble: "version" ":" string
 
     broadcast: comment* "broadcast" identifier "{" (field | signal)* "}" ";"
     field: identifier ":" (value) ";"
@@ -166,6 +170,12 @@ class FcpV2Transformer(Transformer):
             self.source = f.read()
 
         self.error_logger = ErrorLogger({self.filename: self.source})
+
+    def preamble(self, args):
+        if args[0] == "3":
+            return Ok(None)
+        else:
+            return Error("Expected IDL version 3")
 
     def dot(self, args):
         return "."
@@ -280,7 +290,7 @@ class FcpV2Transformer(Transformer):
         return Comment(args[0].value.replace("/*", "").replace("*/", ""))
 
     def start(self, args):
-        args = [arg.Q() for arg in args]
+        args = [arg.Q() for arg in args if arg.Q() is not None]
 
         imports = list(filter(lambda x: isinstance(x, Module), args))
         not_imports = list(filter(lambda x: not isinstance(x, Module), args))
@@ -297,6 +307,12 @@ class FpiTransformer(Transformer):
 
         self.error_logger = ErrorLogger({self.filename: self.source})
 
+    def preamble(self, args):
+        if args[0] == "3":
+            return Ok(None)
+        else:
+            return Error("Expected IDL version 3")
+
     def identifier(self, args):
         return args[0].value
 
@@ -310,7 +326,7 @@ class FpiTransformer(Transformer):
         return int(args[0].value)
 
     def string(self, args):
-        return args[0].value
+        return args[0].value[1:-1]
 
     def param(self, args):
         return tuple(args)
@@ -469,7 +485,7 @@ class FpiTransformer(Transformer):
 
     @result_shortcut
     def start(self, args):
-        args = [arg.Q() for arg in args]
+        args = [arg.Q() for arg in args if arg.Q() is not None]
 
         imports = list(filter(lambda x: isinstance(x, Module), args))
         not_imports = list(filter(lambda x: not isinstance(x, Module), args))
