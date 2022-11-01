@@ -1,9 +1,8 @@
 from .enum import Enum, Enumeration
 from .enum_value import EnumValue
-from .arg import Argument
 from .signal import Signal, SignalValueError
 from .struct import Struct
-from .cmd import Command
+from .cmd import Command, CommandArg, CommandRet
 from .config import Config
 
 from .device import Device

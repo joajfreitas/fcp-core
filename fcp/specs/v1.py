@@ -6,10 +6,12 @@ from fcp.specs.broadcast import Broadcast, BroadcastSignal
 
 from fcp.specs.struct import Struct
 from .v2 import FcpV2
-from . import Argument, Comment
+from . import Comment
 from .v2 import Device as DeviceV2
 from .v2 import Config as ConfigV2
 from .v2 import Command as CommandV2
+from .v2 import CommandArg
+from .v2 import CommandRet
 from .v2 import Log as LogV2
 
 from . import Signal as SignalV2
@@ -78,22 +80,45 @@ class Log(Model):
         return LogV2(self.id, self.name, self.string, comment=Comment(self.comment))
 
 
+class Argument(Model):
+    name: fields.Str()
+    id: fields.Int()
+    comment: fields.Str()
+    type: fields.Optional(fields.Str(default="unsigned"))
+
+    def to_v2(self):
+        return CommandArg(
+            name=self.name, id=self.id, type=self.type, comment=Comment(self.comment)
+        )
+
+
+class Return(Model):
+    name: fields.Str()
+    id: fields.Int()
+    comment: fields.Str()
+    type: fields.Optional(fields.Str(default="unsigned"))
+
+    def to_v2(self):
+        return CommandRet(
+            name=self.name, id=self.id, type=self.type, comment=Comment(self.comment)
+        )
+
+
 class Command(Model):
     name: fields.Str()
     n_args: fields.Optional(fields.Int())
     comment: fields.Str()
     id: fields.Int()
     args: fields.Dict(fields.Str(), Argument)
-    rets: fields.Dict(fields.Str(), Argument)
+    rets: fields.Dict(fields.Str(), Return)
 
     def to_v2(self, device) -> CommandV2:
         return CommandV2(
             name=self.name,
             id=self.id,
-            args=list(self.args.values()),
-            rets=list(self.rets.values()),
+            args=[arg.to_v2() for arg in self.args.values()],
+            rets=[ret.to_v2() for ret in self.rets.values()],
             comment=Comment(self.comment),
-            n_args=self.n_args,
             device=device.name,
         )
 

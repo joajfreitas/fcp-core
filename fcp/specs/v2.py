@@ -9,6 +9,8 @@ from . import (
     Device,
     Config,
     Command,
+    CommandArg,
+    CommandRet,
     Signal,
     Enum,
     EnumValue,

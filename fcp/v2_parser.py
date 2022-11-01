@@ -25,6 +25,8 @@ from .specs import (
     Enumeration,
     Comment,
     Command,
+    CommandArg,
+    CommandRet,
     Config,
     Log,
     FcpV2,
@@ -32,24 +34,6 @@ from .specs import (
 from .result import Ok, Error, result_shortcut
 from .specs.metadata import MetaData
 from .verifier import ErrorLogger
-
-
-def format_lark_exception(exception, filename):
-    ss = (
-        colored("Error: ", "red", attrs=["bold"])
-        + colored("Cannot parse current file", "white", attrs=["bold"])
-        + "\n"
-    )
-    ss += (
-        colored(" --> ", "blue", attrs=["bold"])
-        + colored(
-            f"{filename}:{exception.line}:{exception.column}", "white", attrs=["bold"]
-        )
-        + "\n"
-    )
-    ss += exception._format_expected(exception.allowed)
-
-    return ss
 
 
 fcp_parser = Lark(
@@ -106,7 +90,9 @@ fpi_parser = Lark(
     signal: "signal" identifier "{" field* "}" ";"
 
     log : comment* "log" identifier ":" param+ ";"
-    command : comment* "command" identifier ":" param+ ";"
+    command : comment* "command" identifier ":" param+ "{"? (cmd_arg | cmd_ret)* "}"? ";"
+    cmd_arg: comment* "arg" identifier "@" integer ":" param+ ";"
+    cmd_ret: comment* "ret" identifier "@" integer ":" param+ ";"
     config : comment* "config" identifier ":" param+ ";"
 
     param: identifier param_args?  "|"?
@@ -273,6 +259,8 @@ class FcpV2Transformer(Transformer):
                 )
                 module.filename = filename.name
         except Exception as e:
+            logging.error(e)
+            traceback.print_exc()
             return Error(self.error_logger.error(f"Could not import {filename}"))
 
         return Ok(module)
@@ -311,7 +299,11 @@ class FpiTransformer(Transformer):
         if args[0] == "3":
             return Ok(None)
         else:
-            return Error("Expected IDL version 3")
+            return Error(
+                self.error_logger.error(
+                    f"Expected IDL version 3 [{self.filename.name}]"
+                )
+            )
 
     def identifier(self, args):
         return args[0].value
@@ -387,7 +379,9 @@ class FpiTransformer(Transformer):
                 )
                 module.filename = filename.name
         except Exception as e:
-            return Error(self.error_logger.error(f"Could not import {filename}"))
+            # logging.error(e)
+            traceback.print_exc()
+            return Error(self.error_logger.error(f"Could not import {filename}\n{e}"))
 
         return Ok(module)
 
@@ -468,20 +462,45 @@ class FpiTransformer(Transformer):
             name, *fields = tree.children
             comment = Comment("")
 
+        args = [field for field in fields if isinstance(field, CommandArg)]
+        rets = [field for field in fields if isinstance(field, CommandRet)]
+        fields = [field for field in fields if isinstance(field, tuple)]
+
         fields = {name: value for name, value in fields}
         meta = get_meta(tree, self)
         return Ok(
             Command(
                 name,
-                fields.get("n_args"),
                 fields["id"],
-                [],
-                [],
+                args,
+                rets,
                 fields.get("device"),
                 comment=comment,
                 meta=meta,
             )
         )
+
+    @v_args(tree=True)
+    def cmd_arg(self, tree):
+        if isinstance(tree.children[0], Comment):
+            comment, name, id, *params = tree.children
+        else:
+            name, id, *params = tree.children
+            comment = Comment("")
+
+        type, *params = params
+        return CommandArg(name=name, type=type[0], id=id)
+
+    @v_args(tree=True)
+    def cmd_ret(self, tree):
+        if isinstance(tree.children[0], Comment):
+            comment, name, id, *params = tree.children
+        else:
+            name, id, *params = tree.children
+            comment = Comment("")
+
+        type, *params = params
+        return CommandRet(name=name, type=type[0], id=id)
 
     @result_shortcut
     def start(self, args):
