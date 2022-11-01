@@ -23,12 +23,14 @@ class CodeGenerator:
 
         self.verify(fcp).unwrap()
 
-        output_path = pathlib.Path(output_path)
-        os.makedirs(output_path, exist_ok=True)
+        self.output_path = pathlib.Path(output_path)
 
-        for path, content in self.generate(fcp, templates, skels).items():
-            logging.info(f"Generating {output_path / path}")
-            with open(output_path / path, "w", encoding="utf-8") as file:
+        for path, content in self.generate(
+            fcp, self.output_path, templates, skels
+        ).items():
+            logging.info(f"Generating {path}")
+            os.makedirs(path.parent, exist_ok=True)
+            with open(path, "w", encoding="utf-8") as file:
                 file.write(content)
 
     def verify(self, fcp):
@@ -37,7 +39,7 @@ class CodeGenerator:
         else:
             return Error(["Received a None object instead of FcpV2"])
 
-    def generate(self, fcp, templates, skel):
+    def generate(self, fcp, output_path, templates, skel):
         """Function to override from generator. Implements actual code generation."""
         return
 
@@ -69,6 +71,32 @@ class GeneratorManager:
 
         return generators["fcp_" + generator_name]
 
+    def get_templates(self, template_dir):
+        if template_dir is None:
+            return {}
+
+        templates = {}
+        for template in os.listdir(template_dir):
+            template = pathlib.Path(template_dir) / pathlib.Path(template)
+            if not template.is_file():
+                continue
+            with open(template, encoding="utf-8") as file:
+                templates[template.stem] = file.read()
+
+        return templates
+
+    def get_skels(self, skel_dir):
+        if skel_dir is None:
+            return {}
+
+        for skel in os.listdir(skel_dir):
+            skels = {}
+            skel_path = pathlib.Path(skel_dir) / skel
+            if not skel_path.is_file():
+                continue
+            with open(skel_path, encoding="utf-8") as file:
+                skels[skel] = file.read()
+
     @result_shortcut
     def generate(self, generator, template_dir, skel_dir, fcp, sources, output_path):
         """Generate code"""
@@ -77,19 +105,8 @@ class GeneratorManager:
 
         verifier.verify(fcp).Q()
 
-        templates = {}
-        for template in os.listdir(template_dir):
-            template = pathlib.Path(template_dir) / pathlib.Path(template)
-            with open(template, encoding="utf-8") as file:
-                templates[template.stem] = file.read()
-
-        skels = {}
-        for skel in os.listdir(skel_dir):
-            skel_path = pathlib.Path(skel_dir) / skel
-            if not skel_path.is_file():
-                continue
-            with open(skel_path, encoding="utf-8") as file:
-                skels[skel] = file.read()
+        templates = self.get_templates(template_dir)
+        skels = self.get_skels(skel_dir)
 
         generator.gen(fcp, templates, skels, output_path)
 

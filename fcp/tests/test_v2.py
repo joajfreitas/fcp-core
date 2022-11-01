@@ -1,7 +1,7 @@
 import pytest
 import json
 
-from ..specs import FcpV2
+from .. import FcpV2
 
 
 @pytest.fixture

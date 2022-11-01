@@ -12,7 +12,7 @@ import coloredlogs
 
 import click
 
-from .specs import FcpV2
+from . import FcpV2
 from .specs.v1 import FcpV1, fcp_v1_to_v2
 
 from .docs import generate_docs
@@ -35,10 +35,9 @@ def setup_logging():
 @click.argument("fcp")
 @click.argument("fpi")
 @click.argument("output")
-@click.argument("templates")
-@click.argument("skel")
+@click.option("--templates")
+@click.option("--skel")
 @click.option("--noformat", is_flag=True, default=False)
-@click.option("--force", is_flag=True, default=False)
 def generate_cmd(
     generator,
     fcp,
@@ -47,7 +46,6 @@ def generate_cmd(
     templates: str,
     skel: str,
     noformat: bool,
-    force: bool,
 ):
 
     fcp_v2, sources = get_fcp(fcp, fpi).unwrap()
@@ -59,14 +57,6 @@ def generate_cmd(
     generator_manager.generate(
         generator, templates, skel, fcp_v2, sources, output
     ).unwrap()
-
-    if noformat == False:
-        subprocess.run(
-            "clang-format -i -style=Webkit *.c *.h",
-            cwd=os.path.abspath(output),
-            shell=True,
-        )
-        logging.info("clang-format clean up ✅")
 
 
 @click.command("json_to_fcp2")
@@ -82,8 +72,6 @@ def json_to_fcp2(json: str, output: str):
 
     FcpWriter(output).write(fcp_v2.to_fcp())
     FpiWriter(output).write(fcp_v2.to_fpi())
-    # with open(output / "main.fpi", "w") as f:
-    #    f.write(fcp_v2.to_fpi())
 
 
 @click.group(invoke_without_command=True)

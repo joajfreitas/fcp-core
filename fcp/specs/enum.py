@@ -2,8 +2,6 @@ from typing import *
 import datetime
 from serde import Model, fields
 
-from .node import Node
-from .enum_value import EnumValue
 from .metadata import MetaData
 from .comment import Comment
 

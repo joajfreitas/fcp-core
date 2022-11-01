@@ -2,10 +2,12 @@ from typing import *
 import datetime
 from serde import Model, fields
 
-from .cmd import Command
-from .config import Config
-from .utils import normalize
-from .metadata import MetaData
+from . import cmd
+from . import config
+from . import utils
+from . import metadata
+
+from . import v1
 
 
 class Device(Model):
@@ -21,9 +23,9 @@ class Device(Model):
 
     name: fields.Str()
     id: fields.Int()
-    commands: fields.List(Command)
-    configs: fields.List(Config)
-    meta: fields.Optional(MetaData)
+    commands: fields.List(cmd.Command)
+    configs: fields.List(config.Config)
+    meta: fields.Optional(metadata.MetaData)
 
     def get_name(self):
         return self.name
@@ -39,6 +41,15 @@ class Device(Model):
             + "\n"
             + "\n".join([cfg.to_fpi() for cfg in self.configs])
             + "};",
+        )
+
+    def to_v1(self):
+        return v1.Device(
+            msgs={},
+            cfgs={cfg.name: cfg.to_v1() for cfg in self.configs},
+            cmds={cmd.name: cmd.to_v1() for cmd in self.commands},
+            name=self.name,
+            id=self.id,
         )
 
     def __repr__(self):

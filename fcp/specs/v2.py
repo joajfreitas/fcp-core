@@ -5,19 +5,15 @@ import time
 import logging
 from serde import Model, fields
 
-from . import (
-    Device,
-    Config,
-    Command,
-    CommandArg,
-    CommandRet,
-    Signal,
-    Enum,
-    EnumValue,
-    Log,
-    Struct,
-    Broadcast,
-)
+from . import v1
+from . import device
+from . import log
+from . import broadcast
+from . import config
+from . import cmd
+from . import signal
+from . import enum
+from . import struct
 from .utils import normalize
 
 
@@ -30,11 +26,11 @@ class FcpV2(Model):
     Commands and Arguments.
     """
 
-    structs: fields.List(Struct)
-    enums: fields.List(Enum)
-    devices: fields.List(Device)
-    broadcasts: fields.List(Broadcast)
-    logs: fields.List(Log)
+    structs: fields.List(struct.Struct)
+    enums: fields.List(enum.Enum)
+    devices: fields.List(device.Device)
+    broadcasts: fields.List(broadcast.Broadcast)
+    logs: fields.List(log.Log)
     version: fields.Str(default="1.0")
 
     def add_device(self, device):
@@ -73,9 +69,7 @@ class FcpV2(Model):
         return fpi_structure
 
     def __repr__(self) -> str:
-
         sig_count = len([sig for struct in self.structs for sig in struct.signals])
-
         return f"(Spec: devs={len(self.devices)}, broadcasts={len(self.broadcasts)}, structs={len(self.structs)}, sigs={sig_count})"
 
 

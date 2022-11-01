@@ -15,22 +15,16 @@ from lark import (
     UnexpectedCharacters,
 )
 
-from .specs import (
-    Device,
-    Broadcast,
-    BroadcastSignal,
-    Signal,
-    Struct,
-    Enum,
-    Enumeration,
-    Comment,
-    Command,
-    CommandArg,
-    CommandRet,
-    Config,
-    Log,
-    FcpV2,
-)
+from .specs import device
+from .specs import broadcast
+from .specs import signal
+from .specs import struct
+from .specs import enum
+from .specs.comment import Comment
+from .specs import cmd
+from .specs import config
+from .specs import log
+from .specs import v2
 from .result import Ok, Error, result_shortcut
 from .specs.metadata import MetaData
 from .verifier import ErrorLogger
@@ -199,7 +193,7 @@ class FcpV2Transformer(Transformer):
 
         meta = get_meta(tree, self)
         return Ok(
-            Signal(
+            signal.Signal(
                 name=name,
                 type=type,
                 field_id=field_id,
@@ -219,7 +213,7 @@ class FcpV2Transformer(Transformer):
 
         meta = get_meta(tree, self)
         return Ok(
-            Struct(
+            struct.Struct(
                 name=name.value,
                 signals=[x.Q() for x in fields],
                 meta=meta,
@@ -232,7 +226,7 @@ class FcpV2Transformer(Transformer):
         name, value = tree.children
 
         meta = get_meta(tree, self)
-        return Ok(Enumeration(name=name, value=value, meta=meta))
+        return Ok(enum.Enumeration(name=name, value=value, meta=meta))
 
     @v_args(tree=True)
     def enum(self, tree):
@@ -247,7 +241,7 @@ class FcpV2Transformer(Transformer):
         fields = [field.Q() for field in fields]
 
         meta = get_meta(tree, self)
-        return Ok(Enum(name=name, enumeration=fields, meta=meta, comment=comment))
+        return Ok(enum.Enum(name=name, enumeration=fields, meta=meta, comment=comment))
 
     @result_shortcut
     def imports(self, args):
@@ -339,7 +333,7 @@ class FpiTransformer(Transformer):
         name, *fields = tree.children
         fields = {name: value for name, value in fields}
         meta = get_meta(tree, self)
-        return BroadcastSignal(name, fields, meta=meta)
+        return broadcast.BroadcastSignal(name, fields, meta=meta)
 
     @v_args(tree=True)
     def broadcast(self, tree):
@@ -349,8 +343,10 @@ class FpiTransformer(Transformer):
             name, *fields = tree.children
             comment = Comment("")
 
-        signals = filter(lambda x: isinstance(x, BroadcastSignal), fields)
-        fields = list(filter(lambda x: not isinstance(x, BroadcastSignal), fields))
+        signals = filter(lambda x: isinstance(x, broadcast.BroadcastSignal), fields)
+        fields = list(
+            filter(lambda x: not isinstance(x, broadcast.BroadcastSignal), fields)
+        )
 
         field_names = [field[0] for field in fields]
         if len(field_names) != len(set(field_names)):
@@ -358,7 +354,7 @@ class FpiTransformer(Transformer):
 
         meta = get_meta(tree, self)
         return Ok(
-            Broadcast(
+            broadcast.Broadcast(
                 name=name,
                 field={name: value for name, value in fields},
                 signals=signals,
@@ -395,12 +391,12 @@ class FpiTransformer(Transformer):
         children = filter(lambda x: isinstance(x, Ok), children)
         children = [child.unwrap() for child in children]
 
-        commands = filter(lambda x: isinstance(x, Command), children)
-        configs = filter(lambda x: isinstance(x, Config), children)
+        commands = filter(lambda x: isinstance(x, cmd.Command), children)
+        configs = filter(lambda x: isinstance(x, config.Config), children)
 
         meta = get_meta(tree, self)
         return Ok(
-            Device(
+            device.Device(
                 name=name,
                 id=fields["id"],
                 commands=commands,
@@ -422,7 +418,7 @@ class FpiTransformer(Transformer):
 
         n_args = fields.get("n_args") or 0
         return Ok(
-            Log(
+            log.Log(
                 id=fields["id"],
                 name=name,
                 comment=comment,
@@ -444,11 +440,11 @@ class FpiTransformer(Transformer):
         fields = {name: value for name, value in fields[1:]}
         meta = get_meta(tree, self)
         return Ok(
-            Config(
+            config.Config(
                 name,
                 fields["id"],
-                fields["device"],
                 type,
+                fields["device"],
                 comment=comment,
                 meta=meta,
             )
@@ -462,14 +458,14 @@ class FpiTransformer(Transformer):
             name, *fields = tree.children
             comment = Comment("")
 
-        args = [field for field in fields if isinstance(field, CommandArg)]
-        rets = [field for field in fields if isinstance(field, CommandRet)]
+        args = [field for field in fields if isinstance(field, cmd.CommandArg)]
+        rets = [field for field in fields if isinstance(field, cmd.CommandRet)]
         fields = [field for field in fields if isinstance(field, tuple)]
 
         fields = {name: value for name, value in fields}
         meta = get_meta(tree, self)
         return Ok(
-            Command(
+            cmd.Command(
                 name,
                 fields["id"],
                 args,
@@ -489,7 +485,7 @@ class FpiTransformer(Transformer):
             comment = Comment("")
 
         type, *params = params
-        return CommandArg(name=name, type=type[0], id=id)
+        return cmd.CommandArg(name=name, type=type[0], id=id)
 
     @v_args(tree=True)
     def cmd_ret(self, tree):
@@ -500,7 +496,7 @@ class FpiTransformer(Transformer):
             comment = Comment("")
 
         type, *params = params
-        return CommandRet(name=name, type=type[0], id=id)
+        return cmd.CommandRet(name=name, type=type[0], id=id)
 
     @result_shortcut
     def start(self, args):
@@ -562,7 +558,7 @@ def merge(fcp, fpi):
 
 def convert(module):
     return Ok(
-        FcpV2(
+        v2.FcpV2(
             broadcasts=module["broadcast"].values(),
             devices=module["device"].values(),
             structs=module["struct"].values(),

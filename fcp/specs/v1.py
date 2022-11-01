@@ -4,17 +4,15 @@ from itertools import accumulate
 from serde import Model, fields
 from fcp.specs.broadcast import Broadcast, BroadcastSignal
 
-from fcp.specs.struct import Struct
-from .v2 import FcpV2
-from . import Comment
-from .v2 import Device as DeviceV2
-from .v2 import Config as ConfigV2
-from .v2 import Command as CommandV2
-from .v2 import CommandArg
-from .v2 import CommandRet
-from .v2 import Log as LogV2
+from . import struct
+from . import v2
+from .comment import Comment
+from . import device
+from . import config
+from . import cmd
+from . import log
 
-from . import Signal as SignalV2
+from . import signal
 
 
 class Signal(Model):
@@ -32,7 +30,7 @@ class Signal(Model):
     mux: fields.Optional(fields.Str(default=""))  #
     mux_count: fields.Optional(fields.Int(default=1))  #
 
-    def to_v2(self, index) -> SignalV2:
+    def to_v2(self, index) -> signal.Signal:
         def convert_type(type, length):
             if type == "unsigned":
                 return "u" + str(length)
@@ -43,7 +41,7 @@ class Signal(Model):
             elif type == "double":
                 return "f64"
 
-        return SignalV2(
+        return signal.Signal(
             name=self.name,
             start=self.start,
             length=self.length,
@@ -76,8 +74,8 @@ class Log(Model):
     string: fields.Str()
     n_args: fields.Optional(fields.Int())
 
-    def to_v2(self) -> LogV2:
-        return LogV2(self.id, self.name, self.string, comment=Comment(self.comment))
+    def to_v2(self) -> log.Log:
+        return log.Log(self.id, self.name, self.string, comment=Comment(self.comment))
 
 
 class Argument(Model):
@@ -87,7 +85,7 @@ class Argument(Model):
     type: fields.Optional(fields.Str(default="unsigned"))
 
     def to_v2(self):
-        return CommandArg(
+        return cmd.CommandArg(
             name=self.name, id=self.id, type=self.type, comment=Comment(self.comment)
         )
 
@@ -99,7 +97,7 @@ class Return(Model):
     type: fields.Optional(fields.Str(default="unsigned"))
 
     def to_v2(self):
-        return CommandRet(
+        return cmd.CommandRet(
             name=self.name, id=self.id, type=self.type, comment=Comment(self.comment)
         )
 
@@ -112,8 +110,8 @@ class Command(Model):
     args: fields.Dict(fields.Str(), Argument)
     rets: fields.Dict(fields.Str(), Return)
 
-    def to_v2(self, device) -> CommandV2:
-        return CommandV2(
+    def to_v2(self, device) -> cmd.Command:
+        return cmd.Command(
             name=self.name,
             id=self.id,
             args=[arg.to_v2() for arg in self.args.values()],
@@ -129,9 +127,9 @@ class Config(Model):
     comment: fields.Str()
     type: fields.Str(default="unsigned")
 
-    def to_v2(self, device) -> ConfigV2:
+    def to_v2(self, device) -> config.Config:
         # logging.info(device.name)
-        return ConfigV2(
+        return config.Config(
             name=self.name,
             id=self.id,
             comment=Comment(self.comment),
@@ -147,8 +145,8 @@ class Device(Model):
     name: fields.Str()
     id: fields.Int()
 
-    def to_v2(self) -> DeviceV2:
-        return DeviceV2(
+    def to_v2(self) -> device.Device:
+        return device.Device(
             name=self.name,
             id=self.id,
             commands=[cmd.to_v2(self) for cmd in self.cmds.values()],
@@ -175,7 +173,9 @@ class FcpV1(Model):
             message = self.devices[device].msgs[message]
         signals = sorted(message.signals.values(), key=lambda x: x.start)
         signals = [signal.to_v2(index) for index, signal in enumerate(signals)]
-        return Struct(message.name, signals, comment=Comment(message.description))
+        return struct.Struct(
+            message.name, signals, comment=Comment(message.description)
+        )
 
     def convert_to_broadcast(self, device, message, struct):
         field = {
@@ -236,7 +236,7 @@ class FcpV1(Model):
                 structs.append(struct)
                 broadcast.append(self.convert_to_broadcast(device, message, struct))
 
-        return FcpV2(
+        return v2.FcpV2(
             enums=[],
             structs=structs,
             devices=[device.to_v2() for device in self.devices.values()],
