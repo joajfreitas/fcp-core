@@ -14,7 +14,6 @@ from . import cmd
 from . import signal
 from . import enum
 from . import struct
-from .utils import normalize
 
 
 def handle_key_not_found(d: dict, key: str):

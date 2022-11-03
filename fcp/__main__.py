@@ -15,12 +15,11 @@ import click
 from . import FcpV2
 from .specs.v1 import FcpV1, fcp_v1_to_v2
 
-from .docs import generate_docs
 from .version import VERSION
 from .v2_parser import get_fcp
 from .codegen import GeneratorManager
 from .verifier import Verifier
-from .fpi import FpiWriter, FcpWriter
+from .writers import FpiWriter, FcpWriter
 
 
 def setup_logging():

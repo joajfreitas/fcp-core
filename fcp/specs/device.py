@@ -4,7 +4,6 @@ from serde import Model, fields
 
 from . import cmd
 from . import config
-from . import utils
 from . import metadata
 
 from . import v1
