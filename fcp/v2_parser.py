@@ -32,7 +32,7 @@ from .verifier import ErrorLogger
 
 fcp_parser = Lark(
     """
-    start: preamble | (struct | enum | imports)*
+    start: preamble (struct | enum | imports)*
 
     preamble: "version" ":" string
 

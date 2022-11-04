@@ -29,7 +29,9 @@ class FcpWriter:
     def write(self, fcps):
         for filename, nodes in fcps.items():
             with open(self.output_path / (filename + ".fcp"), "w") as f:
+                f.write('version: "3"\n\n')
                 f.write("\n\n".join(nodes))
 
             with open(self.output_path / "main.fcp", "w") as f:
+                f.write('version: "3"\n\n')
                 f.write(self.write_main(fcps))
