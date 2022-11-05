@@ -47,15 +47,26 @@ class Signal(Model):
     meta: fields.Optional(MetaData)
 
     def to_fcp(self):
-        unit = (
-            f' | unit("{self.unit}")'
-            if self.unit is not None and self.unit != ""
-            else ""
-        )
+        def show(value, default, fmt):
+            if value == default:
+                return ""
+            else:
+                return fmt.format((value))
+
+        def show2(value1, default1, value2, default2, fmt):
+            if value1 == default1 and value2 == default2:
+                return ""
+            else:
+                return fmt.format(value1, value2)
+
         return (
             (f"\t/*{self.comment.value}*/\n" if self.comment.value != "" else "")
-            + f"\t{self.name} @{self.field_id}: {self.type}"
-            + unit
+            + f"\t{self.name} @{self.field_id}: {self.type} "
+            + show2(self.scale, 1.0, self.offset, 0.0, "| scale({}, {})")
+            + show2(self.min_value, 0.0, self.max_value, 0.0, "| range({}, {})")
+            + show2(self.mux, "", self.mux_count, 1, '| mux("{}", {})')
+            + show(self.byte_order, "little", '| endianess("{}")')
+            + show(self.unit, "", '| unit("{}")')
         )
 
     def __repr__(self):

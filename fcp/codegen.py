@@ -89,13 +89,15 @@ class GeneratorManager:
         if skel_dir is None:
             return {}
 
+        skels = {}
         for skel in os.listdir(skel_dir):
-            skels = {}
             skel_path = pathlib.Path(skel_dir) / skel
             if not skel_path.is_file():
                 continue
             with open(skel_path, encoding="utf-8") as file:
                 skels[skel] = file.read()
+
+        return skels
 
     @result_shortcut
     def generate(self, generator, template_dir, skel_dir, fcp, sources, output_path):

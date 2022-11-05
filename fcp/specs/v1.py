@@ -52,7 +52,7 @@ class Signal(Model):
             min_value=self.min_value,
             max_value=self.max_value,
             type=convert_type(self.type, self.length),
-            byte_order=self.byte_order,
+            byte_order="big" if self.byte_order == "big_endian" else "little",
             mux=self.mux,
             mux_count=self.mux_count,
             field_id=index,
@@ -190,18 +190,8 @@ class FcpV1(Model):
         lengths = [signal.length for signal in signals]
         starts = [0] + list(accumulate(lengths))[:-1]
 
-        defaults = {
-            "mux": "",
-            "mux_count": 1,
-            "scale": 1.0,
-            "offset": 0.0,
-            "byte_order": "little_endian",
-            "min_value": 0.0,
-            "max_value": 0.0,
-        }
-
         broadcast_signals = [
-            self.convert_to_broadcast_signal(signal, defaults | {"start": starts[i]})
+            self.convert_to_broadcast_signal(signal, {"start": starts[i]})
             for i, signal in enumerate(signals)
         ]
         broadcast_signals = list(filter(lambda x: x is not None, broadcast_signals))

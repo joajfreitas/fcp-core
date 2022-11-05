@@ -141,6 +141,22 @@ def get_meta(tree, parser):
     )
 
 
+def convert_params(params):
+    convertion_table = {
+        "range": lambda x: {"min_value": x[0], "max_value": x[1]},
+        "scale": lambda x: {"scale": x[0], "offset": x[1]},
+        "mux": lambda x: {"mux": x[0], "mux_count": x[1]},
+        "unit": lambda x: {"unit": x[0]},
+        "endianess": lambda x: {"byte_order": x[0]},
+    }
+
+    values = {}
+    for name, value in params.items():
+        values = values | convertion_table[name](value)
+
+    return values
+
+
 class FcpV2Transformer(Transformer):
     def __init__(self, filename):
         self.filename = pathlib.Path(filename)
@@ -189,7 +205,8 @@ class FcpV2Transformer(Transformer):
 
         type = values[0][0]
 
-        params = {name.value: value for name, value in values[1:]}
+        params = {name.value: value for name, *value in values[1:]}
+        params = convert_params(params)
 
         meta = get_meta(tree, self)
         return Ok(
@@ -263,7 +280,10 @@ class FcpV2Transformer(Transformer):
         return args[0]
 
     def number(self, args):
-        return int(args[0].value)
+        try:
+            return int(args[0].value)
+        except ValueError:
+            return float(args[0].value)
 
     def string(self, args):
         return args[0].value[1:-1]

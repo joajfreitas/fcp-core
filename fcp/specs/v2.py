@@ -1,4 +1,4 @@
-from typing import *
+from typing import Tuple
 import copy
 import datetime
 import time
