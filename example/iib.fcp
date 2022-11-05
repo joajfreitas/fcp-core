@@ -1,0 +1,4 @@
+struct iib_status {
+	timestamp: u32;
+	status: u8;
+}

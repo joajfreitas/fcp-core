@@ -1,6 +1,0 @@
- - fix - fixes the mux count issue
- - Warn of new fcp versions in GUI
- - Show release notes in GUI
- - Complete undo implementation
- - TESTS
- - magic number in logs

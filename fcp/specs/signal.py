@@ -1,16 +1,18 @@
+import sys
 from typing import *
 import datetime
+import logging
+from serde import Model, fields
 
-from ..can import CANMessage
-
-from .node import Node
+from .metadata import MetaData
+from .comment import Comment
 
 
 class SignalValueError(Exception):
     pass
 
 
-class Signal(Node):
+class Signal(Model):
     """
     Signal node. Represents a CAN signal, similar to a DBC signal.
 
@@ -26,244 +28,46 @@ class Signal(Node):
     :param type: Type of the Signal's data.
     :param mux: Name of the mux Signal. None if the Signal doesn't belong to a multiplexed Message.
     :param mux_count: Number of signals that the mux can reference for this Muxed signal.
-
-
     """
 
-    def __init__(
-        self,
-        parent: "Message" = None,
-        name: str = "",
-        start: int = 0,
-        length: int = 0,
-        scale: float = 1.0,
-        offset: float = 0.0,
-        unit: str = "",
-        comment: str = "",
-        min_value: float = 0.0,
-        max_value: float = 0.0,
-        type: str = "unsigned",
-        byte_order: str = "little_endian",
-        mux: str = "",
-        mux_count: int = 1,
-        alias: str = "",
-    ):
+    name: fields.Str()
+    start: fields.Optional(fields.Int())
+    length: fields.Optional(fields.Int())
+    scale: fields.Optional(fields.Float(default=1.0))
+    offset: fields.Optional(fields.Float(default=0.0))
+    unit: fields.Optional(fields.Str())
+    comment: fields.Optional(Comment)
+    min_value: fields.Optional(fields.Float())
+    max_value: fields.Optional(fields.Float())
+    type: fields.Optional(fields.Str(default="unsigned"))
+    byte_order: fields.Optional(fields.Str(default="little_endian"))
+    mux: fields.Optional(fields.Str(default=""))
+    mux_count: fields.Optional(fields.Int(default=1))
+    field_id: fields.Int()
+    meta: fields.Optional(MetaData)
 
-        assert parent is not None
-        self.parent = parent
-        m = max(
-            [
-                int(sig.name[3:])
-                for sig in self.parent.signals.values()
-                if sig.name.startswith("sig")
-            ]
-            + [0]
+    def to_fcp(self):
+        def show(value, default, fmt):
+            if value == default:
+                return ""
+            else:
+                return fmt.format((value))
+
+        def show2(value1, default1, value2, default2, fmt):
+            if value1 == default1 and value2 == default2:
+                return ""
+            else:
+                return fmt.format(value1, value2)
+
+        return (
+            (f"\t/*{self.comment.value}*/\n" if self.comment.value != "" else "")
+            + f"\t{self.name} @{self.field_id}: {self.type} "
+            + show2(self.scale, 1.0, self.offset, 0.0, "| scale({}, {})")
+            + show2(self.min_value, 0.0, self.max_value, 0.0, "| range({}, {})")
+            + show2(self.mux, "", self.mux_count, 1, '| mux("{}", {})')
+            + show(self.byte_order, "little", '| endianess("{}")')
+            + show(self.unit, "", '| unit("{}")')
         )
-        self._name = name or ("sig" + str(m + 1))
-        self._start = start
-        self._length = length
-        self._scale = scale
-        self._offset = offset
-        self._unit = unit
-        self._comment = comment
-        self._min_value = min_value
-        self._max_value = max_value
-        self._type = type
-        self._byte_order = byte_order
-        self._mux = mux
-        self._mux_count = mux_count
-        self._alias = alias
-
-        self.creation_date = datetime.datetime.now()
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @property
-    def start(self) -> int:
-        return self._start
-
-    @property
-    def length(self) -> int:
-        return self._length
-
-    @property
-    def scale(self) -> float:
-        return self._scale
-
-    @property
-    def offset(self) -> float:
-        return self._offset
-
-    @property
-    def unit(self) -> str:
-        return self._unit
-
-    @property
-    def comment(self) -> str:
-        return self._comment
-
-    @property
-    def min_value(self) -> float:
-        return self._min_value
-
-    @property
-    def max_value(self) -> float:
-        return self._max_value
-
-    @property
-    def type(self) -> str:
-        return self._type
-
-    @property
-    def byte_order(self) -> str:
-        return self._byte_order
-
-    @property
-    def mux(self) -> str:
-        return self._mux
-
-    @property
-    def mux_count(self) -> int:
-        return self._mux_count
-
-    @property
-    def alias(self) -> str:
-        return self._alias
-
-    @name.setter
-    def name(self, name: str) -> None:
-        try:
-            self._name = name
-        except Exception as e:
-            return
-
-    @start.setter
-    def start(self, start: int) -> None:
-        try:
-            self._start = int(start)
-        except Exception as e:
-            return
-
-    @length.setter
-    def length(self, length: int) -> None:
-        try:
-            self._length = int(length)
-        except Exception as e:
-            return
-
-    @scale.setter
-    def scale(self, scale: float) -> None:
-        try:
-            self._scale = float(scale)
-        except Exception as e:
-            return
-
-    @offset.setter
-    def offset(self, offset: float) -> None:
-        try:
-            self._offset = float(offset)
-        except Exception as e:
-            return
-
-    @unit.setter
-    def unit(self, unit: str) -> None:
-        try:
-            self._unit = unit
-        except Exception as e:
-            return
-
-    @comment.setter
-    def comment(self, comment: str) -> None:
-        try:
-            self._comment = comment
-        except Exception as e:
-            return
-
-    @min_value.setter
-    def min_value(self, min_value: float) -> None:
-        try:
-            self._min_value = float(min_value)
-        except Exception as e:
-            return
-
-    @max_value.setter
-    def max_value(self, max_value: float) -> None:
-        try:
-            self._max_value = float(max_value)
-        except Exception as e:
-            return
-
-    @type.setter
-    def type(self, type: str) -> None:
-        try:
-            self._type = type
-        except Exception as e:
-            return
-
-    @byte_order.setter
-    def byte_order(self, byte_order: str) -> None:
-        try:
-            self._byte_order = byte_order
-        except Exception as e:
-            return
-
-    @mux.setter
-    def mux(self, mux: str) -> None:
-        try:
-            self._mux = mux
-        except Exception as e:
-            return
-
-    @mux_count.setter
-    def mux_count(self, mux_count: int) -> None:
-        try:
-            self._mux_count = int(mux_count)
-        except Exception as e:
-            return
-
-    @alias.setter
-    def alias(self, alias: str) -> None:
-        try:
-            self._alias = alias
-        except Exception as e:
-            return
-
-    def compile(self) -> Dict[str, Any]:
-        """Transform python class node to its dictionary representation.
-
-        :return: A dictionary containing the node parameters
-        """
-
-        return self.make_public(self, self.filter_private(self.__dict__))
-
-    def decompile(self, d: Dict[str, Any]) -> None:
-        """Transform node dictionary representation into a python class.
-
-        :param d: Node dictionary
-        """
-        for k, v in self.make_private(self, d).items():
-            self.__setattr__(k, v)
-
-    def bitmask(self, n):
-        return 2 ** n - 1
-
-    def encode(self, value) -> int:
-        if value > 2 ** self.length:
-            raise SignalValueError()
-        value = (value - self.offset) / self.scale
-        return (int(value) & self.bitmask(self.length)) << self.start
-
-    def decode(self, msg: CANMessage):
-        data64 = msg.get_data64()
-        value = (data64 >> self.start) & self.bitmask(self.length)
-        if self.type == "signed" and value >> (self.length - 1) == 1:
-            value = -((value ^ self.bitmask(self.length)) + 1);
-        return self.scale * value - self.offset
-
-    def __hash__(self):
-        return hash((self.name, self.start, self.length, self.creation_date))
 
     def __repr__(self):
         return f"<Signal name={self.name} start={self.start} end={self.length} scale={self.scale} offset={self.offset}>"

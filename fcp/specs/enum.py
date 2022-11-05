@@ -1,59 +1,41 @@
 from typing import *
 import datetime
+from serde import Model, fields
 
-from .node import Node
-from .utils import normalize
-from .enum_value import EnumValue
+from .metadata import MetaData
+from .comment import Comment
 
 
-class Enum(Node):
+class Enumeration(Model):
+    name: fields.Str()
+    value: fields.Int()
+    meta: fields.Optional(MetaData)
+
+
+class Enum(Model):
     """Fcp Enum. C lookalike for FCP type definitions with name-value
     associations.
     """
 
-    def __init__(self, parent: "Spec" = None) -> None:
-        self.parent = parent
-        self._name = ""
-        self.enumeration = {}
-        self.creation_date = datetime.datetime.now()
+    name: fields.Str()
+    enumeration: fields.List(Enumeration)
+    meta: fields.Optional(MetaData)
+    comment: Comment
 
-    def compile(self) -> Dict[str, Any]:
-        enums = {k: v.compile() for (k, v) in self.enumeration.items()}
+    def get_name(self):
+        return self.name
 
-        d = make_public(self, (filter_private(self.__dict__)))
-        d["enumeration"] = enums
-        return d
+    def get_type(self):
+        return "enum"
 
-    def decompile(self, d: Dict[str, Any]) -> None:
-        """Transform node dictionary representation into a python class.
-
-        :param d: Node dictionary
-        """
-        enumeration = d["enumeration"]
-        del d["enumeration"]
-
-        # self.__dict__.update(make_private(self, d))
-        for k, v in self.make_private(self, d).items():
-            self.__setattr__(k, v)
-
-        for k, v in enumeration.items():
-            enum_value = EnumValue(self)
-            enum_value.decompile(v)
-            self.enumeration[k] = enum_value
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @name.setter
-    def name(self, name: str) -> None:
-        self.name = name
-
-    def normalize(self):
-        normalize(self.enumeration)
-
-    def __hash__(self):
-        return hash((self.name, self.creation_date))
+    def to_fcp(self):
+        return (
+            "enum",
+            (f"/*{self.comment.value}*/\n" if self.comment.value != "" else "")
+            + f"enum {self.name} {{\n\t"
+            + "\n\t".join([f"{enum.name}: {enum.value};" for enum in self.enumeration])
+            + "\n};",
+        )
 
     def __repr__(self):
         return "name: {}".format(self.name)
