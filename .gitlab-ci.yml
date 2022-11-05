@@ -45,7 +45,7 @@ release:
   image: joajfreitas/arch-python
   stage: deploy
   only:
-    - release
+    - master
 
   script:
     - python hooks/check_release_notes
