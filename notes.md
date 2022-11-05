@@ -10,9 +10,9 @@
 
 ## Stage 2
  * [x] Update logger setup
- * [ ] Implement configuration verifier
- * [ ] Implement fcp v1 -> fcp v2
- * [ ] Implement automatic signal start 
+ * [X] Implement configuration verifier
+ * [X] Implement fcp v1 -> fcp v2
+ * [X] Implement automatic signal start 
  * [ ] Update documentation generator
 
 ## Stage 3
