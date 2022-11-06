@@ -36,123 +36,6 @@ Usage
 
 .. program-output:: fcp --help
 
-init
-----
-
-.. code:: console
-
-    $ fcp init --help
-
-.. program-output:: fcp init --help
-
-
-read-dbc
---------
-
-.. code:: console
-
-    $ fcp read-dbc --help
-
-.. program-output:: fcp read-dbc --help
-
-
-* DBC: dbc file path
-* JSON_FILE json spec file
-* DEVICE_CONFIG device config json file
-
-The read_dbc command will transform a DBC file into a json specification file.
-Some required defaults will be added. See sec:usage:init for details on
-which values are added.
-
-Since the DBC files have no knowledge of devices and their IDs the
-device_config file must be provided so that names can be attributed to
-devices.
-
-Example device_config:
-
-.. code:: json
-
-    {
-        "0": "amk_0",
-        "1": "amk_1",
-        "2": "amk_2",
-        "3": "amk_3",
-        "8": "dcu",
-        "9": "te",
-        "10": "dash",
-        "13": "arm",
-        "14": "bms_master",
-        "15": "bms_verbose",
-        "16": "iib",
-        "20": "ahrsf",
-        "21": "ahrsr",
-        "22": "gpsf",
-        "23": "gpsr",
-        "29": "isa"
-    }
-
-
-.. warning:: The read\_dbc command overrides existing json specification files. DBC and JSON spec merge are not yet implemented.
-
-write-dbc
----------
-
-.. code:: console
-
-    $ fcp write_dbc --help
-
-.. program-output:: fcp write_dbc --help
-
-
-The write_dbc command will transform a json specification into a DBC file.
-
-.. warning:: The write_dbc command overrides existing dbc files. DBC and JSON spec merge are not yet implemented.
-
-
-validate
---------
-
-.. code:: console
-
-    $ fcp validate --help
-
-.. program-output:: fcp validate --help
-
-
-Json files are unstructured data files. To be sure that changes to the json spec are according to the specification the validate command checks the correctness of the json file.
-
-
-c-gen
---------
-
-.. code:: console
-
-    $ fcp c_gen --help
-
-.. program-output:: fcp c_gen --help
-
-
-* TEMPLATES: Jinja2 template directory
-* OUTPUT: C output directory
-* JSON_FILE: json spec file
-* SKEL: C skeleton directory
-
-
-.. warning:: This command will override the contents of the output directory
-
-gui
----
-
-Launches the GUI editor.
-
-.. image:: gui_preview.png
-
-
-Shortcuts
----------
-
-* Ctrl + S : save
-* Ctrl + O : open json
 
 Protocol Overview
 =================
@@ -200,7 +83,7 @@ can_ids.h
 
 
 
-**LOG_IDs** The *can\_ids.h* start with the definition of the LOG IDs. The names that can be used in the C library are constructed by prepending *LOG_* to the all capitalized name of the log that is defined in the JSON specification file.
+**LOG_IDs** The *can\_ids.h* file starts with the definition of the LOG IDs. The names that can be used in the C library are constructed by prepending *LOG_* to the all capitalized name of the log that is defined in the JSON specification file.
 
 **Device Includes** Next follows the includes of all device headers, which means that we only need to include *can_ids.h* to have access to all the *can_ids*.
 
