@@ -21,14 +21,6 @@ pylint:
     - pip install pylint
     - ./hooks/pylint
 
-      #test:
-      #  image: joajfreitas/arch-python
-      #  stage: build
-      #  needs: []
-      #  script:
-      #    - pip install -r requirements.txt
-      #    - pytest -v fcp
-
 install:
   image: joajfreitas/arch-python
   stage: build
@@ -58,8 +50,12 @@ pages:
   image: joajfreitas/arch-python
   stage: deploy
   script:
-    - cd public; python index.py > index.html
+    - pip install sphinx
+    - pip install sphinx_rtd_theme
+    - pip install sphinxcontrib-programoutput
+    - make html
+    - cp -r build/html/* public
   artifacts:
     paths:
-    - public
+    - public/
     expire_in: 1 day
