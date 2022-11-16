@@ -13,24 +13,9 @@ class SignalValueError(Exception):
 
 
 class Signal(Model):
-    """
-    Signal node. Represents a CAN signal, similar to a DBC signal.
-
-    :param name: Name of the Signal.
-    :param start: Start bit
-    :param length: Signal bit size.
-    :param scale: Scaling applied to the signal's data.
-    :param offset: Offset applied to the signal's data.
-    :param unit: Unit of the Signal after applying scaling and offset.
-    :param comment: Description of the Signal.
-    :param min_value: Minimum value allowed to the Signal's data.
-    :param max_value: Maximum value allowed to the Signal's data.
-    :param type: Type of the Signal's data.
-    :param mux: Name of the mux Signal. None if the Signal doesn't belong to a multiplexed Message.
-    :param mux_count: Number of signals that the mux can reference for this Muxed signal.
-    """
-
     name: fields.Str()
+    field_id: fields.Int()
+    type: fields.Str()
     start: fields.Optional(fields.Int())
     length: fields.Optional(fields.Int())
     scale: fields.Optional(fields.Float(default=1.0))
@@ -39,11 +24,9 @@ class Signal(Model):
     comment: fields.Optional(Comment)
     min_value: fields.Optional(fields.Float())
     max_value: fields.Optional(fields.Float())
-    type: fields.Optional(fields.Str(default="unsigned"))
     byte_order: fields.Optional(fields.Str(default="little_endian"))
     mux: fields.Optional(fields.Str(default=""))
     mux_count: fields.Optional(fields.Int(default=1))
-    field_id: fields.Int()
     meta: fields.Optional(MetaData)
 
     def to_fcp(self):
@@ -70,4 +53,4 @@ class Signal(Model):
         )
 
     def __repr__(self):
-        return f"<Signal name={self.name} start={self.start} end={self.length} scale={self.scale} offset={self.offset}>"
+        return f"<Signal {self.name} {self.type}>"

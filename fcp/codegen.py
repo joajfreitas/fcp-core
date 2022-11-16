@@ -36,8 +36,7 @@ class CodeGenerator:
     def verify(self, fcp):
         if fcp is not None:
             return Ok(())
-        else:
-            return Error(["Received a None object instead of FcpV2"])
+        return Error(["Received a None object instead of FcpV2"])
 
     def generate(self, fcp, output_path, templates, skel):
         """Function to override from generator. Implements actual code generation."""

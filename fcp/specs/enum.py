@@ -1,3 +1,4 @@
+import math
 from typing import *
 import datetime
 from serde import Model, fields
@@ -20,13 +21,16 @@ class Enum(Model):
     name: fields.Str()
     enumeration: fields.List(Enumeration)
     meta: fields.Optional(MetaData)
-    comment: Comment
+    comment: fields.Optional(Comment)
 
     def get_name(self):
         return self.name
 
     def get_type(self):
         return "enum"
+
+    def get_size(self):
+        return math.floor(math.log2(max([enum.value for enum in self.enumeration]))) + 1
 
     def to_fcp(self):
         return (

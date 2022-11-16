@@ -45,6 +45,24 @@ class FcpV2(Model):
                 if broadcast.field["device"] == device
             ]
 
+    def get_type(self, name):
+        for enum in self.enums:
+            if enum.name == name:
+                return enum
+
+        for struct in self.structs:
+            if struct.name == name:
+                return struct
+
+        return None
+
+    def get_broadcast(self, name):
+        for broadcast in self.broadcasts:
+            if broadcast.name == name:
+                return broadcast
+
+        return None
+
     def to_fcp(self):
         nodes = [node.to_fcp() for node in self.enums + self.structs]
         fcp_structure = {}
@@ -67,16 +85,25 @@ class FcpV2(Model):
 
         return fpi_structure
 
+    def get_builtin_types(self):
+        builtin_types = ["u" + str(i) for i in range(1, 65)]
+        builtin_types += ["i" + str(i) for i in range(1, 65)]
+        builtin_types += ["f32", "f64"]
+
+        return builtin_types
+
+    def get_size(self, type):
+        builtin_types = self.get_builtin_types()
+
+        if type in builtin_types:
+            return int(type[1:])
+        elif isinstance(type, enum.Enum):
+            return type.get_size()
+        elif isinstance(type, struct.Struct):
+            return 0
+        else:
+            raise IndexError
+
     def __repr__(self) -> str:
         sig_count = len([sig for struct in self.structs for sig in struct.signals])
         return f"(Spec: devs={len(self.devices)}, broadcasts={len(self.broadcasts)}, structs={len(self.structs)}, sigs={sig_count})"
-
-
-def decompose_id(sid: int) -> Tuple[int, int]:
-    """Find the dev_id and the msg_id from the sid."""
-    return sid & 0x1F, (sid >> 5) & 0x3F
-
-
-def make_sid(dev_id: int, msg_id: int) -> int:
-    """Find the sid from the dev_id and the msg_id"""
-    return (msg_id << 5) + dev_id

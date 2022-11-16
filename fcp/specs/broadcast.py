@@ -50,7 +50,7 @@ class Broadcast(Model):
     field: fields.Dict(fields.Str(), Any())
     signals: fields.List(BroadcastSignal)
     meta: fields.Optional(MetaData)
-    comment: Comment
+    comment: fields.Optional(Comment)
 
     def get_name(self):
         return self.name

@@ -12,7 +12,7 @@ class Struct(Model):
     name: fields.Str()
     signals: fields.List(Signal)
     meta: fields.Optional(MetaData)
-    comment: Comment
+    comment: fields.Optional(Comment)
 
     def get_name(self):
         return self.name
@@ -37,4 +37,4 @@ class Struct(Model):
         )
 
     def __repr__(self):
-        return f"<Struct name={self.name}"
+        return f"<Struct name={self.name}>"

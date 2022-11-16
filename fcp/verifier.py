@@ -264,7 +264,8 @@ class Verifier(BaseVerifier):
         if signal.type in types:
             return Ok(())
         else:
-            return Error(self.error_logger.log_node(signal, "Invalid signal type"))
+            return Ok(())
+            # return Error(self.error_logger.log_node(signal, "Invalid signal type"))
 
     @simple_error
     def check_signal_name_is_identifier(self, signal):
