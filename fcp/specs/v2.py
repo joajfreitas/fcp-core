@@ -85,6 +85,14 @@ class FcpV2(Model):
 
         return fpi_structure
 
+    def to_dict(self):
+        return {
+                "structs": [struct.to_dict() for struct in self.structs],
+                "enums": [enum.to_dict() for enum in self.enums],
+                "devices": [device.to_dict() for device in self.devices],
+                "broadcasts": [broadcast.to_dict() for broadcast in self.broadcasts],
+                }
+
     def get_builtin_types(self):
         builtin_types = ["u" + str(i) for i in range(1, 65)]
         builtin_types += ["i" + str(i) for i in range(1, 65)]

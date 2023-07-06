@@ -51,5 +51,8 @@ class Device(Model):
             id=self.id,
         )
 
+    def to_dict(self):
+        return {}
+
     def __repr__(self):
         return f"<Device name={self.name} id={self.id}"

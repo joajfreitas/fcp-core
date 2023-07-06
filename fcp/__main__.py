@@ -57,6 +57,20 @@ def generate_cmd(
         generator, templates, skel, fcp_v2, sources, output
     ).unwrap()
 
+@click.command()
+@click.argument("fcp")
+@click.option("--fpi")
+def generate_json(
+    fcp,
+    fpi,
+):
+
+    fcp_v2, sources = get_fcp(fcp, fpi).unwrap()
+    fcp_v2 = fcp_v2.unwrap()
+
+    Verifier(sources).verify(fcp_v2).unwrap()
+
+    print(json.dumps(fcp_v2.to_dict()))
 
 @click.command("json_to_fcp2")
 @click.argument("json")
@@ -73,6 +87,7 @@ def json_to_fcp2(json: str, output: str):
     FpiWriter(output).write(fcp_v2.to_fpi())
 
 
+
 @click.group(invoke_without_command=True)
 @click.option("--version", is_flag=True, default=False)
 def main(version):
@@ -87,6 +102,7 @@ def main(version):
 
 main.add_command(generate_cmd)
 main.add_command(json_to_fcp2)
+main.add_command(generate_json)
 
 if __name__ == "__main__":
     setup_logging()

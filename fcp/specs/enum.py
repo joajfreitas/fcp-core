@@ -12,6 +12,9 @@ class Enumeration(Model):
     value: fields.Int()
     meta: fields.Optional(MetaData)
 
+    def to_dict(self):
+        return {"name": self.name, "value": self.value}
+
 
 class Enum(Model):
     """Fcp Enum. C lookalike for FCP type definitions with name-value
@@ -40,6 +43,15 @@ class Enum(Model):
             + "\n\t".join([f"{enum.name}: {enum.value};" for enum in self.enumeration])
             + "\n};",
         )
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "enumeration": [enumeration.to_dict() for enumeration in self.enumeration],
+            }
+
+    def to_dict(self):
+        return {}
 
     def __repr__(self):
         return "name: {}".format(self.name)

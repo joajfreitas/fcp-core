@@ -152,7 +152,7 @@ def convert_params(params):
 
     values = {}
     for name, value in params.items():
-        values = values | convertion_table[name](value)
+        values = {**values,  **convertion_table[name](value)}
 
     return values
 
@@ -571,8 +571,8 @@ def deduplicate(module):
 
 def merge(fcp, fpi):
     fcp = {key: fcp[key] for key in fcp.keys() & {"struct", "enum"}}
-    fpi = {key: fpi[key] for key in fpi.keys() & {"device", "broadcast", "log"}}
-    fcp = fcp | fpi
+    fpi = {"broadcast": {}, "device": {}, "log": {}} if not fpi else {key: fpi[key] for key in fpi.keys() & {"device", "broadcast", "log"}}
+    fcp = {**fcp, **fpi}
     return Ok(fcp)
 
 
@@ -592,7 +592,7 @@ def convert(module):
 def get_sources(module):
     sources = {module.filename: module.source}
     for mod in module.imports:
-        sources = sources | get_sources(mod)
+        sources = {**sources, **get_sources(mod)}
 
     return sources
 
@@ -623,11 +623,14 @@ def get_fcp(fcp, fpi):
     fcp = deduplicate(resolve_imports(fcp).Q()).Q()
 
     fpi_filename = fpi
-    with open(fpi_filename) as f:
-        fpi_ast = fpi_parser.parse(f.read())
+    if fpi_filename:
+        with open(fpi_filename) as f:
+            fpi_ast = fpi_parser.parse(f.read())
 
-    fpi = FpiTransformer(fpi_filename).transform(fpi_ast).Q()
-    fpi_sources = get_sources(fpi)
-    fpi = deduplicate(resolve_imports(fpi).Q()).Q()
+        fpi = FpiTransformer(fpi_filename).transform(fpi_ast).Q()
+        fpi_sources = get_sources(fpi)
+        fpi = deduplicate(resolve_imports(fpi).Q()).Q()
+    else:
+        fpi_sources = {}
 
-    return Ok((convert(merge(fcp, fpi).Q()), fcp_sources | fpi_sources))
+    return Ok((convert(merge(fcp, fpi).Q()), {**fcp_sources, **fpi_sources}))

@@ -36,5 +36,12 @@ class Struct(Model):
             + ";\n};",
         )
 
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "signals": [signal.to_dict() for signal in self.signals],
+        }
+
+
     def __repr__(self):
         return f"<Struct name={self.name}>"

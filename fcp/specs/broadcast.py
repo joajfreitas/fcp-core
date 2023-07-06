@@ -42,6 +42,9 @@ class BroadcastSignal(Model):
 
         return f"\tsignal {self.name} {{\n\t\t" + "\n\t\t".join(fields) + "\n\t};"
 
+    def to_dict(self):
+        return {"name": self.name, "field": self.field}
+
 
 class Broadcast(Model):
     """Broadcast object"""
@@ -91,6 +94,14 @@ class Broadcast(Model):
             + "\n".join(signal.to_fpi() for signal in self.signals)
             + "\n};\n",
         )
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "field": self.field,
+            "signals": [signal.to_dict() for signal in self.signals],
+        }
+
 
     def __repr__(self):
         return f"<Broadcast name={self.name}"

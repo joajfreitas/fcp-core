@@ -52,5 +52,17 @@ class Signal(Model):
             + show(self.unit, "", '| unit("{}")')
         )
 
+    def to_dict(self):
+        return {
+                "name": self.name,
+                "field_id": self.field_id,
+                "type": self.type,
+                "unit": self.unit,
+                "scale": self.scale,
+                "offset": self.offset,
+                "min_value": self.min_value,
+                "max_value": self.max_value,
+                }
+
     def __repr__(self):
         return f"<Signal {self.name} {self.type}>"

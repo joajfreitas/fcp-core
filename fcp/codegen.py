@@ -7,6 +7,7 @@ import pathlib
 import pkgutil
 import sys
 from functools import reduce
+from pathlib import Path
 
 from .result import Ok, Error, result_shortcut
 from .verifier import ErrorLogger
@@ -29,6 +30,7 @@ class CodeGenerator:
             fcp, self.output_path, templates, skels
         ).items():
             logging.info(f"Generating {path}")
+            path = Path(path)
             os.makedirs(path.parent, exist_ok=True)
             with open(path, "w", encoding="utf-8") as file:
                 file.write(content)
