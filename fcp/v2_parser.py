@@ -24,6 +24,7 @@ from .specs.comment import Comment
 from .specs import cmd
 from .specs import config
 from .specs import log
+from .specs.type import Type
 from .specs import v2
 from .result import Ok, Error, result_shortcut
 from .specs.metadata import MetaData
@@ -34,16 +35,19 @@ fcp_parser = Lark(
     """
     start: preamble (struct | enum | imports)*
 
-    preamble: "version" ":" string
+    preamble: "version" ":" string ";"
 
     struct: comment* "struct" identifier "{" field+ "}" ";"
-    field: comment* identifier field_id ":" param+ ";"
+    field: comment* identifier field_id ":" type param* ";"
     field_id: "@" number
+    type: (scalar | array)
+    scalar: identifier
+    array: "[" identifier ";" number "]"
     param: identifier "("? param_argument* ")"? "|"?
     param_argument: value ","?
 
     enum: comment* "enum" identifier "{" enum_field* "}" ";"
-    enum_field : identifier "="? value? ";"
+    enum_field : identifier ":" value ";"
 
     imports: "import" import_identifier ";"
 
@@ -76,7 +80,7 @@ fpi_parser = Lark(
     """
     start: preamble (broadcast | device | imports | log)*
 
-    preamble: "version" ":" string
+    preamble: "version" ":" string ";"
 
     broadcast: comment* "broadcast" identifier "{" (field | signal)* "}" ";"
     field: identifier ":" (value) ";"
@@ -192,18 +196,27 @@ class FcpV2Transformer(Transformer):
     def param_argument(self, args):
         return args[0]
 
+
     def field_id(self, args):
         return args[0]
+
+    def type(self, args):
+        return args[0]
+    
+    def scalar(self, args):
+        return (args[0].value, None)
+
+    def array(self, args):
+        type, arity = args
+        return (type.value, arity)
 
     @v_args(tree=True)
     def field(self, tree):
         if isinstance(tree.children[0], Comment):
-            comment, name, field_id, *values = tree.children
+            comment, name, field_id, type, *values = tree.children
         else:
-            name, field_id, *values = tree.children
+            name, field_id, type, *values = tree.children
             comment = Comment("")
-
-        type = values[0][0]
 
         params = {name.value: value for name, *value in values[1:]}
         params = convert_params(params)
@@ -212,7 +225,7 @@ class FcpV2Transformer(Transformer):
         return Ok(
             signal.Signal(
                 name=name,
-                type=type,
+                type=Type(type[0], type[1]),
                 field_id=field_id,
                 meta=meta,
                 comment=comment,

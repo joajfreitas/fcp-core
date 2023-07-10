@@ -51,7 +51,10 @@ class Enum(Model):
             }
 
     def to_dict(self):
-        return {}
+        return {
+            "name": self.name,
+            "enumeration": [enum.to_dict() for enum in self.enumeration],
+        }
 
     def __repr__(self):
         return "name: {}".format(self.name)

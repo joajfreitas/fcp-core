@@ -6,6 +6,7 @@ from serde import Model, fields
 
 from .metadata import MetaData
 from .comment import Comment
+from .type import Type
 
 
 class SignalValueError(Exception):
@@ -15,7 +16,7 @@ class SignalValueError(Exception):
 class Signal(Model):
     name: fields.Str()
     field_id: fields.Int()
-    type: fields.Str()
+    type: Type
     start: fields.Optional(fields.Int())
     length: fields.Optional(fields.Int())
     scale: fields.Optional(fields.Float(default=1.0))
@@ -56,7 +57,7 @@ class Signal(Model):
         return {
                 "name": self.name,
                 "field_id": self.field_id,
-                "type": self.type,
+                "type": self.type.to_dict(),
                 "unit": self.unit,
                 "scale": self.scale,
                 "offset": self.offset,
