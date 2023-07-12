@@ -1,8 +1,8 @@
 import sys
 from typing import *
+from pydantic import BaseModel
 import datetime
 import logging
-from serde import Model, fields
 
 from .metadata import MetaData
 from .comment import Comment
@@ -13,22 +13,18 @@ class SignalValueError(Exception):
     pass
 
 
-class Signal(Model):
-    name: fields.Str()
-    field_id: fields.Int()
+class Signal(BaseModel):
+    name: str
+    field_id: int
     type: Type
-    start: fields.Optional(fields.Int())
-    length: fields.Optional(fields.Int())
-    scale: fields.Optional(fields.Float(default=1.0))
-    offset: fields.Optional(fields.Float(default=0.0))
-    unit: fields.Optional(fields.Str())
-    comment: fields.Optional(Comment)
-    min_value: fields.Optional(fields.Float())
-    max_value: fields.Optional(fields.Float())
-    byte_order: fields.Optional(fields.Str(default="little_endian"))
-    mux: fields.Optional(fields.Str(default=""))
-    mux_count: fields.Optional(fields.Int(default=1))
-    meta: fields.Optional(MetaData)
+    scale: Optional[float] = 1.0
+    offset: Optional[float] = 0.0
+    unit: Optional[str]
+    description: Optional[Comment]
+    min_value: Optional[float]
+    max_value: Optional[float]
+    byte_order: Optional[str] = "little_endian"
+    meta: Optional[MetaData]
 
     def to_fcp(self):
         def show(value, default, fmt):
@@ -55,15 +51,16 @@ class Signal(Model):
 
     def to_dict(self):
         return {
-                "name": self.name,
-                "field_id": self.field_id,
-                "type": self.type.to_dict(),
-                "unit": self.unit,
-                "scale": self.scale,
-                "offset": self.offset,
-                "min_value": self.min_value,
-                "max_value": self.max_value,
-                }
+            "name": self.name,
+            "field_id": self.field_id,
+            "type": self.type.to_dict(),
+            "unit": self.unit,
+            "scale": self.scale,
+            "offset": self.offset,
+            "min_value": self.min_value,
+            "max_value": self.max_value,
+            "description": self.comment.to_dict(),
+        }
 
     def __repr__(self):
         return f"<Signal {self.name} {self.type}>"

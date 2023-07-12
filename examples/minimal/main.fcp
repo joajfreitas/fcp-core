@@ -1,0 +1,14 @@
+version: "3";
+
+struct Temperature {
+	timestamp @0: u32;
+	location @1: Location;
+	values @2: [u16; 4];
+};
+
+enum Location {
+	TopLeft: 0;
+	TopRight: 1;
+	BottomLeft: 2;
+	BottomRight: 3;
+};

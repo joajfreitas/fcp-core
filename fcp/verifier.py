@@ -121,7 +121,6 @@ class ErrorLogger:
         )
 
     def log_surrounding(self, error, filename, line, column, tip=""):
-
         ss = self.error(error) + f" {filename}:{line}:{column}" + "\n"
         lines = self.sources[filename].split("\n")
         starting_line = line - 2 if line > 0 else 0

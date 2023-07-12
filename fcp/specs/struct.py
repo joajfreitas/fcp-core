@@ -1,24 +1,25 @@
 import datetime
-from serde import Model, fields
+from pydantic import BaseModel
+from typing import *
 
 from .signal import Signal
 from .metadata import MetaData
 from .comment import Comment
 
 
-class Struct(Model):
-    """Broadcast object"""
+class Struct(BaseModel):
+    """Struct object"""
 
-    name: fields.Str()
-    signals: fields.List(Signal)
-    meta: fields.Optional(MetaData)
-    comment: fields.Optional(Comment)
-
-    def get_name(self):
-        return self.name
+    name: str
+    signals: List[Signal]
+    meta: Optional[MetaData]
+    description: Optional[Comment]
 
     def get_type(self):
         return "struct"
+
+    def get_name(self):
+        return self.name
 
     def get_signal(self, name):
         for signal in self.signals:
@@ -35,13 +36,6 @@ class Struct(Model):
             + ";\n".join(map(lambda signal: signal.to_fcp(), self.signals))
             + ";\n};",
         )
-
-    def to_dict(self):
-        return {
-            "name": self.name,
-            "signals": [signal.to_dict() for signal in self.signals],
-        }
-
 
     def __repr__(self):
         return f"<Struct name={self.name}>"

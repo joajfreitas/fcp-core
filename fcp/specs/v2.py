@@ -1,16 +1,10 @@
-from typing import Tuple
 import copy
 import datetime
 import time
 import logging
-from serde import Model, fields
+from pydantic import BaseModel
+from typing import *
 
-from . import v1
-from . import device
-from . import log
-from . import broadcast
-from . import config
-from . import cmd
 from . import signal
 from . import enum
 from . import struct
@@ -20,17 +14,14 @@ def handle_key_not_found(d: dict, key: str):
     return d.get(key).items() if d.get(key) != None else []
 
 
-class FcpV2(Model):
+class FcpV2(BaseModel):
     """FCP root node. Holds all Devices, Messages, Signals, Logs, Configs,
     Commands and Arguments.
     """
 
-    structs: fields.List(struct.Struct)
-    enums: fields.List(enum.Enum)
-    devices: fields.List(device.Device)
-    broadcasts: fields.List(broadcast.Broadcast)
-    logs: fields.List(log.Log)
-    version: fields.Str(default="1.0")
+    structs: List[struct.Struct]
+    enums: List[enum.Enum]
+    version: str = "3.0"
 
     def add_device(self, device):
         self.devices.append(device)
@@ -87,11 +78,11 @@ class FcpV2(Model):
 
     def to_dict(self):
         return {
-                "structs": [struct.to_dict() for struct in self.structs],
-                "enums": [enum.to_dict() for enum in self.enums],
-                "devices": [device.to_dict() for device in self.devices],
-                "broadcasts": [broadcast.to_dict() for broadcast in self.broadcasts],
-                }
+            "structs": [struct.to_dict() for struct in self.structs],
+            "enums": [enum.to_dict() for enum in self.enums],
+            "devices": [device.to_dict() for device in self.devices],
+            "broadcasts": [broadcast.to_dict() for broadcast in self.broadcasts],
+        }
 
     def get_builtin_types(self):
         builtin_types = ["u" + str(i) for i in range(1, 65)]
