@@ -1,32 +1,28 @@
+from pydantic import BaseModel
 from typing import *
+
+import math
 import datetime
-from serde import Model, fields
 
 from .metadata import MetaData
 from .comment import Comment
 
 
-class Enumeration(Model):
-    name: fields.Str()
-    value: fields.Int()
-    meta: fields.Optional(MetaData)
-
-
-class Enum(Model):
+class Enum(BaseModel):
     """Fcp Enum. C lookalike for FCP type definitions with name-value
     associations.
     """
 
-    name: fields.Str()
-    enumeration: fields.List(Enumeration)
-    meta: fields.Optional(MetaData)
-    comment: Comment
-
-    def get_name(self):
-        return self.name
+    name: str
+    enumeration: Dict[str, Tuple[int, MetaData]]
+    meta: Optional[MetaData]
+    description: Optional[Comment]
 
     def get_type(self):
         return "enum"
+
+    def get_name(self):
+        return self.name
 
     def to_fcp(self):
         return (

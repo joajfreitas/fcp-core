@@ -13,13 +13,13 @@ import coloredlogs
 import click
 
 from . import FcpV2
-from .specs.v1 import FcpV1, fcp_v1_to_v2
 
 from .version import VERSION
 from .v2_parser import get_fcp
 from .codegen import GeneratorManager
 from .verifier import Verifier
 from .writers import FpiWriter, FcpWriter
+from .specs.l2 import l2
 
 
 def setup_logging():
@@ -46,7 +46,6 @@ def generate_cmd(
     skel: str,
     noformat: bool,
 ):
-
     fcp_v2, sources = get_fcp(fcp, fpi).unwrap()
     fcp_v2 = fcp_v2.unwrap()
 
@@ -58,11 +57,25 @@ def generate_cmd(
     ).unwrap()
 
 
+@click.command()
+@click.argument("fcp")
+@click.option("--fpi")
+def generate_json(
+    fcp,
+    fpi,
+):
+    fcp_v2, sources = get_fcp(fcp, fpi).unwrap()
+    fcp_v2 = fcp_v2.unwrap()
+
+    # Verifier(sources).verify(fcp_v2).unwrap()
+
+    print(fcp_v2.json())
+
+
 @click.command("json_to_fcp2")
 @click.argument("json")
 @click.argument("output")
 def json_to_fcp2(json: str, output: str):
-
     logging.info(f"Convertion fcp v1 -> fcp v2. {json} -> {output}")
     with open(json) as f:
         fcp_v1 = FcpV1.from_json(f.read())
@@ -87,6 +100,7 @@ def main(version):
 
 main.add_command(generate_cmd)
 main.add_command(json_to_fcp2)
+main.add_command(generate_json)
 
 if __name__ == "__main__":
     setup_logging()

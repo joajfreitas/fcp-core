@@ -1,5 +1,9 @@
-from serde import Model, fields
+from pydantic import BaseModel
+from typing import *
 
 
-class Comment(Model):
-    value: fields.Str()
+class Comment(BaseModel):
+    value: str
+
+    def to_dict(self):
+        return self.value

@@ -7,6 +7,7 @@ import pathlib
 import pkgutil
 import sys
 from functools import reduce
+from pathlib import Path
 
 from .result import Ok, Error, result_shortcut
 from .verifier import ErrorLogger
@@ -29,6 +30,7 @@ class CodeGenerator:
             fcp, self.output_path, templates, skels
         ).items():
             logging.info(f"Generating {path}")
+            path = Path(path)
             os.makedirs(path.parent, exist_ok=True)
             with open(path, "w", encoding="utf-8") as file:
                 file.write(content)
@@ -36,8 +38,7 @@ class CodeGenerator:
     def verify(self, fcp):
         if fcp is not None:
             return Ok(())
-        else:
-            return Error(["Received a None object instead of FcpV2"])
+        return Error(["Received a None object instead of FcpV2"])
 
     def generate(self, fcp, output_path, templates, skel):
         """Function to override from generator. Implements actual code generation."""

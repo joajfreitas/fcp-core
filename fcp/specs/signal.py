@@ -1,50 +1,30 @@
 import sys
 from typing import *
+from pydantic import BaseModel
 import datetime
 import logging
-from serde import Model, fields
 
 from .metadata import MetaData
 from .comment import Comment
+from .type import Type
 
 
 class SignalValueError(Exception):
     pass
 
 
-class Signal(Model):
-    """
-    Signal node. Represents a CAN signal, similar to a DBC signal.
-
-    :param name: Name of the Signal.
-    :param start: Start bit
-    :param length: Signal bit size.
-    :param scale: Scaling applied to the signal's data.
-    :param offset: Offset applied to the signal's data.
-    :param unit: Unit of the Signal after applying scaling and offset.
-    :param comment: Description of the Signal.
-    :param min_value: Minimum value allowed to the Signal's data.
-    :param max_value: Maximum value allowed to the Signal's data.
-    :param type: Type of the Signal's data.
-    :param mux: Name of the mux Signal. None if the Signal doesn't belong to a multiplexed Message.
-    :param mux_count: Number of signals that the mux can reference for this Muxed signal.
-    """
-
-    name: fields.Str()
-    start: fields.Optional(fields.Int())
-    length: fields.Optional(fields.Int())
-    scale: fields.Optional(fields.Float(default=1.0))
-    offset: fields.Optional(fields.Float(default=0.0))
-    unit: fields.Optional(fields.Str())
-    comment: fields.Optional(Comment)
-    min_value: fields.Optional(fields.Float())
-    max_value: fields.Optional(fields.Float())
-    type: fields.Optional(fields.Str(default="unsigned"))
-    byte_order: fields.Optional(fields.Str(default="little_endian"))
-    mux: fields.Optional(fields.Str(default=""))
-    mux_count: fields.Optional(fields.Int(default=1))
-    field_id: fields.Int()
-    meta: fields.Optional(MetaData)
+class Signal(BaseModel):
+    name: str
+    field_id: int
+    type: Type
+    scale: Optional[float] = 1.0
+    offset: Optional[float] = 0.0
+    unit: Optional[str]
+    description: Optional[Comment]
+    min_value: Optional[float]
+    max_value: Optional[float]
+    byte_order: Optional[str] = "little_endian"
+    meta: Optional[MetaData]
 
     def to_fcp(self):
         def show(value, default, fmt):
@@ -69,5 +49,18 @@ class Signal(Model):
             + show(self.unit, "", '| unit("{}")')
         )
 
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "field_id": self.field_id,
+            "type": self.type.to_dict(),
+            "unit": self.unit,
+            "scale": self.scale,
+            "offset": self.offset,
+            "min_value": self.min_value,
+            "max_value": self.max_value,
+            "description": self.comment.to_dict(),
+        }
+
     def __repr__(self):
-        return f"<Signal name={self.name} start={self.start} end={self.length} scale={self.scale} offset={self.offset}>"
+        return f"<Signal {self.name} {self.type}>"

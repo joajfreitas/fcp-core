@@ -1,16 +1,10 @@
-from typing import Tuple
 import copy
 import datetime
 import time
 import logging
-from serde import Model, fields
+from pydantic import BaseModel
+from typing import *
 
-from . import v1
-from . import device
-from . import log
-from . import broadcast
-from . import config
-from . import cmd
 from . import signal
 from . import enum
 from . import struct
@@ -20,17 +14,14 @@ def handle_key_not_found(d: dict, key: str):
     return d.get(key).items() if d.get(key) != None else []
 
 
-class FcpV2(Model):
+class FcpV2(BaseModel):
     """FCP root node. Holds all Devices, Messages, Signals, Logs, Configs,
     Commands and Arguments.
     """
 
-    structs: fields.List(struct.Struct)
-    enums: fields.List(enum.Enum)
-    devices: fields.List(device.Device)
-    broadcasts: fields.List(broadcast.Broadcast)
-    logs: fields.List(log.Log)
-    version: fields.Str(default="1.0")
+    structs: List[struct.Struct]
+    enums: List[enum.Enum]
+    version: str = "3.0"
 
     def add_device(self, device):
         self.devices.append(device)
@@ -44,6 +35,24 @@ class FcpV2(Model):
                 for broadcast in self.broadcasts
                 if broadcast.field["device"] == device
             ]
+
+    def get_type(self, name):
+        for enum in self.enums:
+            if enum.name == name:
+                return enum
+
+        for struct in self.structs:
+            if struct.name == name:
+                return struct
+
+        return None
+
+    def get_broadcast(self, name):
+        for broadcast in self.broadcasts:
+            if broadcast.name == name:
+                return broadcast
+
+        return None
 
     def to_fcp(self):
         nodes = [node.to_fcp() for node in self.enums + self.structs]
@@ -67,16 +76,33 @@ class FcpV2(Model):
 
         return fpi_structure
 
+    def to_dict(self):
+        return {
+            "structs": [struct.to_dict() for struct in self.structs],
+            "enums": [enum.to_dict() for enum in self.enums],
+            "devices": [device.to_dict() for device in self.devices],
+            "broadcasts": [broadcast.to_dict() for broadcast in self.broadcasts],
+        }
+
+    def get_builtin_types(self):
+        builtin_types = ["u" + str(i) for i in range(1, 65)]
+        builtin_types += ["i" + str(i) for i in range(1, 65)]
+        builtin_types += ["f32", "f64"]
+
+        return builtin_types
+
+    def get_size(self, type):
+        builtin_types = self.get_builtin_types()
+
+        if type in builtin_types:
+            return int(type[1:])
+        elif isinstance(type, enum.Enum):
+            return type.get_size()
+        elif isinstance(type, struct.Struct):
+            return 0
+        else:
+            raise IndexError
+
     def __repr__(self) -> str:
         sig_count = len([sig for struct in self.structs for sig in struct.signals])
         return f"(Spec: devs={len(self.devices)}, broadcasts={len(self.broadcasts)}, structs={len(self.structs)}, sigs={sig_count})"
-
-
-def decompose_id(sid: int) -> Tuple[int, int]:
-    """Find the dev_id and the msg_id from the sid."""
-    return sid & 0x1F, (sid >> 5) & 0x3F
-
-
-def make_sid(dev_id: int, msg_id: int) -> int:
-    """Find the sid from the dev_id and the msg_id"""
-    return (msg_id << 5) + dev_id

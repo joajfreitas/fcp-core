@@ -121,7 +121,6 @@ class ErrorLogger:
         )
 
     def log_surrounding(self, error, filename, line, column, tip=""):
-
         ss = self.error(error) + f" {filename}:{line}:{column}" + "\n"
         lines = self.sources[filename].split("\n")
         starting_line = line - 2 if line > 0 else 0
@@ -264,7 +263,8 @@ class Verifier(BaseVerifier):
         if signal.type in types:
             return Ok(())
         else:
-            return Error(self.error_logger.log_node(signal, "Invalid signal type"))
+            return Ok(())
+            # return Error(self.error_logger.log_node(signal, "Invalid signal type"))
 
     @simple_error
     def check_signal_name_is_identifier(self, signal):

@@ -1,11 +1,12 @@
-from serde import Model, fields
+from pydantic import BaseModel
+from typing import *
 
 
-class MetaData(Model):
-    line: fields.Int()
-    end_line: fields.Int()
-    column: fields.Int()
-    end_column: fields.Int()
-    start_pos: fields.Int()
-    end_pos: fields.Int()
-    filename: fields.Str()
+class MetaData(BaseModel):
+    line: int
+    end_line: int
+    column: int
+    end_column: int
+    start_pos: int
+    end_pos: int
+    filename: str
