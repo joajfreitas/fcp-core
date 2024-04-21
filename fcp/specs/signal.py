@@ -19,12 +19,12 @@ class Signal(BaseModel):
     type: Type
     scale: Optional[float] = 1.0
     offset: Optional[float] = 0.0
-    unit: Optional[str]
-    description: Optional[Comment]
-    min_value: Optional[float]
-    max_value: Optional[float]
+    unit: Optional[str] = None
+    description: Optional[Comment] = None
+    min_value: Optional[float] = None
+    max_value: Optional[float] = None
     byte_order: Optional[str] = "little_endian"
-    meta: Optional[MetaData]
+    meta: Optional[MetaData] = None
 
     def to_fcp(self):
         def show(value, default, fmt):

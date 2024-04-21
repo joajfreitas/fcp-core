@@ -67,7 +67,7 @@ def generate_json(
     fcp_v2, sources = get_fcp(fcp, fpi).unwrap()
     fcp_v2 = fcp_v2.unwrap()
 
-    # Verifier(sources).verify(fcp_v2).unwrap()
+    #Verifier(sources).verify(fcp_v2).unwrap()
 
     print(fcp_v2.json())
 
