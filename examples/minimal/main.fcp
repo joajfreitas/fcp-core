@@ -7,8 +7,8 @@ struct Temperature {
 };
 
 enum Location {
-	TopLeft: 0;
-	TopRight: 1;
-	BottomLeft: 2;
-	BottomRight: 3;
+	FrontLeft: 0;
+	FrontRight: 1;
+	RearLeft: 2;
+	RearRight: 3;
 };
