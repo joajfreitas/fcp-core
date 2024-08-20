@@ -6,23 +6,24 @@ from .. import FcpV2
 
 @pytest.fixture
 def fcp_v2():
-    return FcpV2(devices=[], structs=[], broadcasts=[], enums=[])
+    return FcpV2(devices=[], structs=[], broadcasts=[], enums=[], logs=[])
 
 
 @pytest.fixture
 def fcp_v2_dict():
     return {
-        "devices": [],
         "structs": [],
-        "broadcasts": [],
         "enums": [],
+        "devices": [],
+        "broadcasts": [],
+        "logs": [],
         "version": "1.0",
     }
 
 
 @pytest.fixture
 def fcp_v2_json():
-    return '{"devices":[], "structs":[], "broadcasts":[], "enums":[], "version": "1.0"}'
+    return '{"structs": [], "enums": [], "devices": [], "broadcasts": [], "logs": [], "version": "1.0"}'
 
 
 def test_fcp_v2_init(fcp_v2):
@@ -32,16 +33,17 @@ def test_fcp_v2_init(fcp_v2):
 def test_fcp_v2_to_json(fcp_v2):
     assert (
         fcp_v2.to_json()
-        == '{"devices": [], "structs": [], "broadcasts": [], "enums": [], "version": "1.0"}'
+        == '{"structs": [], "enums": [], "devices": [], "broadcasts": [], "logs": [], "version": "1.0"}'
     )
 
 
 def test_fcp_v2_to_dict(fcp_v2):
     assert fcp_v2.to_dict() == {
-        "devices": [],
         "structs": [],
-        "broadcasts": [],
         "enums": [],
+        "devices": [],
+        "broadcasts": [],
+        "logs": [],
         "version": "1.0",
     }
 
