@@ -1,0 +1,22 @@
+[project]
+name = "fcp"
+version = "1.0.0"
+description = "CAN bus manager"
+license = {file = "LICENSE.txt"}
+readme = "README.md"
+url = "https://github.com/joajfreitas/fcp-core"
+requires-python = ">=3.12"
+dependencies = [
+    "click",
+    "lark",
+    "coloredlogs",
+    "serde",
+    "termcolor"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+fcp = "fcp.__main__:main"
