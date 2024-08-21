@@ -18,6 +18,4 @@ jobs:
       - uses: chartboost/ruff-action@v1
         with:
           src: './src'
-      - uses: rickstaa/action-black@v1
-        with:
-          black_args: "src --check"
+      - uses: psf/black@stable
