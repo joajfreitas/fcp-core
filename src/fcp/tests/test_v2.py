@@ -1,8 +1,5 @@
 import pytest
-import json
-
 from .. import FcpV2
-
 
 @pytest.fixture
 def fcp_v2():

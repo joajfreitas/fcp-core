@@ -1,4 +1,3 @@
-import datetime
 from serde import Model, fields
 
 from .signal import Signal

@@ -1,9 +1,7 @@
 import logging
-import sys
 from functools import reduce
 from collections import Counter
-from termcolor import colored, cprint
-import functools
+from termcolor import colored
 
 from .result import Ok, Error
 
@@ -92,7 +90,7 @@ class ErrorLogger:
         )
         ss += (
             " " * line_len
-            + colors.boldblue(f"---> ")
+            + colors.boldblue("---> ")
             + f"{filename}:{line}:{column}"
             + "\n"
         )
@@ -215,7 +213,8 @@ class Verifier(BaseVerifier):
         pass
 
     def check_fcp_v2_duplicate_typenames(self, fcp_v2):
-        naming = lambda x: x.name
+        def naming(x):
+            return x.name
         duplicates = list(
             Verifier.get_duplicates(fcp_v2.structs + fcp_v2.enums, naming, naming)
         )
@@ -230,7 +229,8 @@ class Verifier(BaseVerifier):
             )
 
     def check_fcp_v2_duplicate_broadcasts(self, fcp_v2):
-        naming = lambda x: x.name
+        def naming(x):
+            return x.name
         duplicates = list(Verifier.get_duplicates(fcp_v2.broadcasts, naming, naming))
         if len(duplicates) == 0:
             return Ok(())
@@ -243,7 +243,8 @@ class Verifier(BaseVerifier):
             )
 
     def check_struct_duplicate_signals(self, struct):
-        naming = lambda x: x.name
+        def naming(x):
+            return x.name
         duplicates = list(Verifier.get_duplicates(struct.signals, naming, naming))
         if len(duplicates) == 0:
             return Ok(())

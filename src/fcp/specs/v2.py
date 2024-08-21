@@ -1,23 +1,15 @@
 from typing import Tuple
-import copy
-import datetime
-import time
-import logging
 from serde import Model, fields
 
-from . import v1
 from . import device
 from . import log
 from . import broadcast
-from . import config
-from . import cmd
-from . import signal
 from . import enum
 from . import struct
 
 
 def handle_key_not_found(d: dict, key: str):
-    return d.get(key).items() if d.get(key) != None else []
+    return d.get(key).items() if d.get(key) is not None else []
 
 
 class FcpV2(Model):

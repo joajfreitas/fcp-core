@@ -1,19 +1,12 @@
 """ Main """
 
 import sys
-import json
-import subprocess
-import os
-from pathlib import Path
-import traceback
-from pprint import pprint
 import logging
 import coloredlogs
 
 import click
 
-from . import FcpV2
-from .specs.v1 import FcpV1, fcp_v1_to_v2
+from .specs.v1 import FcpV1
 
 from .version import VERSION
 from .v2_parser import get_fcp
@@ -59,12 +52,12 @@ def generate_cmd(
 
 
 @click.command("json_to_fcp2")
-@click.argument("json")
+@click.argument("fcp_v1")
 @click.argument("output")
-def json_to_fcp2(json: str, output: str):
+def json_to_fcp2(fcp_v1: str, output: str):
 
-    logging.info(f"Convertion fcp v1 -> fcp v2. {json} -> {output}")
-    with open(json) as f:
+    logging.info(f"Convertion fcp v1 -> fcp v2. {fcp_v1} -> {output}")
+    with open(fcp_v1) as f:
         fcp_v1 = FcpV1.from_json(f.read())
 
     fcp_v2 = fcp_v1.to_v2()

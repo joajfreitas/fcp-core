@@ -6,10 +6,8 @@ import os
 import pathlib
 import pkgutil
 import sys
-from functools import reduce
 
 from .result import Ok, Error, result_shortcut
-from .verifier import ErrorLogger
 
 
 class CodeGenerator:

@@ -1,5 +1,3 @@
-from typing import *
-import datetime
 from serde import Model, fields
 
 from .metadata import MetaData
