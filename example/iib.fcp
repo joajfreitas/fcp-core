@@ -1,4 +1,6 @@
+version: "3"
+
 struct iib_status {
-	timestamp: u32;
-	status: u8;
-}
+	timestamp @ 0: u32;
+	status @ 1: u8;
+};

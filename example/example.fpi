@@ -1,6 +1,6 @@
-device master {
-	id : 14;
-}
+version: "3"
+
+device master: id(14) {};
 
 /*Sent by master and this is a comment*/
 broadcast master_ts {
@@ -10,8 +10,8 @@ broadcast master_ts {
 	type: master_ts;
 	signal master_ts_state {
 		scale: 2.0;
-	}
-}
+	};
+};
 
 
 broadcast master_status {
@@ -19,7 +19,7 @@ broadcast master_status {
 	dlc : 8;
 	device: master;
 	type: master_ts;
-}
+};
 
 broadcast master_cell_error{
 	id: 960;
@@ -30,6 +30,5 @@ broadcast master_cell_error{
 		mux_count: 144;
 		mux: cell_id;
 		start: 48;
-	}
-}
-		
+	};
+};
