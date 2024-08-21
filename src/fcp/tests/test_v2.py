@@ -1,6 +1,7 @@
 import pytest
 from .. import FcpV2
 
+
 @pytest.fixture
 def fcp_v2():
     return FcpV2(devices=[], structs=[], broadcasts=[], enums=[], logs=[])

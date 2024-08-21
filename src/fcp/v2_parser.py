@@ -496,7 +496,7 @@ class FpiTransformer(Transformer):
             comment, name, id, *params = tree.children
         else:
             name, id, *params = tree.children
-            #comment = Comment("")
+            # comment = Comment("")
 
         type, *params = params
         return cmd.CommandArg(name=name, type=type[0], id=id)
@@ -507,7 +507,7 @@ class FpiTransformer(Transformer):
             comment, name, id, *params = tree.children
         else:
             name, id, *params = tree.children
-            #comment = Comment("")
+            # comment = Comment("")
 
         type, *params = params
         return cmd.CommandRet(name=name, type=type[0], id=id)
