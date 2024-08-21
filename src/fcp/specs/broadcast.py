@@ -1,6 +1,3 @@
-from typing import *
-import datetime
-import logging
 from serde import Model, fields
 
 from .serde_extend import Any

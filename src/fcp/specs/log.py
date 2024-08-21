@@ -1,10 +1,7 @@
-from typing import *
-import datetime
 from serde import Model, fields
 
 from .metadata import MetaData
 from .comment import Comment
-from . import v1
 
 
 class Log(Model):

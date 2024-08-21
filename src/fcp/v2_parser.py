@@ -1,17 +1,11 @@
-import os
-import sys
 import pathlib
 import traceback
-from pprint import pprint, pformat
 import logging
-from termcolor import colored
 
 from lark import (
     Lark,
     Transformer,
     v_args,
-    LarkError,
-    UnexpectedInput,
     UnexpectedCharacters,
 )
 
@@ -502,7 +496,7 @@ class FpiTransformer(Transformer):
             comment, name, id, *params = tree.children
         else:
             name, id, *params = tree.children
-            comment = Comment("")
+            #comment = Comment("")
 
         type, *params = params
         return cmd.CommandArg(name=name, type=type[0], id=id)
@@ -513,7 +507,7 @@ class FpiTransformer(Transformer):
             comment, name, id, *params = tree.children
         else:
             name, id, *params = tree.children
-            comment = Comment("")
+            #comment = Comment("")
 
         type, *params = params
         return cmd.CommandRet(name=name, type=type[0], id=id)

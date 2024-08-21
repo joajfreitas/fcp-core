@@ -1,5 +1,4 @@
 import logging
-import json
 from itertools import accumulate
 from serde import Model, fields
 from fcp.specs.broadcast import Broadcast, BroadcastSignal
@@ -218,13 +217,13 @@ class FcpV1(Model):
         structs = []
         broadcast = []
 
-        for device in list(self.devices.values()) + [self.common]:
-            logging.info(device.name)
+        for dev in list(self.devices.values()) + [self.common]:
+            logging.info(dev.name)
 
-            for message in device.msgs.values():
-                struct = self.get_struct(device.name, message.name)
+            for message in dev.msgs.values():
+                struct = self.get_struct(dev.name, message.name)
                 structs.append(struct)
-                broadcast.append(self.convert_to_broadcast(device, message, struct))
+                broadcast.append(self.convert_to_broadcast(dev, message, struct))
 
         return v2.FcpV2(
             enums=[],
