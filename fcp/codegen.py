@@ -25,9 +25,7 @@ class CodeGenerator:
 
         self.output_path = pathlib.Path(output_path)
 
-        for path, content in self.generate(
-            fcp, self.output_path, templates, skels
-        ).items():
+        for path, content in self.generate(fcp, templates, skels).items():
             logging.info(f"Generating {path}")
             os.makedirs(path.parent, exist_ok=True)
             with open(path, "w", encoding="utf-8") as file:
@@ -52,24 +50,22 @@ class GeneratorManager:
 
     def list_generators(self):
         """Find installed generators"""
-        return {
-            name: importlib.import_module(name)
-            for finder, name, ispkg in pkgutil.iter_modules()
-            if name.startswith("fcp_")
-        }
+        return [
+            name for _, name, _ in pkgutil.iter_modules() if name.startswith("fcp_")
+        ]
 
     def get_generator(self, generator_name):
         """Get generator by name."""
         generators = self.list_generators()
-        if "fcp_" + generator_name not in generators.keys():
-            available_generators = [name[4:] for name in generators.keys()]
+        if "fcp_" + generator_name not in generators:
+            available_generators = [name[4:] for name in generators]
             logging.error("Code generator %s not available", generator_name)
             logging.info(
                 "Currently available code generators: %s", available_generators
             )
             sys.exit(1)
 
-        return generators["fcp_" + generator_name]
+        return importlib.import_module("fcp_" + generator_name)
 
     def get_templates(self, template_dir):
         if template_dir is None:
