@@ -4,7 +4,7 @@ import sys
 import os
 
 def main(args):
-    with open("fcp/version.py") as f:
+    with open("src/fcp/version.py") as f:
         txt = f.read()
         version = txt.split("=")[1].strip()
         version = "v"+version[1:-1]+".md"
