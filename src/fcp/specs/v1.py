@@ -126,7 +126,7 @@ class Config(Model):
     comment: fields.Str()
     type: fields.Str(default="unsigned")
 
-    def to_v2(self, device) -> config.Config:
+    def to_v2(self, device):
         # logging.info(device.name)
         return config.Config(
             name=self.name,
@@ -144,7 +144,7 @@ class Device(Model):
     name: fields.Str()
     id: fields.Int()
 
-    def to_v2(self) -> device.Device:
+    def to_v2(self):
         return device.Device(
             name=self.name,
             id=self.id,
