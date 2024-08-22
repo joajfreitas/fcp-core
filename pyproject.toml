@@ -2,7 +2,7 @@
 name = "fcp"
 version = "1.0.0"
 description = "CAN bus manager"
-license = {file = "LICENSE.txt"}
+license = {file = "LICENSE"}
 readme = "README.md"
 url = "https://github.com/joajfreitas/fcp-core"
 requires-python = ">=3.7"
