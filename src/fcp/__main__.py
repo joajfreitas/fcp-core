@@ -10,7 +10,6 @@ from .version import VERSION
 from .v2_parser import get_fcp
 from .codegen import GeneratorManager
 from .verifier import Verifier
-from .writers import FpiWriter, FcpWriter
 
 
 def setup_logging():
