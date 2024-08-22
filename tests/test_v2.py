@@ -1,5 +1,5 @@
 import pytest
-from fcp import FcpV2
+from src.fcp import FcpV2
 
 
 @pytest.fixture

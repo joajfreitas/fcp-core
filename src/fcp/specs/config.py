@@ -3,8 +3,6 @@ from serde import Model, fields
 from .metadata import MetaData
 from .comment import Comment
 
-from . import v1
-
 
 class Config(Model):
     """Config node. Represents a Config.

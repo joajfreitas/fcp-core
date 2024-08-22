@@ -4,8 +4,6 @@ from . import cmd
 from . import config
 from . import metadata
 
-from . import v1
-
 
 class Device(Model):
     """Device node, Represents a CAN device.
