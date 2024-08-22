@@ -42,13 +42,5 @@ class Config(Model):
 
         return output + ";"
 
-    def to_v1(self):
-        return v1.Config(
-            name=self.name,
-            id=self.id,
-            comment="" if self.comment is None else self.comment.value,
-            type=self.type,
-        )
-
     def __repr__(self):
         return f"<Config name={self.name}>"

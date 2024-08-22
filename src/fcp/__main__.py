@@ -6,8 +6,6 @@ import coloredlogs
 
 import click
 
-from .specs.v1 import FcpV1
-
 from .version import VERSION
 from .v2_parser import get_fcp
 from .codegen import GeneratorManager
@@ -51,21 +49,7 @@ def generate_cmd(
     ).unwrap()
 
 
-@click.command("json_to_fcp2")
-@click.argument("fcp_v1")
 @click.argument("output")
-def json_to_fcp2(fcp_v1: str, output: str):
-
-    logging.info(f"Convertion fcp v1 -> fcp v2. {fcp_v1} -> {output}")
-    with open(fcp_v1) as f:
-        fcp_v1 = FcpV1.from_json(f.read())
-
-    fcp_v2 = fcp_v1.to_v2()
-
-    FcpWriter(output).write(fcp_v2.to_fcp())
-    FpiWriter(output).write(fcp_v2.to_fpi())
-
-
 @click.group(invoke_without_command=True)
 @click.option("--version", is_flag=True, default=False)
 def main(version):
@@ -79,7 +63,6 @@ def main(version):
 
 
 main.add_command(generate_cmd)
-main.add_command(json_to_fcp2)
 
 if __name__ == "__main__":
     setup_logging()

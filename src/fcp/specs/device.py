@@ -38,14 +38,5 @@ class Device(Model):
             + "};",
         )
 
-    def to_v1(self):
-        return v1.Device(
-            msgs={},
-            cfgs={cfg.name: cfg.to_v1() for cfg in self.configs},
-            cmds={cmd.name: cmd.to_v1() for cmd in self.commands},
-            name=self.name,
-            id=self.id,
-        )
-
     def __repr__(self):
         return f"<Device name={self.name} id={self.id}"
