@@ -146,7 +146,7 @@ def convert_params(params):
 
     values = {}
     for name, value in params.items():
-        values = values | convertion_table[name](value)
+        values.update(convertion_table[name](value))
 
     return values
 
@@ -566,7 +566,7 @@ def deduplicate(module):
 def merge(fcp, fpi):
     fcp = {key: fcp[key] for key in fcp.keys() & {"struct", "enum"}}
     fpi = {key: fpi[key] for key in fpi.keys() & {"device", "broadcast", "log"}}
-    fcp = fcp | fpi
+    fcp.update(fpi)
     return Ok(fcp)
 
 
@@ -587,7 +587,7 @@ def convert(module):
 def get_sources(module):
     sources = {module.filename: module.source}
     for mod in module.imports:
-        sources = sources | get_sources(mod)
+        sources.update(get_sources(mod))
 
     return sources
 
@@ -625,4 +625,5 @@ def get_fcp(fcp, fpi):
     fpi_sources = get_sources(fpi)
     fpi = deduplicate(resolve_imports(fpi).Q()).Q()
 
-    return Ok((convert(merge(fcp, fpi).Q()), fcp_sources | fpi_sources))
+    fcp_sources.update(fpi_sources)
+    return Ok((convert(merge(fcp, fpi).Q()), fcp_sources))
