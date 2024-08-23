@@ -578,6 +578,7 @@ def convert(module):
             structs=module["struct"].values(),
             enums=module["enum"].values(),
             logs=module["log"].values(),
+            version="3.0",
         )
     )
 

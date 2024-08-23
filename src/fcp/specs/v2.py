@@ -22,7 +22,7 @@ class FcpV2(Model):
     devices: fields.List(device.Device)
     broadcasts: fields.List(broadcast.Broadcast)
     logs: fields.List(log.Log)
-    version: fields.Str(default="1.0")
+    version: fields.Str()
 
     def add_device(self, device):
         self.devices.append(device)
