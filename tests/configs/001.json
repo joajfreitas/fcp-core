@@ -1,0 +1,43 @@
+{
+  "structs": [
+    {
+      "name": "foo",
+      "signals": [
+        {
+          "name": "bar",
+          "comment": {
+            "value": ""
+          },
+          "type": "u8",
+          "field_id": 0,
+          "meta": {
+            "line": 4,
+            "end_line": 4,
+            "column": 5,
+            "end_column": 17,
+            "start_pos": 31,
+            "end_pos": 43,
+            "filename": "001.fcp"
+          }
+        }
+      ],
+      "meta": {
+        "line": 3,
+        "end_line": 5,
+        "column": 1,
+        "end_column": 3,
+        "start_pos": 14,
+        "end_pos": 46,
+        "filename": "001.fcp"
+      },
+      "comment": {
+        "value": ""
+      }
+    }
+  ],
+  "enums": [],
+  "devices": [],
+  "broadcasts": [],
+  "logs": [],
+  "version": "3.0"
+}
