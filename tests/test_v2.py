@@ -4,8 +4,9 @@ from fcp import FcpV2
 
 @pytest.fixture
 def fcp_v2():
-    return FcpV2(devices=[], structs=[], broadcasts=[], enums=[], logs=[], version="3.0")
-
+    return FcpV2(
+        devices=[], structs=[], broadcasts=[], enums=[], logs=[], version="3.0"
+    )
 
 
 @pytest.fixture
