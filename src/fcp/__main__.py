@@ -48,7 +48,6 @@ def generate_cmd(
     ).unwrap()
 
 
-@click.argument("output")
 @click.group(invoke_without_command=True)
 @click.option("--version", is_flag=True, default=False)
 def main(version):
@@ -58,7 +57,6 @@ def main(version):
         print("fcp cli util.\nVersion:", VERSION, "\nFor usage see fcp --help")
     if version:
         click.echo(VERSION)
-    pass
 
 
 main.add_command(generate_cmd)
