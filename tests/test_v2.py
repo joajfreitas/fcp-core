@@ -4,7 +4,8 @@ from fcp import FcpV2
 
 @pytest.fixture
 def fcp_v2():
-    return FcpV2(devices=[], structs=[], broadcasts=[], enums=[], logs=[])
+    return FcpV2(devices=[], structs=[], broadcasts=[], enums=[], logs=[], version="3.0")
+
 
 
 @pytest.fixture
@@ -15,13 +16,13 @@ def fcp_v2_dict():
         "devices": [],
         "broadcasts": [],
         "logs": [],
-        "version": "1.0",
+        "version": "3.0",
     }
 
 
 @pytest.fixture
 def fcp_v2_json():
-    return '{"structs": [], "enums": [], "devices": [], "broadcasts": [], "logs": [], "version": "1.0"}'
+    return '{"structs": [], "enums": [], "devices": [], "broadcasts": [], "logs": [], "version": "3.0"}'
 
 
 def test_fcp_v2_init(fcp_v2):
@@ -31,7 +32,7 @@ def test_fcp_v2_init(fcp_v2):
 def test_fcp_v2_to_json(fcp_v2):
     assert (
         fcp_v2.to_json()
-        == '{"structs": [], "enums": [], "devices": [], "broadcasts": [], "logs": [], "version": "1.0"}'
+        == '{"structs": [], "enums": [], "devices": [], "broadcasts": [], "logs": [], "version": "3.0"}'
     )
 
 
@@ -42,7 +43,7 @@ def test_fcp_v2_to_dict(fcp_v2):
         "devices": [],
         "broadcasts": [],
         "logs": [],
-        "version": "1.0",
+        "version": "3.0",
     }
 
 
