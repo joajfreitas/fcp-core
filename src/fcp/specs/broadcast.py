@@ -8,7 +8,7 @@ from .comment import Comment
 
 class BroadcastSignal(Model):
     name: fields.Str()
-    field: fields.Dict(fields.Str(), Any())
+    field: fields.Dict(fields.Str(), AnyField())
     meta: fields.Optional(MetaData)
 
     def get_name(self) -> str:
@@ -45,7 +45,7 @@ class Broadcast(Model):
     """Broadcast object"""
 
     name: fields.Str()
-    field: fields.Dict(fields.Str(), Any())
+    field: fields.Dict(fields.Str(), AnyField())
     signals: fields.List(BroadcastSignal)
     meta: fields.Optional(MetaData)
     comment: Comment
