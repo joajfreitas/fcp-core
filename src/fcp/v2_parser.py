@@ -2,7 +2,7 @@ import pathlib
 import traceback
 import logging
 
-from lark import Lark, Transformer, v_args, UnexpectedCharacters, ParseTree:
+from lark import Lark, Transformer, v_args, UnexpectedCharacters, ParseTree
 from typing import Any
 
 from lark.lexer import Token
@@ -592,7 +592,7 @@ def get_sources(module: Any) -> dict[str, str]:
 
 
 @result_shortcut
-def get_fcp(fcp: str, fpi : str) -> Ok | Error:
+def get_fcp(fcp: str, fpi: str) -> Ok | Error:
     error_logger = ErrorLogger({})
     fcp_filename = fcp
 
