@@ -22,13 +22,13 @@ class Device(Model):
     configs: fields.List(config.Config)
     meta: fields.Optional(metadata.MetaData)
 
-    def get_name(self):
+    def get_name(self) -> str:
         return self.name
 
-    def get_type(self):
+    def get_type(self) -> str:
         return "device"
 
-    def to_fpi(self):
+    def to_fpi(self) -> tuple[str, str]:
         return (
             self.name,
             f"device {self.name} : id({self.id}) {{\n\t"
@@ -38,5 +38,5 @@ class Device(Model):
             + "};",
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Device name={self.name} id={self.id}"

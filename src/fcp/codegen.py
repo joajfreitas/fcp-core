@@ -7,16 +7,20 @@ import pathlib
 import pkgutil
 import sys
 
-from .result import Ok, Error, result_shortcut
+from typing import Any
+from types import ModuleType
+
+
+from .result import Ok, Error, Result, result_shortcut
 
 
 class CodeGenerator:
     """Base class for generators."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def gen(self, fcp, templates, skels, output_path):
+    def gen(self, fcp: Result, templates: Any, skels: Any, output_path: str) -> None:
         """Function called from fcp to trigger generator. Do not override."""
 
         self.verify(fcp).unwrap()
@@ -29,13 +33,13 @@ class CodeGenerator:
             with open(path, "w", encoding="utf-8") as file:
                 file.write(content)
 
-    def verify(self, fcp):
+    def verify(self, fcp: Any) -> Result:
         if fcp is not None:
             return Ok(())
         else:
             return Error(["Received a None object instead of FcpV2"])
 
-    def generate(self, fcp, output_path, templates, skel):
+    def generate(self, fcp: Any, output_path: str, templates: Any, skel: Any) -> Any:
         """Function to override from generator. Implements actual code generation."""
         return
 
@@ -43,16 +47,16 @@ class CodeGenerator:
 class GeneratorManager:
     """Manager for generators"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def list_generators(self):
+    def list_generators(self) -> Any:
         """Find installed generators"""
         return [
             name for _, name, _ in pkgutil.iter_modules() if name.startswith("fcp_")
         ]
 
-    def get_generator(self, generator_name):
+    def get_generator(self, generator_name: str) -> ModuleType:
         """Get generator by name."""
         generators = self.list_generators()
         if "fcp_" + generator_name not in generators:
@@ -65,7 +69,7 @@ class GeneratorManager:
 
         return importlib.import_module("fcp_" + generator_name)
 
-    def get_templates(self, template_dir):
+    def get_templates(self, template_dir: str) -> Any:
         if template_dir is None:
             return {}
 
@@ -79,7 +83,7 @@ class GeneratorManager:
 
         return templates
 
-    def get_skels(self, skel_dir):
+    def get_skels(self, skel_dir: str) -> Any:
         if skel_dir is None:
             return {}
 
@@ -94,7 +98,15 @@ class GeneratorManager:
         return skels
 
     @result_shortcut
-    def generate(self, generator, template_dir, skel_dir, fcp, sources, output_path):
+    def generate(
+        self,
+        generator: str,
+        template_dir: str,
+        skel_dir: str,
+        fcp: Any,
+        sources: Any,
+        output_path: str,
+    ) -> Ok:
         """Generate code"""
         verifier = self.get_generator(generator).Verifier(sources)
         generator = self.get_generator(generator).Generator()

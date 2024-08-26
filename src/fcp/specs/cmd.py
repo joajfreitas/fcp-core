@@ -1,4 +1,5 @@
 from serde import Model, fields
+from typing import Any
 
 from .metadata import MetaData
 from .comment import Comment
@@ -10,7 +11,7 @@ class CommandArg(Model):
     type: fields.Str()
     comment: fields.Optional(Comment)
 
-    def to_fpi(self):
+    def to_fpi(self) -> str:
         return f"\t\t/*{self.comment.value}*/\n\t\targ {self.name} @{self.id}: {self.type};"
 
 
@@ -20,7 +21,7 @@ class CommandRet(Model):
     type: fields.Str()
     comment: fields.Optional(Comment)
 
-    def to_fpi(self):
+    def to_fpi(self) -> str:
         return f"\t\t/*{self.comment.value}*/\n\t\tret {self.name} @{self.id}: {self.type};"
 
 
@@ -33,14 +34,14 @@ class Command(Model):
     comment: Comment
     meta: fields.Optional(MetaData)
 
-    def get_name(self):
+    def get_name(self) -> str:
         return self.name
 
-    def get_type(self):
+    def get_type(self) -> str:
         return "command"
 
-    def to_fpi(self):
-        def show(value, default, fmt):
+    def to_fpi(self) -> str:
+        def show(value: Any, default: Any, fmt: Any) -> str:
             if value == default:
                 return ""
             else:

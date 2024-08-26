@@ -1,6 +1,7 @@
 from serde import Model, fields
+from typing import Any
 
-from .serde_extend import Any
+from .serde_extend import AnyField
 from .metadata import MetaData
 from .comment import Comment
 
@@ -10,14 +11,14 @@ class BroadcastSignal(Model):
     field: fields.Dict(fields.Str(), Any())
     meta: fields.Optional(MetaData)
 
-    def get_name(self):
+    def get_name(self) -> str:
         return self.name
 
-    def get_type(self):
+    def get_type(self) -> str:
         return "broadcast_signal"
 
-    def to_fpi(self):
-        def default(name, param):
+    def to_fpi(self) -> str:
+        def default(name: str, param: Any) -> bool:
             defaults = {
                 "mux": "",
                 "mux_count": 1,
@@ -49,20 +50,20 @@ class Broadcast(Model):
     meta: fields.Optional(MetaData)
     comment: Comment
 
-    def get_name(self):
+    def get_name(self) -> str:
         return self.name
 
-    def get_type(self):
+    def get_type(self) -> str:
         return "broadcast"
 
-    def get_signal(self, name):
+    def get_signal(self, name: str) -> None:
         for signal in self.signals:
             if signal.name == name:
                 return signal
 
         return None
 
-    def get_mux_count(self):
+    def get_mux_count(self) -> int:
         for signal in self.signals:
             mux_count = signal.field.get("mux_count")
             if mux_count is not None and mux_count != 1:
@@ -70,7 +71,7 @@ class Broadcast(Model):
 
         return 1
 
-    def get_mux(self):
+    def get_mux(self) -> None:
         for signal in self.signals:
             mux_count = signal.field.get("mux_count")
             if mux_count is not None and mux_count != 1:
@@ -78,7 +79,7 @@ class Broadcast(Model):
 
         return None
 
-    def to_fpi(self):
+    def to_fpi(self) -> tuple[str, str]:
         return (
             self.field.get("device"),
             (f"/*{self.comment.value}*/\n" if self.comment.value != "" else "")
@@ -89,5 +90,5 @@ class Broadcast(Model):
             + "\n};\n",
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Broadcast name={self.name}"

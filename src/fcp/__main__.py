@@ -12,7 +12,7 @@ from .codegen import GeneratorManager
 from .verifier import Verifier
 
 
-def setup_logging():
+def setup_logging() -> None:
     logging.getLogger().setLevel(logging.DEBUG)
     coloredlogs.install(
         fmt="%(asctime)s %(module)s:%(lineno)d %(levelname)s - %(message)s"
@@ -29,14 +29,13 @@ def setup_logging():
 @click.option("--noformat", is_flag=True, default=False)
 def generate_cmd(
     generator,
-    fcp,
-    fpi,
+    fcp: str,
+    fpi: str,
     output: str,
     templates: str,
     skel: str,
     noformat: bool,
-):
-
+) -> None:
     fcp_v2, sources = get_fcp(fcp, fpi).unwrap()
     fcp_v2 = fcp_v2.unwrap()
 
@@ -50,7 +49,7 @@ def generate_cmd(
 
 @click.group(invoke_without_command=True)
 @click.option("--version", is_flag=True, default=False)
-def main(version):
+def main(version: str) -> None:
     """CLI utility for managment of FCP JSON files."""
 
     if len(sys.argv) == 1:

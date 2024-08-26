@@ -2,12 +2,11 @@ import pathlib
 import traceback
 import logging
 
-from lark import (
-    Lark,
-    Transformer,
-    v_args,
-    UnexpectedCharacters,
-)
+from lark import Lark, Transformer, v_args, UnexpectedCharacters, ParseTree:
+from typing import Any
+
+from lark.lexer import Token
+from lark.tree import Branch
 
 from .specs import device
 from .specs import broadcast
@@ -113,17 +112,17 @@ fpi_parser = Lark(
 
 
 class Module:
-    def __init__(self, filename, children, source, imports):
+    def __init__(self, filename: str, children: str, source: str, imports: str) -> None:
         self.filename = filename
         self.children = children
         self.source = source
         self.imports = imports
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.filename}: {self.children}, imports:{len(self.imports)}"
 
 
-def get_meta(tree, parser):
+def get_meta(tree: ParseTree, parser: Lark) -> MetaData:
     return MetaData(
         line=tree.meta.line,
         end_line=tree.meta.end_line,
@@ -135,7 +134,7 @@ def get_meta(tree, parser):
     )
 
 
-def convert_params(params):
+def convert_params(params: dict[str, tuple[str, str]]) -> dict[str, Any]:
     convertion_table = {
         "range": lambda x: {"min_value": x[0], "max_value": x[1]},
         "scale": lambda x: {"scale": x[0], "offset": x[1]},
@@ -152,7 +151,7 @@ def convert_params(params):
 
 
 class FcpV2Transformer(Transformer):
-    def __init__(self, filename):
+    def __init__(self, filename: str) -> None:
         self.filename = pathlib.Path(filename)
         self.path = self.filename.parent
 
@@ -161,36 +160,36 @@ class FcpV2Transformer(Transformer):
 
         self.error_logger = ErrorLogger({self.filename: self.source})
 
-    def preamble(self, args):
+    def preamble(self, args: list[str]) -> Ok | Error:
         if args[0] == "3":
             return Ok(None)
         else:
             return Error("Expected IDL version 3")
 
-    def dot(self, args):
+    def dot(self, args: list[str]) -> str:
         return "."
 
-    def underscore(self, args):
+    def underscore(self, args: list[str]) -> str:
         return "_"
 
-    def identifier(self, args):
+    def identifier(self, args: list[str]) -> str:
         return args[0]
 
-    def import_identifier(self, args):
+    def import_identifier(self, args: list[str]) -> str:
         identifier = "".join([arg.value for arg in args])
         return identifier
 
-    def param(self, args):
+    def param(self, args: list[str]) -> str:
         return tuple(args)
 
-    def param_argument(self, args):
+    def param_argument(self, args: list[str]) -> str:
         return args[0]
 
-    def field_id(self, args):
+    def field_id(self, args: list[str]) -> str:
         return args[0]
 
     @v_args(tree=True)
-    def field(self, tree):
+    def field(self, tree: ParseTree) -> Ok | Error:
         if isinstance(tree.children[0], Comment):
             comment, name, field_id, *values = tree.children
         else:
@@ -215,7 +214,7 @@ class FcpV2Transformer(Transformer):
         )
 
     @v_args(tree=True)
-    def struct(self, tree):
+    def struct(self, tree: ParseTree) -> Ok | Error:
         if isinstance(tree.children[0], Comment):
             comment, name, *fields = tree.children
         else:
@@ -233,14 +232,14 @@ class FcpV2Transformer(Transformer):
         )
 
     @v_args(tree=True)
-    def enum_field(self, tree):
+    def enum_field(self, tree: ParseTree) -> Ok | Error:
         name, value = tree.children
 
         meta = get_meta(tree, self)
         return Ok(enum.Enumeration(name=name, value=value, meta=meta))
 
     @v_args(tree=True)
-    def enum(self, tree):
+    def enum(self, tree: ParseTree) -> Ok | Error:
         args = tree.children
 
         if isinstance(args[0], Comment):
@@ -255,7 +254,7 @@ class FcpV2Transformer(Transformer):
         return Ok(enum.Enum(name=name, enumeration=fields, meta=meta, comment=comment))
 
     @result_shortcut
-    def imports(self, args):
+    def imports(self, args: list[str]) -> Ok | Error:
         filename = self.path / (args[0].replace(".", "/") + ".fcp")
         try:
             with open(filename) as f:
@@ -270,22 +269,22 @@ class FcpV2Transformer(Transformer):
 
         return Ok(module)
 
-    def value(self, args):
+    def value(self, args: list[str]) -> str:
         return args[0]
 
-    def number(self, args):
+    def number(self, args: list[str]) -> int | float:
         try:
             return int(args[0].value)
         except ValueError:
             return float(args[0].value)
 
-    def string(self, args):
+    def string(self, args: list[str]) -> str:
         return args[0].value[1:-1]
 
-    def comment(self, args):
+    def comment(self, args: list[str]) -> Comment:
         return Comment(args[0].value.replace("/*", "").replace("*/", ""))
 
-    def start(self, args):
+    def start(self, args: list[str]) -> Ok:
         args = [arg.Q() for arg in args if arg.Q() is not None]
 
         imports = list(filter(lambda x: isinstance(x, Module), args))
@@ -294,7 +293,7 @@ class FcpV2Transformer(Transformer):
 
 
 class FpiTransformer(Transformer):
-    def __init__(self, filename):
+    def __init__(self, filename: str) -> None:
         self.filename = pathlib.Path(filename)
         self.path = self.filename.parent
 
@@ -303,7 +302,7 @@ class FpiTransformer(Transformer):
 
         self.error_logger = ErrorLogger({self.filename: self.source})
 
-    def preamble(self, args):
+    def preamble(self, args: list[str]) -> Ok | Error:
         if args[0] == "3":
             return Ok(None)
         else:
@@ -313,44 +312,44 @@ class FpiTransformer(Transformer):
                 )
             )
 
-    def identifier(self, args):
+    def identifier(self, args: list[str]) -> str:
         return args[0].value
 
-    def value(self, args):
+    def value(self, args: list[str]) -> str:
         return args[0]
 
-    def float(self, args):
+    def float(self, args: list[str]) -> float:
         return float(args[0].value)
 
-    def integer(self, args):
+    def integer(self, args: list[str]) -> int:
         return int(args[0].value)
 
     def string(self, args):
         return args[0].value[1:-1]
 
-    def param(self, args):
+    def param(self, args: list[str]) -> tuple[str, ...]:
         return tuple(args)
 
-    def param_args(self, args):
+    def param_args(self, args: list[str]) -> str:
         return args[0]
 
-    def param_argument(self, args):
+    def param_argument(self, args: list[str]) -> str:
         return args[0]
 
     @v_args(tree=True)
-    def field(self, tree):
+    def field(self, tree: ParseTree) -> tuple[Any, ...]:
         name, value = tree.children
         return (name, value)
 
     @v_args(tree=True)
-    def signal(self, tree):
+    def signal(self, tree: ParseTree) -> broadcast.BroadcastSignal:
         name, *fields = tree.children
         fields = {name: value for name, value in fields}
         meta = get_meta(tree, self)
         return broadcast.BroadcastSignal(name, fields, meta=meta)
 
     @v_args(tree=True)
-    def broadcast(self, tree):
+    def broadcast(self, tree: ParseTree) -> Ok | Error:
         if isinstance(tree.children[0], Comment):
             comment, name, *fields = tree.children
         else:
@@ -377,10 +376,10 @@ class FpiTransformer(Transformer):
             )
         )
 
-    def comment(self, args):
+    def comment(self, args: list[str]) -> Comment:
         return Comment(args[0].value.replace("/*", "").replace("*/", ""))
 
-    def imports(self, args):
+    def imports(self, args: list[str]) -> Ok | Error:
         filename = self.path / (args[0] + ".fpi")
         try:
             with open(filename) as f:
@@ -396,7 +395,7 @@ class FpiTransformer(Transformer):
         return Ok(module)
 
     @v_args(tree=True)
-    def device(self, tree):
+    def device(self, tree: ParseTree) -> Ok | Error:
         name, *children = tree.children
 
         fields = filter(lambda x: not isinstance(x, Ok), children)
@@ -420,7 +419,7 @@ class FpiTransformer(Transformer):
         )
 
     @v_args(tree=True)
-    def log(self, tree):
+    def log(self, tree: ParseTree) -> Ok | Error:
         if isinstance(tree.children[0], Comment):
             comment, name, *fields = tree.children
         else:
@@ -443,7 +442,7 @@ class FpiTransformer(Transformer):
         )
 
     @v_args(tree=True)
-    def config(self, tree):
+    def config(self, tree: ParseTree) -> Ok | Error:
         if isinstance(tree.children[0], Comment):
             comment, name, *fields = tree.children
         else:
@@ -465,7 +464,7 @@ class FpiTransformer(Transformer):
         )
 
     @v_args(tree=True)
-    def command(self, tree):
+    def command(self, tree: ParseTree) -> Ok | Error:
         if isinstance(tree.children[0], Comment):
             comment, name, *fields = tree.children
         else:
@@ -491,7 +490,7 @@ class FpiTransformer(Transformer):
         )
 
     @v_args(tree=True)
-    def cmd_arg(self, tree):
+    def cmd_arg(self, tree: ParseTree) -> cmd.CommandArg:
         if isinstance(tree.children[0], Comment):
             comment, name, id, *params = tree.children
         else:
@@ -502,7 +501,7 @@ class FpiTransformer(Transformer):
         return cmd.CommandArg(name=name, type=type[0], id=id)
 
     @v_args(tree=True)
-    def cmd_ret(self, tree):
+    def cmd_ret(self, tree: ParseTree) -> cmd.CommandRet:
         if isinstance(tree.children[0], Comment):
             comment, name, id, *params = tree.children
         else:
@@ -513,7 +512,7 @@ class FpiTransformer(Transformer):
         return cmd.CommandRet(name=name, type=type[0], id=id)
 
     @result_shortcut
-    def start(self, args):
+    def start(self, args: list[str]) -> Ok | Error:
         args = [arg.Q() for arg in args if arg.Q() is not None]
 
         imports = list(filter(lambda x: isinstance(x, Module), args))
@@ -522,7 +521,7 @@ class FpiTransformer(Transformer):
         return Ok(Module(self.filename.name, not_imports, self.source, imports))
 
 
-def resolve_imports(module):
+def resolve_imports(module: dict[str, Any]) -> Ok | Error:
     def merge(module1, module2):
         merged = {}
         keys = list(module1.keys()) + list(module2.keys())
@@ -554,7 +553,7 @@ def resolve_imports(module):
     return Ok(nodes)
 
 
-def deduplicate(module):
+def deduplicate(module: dict[str, Any]) -> Ok:
     return Ok(
         {
             type: {node.get_name(): node for node in module[type]}
@@ -563,14 +562,14 @@ def deduplicate(module):
     )
 
 
-def merge(fcp, fpi):
+def merge(fcp: dict[str, Any], fpi: dict[str, Any]) -> Ok:
     fcp = {key: fcp[key] for key in fcp.keys() & {"struct", "enum"}}
     fpi = {key: fpi[key] for key in fpi.keys() & {"device", "broadcast", "log"}}
     fcp.update(fpi)
     return Ok(fcp)
 
 
-def convert(module):
+def convert(module: dict[str, Any]) -> Ok:
     return Ok(
         v2.FcpV2(
             broadcasts=module["broadcast"].values(),
@@ -584,7 +583,7 @@ def convert(module):
 
 
 @result_shortcut
-def get_sources(module):
+def get_sources(module: Any) -> dict[str, str]:
     sources = {module.filename: module.source}
     for mod in module.imports:
         sources.update(get_sources(mod))
@@ -593,7 +592,7 @@ def get_sources(module):
 
 
 @result_shortcut
-def get_fcp(fcp, fpi):
+def get_fcp(fcp: str, fpi : str) -> Ok | Error:
     error_logger = ErrorLogger({})
     fcp_filename = fcp
 
