@@ -19,10 +19,10 @@ class Config(Model):
     comment: Comment
     meta: fields.Optional(MetaData)
 
-    def get_name(self):
+    def get_name(self) -> str:
         return self.name
 
-    def to_fpi(self):
+    def to_fpi(self) -> tuple[str, str]:
         def show(value, default, fmt):
             if value == default:
                 return ""
@@ -42,5 +42,5 @@ class Config(Model):
 
         return output + ";"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Config name={self.name}>"

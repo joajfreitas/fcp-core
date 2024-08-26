@@ -2,55 +2,56 @@ import logging
 from functools import reduce
 from collections import Counter
 from termcolor import colored
+from typing import Any, Tuple, Generator
 
 from .result import Ok, Error
 
 
 class colors:
     @staticmethod
-    def red(s):
+    def red(s: str) -> str:
         return colored(s, "red")
 
     @staticmethod
-    def yellow(s):
+    def yellow(s: str) -> str:
         return colored(s, "yellow")
 
     @staticmethod
-    def orange(s):
+    def orange(s: str) -> str:
         return colored(s, "orange")
 
     @staticmethod
-    def blue(s):
+    def blue(s: str) -> str:
         return colored(s, "blue")
 
     @staticmethod
-    def white(s):
+    def white(s: str) -> str:
         return colored(s, "white")
 
     @staticmethod
-    def boldred(s):
+    def boldred(s: str) -> str:
         return colored(s, "red", attrs=["bold"])
 
     @staticmethod
-    def boldyellow(s):
+    def boldyellow(s: str) -> str:
         return colored(s, "yellow", attrs=["bold"])
 
     @staticmethod
-    def boldorange(s):
+    def boldorange(s: str) -> str:
         return colored(s, "orange", attrs=["bold"])
 
     @staticmethod
-    def boldblue(s):
+    def boldblue(s: str) -> str:
         return colored(s, "blue", attrs=["bold"])
 
     @staticmethod
-    def boldwhite(s):
+    def boldwhite(s: str) -> str:
         return colored(s, "white", attrs=["bold"])
 
 
-def simple_error(f):
+def simple_error(f: function) -> function:
     # @functools.wraps(f)
-    def wrapper(obj, *args):
+    def wrapper(obj, *args) -> Ok | Error:
         cond, error = f(obj, *args)
         if not cond:
             return Ok(())
@@ -61,13 +62,15 @@ def simple_error(f):
 
 
 class ErrorLogger:
-    def __init__(self, sources):
+    def __init__(self, sources: dict[str, str]) -> None:
         self.sources = sources
 
-    def add_source(self, name, source):
+    def add_source(self, name: str, source: str) -> None:
         self.sources[name] = source
 
-    def highlight(self, source, prefix_with_line, prefix_without_line):
+    def highlight(
+        self, source: str, prefix_with_line: str, prefix_without_line: str
+    ) -> str:
         ss = ""
         for i, line in enumerate(source.split("\n")):
             prefix = prefix_with_line if i == 0 else prefix_without_line
@@ -77,7 +80,9 @@ class ErrorLogger:
 
         return ss
 
-    def log_location(self, error, filename, line, column, source):
+    def log_location(
+        self, error: str, filename: str, line: int, column: int, source: str
+    ) -> str:
         line_len = len(str(line))
 
         prefix_with_line = colors.boldblue(f"{line} | ")
@@ -100,7 +105,7 @@ class ErrorLogger:
 
         return ss
 
-    def log_node(self, node, error=""):
+    def log_node(self, node: Any, error: str = "") -> str:
         source = self.sources[node.meta.filename]
         return self.log_location(
             error,
@@ -110,7 +115,7 @@ class ErrorLogger:
             source[node.meta.start_pos : node.meta.end_pos],
         )
 
-    def log_duplicates(self, error, duplicates):
+    def log_duplicates(self, error: str, duplicates: list[Any]) -> str:
         return (
             colors.boldblue("error: ")
             + colors.boldwhite(error)
@@ -118,8 +123,9 @@ class ErrorLogger:
             + "\n".join(map(lambda x: self.log_node(x), duplicates))
         )
 
-    def log_surrounding(self, error, filename, line, column, tip=""):
-
+    def log_surrounding(
+        self, error: str, filename: str, line: int, column: int, tip: str = ""
+    ) -> str:
         ss = self.error(error) + f" {filename}:{line}:{column}" + "\n"
         lines = self.sources[filename].split("\n")
         starting_line = line - 2 if line > 0 else 0
@@ -136,18 +142,17 @@ class ErrorLogger:
 
         return ss
 
-    def error(self, error):
+    def error(self, error: str) -> str:
         return colors.boldred("Error: ") + colors.boldwhite(error)
 
 
 class BaseVerifier:
     """Base class for verifiers"""
 
-    def __init__(self, sources):
+    def __init__(self, sources: dict[str, str]) -> None:
         self.error_logger = ErrorLogger(sources)
-        pass
 
-    def apply_check(self, category, value):
+    def apply_check(self, category: str, value: Any) -> Ok | Error:
         result = Ok(())
         for name, f in self.__class__.__dict__.items():
             if name.startswith(f"check_{category}"):
@@ -158,11 +163,11 @@ class BaseVerifier:
 
         return result
 
-    def apply_checks(self, category, values):
+    def apply_checks(self, category: str, values: Any) -> Ok | Error:
         results = list(map(lambda value: self.apply_check(category, value), values))
         return reduce(lambda x, y: x.compound(y), results, Ok(()))
 
-    def verify(self, fcp_v2):
+    def verify(self, fcp_v2: Any) -> Ok | Error:
         logging.debug("Running verifier")
 
         result = Ok(())
@@ -208,12 +213,11 @@ class BaseVerifier:
 
 
 class Verifier(BaseVerifier):
-    def __init__(self, sources):
+    def __init__(self, sources: dict[str, str]) -> None:
         self.error_logger = ErrorLogger(sources)
-        pass
 
-    def check_fcp_v2_duplicate_typenames(self, fcp_v2):
-        def naming(x):
+    def check_fcp_v2_duplicate_typenames(self, fcp_v2: Any) -> Ok | Error:
+        def naming(x: Any) -> str:
             return x.name
 
         duplicates = list(
@@ -229,7 +233,7 @@ class Verifier(BaseVerifier):
                 )
             )
 
-    def check_fcp_v2_duplicate_broadcasts(self, fcp_v2):
+    def check_fcp_v2_duplicate_broadcasts(self, fcp_v2: Any) -> Ok | Error:
         def naming(x):
             return x.name
 
@@ -244,8 +248,8 @@ class Verifier(BaseVerifier):
                 )
             )
 
-    def check_struct_duplicate_signals(self, struct):
-        def naming(x):
+    def check_struct_duplicate_signals(self, struct: Any) -> Ok | Error:
+        def naming(x: Any) -> str:
             return x.name
 
         duplicates = list(Verifier.get_duplicates(struct.signals, naming, naming))
@@ -259,7 +263,7 @@ class Verifier(BaseVerifier):
                 )
             )
 
-    def check_signal_type(self, signal):
+    def check_signal_type(self, signal: Any) -> Ok | Error:
         types = [
             signess + str(width) for signess in ["i", "u"] for width in range(1, 65)
         ]
@@ -271,13 +275,13 @@ class Verifier(BaseVerifier):
             return Error(self.error_logger.log_node(signal, "Invalid signal type"))
 
     @simple_error
-    def check_signal_name_is_identifier(self, signal):
+    def check_signal_name_is_identifier(self, signal: Any) -> Tuple[bool, str]:
         return (
             not signal.name.isidentifier(),
             f"{signal.name} is not a valid identifier",
         )
 
-    def check_enum_duplicated_values(self, enum):
+    def check_enum_duplicated_values(self, enum: Any) -> Ok | Error:
         duplicates = list(
             Verifier.get_duplicates(
                 enum.enumeration, lambda x: x.value, lambda x: x.name
@@ -289,25 +293,27 @@ class Verifier(BaseVerifier):
             return Error(f"Found duplicate values in enum {enum.name}: {duplicates}")
 
     @simple_error
-    def check_enum_name_is_identifier(self, enum):
+    def check_enum_name_is_identifier(self, enum: Any) -> Tuple[bool, str]:
         return not enum.name.isidentifier(), f"{enum.name} is not a valid identifier"
 
     @simple_error
-    def check_broadcast_name_is_identifier(self, broadcast):
+    def check_broadcast_name_is_identifier(self, broadcast: Any) -> Tuple[bool, str]:
         return (
             not broadcast.name.isidentifier(),
             f"{broadcast.name} is not a valid identifier",
         )
 
     @simple_error
-    def check_device_name_is_identifier(self, device):
+    def check_device_name_is_identifier(self, device: Any) -> Tuple[bool, str]:
         return (
             not device.name.isidentifier(),
             f"{device.name} is not a valid identifier",
         )
 
     @staticmethod
-    def get_duplicates(container, selector, naming):
+    def get_duplicates(
+        container: Any, selector: Any, naming: Any
+    ) -> Generator[Any, None, None]:
         selection = list(map(selector, container))
 
         count = Counter(selection)

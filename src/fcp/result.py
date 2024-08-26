@@ -1,16 +1,17 @@
 import sys
 import traceback
 
+from typing import Any
 from functools import wraps
 
 
 class ResultShortcutError(Exception):
-    def __init__(self, error):
+    def __init__(self, error: str) -> None:
         super().__init__()
         self.error = error
 
 
-def result_shortcut(f):
+def result_shortcut(f: Any) -> Any:
     @wraps(f)
     def wrapper(*args, **kwargs):
         try:
@@ -22,24 +23,24 @@ def result_shortcut(f):
 
 
 class Result:
-    def is_err(self):
+    def is_err(self) -> bool:
         return isinstance(self, Error)
 
-    def is_ok(self):
+    def is_ok(self) -> bool:
         return isinstance(self, Ok)
 
 
 class Ok(Result):
-    def __init__(self, value):
+    def __init__(self, value: Any) -> None:
         self.value = value
 
-    def unwrap(self):
+    def unwrap(self) -> Any:
         return self.value
 
-    def err(self):
+    def err(self) -> None:
         sys.exit(1)
 
-    def compound(self, result):
+    def compound(self, result: Any) -> Result:
         if isinstance(result, Ok):
             v1 = self.value if isinstance(self.value, list) else [self.value]
             v2 = result.value if isinstance(result.value, list) else [result.value]
@@ -47,24 +48,24 @@ class Ok(Result):
         else:
             return result
 
-    def Q(self):
+    def Q(self) -> None:
         return self.value
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Ok):
             return False
 
         return self.value == other.value
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "Ok"
 
 
 class Error(Result):
-    def __init__(self, error):
+    def __init__(self, error: str) -> None:
         self.error = error
 
-    def unwrap(self):
+    def unwrap(self) -> tuple[None, None]:
         error = self.error if isinstance(self.error, list) else [self.error]
 
         for err in error:
@@ -75,10 +76,10 @@ class Error(Result):
 
         return (None, None)
 
-    def err(self):
+    def err(self) -> str:
         return self.error
 
-    def compound(self, result):
+    def compound(self, result: Result) -> Result:
         if isinstance(result, Error):
             v1 = self.error if isinstance(self.error, list) else [self.error]
             v2 = result.error if isinstance(result.error, list) else [result.error]
@@ -86,15 +87,15 @@ class Error(Result):
         else:
             return self
 
-    def Q(self):
+    def Q(self) -> None:
         raise ResultShortcutError(self)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Error):
             return False
 
         return self.error == other.error
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         error = self.error if isinstance(self.error, list) else [self.error]
         return "Error:\n" + "\n".join(error)

@@ -1,3 +1,4 @@
+from typing import Any
 from serde import Model, fields
 
 from .metadata import MetaData
@@ -12,14 +13,14 @@ class Log(Model):
     n_args: fields.Optional(fields.Int())
     meta: fields.Optional(MetaData)
 
-    def get_name(self):
+    def get_name(self) -> fields.Str():
         return self.name
 
-    def get_type(self):
+    def get_type(self) -> str:
         return "log"
 
-    def to_fpi(self):
-        def show(value, default, fmt):
+    def to_fpi(self) -> tuple[str, str]:
+        def show(value: Any, default: Any, fmt: Any) -> str:
             if value == default:
                 return ""
             else:
@@ -32,5 +33,5 @@ class Log(Model):
         output += show(self.n_args or 0, 0, " | n_args({})")
         return ("log", output + ";")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Log name={self.name}>"

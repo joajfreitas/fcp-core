@@ -24,10 +24,12 @@ class FcpV2(Model):
     logs: fields.List(log.Log)
     version: fields.Str()
 
-    def add_device(self, device):
+    def add_device(self, device: device.Device) -> None:
         self.devices.append(device)
 
-    def get_broadcasts(self, device=None):
+    def get_broadcasts(
+        self, device: device.Device | None = None
+    ) -> list[broadcast.Broadcast]:
         if device is None:
             return [broadcast for broadcast in self.broadcasts]
         else:
@@ -37,7 +39,7 @@ class FcpV2(Model):
                 if broadcast.field["device"] == device
             ]
 
-    def to_fcp(self):
+    def to_fcp(self) -> dict[str, list[dict]]:
         nodes = [node.to_fcp() for node in self.enums + self.structs]
         fcp_structure = {}
 
@@ -48,7 +50,7 @@ class FcpV2(Model):
 
         return fcp_structure
 
-    def to_fpi(self):
+    def to_fpi(self) -> dict[str, list[dict]]:
         nodes = [node.to_fpi() for node in self.devices + self.broadcasts + self.logs]
         fpi_structure = {}
 

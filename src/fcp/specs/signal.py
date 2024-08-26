@@ -1,3 +1,4 @@
+from typing import Any
 from serde import Model, fields
 
 from .metadata import MetaData
@@ -42,14 +43,14 @@ class Signal(Model):
     field_id: fields.Int()
     meta: fields.Optional(MetaData)
 
-    def to_fcp(self):
-        def show(value, default, fmt):
+    def to_fcp(self) -> str:
+        def show(value: Any, default: Any, fmt: Any):
             if value == default:
                 return ""
             else:
                 return fmt.format((value))
 
-        def show2(value1, default1, value2, default2, fmt):
+        def show2(value1: Any, default1: Any, value2: Any, default2: Any, fmt: Any):
             if value1 == default1 and value2 == default2:
                 return ""
             else:
@@ -65,5 +66,5 @@ class Signal(Model):
             + show(self.unit, "", '| unit("{}")')
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Signal name={self.name} start={self.start} end={self.length} scale={self.scale} offset={self.offset}>"

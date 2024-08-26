@@ -1,7 +1,8 @@
 from serde import fields
+from typing import Any
 
 
-class Any(fields.Field):
+class AnyField(fields.Field):
     """
     An any field.
     An `Any` is a field that is allowed to be of any type. Serialization,
@@ -15,32 +16,32 @@ class Any(fields.Field):
         **kwargs: keyword arguments for the `Field` constructor.
     """
 
-    def __init__(self, type=None, **kwargs):
+    def __init__(self, type=None, **kwargs: list) -> None:
         """
         Create a new `Optional`.
         """
-        super(Any, self).__init__(**kwargs)
+        super(AnyField, self).__init__(**kwargs)
         self.type = type
 
-    def serialize(self, value):
+    def serialize(self, value: Any) -> Any:
         """
         Serialize the given value using the inner `Field`.
         """
         return value
 
-    def deserialize(self, value):
+    def deserialize(self, value: Any) -> Any:
         """
         Deserialize the given value using the inner `Field`.
         """
         return value
 
-    def normalize(self, value):
+    def normalize(self, value: Any) -> Any:
         """
         Normalize the given value using the inner `Field`.
         """
         return value
 
-    def validate(self, value):
+    def validate(self, value: Any) -> None:
         """
         Validate the given value using the inner `Field`.
         """

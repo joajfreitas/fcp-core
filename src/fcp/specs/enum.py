@@ -20,13 +20,13 @@ class Enum(Model):
     meta: fields.Optional(MetaData)
     comment: Comment
 
-    def get_name(self):
+    def get_name(self) -> str:
         return self.name
 
-    def get_type(self):
+    def get_type(self) -> str:
         return "enum"
 
-    def to_fcp(self):
+    def to_fcp(self) -> tuple[str, str]:
         return (
             "enum",
             (f"/*{self.comment.value}*/\n" if self.comment.value != "" else "")
@@ -35,5 +35,5 @@ class Enum(Model):
             + "\n};",
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "name: {}".format(self.name)
