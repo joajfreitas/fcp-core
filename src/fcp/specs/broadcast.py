@@ -1,5 +1,5 @@
 from serde import serde, strict
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from .metadata import MetaData
 from .comment import Comment
@@ -72,7 +72,7 @@ class Broadcast:
 
         return 1
 
-    def get_mux(self) -> None:
+    def get_mux(self) -> Union[Any, None]:
         for signal in self.signals:
             mux_count = signal.field.get("mux_count")
             if mux_count is not None and mux_count != 1:

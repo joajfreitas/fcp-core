@@ -2,9 +2,10 @@ import logging
 from functools import reduce
 from collections import Counter
 from termcolor import colored
-from typing import Any, Tuple, Generator, Callable
+from typing import Any, Tuple, Generator, Callable, Union
+from pathlib import Path
 
-from .result import Ok, Error
+from .result import Ok, Error, Result
 
 
 class colors:
@@ -18,7 +19,7 @@ class colors:
 
     @staticmethod
     def orange(s: str) -> str:
-        return colored(s, "orange")
+        return colored(s, "light_red")
 
     @staticmethod
     def blue(s: str) -> str:
@@ -38,7 +39,7 @@ class colors:
 
     @staticmethod
     def boldorange(s: str) -> str:
-        return colored(s, "orange", attrs=["bold"])
+        return colored(s, "light_red", attrs=["bold"])
 
     @staticmethod
     def boldblue(s: str) -> str:
@@ -51,7 +52,7 @@ class colors:
 
 def simple_error(f: Callable) -> Callable:
     # @functools.wraps(f)
-    def wrapper(obj, *args) -> Ok | Error:
+    def wrapper(obj, *args) -> Union[Ok, Error]:
         cond, error = f(obj, *args)
         if not cond:
             return Ok(())
@@ -152,34 +153,34 @@ class BaseVerifier:
     def __init__(self, sources: dict[str, str]) -> None:
         self.error_logger = ErrorLogger(sources)
 
-    def apply_check(self, category: str, value: Any) -> Ok | Error:
+    def apply_check(self, category: str, value: Any) -> Union[Ok, Error, Result]:
         result = Ok(())
         for name, f in self.__class__.__dict__.items():
             if name.startswith(f"check_{category}"):
                 if isinstance(value, tuple):
-                    result = result.compound(f(self, *value))
+                    result = result.compound(f(self, *value))  # type: ignore
                 else:
-                    result = result.compound(f(self, value))
+                    result = result.compound(f(self, value))  # type: ignore
 
         return result
 
-    def apply_checks(self, category: str, values: Any) -> Ok | Error:
+    def apply_checks(self, category: str, values: Any) -> Union[Ok, Error]:
         results = list(map(lambda value: self.apply_check(category, value), values))
-        return reduce(lambda x, y: x.compound(y), results, Ok(()))
+        return reduce(lambda x, y: x.compound(y), results, Ok(()))  # type: ignore
 
-    def verify(self, fcp_v2: Any) -> Ok | Error:
+    def verify(self, fcp_v2: Any) -> Union[Ok, Error]:
         logging.debug("Running verifier")
 
         result = Ok(())
 
-        result = result.compound(self.apply_check("fcp_v2", fcp_v2))
-        result = result.compound(
+        result = result.compound(self.apply_check("fcp_v2", fcp_v2))  # type: ignore
+        result = result.compound(  # type: ignore
             self.apply_checks("enum", map(lambda x: (x,), fcp_v2.enums))
         )
-        result = result.compound(
+        result = result.compound(  # type: ignore
             self.apply_checks("struct", map(lambda x: (x,), fcp_v2.structs))
         )
-        result = result.compound(
+        result = result.compound(  # type: ignore
             self.apply_checks("broadcast", map(lambda x: (x,), fcp_v2.broadcasts))
         )
 
@@ -198,16 +199,16 @@ class BaseVerifier:
                 for broadcast_signal in broadcast.signals
             ]
 
-        result = result.compound(self.apply_checks("paired_struct", paired_structs))
-        result = result.compound(self.apply_checks("paired_signal", paired_signals))
+        result = result.compound(self.apply_checks("paired_struct", paired_structs))  # type: ignore
+        result = result.compound(self.apply_checks("paired_signal", paired_signals))  # type: ignore
 
         for broadcast in fcp_v2.broadcasts:
-            result = result.compound(
+            result = result.compound(  # type: ignore
                 self.apply_checks("broadcast_signal", broadcast.signals)
             )
 
         for struct in fcp_v2.structs:
-            result = result.compound(self.apply_checks("signal", struct.signals))
+            result = result.compound(self.apply_checks("signal", struct.signals))  # type: ignore
 
         return result
 
@@ -216,7 +217,7 @@ class Verifier(BaseVerifier):
     def __init__(self, sources: dict[str, str]) -> None:
         self.error_logger = ErrorLogger(sources)
 
-    def check_fcp_v2_duplicate_typenames(self, fcp_v2: Any) -> Ok | Error:
+    def check_fcp_v2_duplicate_typenames(self, fcp_v2: Any) -> Union[Ok, Error]:
         def naming(x: Any) -> str:
             return x.name
 
@@ -233,7 +234,7 @@ class Verifier(BaseVerifier):
                 )
             )
 
-    def check_fcp_v2_duplicate_broadcasts(self, fcp_v2: Any) -> Ok | Error:
+    def check_fcp_v2_duplicate_broadcasts(self, fcp_v2: Any) -> Union[Ok, Error]:
         def naming(x):
             return x.name
 
@@ -248,7 +249,7 @@ class Verifier(BaseVerifier):
                 )
             )
 
-    def check_struct_duplicate_signals(self, struct: Any) -> Ok | Error:
+    def check_struct_duplicate_signals(self, struct: Any) -> Union[Ok, Error]:
         def naming(x: Any) -> str:
             return x.name
 
@@ -263,7 +264,7 @@ class Verifier(BaseVerifier):
                 )
             )
 
-    def check_signal_type(self, signal: Any) -> Ok | Error:
+    def check_signal_type(self, signal: Any) -> Union[Ok, Error]:
         types = [
             signess + str(width) for signess in ["i", "u"] for width in range(1, 65)
         ]
@@ -281,7 +282,7 @@ class Verifier(BaseVerifier):
             f"{signal.name} is not a valid identifier",
         )
 
-    def check_enum_duplicated_values(self, enum: Any) -> Ok | Error:
+    def check_enum_duplicated_values(self, enum: Any) -> Union[Ok, Error]:
         duplicates = list(
             Verifier.get_duplicates(
                 enum.enumeration, lambda x: x.value, lambda x: x.name

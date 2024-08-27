@@ -1,7 +1,7 @@
 import sys
 import traceback
 
-from typing import Any
+from typing import Any, Union
 from functools import wraps
 
 
@@ -45,11 +45,11 @@ class Ok(Result):
 
 
 class Error(Result):
-    def __init__(self, error: str) -> None:
-        self.error = error
+    def __init__(self, error: Union[list[str], str]) -> None:
+        self.error = error if isinstance(error, list) else [error]
 
     def unwrap(self) -> tuple[None, None]:
-        error = self.error if isinstance(self.error, list) else [self.error]
+        error = self.error
 
         for err in error:
             print(err)
@@ -59,14 +59,14 @@ class Error(Result):
 
         return (None, None)
 
-    def err(self) -> str:
+    def err(self) -> list[str]:
         return self.error
 
-    def compound(self, result: Result) -> Result:
+    def compound(self, result: Result) -> Union[Ok, Error]:
         if isinstance(result, Error):
-            v1 = self.error if isinstance(self.error, list) else [self.error]
-            v2 = result.error if isinstance(result.error, list) else [result.error]
-            return Error(str(v1 + v2))
+            v1 = self.error
+            v2 = result.error
+            return Error(v1 + v2)
         else:
             return self
 
@@ -80,7 +80,7 @@ class Error(Result):
         return self.error == other.error
 
     def __repr__(self) -> str:
-        error = self.error if isinstance(self.error, list) else [self.error]
+        error = self.error if isinstance(self.error, list) else [self.error]  # type: ignore
         return "Error:\n" + "\n".join(error)
 
 

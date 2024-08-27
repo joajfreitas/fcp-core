@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Any
 from serde import serde, strict
 
 from . import device
@@ -9,7 +9,7 @@ from . import struct
 
 
 def handle_key_not_found(d: dict, key: str):
-    return d.get(key).items() if d.get(key) is not None else []
+    return d.get(key).items() if d.get(key) is not None else []  # type: ignore
 
 
 @serde(type_check=strict)
@@ -51,7 +51,7 @@ class FcpV2:
 
     def to_fcp(self) -> dict[str, list[dict]]:
         nodes = [node.to_fcp() for node in self.enums + self.structs]
-        fcp_structure = {}
+        fcp_structure: dict[str, list[Any]] = {}
 
         for node in nodes:
             if node[0] not in fcp_structure.keys():
@@ -62,7 +62,7 @@ class FcpV2:
 
     def to_fpi(self) -> dict[str, list[dict]]:
         nodes = [node.to_fpi() for node in self.devices + self.broadcasts + self.logs]
-        fpi_structure = {}
+        fpi_structure: dict[str, list[Any]] = {}
 
         for node in nodes:
             if node[0] not in fpi_structure.keys():

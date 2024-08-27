@@ -6,14 +6,15 @@ from .comment import Comment
 
 
 @serde(type_check=strict)
-class CommandArg
-    name:str
+class CommandArg:
+    name: str
     id: int
     type: str
     comment: Optional[Comment]
 
     def to_fpi(self) -> str:
-        return f"\t\t/*{self.comment.value}*/\n\t\targ {self.name} @{self.id}: {self.type};"
+        comment = self.comment.value if self.comment is not None else ""
+        return f"\t\t/*{comment}*/\n\t\targ {self.name} @{self.id}: {self.type};"
 
 
 @serde(type_check=strict)
@@ -24,7 +25,8 @@ class CommandRet:
     comment: Optional[Comment]
 
     def to_fpi(self) -> str:
-        return f"\t\t/*{self.comment.value}*/\n\t\tret {self.name} @{self.id}: {self.type};"
+        comment = self.comment.value if self.comment is not None else ""
+        return f"\t\t/*{comment}*/\n\t\tret {self.name} @{self.id}: {self.type};"
 
 
 @serde(type_check=strict)
