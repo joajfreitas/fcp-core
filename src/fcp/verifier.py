@@ -2,7 +2,7 @@ import logging
 from functools import reduce
 from collections import Counter
 from termcolor import colored
-from typing import Any, Tuple, Generator
+from typing import Any, Tuple, Generator, Callable
 
 from .result import Ok, Error
 
@@ -49,7 +49,7 @@ class colors:
         return colored(s, "white", attrs=["bold"])
 
 
-def simple_error(f: function) -> function:
+def simple_error(f: Callable) -> Callable:
     # @functools.wraps(f)
     def wrapper(obj, *args) -> Ok | Error:
         cond, error = f(obj, *args)

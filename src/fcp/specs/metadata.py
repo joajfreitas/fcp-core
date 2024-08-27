@@ -9,3 +9,9 @@ class MetaData(Model):
     start_pos: fields.Int()
     end_pos: fields.Int()
     filename: fields.Str()
+
+
+test = MetaData(
+    line=1, end_line=2, column=3, end_column=4, start_pos=5, end_pos=6, filename="test"
+)
+print(test.to_json())

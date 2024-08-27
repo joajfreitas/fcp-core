@@ -5,23 +5,6 @@ from typing import Any
 from functools import wraps
 
 
-class ResultShortcutError(Exception):
-    def __init__(self, error: str) -> None:
-        super().__init__()
-        self.error = error
-
-
-def result_shortcut(f: Any) -> Any:
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except ResultShortcutError as err:
-            return err.error
-
-    return wrapper
-
-
 class Result:
     def is_err(self) -> bool:
         return isinstance(self, Error)
@@ -83,7 +66,7 @@ class Error(Result):
         if isinstance(result, Error):
             v1 = self.error if isinstance(self.error, list) else [self.error]
             v2 = result.error if isinstance(result.error, list) else [result.error]
-            return Error(v1 + v2)
+            return Error(str(v1 + v2))
         else:
             return self
 
@@ -99,3 +82,20 @@ class Error(Result):
     def __repr__(self) -> str:
         error = self.error if isinstance(self.error, list) else [self.error]
         return "Error:\n" + "\n".join(error)
+
+
+class ResultShortcutError(Exception):
+    def __init__(self, error: Error) -> None:
+        super().__init__()
+        self.error = error
+
+
+def result_shortcut(f: Any) -> Any:
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except ResultShortcutError as err:
+            return err.error
+
+    return wrapper
