@@ -23,6 +23,11 @@ jobs:
           options: "--check --verbose"
           src: "./src"
           version: "~= 24.0"
+      - name: Run mypy
+        run: |
+          pip install mypy
+          mypy --strict --disable-error-code=type-arg --disable-error-code=no-untyped-call src
+
   tests:
     runs-on: ubuntu-latest
     strategy:
