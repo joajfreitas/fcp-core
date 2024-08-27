@@ -28,7 +28,7 @@ def setup_logging() -> None:
 @click.option("--skel")
 @click.option("--noformat", is_flag=True, default=False)
 def generate_cmd(
-    generator,
+    generator: str,
     fcp: str,
     fpi: str,
     output: str,

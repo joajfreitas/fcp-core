@@ -46,13 +46,15 @@ class Signal:
     mux_count: Optional[int] = 1
 
     def to_fcp(self) -> str:
-        def show(value: Any, default: Any, fmt: Any):
+        def show(value: Any, default: Any, fmt: Any) -> str:
             if value == default:
                 return ""
             else:
-                return fmt.format((value))
+                return str(fmt.format((value)))
 
-        def show2(value1: Any, default1: Any, value2: Any, default2: Any, fmt: Any):
+        def show2(
+            value1: Any, default1: Any, value2: Any, default2: Any, fmt: Any
+        ) -> str | Any:
             if value1 == default1 and value2 == default2:
                 return ""
             else:

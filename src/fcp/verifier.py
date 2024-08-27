@@ -50,9 +50,9 @@ class colors:
         return colored(s, "white", attrs=["bold"])
 
 
-def simple_error(f: Callable) -> Callable:
+def simple_error(f: Callable) -> Callable:  # type: ignore
     # @functools.wraps(f)
-    def wrapper(obj, *args) -> Union[Ok, Error]:
+    def wrapper(obj: Any, *args: Any) -> Union[Ok, Error]:
         cond, error = f(obj, *args)
         if not cond:
             return Ok(())
@@ -158,29 +158,29 @@ class BaseVerifier:
         for name, f in self.__class__.__dict__.items():
             if name.startswith(f"check_{category}"):
                 if isinstance(value, tuple):
-                    result = result.compound(f(self, *value))  # type: ignore
+                    result = result.compound(f(self, *value))
                 else:
-                    result = result.compound(f(self, value))  # type: ignore
+                    result = result.compound(f(self, value))
 
         return result
 
     def apply_checks(self, category: str, values: Any) -> Union[Ok, Error]:
         results = list(map(lambda value: self.apply_check(category, value), values))
-        return reduce(lambda x, y: x.compound(y), results, Ok(()))  # type: ignore
+        return reduce(lambda x, y: x.compound(y), results, Ok(()))
 
     def verify(self, fcp_v2: Any) -> Union[Ok, Error]:
         logging.debug("Running verifier")
 
         result = Ok(())
 
-        result = result.compound(self.apply_check("fcp_v2", fcp_v2))  # type: ignore
-        result = result.compound(  # type: ignore
+        result = result.compound(self.apply_check("fcp_v2", fcp_v2))
+        result = result.compound(
             self.apply_checks("enum", map(lambda x: (x,), fcp_v2.enums))
         )
-        result = result.compound(  # type: ignore
+        result = result.compound(
             self.apply_checks("struct", map(lambda x: (x,), fcp_v2.structs))
         )
-        result = result.compound(  # type: ignore
+        result = result.compound(
             self.apply_checks("broadcast", map(lambda x: (x,), fcp_v2.broadcasts))
         )
 
@@ -199,16 +199,16 @@ class BaseVerifier:
                 for broadcast_signal in broadcast.signals
             ]
 
-        result = result.compound(self.apply_checks("paired_struct", paired_structs))  # type: ignore
-        result = result.compound(self.apply_checks("paired_signal", paired_signals))  # type: ignore
+        result = result.compound(self.apply_checks("paired_struct", paired_structs))
+        result = result.compound(self.apply_checks("paired_signal", paired_signals))
 
         for broadcast in fcp_v2.broadcasts:
-            result = result.compound(  # type: ignore
+            result = result.compound(
                 self.apply_checks("broadcast_signal", broadcast.signals)
             )
 
         for struct in fcp_v2.structs:
-            result = result.compound(self.apply_checks("signal", struct.signals))  # type: ignore
+            result = result.compound(self.apply_checks("signal", struct.signals))
 
         return result
 
@@ -218,7 +218,7 @@ class Verifier(BaseVerifier):
         self.error_logger = ErrorLogger(sources)
 
     def check_fcp_v2_duplicate_typenames(self, fcp_v2: Any) -> Union[Ok, Error]:
-        def naming(x: Any) -> str:
+        def naming(x: Any) -> Any:
             return x.name
 
         duplicates = list(
@@ -235,7 +235,7 @@ class Verifier(BaseVerifier):
             )
 
     def check_fcp_v2_duplicate_broadcasts(self, fcp_v2: Any) -> Union[Ok, Error]:
-        def naming(x):
+        def naming(x: Any) -> Any:
             return x.name
 
         duplicates = list(Verifier.get_duplicates(fcp_v2.broadcasts, naming, naming))
@@ -250,7 +250,7 @@ class Verifier(BaseVerifier):
             )
 
     def check_struct_duplicate_signals(self, struct: Any) -> Union[Ok, Error]:
-        def naming(x: Any) -> str:
+        def naming(x: Any) -> Any:
             return x.name
 
         duplicates = list(Verifier.get_duplicates(struct.signals, naming, naming))

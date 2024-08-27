@@ -145,7 +145,11 @@ def convert_params(params: dict[str, Callable]) -> dict[str, Any]:
 
     values: dict[str, Callable] = {}
     for name, value in params.items():
+<<<<<<< HEAD
         values.update(convertion_table[name](value))
+=======
+        values = values | convertion_table[name](value)  # type: ignore
+>>>>>>> a3dc73d (Passing strict mypy rules and fixed tests for new serde)
 
     return values
 
@@ -191,7 +195,7 @@ class FcpV2Transformer(Transformer):
     @v_args(tree=True)
     def field(self, tree: ParseTree) -> Union[Ok, Error]:
         if isinstance(tree.children[0], Comment):
-            comment, name, field_id, *values = tree.children  # type: ignore
+            comment, name, field_id, *values = tree.children
         else:
             name, field_id, *values = tree.children
             comment = Comment("")  # type: ignore
@@ -216,7 +220,7 @@ class FcpV2Transformer(Transformer):
     @v_args(tree=True)
     def struct(self, tree: ParseTree) -> Union[Ok, Error]:
         if isinstance(tree.children[0], Comment):
-            comment, name, *fields = tree.children  # type: ignore
+            comment, name, *fields = tree.children
         else:
             name, *fields = tree.children
             comment = Comment("")  # type: ignore
@@ -243,7 +247,7 @@ class FcpV2Transformer(Transformer):
         args = tree.children
 
         if isinstance(args[0], Comment):
-            comment, name, *fields = args  # type: ignore
+            comment, name, *fields = args
         else:
             name, *fields = args
             comment = Comment("")  # type: ignore
@@ -324,7 +328,7 @@ class FpiTransformer(Transformer):
     def integer(self, args: list[str]) -> int:
         return int(args[0].value)  # type: ignore
 
-    def string(self, args):
+    def string(self, args: list) -> Any:
         return args[0].value[1:-1]
 
     def param(self, args: list[str]) -> tuple[str, ...]:
@@ -351,7 +355,7 @@ class FpiTransformer(Transformer):
     @v_args(tree=True)
     def broadcast(self, tree: ParseTree) -> Union[Ok, Error]:
         if isinstance(tree.children[0], Comment):
-            comment, name, *fields = tree.children  # type: ignore
+            comment, name, *fields = tree.children
         else:
             name, *fields = tree.children
             comment = Comment("")  # type: ignore
@@ -421,7 +425,7 @@ class FpiTransformer(Transformer):
     @v_args(tree=True)
     def log(self, tree: ParseTree) -> Union[Ok, Error]:
         if isinstance(tree.children[0], Comment):
-            comment, name, *fields = tree.children  # type: ignore
+            comment, name, *fields = tree.children
         else:
             name, *fields = tree.children
             comment = Comment("")  # type: ignore
@@ -436,7 +440,7 @@ class FpiTransformer(Transformer):
                 name=name,  # type: ignore
                 comment=comment,  # type: ignore
                 string=fields["str"],  # type: ignore
-                n_args=n_args,  # type: ignore
+                n_args=n_args,
                 meta=meta,
             )
         )
@@ -444,7 +448,7 @@ class FpiTransformer(Transformer):
     @v_args(tree=True)
     def config(self, tree: ParseTree) -> Union[Ok, Error]:
         if isinstance(tree.children[0], Comment):
-            comment, name, *fields = tree.children  # type: ignore
+            comment, name, *fields = tree.children
         else:
             name, *fields = tree.children
             comment = Comment("")  # type: ignore
@@ -466,7 +470,7 @@ class FpiTransformer(Transformer):
     @v_args(tree=True)
     def command(self, tree: ParseTree) -> Union[Ok, Error]:
         if isinstance(tree.children[0], Comment):
-            comment, name, *fields = tree.children  # type: ignore
+            comment, name, *fields = tree.children
         else:
             name, *fields = tree.children
             comment = Comment("")  # type: ignore
@@ -522,7 +526,7 @@ class FpiTransformer(Transformer):
 
 
 def resolve_imports(module: dict[str, Any]) -> Union[Ok, Error]:
-    def merge(module1, module2):
+    def merge(module1: dict, module2: dict) -> dict:
         merged = {}
         keys = list(module1.keys()) + list(module2.keys())
         for key in keys:
@@ -543,7 +547,7 @@ def resolve_imports(module: dict[str, Any]) -> Union[Ok, Error]:
         if resolved.is_err():
             return resolved
 
-        nodes = merge(nodes, resolved.unwrap())
+        nodes = merge(nodes, resolved.unwrap())  # type: ignore
 
     for child in module.children:  # type: ignore
         child.filename = module.filename  # type: ignore
@@ -614,7 +618,7 @@ def get_fcp(fcp: str, fpi: str) -> Union[Ok, Error]:
                     fcp_filename,
                     e.line,
                     e.column,
-                    e._format_expected(e.allowed),
+                    e._format_expected(e.allowed),  #
                 )
             )
 

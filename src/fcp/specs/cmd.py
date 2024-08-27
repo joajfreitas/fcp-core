@@ -50,7 +50,7 @@ class Command:
             if value == default:
                 return ""
             else:
-                return fmt.format((value))
+                return str(fmt.format((value)))
 
         output = show(self.comment.value, "", "\t/*{}*/\n")
         output += f"\tcommand {self.name} : "

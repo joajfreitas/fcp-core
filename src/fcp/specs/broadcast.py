@@ -30,7 +30,7 @@ class BroadcastSignal:
                 "max_value": 0.0,
             }
 
-            return defaults.get(name) != param
+            return bool(defaults.get(name) != param)
 
         fields = [
             f"{name}: {param};"
@@ -68,7 +68,7 @@ class Broadcast:
         for signal in self.signals:
             mux_count = signal.field.get("mux_count")
             if mux_count is not None and mux_count != 1:
-                return mux_count
+                return int(mux_count)
 
         return 1
 
