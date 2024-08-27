@@ -1,16 +1,18 @@
-from serde import Model, fields
+from serde import serde, strict
+from typing import Optional
 
 from .signal import Signal
 from .metadata import MetaData
 from .comment import Comment
 
 
-class Struct(Model):
+@serde(type_check=strict)
+class Struct:
     """Broadcast object"""
 
-    name: fields.Str()
-    signals: fields.List(Signal)
-    meta: fields.Optional(MetaData)
+    name: str
+    signals: list[Signal]
+    meta: Optional[MetaData]
     comment: Comment
 
     def get_name(self) -> str:
@@ -19,7 +21,7 @@ class Struct(Model):
     def get_type(self) -> str:
         return "struct"
 
-    def get_signal(self, name: str) -> None:
+    def get_signal(self, name: str) -> Optional[Signal]:
         for signal in self.signals:
             if signal.name == name:
                 return signal

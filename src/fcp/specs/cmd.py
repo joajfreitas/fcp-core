@@ -1,38 +1,41 @@
-from serde import Model, fields
-from typing import Any
+from serde import serde, strict
+from typing import Any, Optional
 
 from .metadata import MetaData
 from .comment import Comment
 
 
-class CommandArg(Model):
-    name: fields.Str()
-    id: fields.Int()
-    type: fields.Str()
-    comment: fields.Optional(Comment)
+@serde(type_check=strict)
+class CommandArg
+    name:str
+    id: int
+    type: str
+    comment: Optional[Comment]
 
     def to_fpi(self) -> str:
         return f"\t\t/*{self.comment.value}*/\n\t\targ {self.name} @{self.id}: {self.type};"
 
 
-class CommandRet(Model):
-    name: fields.Str()
-    id: fields.Int()
-    type: fields.Str()
-    comment: fields.Optional(Comment)
+@serde(type_check=strict)
+class CommandRet:
+    name: str
+    id: int
+    type: str
+    comment: Optional[Comment]
 
     def to_fpi(self) -> str:
         return f"\t\t/*{self.comment.value}*/\n\t\tret {self.name} @{self.id}: {self.type};"
 
 
-class Command(Model):
-    name: fields.Str()
-    id: fields.Int()
-    args: fields.List(CommandArg)
-    rets: fields.List(CommandRet)
-    device: fields.Str()
+@serde(type_check=strict)
+class Command:
+    name: str
+    id: int
+    args: list[CommandArg]
+    rets: list[CommandRet]
+    device: str
     comment: Comment
-    meta: fields.Optional(MetaData)
+    meta: Optional[MetaData]
 
     def get_name(self) -> str:
         return self.name

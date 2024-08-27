@@ -1,5 +1,5 @@
 from typing import Tuple
-from serde import Model, fields
+from serde import serde, strict
 
 from . import device
 from . import log
@@ -12,17 +12,27 @@ def handle_key_not_found(d: dict, key: str):
     return d.get(key).items() if d.get(key) is not None else []
 
 
-class FcpV2(Model):
+@serde(type_check=strict)
+class FcpV2:
     """FCP root node. Holds all Devices, Messages, Signals, Logs, Configs,
     Commands and Arguments.
     """
 
+<<<<<<< HEAD
     structs: fields.List(struct.Struct)
     enums: fields.List(enum.Enum)
     devices: fields.List(device.Device)
     broadcasts: fields.List(broadcast.Broadcast)
     logs: fields.List(log.Log)
     version: fields.Str()
+=======
+    structs: list[struct.Struct]
+    enums: list[enum.Enum]
+    devices: list[device.Device]
+    broadcasts: list[broadcast.Broadcast]
+    logs: list[log.Log]
+    version: str = "1.0"
+>>>>>>> f20376f (Changed old serde to pyserde)
 
     def add_device(self, device: device.Device) -> None:
         self.devices.append(device)

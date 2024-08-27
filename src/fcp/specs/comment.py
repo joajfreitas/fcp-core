@@ -1,5 +1,6 @@
-from serde import Model, fields
+from serde import serde, strict
 
 
-class Comment(Model):
-    value: str = fields.Str()
+@serde(type_check=strict)
+class Comment:
+    value: str

@@ -1,17 +1,12 @@
-from serde import Model, fields
+from serde import serde, strict
 
 
-class MetaData(Model):
-    line: fields.Int()
-    end_line: fields.Int()
-    column: fields.Int()
-    end_column: fields.Int()
-    start_pos: fields.Int()
-    end_pos: fields.Int()
-    filename: fields.Str()
-
-
-test = MetaData(
-    line=1, end_line=2, column=3, end_column=4, start_pos=5, end_pos=6, filename="test"
-)
-print(test.to_json())
+@serde(type_check=strict)
+class MetaData:
+    line: int
+    end_line: int
+    column: int
+    end_column: int
+    start_pos: int
+    end_pos: int
+    filename: str

@@ -1,23 +1,26 @@
-from serde import Model, fields
+from serde import serde, strict
+from typing import Optional
 
 from .metadata import MetaData
 from .comment import Comment
 
 
-class Enumeration(Model):
-    name: fields.Str()
-    value: fields.Int()
-    meta: fields.Optional(MetaData)
+@serde(type_check=strict)
+class Enumeration:
+    name: str
+    value: int
+    meta: Optional[MetaData]
 
 
-class Enum(Model):
+@serde(type_check=strict)
+class Enum:
     """Fcp Enum. C lookalike for FCP type definitions with name-value
     associations.
     """
 
-    name: fields.Str()
-    enumeration: fields.List(Enumeration)
-    meta: fields.Optional(MetaData)
+    name: str
+    enumeration: list[Enumeration]
+    meta: Optional[MetaData]
     comment: Comment
 
     def get_name(self) -> str:

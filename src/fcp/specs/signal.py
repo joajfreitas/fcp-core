@@ -1,5 +1,5 @@
-from typing import Any
-from serde import Model, fields
+from typing import Any, Optional
+from serde import serde, strict
 from typing import Optional
 
 from .metadata import MetaData
@@ -10,7 +10,8 @@ class SignalValueError(Exception):
     pass
 
 
-class Signal(Model):
+@serde(type_check=strict)
+class Signal:
     """
     Signal node. Represents a CAN signal, similar to a DBC signal.
 
@@ -29,20 +30,20 @@ class Signal(Model):
     """
 
     name: str
-    start: Optional[int] = fields.Optional(fields.Int())
-    length: Optional[int] = fields.Optional(fields.Int())
-    scale: Optional[float] = fields.Optional(fields.Float(default=1.0))
-    offset: Optional[float] = fields.Optional(fields.Float(default=0.0))
-    unit: Optional[str] = fields.Optional(fields.Str())
-    comment: Optional[Comment] = fields.Optional(Comment)
-    min_value: Optional[float] = fields.Optional(fields.Float())
-    max_value: Optional[float] = fields.Optional(fields.Float())
-    type: Optional[str] = fields.Optional(fields.Str(default="unsigned"))
-    byte_order: Optional[str] = fields.Optional(fields.Str(default="little_endian"))
-    mux: Optional[str] = fields.Optional(fields.Str(default=""))
-    mux_count: Optional[int] = fields.Optional(fields.Int(default=1))
-    field_id: int = fields.Int()
-    meta: Optional[MetaData] = fields.Optional(MetaData)
+    start: Optional[int]
+    unit: Optional[str]
+    comment: Optional[Comment]
+    length: Optional[int]
+    min_value: Optional[float]
+    max_value: Optional[float]
+    field_id: int
+    meta: Optional[MetaData]
+    scale: Optional[float] = 1.0
+    offset: Optional[float] = 0.0
+    type: Optional[str] = "unsigned"
+    byte_order: Optional[str] = "little_endian"
+    mux: Optional[str] = ""
+    mux_count: Optional[int] = 1
 
     def to_fcp(self) -> str:
         def show(value: Any, default: Any, fmt: Any):
