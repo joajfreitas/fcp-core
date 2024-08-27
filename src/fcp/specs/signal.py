@@ -1,5 +1,6 @@
 from typing import Any
 from serde import Model, fields
+from typing import Optional
 
 from .metadata import MetaData
 from .comment import Comment
@@ -27,21 +28,21 @@ class Signal(Model):
     :param mux_count: Number of signals that the mux can reference for this Muxed signal.
     """
 
-    name: fields.Str()
-    start: fields.Optional(fields.Int())
-    length: fields.Optional(fields.Int())
-    scale: fields.Optional(fields.Float(default=1.0))
-    offset: fields.Optional(fields.Float(default=0.0))
-    unit: fields.Optional(fields.Str())
-    comment: fields.Optional(Comment)
-    min_value: fields.Optional(fields.Float())
-    max_value: fields.Optional(fields.Float())
-    type: fields.Optional(fields.Str(default="unsigned"))
-    byte_order: fields.Optional(fields.Str(default="little_endian"))
-    mux: fields.Optional(fields.Str(default=""))
-    mux_count: fields.Optional(fields.Int(default=1))
-    field_id: fields.Int()
-    meta: fields.Optional(MetaData)
+    name: str
+    start: Optional[int] = fields.Optional(fields.Int())
+    length: Optional[int] = fields.Optional(fields.Int())
+    scale: Optional[float] = fields.Optional(fields.Float(default=1.0))
+    offset: Optional[float] = fields.Optional(fields.Float(default=0.0))
+    unit: Optional[str] = fields.Optional(fields.Str())
+    comment: Optional[Comment] = fields.Optional(Comment)
+    min_value: Optional[float] = fields.Optional(fields.Float())
+    max_value: Optional[float] = fields.Optional(fields.Float())
+    type: Optional[str] = fields.Optional(fields.Str(default="unsigned"))
+    byte_order: Optional[str] = fields.Optional(fields.Str(default="little_endian"))
+    mux: Optional[str] = fields.Optional(fields.Str(default=""))
+    mux_count: Optional[int] = fields.Optional(fields.Int(default=1))
+    field_id: int = fields.Int()
+    meta: Optional[MetaData] = fields.Optional(MetaData)
 
     def to_fcp(self) -> str:
         def show(value: Any, default: Any, fmt: Any):

@@ -2,7 +2,7 @@ from serde import fields
 from typing import Any
 
 
-class AnyField(fields.Field):
+class AnyField(fields.Field):  # type: ignore
     """
     An any field.
     An `Any` is a field that is allowed to be of any type. Serialization,
@@ -16,7 +16,7 @@ class AnyField(fields.Field):
         **kwargs: keyword arguments for the `Field` constructor.
     """
 
-    def __init__(self, type=None, **kwargs: list) -> None:
+    def __init__(self, type: Any = None, **kwargs: list[Any]) -> None:
         """
         Create a new `Optional`.
         """
