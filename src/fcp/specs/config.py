@@ -1,6 +1,6 @@
 import sys
 
-from typing import Optional
+from typing import Optional, Any
 from serde import serde, strict
 from .metadata import MetaData
 from .comment import Comment
@@ -25,12 +25,12 @@ class Config:
     def get_name(self) -> str:
         return self.name
 
-    def to_fpi(self) -> tuple[str, str]:
-        def show(value, default, fmt):
+    def to_fpi(self) -> str:
+        def show(value: Any, default: Any, fmt: Any) -> str:
             if value == default:
                 return ""
             else:
-                return fmt.format((value))
+                return str(fmt.format((value)))
 
         if self.type == "unsigned":
             type = "u32"

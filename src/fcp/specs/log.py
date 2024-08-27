@@ -25,7 +25,7 @@ class Log:
             if value == default:
                 return ""
             else:
-                return fmt.format((value))
+                return str(fmt.format((value)))
 
         output = show(self.comment.value, "", "/*{}*/\n")
         output += f"log {self.name} : "

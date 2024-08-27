@@ -23,7 +23,7 @@ class Ok(Result):
     def err(self) -> None:
         sys.exit(1)
 
-    def compound(self, result: Any) -> Result:
+    def compound(self, result: Any) -> Any:
         if isinstance(result, Ok):
             v1 = self.value if isinstance(self.value, list) else [self.value]
             v2 = result.value if isinstance(result.value, list) else [result.value]
@@ -31,14 +31,14 @@ class Ok(Result):
         else:
             return result
 
-    def Q(self) -> None:
+    def Q(self) -> Any:
         return self.value
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Ok):
             return False
 
-        return self.value == other.value
+        return bool(self.value == other.value)
 
     def __repr__(self) -> str:
         return "Ok"
@@ -92,7 +92,7 @@ class ResultShortcutError(Exception):
 
 def result_shortcut(f: Any) -> Any:
     @wraps(f)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         try:
             return f(*args, **kwargs)
         except ResultShortcutError as err:

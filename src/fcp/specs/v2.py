@@ -8,7 +8,7 @@ from . import enum
 from . import struct
 
 
-def handle_key_not_found(d: dict, key: str):
+def handle_key_not_found(d: dict[str, Any], key: str) -> list[Any]:
     return d.get(key).items() if d.get(key) is not None else []  # type: ignore
 
 
@@ -49,7 +49,7 @@ class FcpV2:
                 if broadcast.field["device"] == device
             ]
 
-    def to_fcp(self) -> dict[str, list[dict]]:
+    def to_fcp(self) -> dict[str, list[dict[str, Any]]]:
         nodes = [node.to_fcp() for node in self.enums + self.structs]
         fcp_structure: dict[str, list[Any]] = {}
 
@@ -60,7 +60,7 @@ class FcpV2:
 
         return fcp_structure
 
-    def to_fpi(self) -> dict[str, list[dict]]:
+    def to_fpi(self) -> dict[str, list[dict[str, Any]]]:
         nodes = [node.to_fpi() for node in self.devices + self.broadcasts + self.logs]
         fpi_structure: dict[str, list[Any]] = {}
 
