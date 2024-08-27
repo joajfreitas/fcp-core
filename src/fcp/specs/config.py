@@ -1,10 +1,13 @@
 import sys
-from serde import Model, fields
+
+from typing import Optional
+from serde import serde, strict
 from .metadata import MetaData
 from .comment import Comment
 
 
-class Config(Model):
+@serde(type_check=strict)
+class Config:
     """Config node. Represents a Config.
 
     :param name: Name of the Config.
@@ -12,12 +15,12 @@ class Config(Model):
     :param comment: description of the Config.
     """
 
-    name: fields.Str()
-    id: fields.Int()
-    type: fields.Str(default="unsigned")
-    device: fields.Str()
+    name: str
+    id: int
+    device: str
     comment: Comment
-    meta: fields.Optional(MetaData)
+    meta: Optional[MetaData]
+    type: str = "unsigned"
 
     def get_name(self) -> str:
         return self.name

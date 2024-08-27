@@ -1,11 +1,13 @@
-from serde import Model, fields
+from serde import serde, strict
+from typing import Optional
 
 from . import cmd
 from . import config
 from . import metadata
 
 
-class Device(Model):
+@serde(type_check=strict)
+class Device:
     """Device node, Represents a CAN device.
 
     :param name: Name of the Device.
@@ -16,11 +18,11 @@ class Device(Model):
     isn't automatically sent.
     """
 
-    name: fields.Str()
-    id: fields.Int()
-    commands: fields.List(cmd.Command)
-    configs: fields.List(config.Config)
-    meta: fields.Optional(metadata.MetaData)
+    name: str
+    id: int
+    commands: list[cmd.Command]
+    configs: list[config.Config]
+    meta: Optional[metadata.MetaData]
 
     def get_name(self) -> str:
         return self.name

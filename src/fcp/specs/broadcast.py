@@ -1,15 +1,15 @@
-from serde import Model, fields
-from typing import Any
+from serde import serde, strict
+from typing import Any, Optional
 
-from .serde_extend import AnyField
 from .metadata import MetaData
 from .comment import Comment
 
 
-class BroadcastSignal(Model):
-    name: fields.Str()
-    field: fields.Dict(fields.Str(), AnyField())
-    meta: fields.Optional(MetaData)
+@serde(type_check=strict)
+class BroadcastSignal:
+    name: str
+    field: dict[str, Any]
+    meta: Optional[MetaData]
 
     def get_name(self) -> str:
         return self.name
@@ -41,13 +41,14 @@ class BroadcastSignal(Model):
         return f"\tsignal {self.name} {{\n\t\t" + "\n\t\t".join(fields) + "\n\t};"
 
 
-class Broadcast(Model):
+@serde(type_check=strict)
+class Broadcast:
     """Broadcast object"""
 
-    name: fields.Str()
-    field: fields.Dict(fields.Str(), AnyField())
-    signals: fields.List(BroadcastSignal)
-    meta: fields.Optional(MetaData)
+    name: str
+    field: dict[str, Any]
+    signals: list[BroadcastSignal]
+    meta: Optional[MetaData]
     comment: Comment
 
     def get_name(self) -> str:
@@ -56,7 +57,7 @@ class Broadcast(Model):
     def get_type(self) -> str:
         return "broadcast"
 
-    def get_signal(self, name: str) -> None:
+    def get_signal(self, name: str) -> Optional[BroadcastSignal]:
         for signal in self.signals:
             if signal.name == name:
                 return signal
@@ -79,7 +80,7 @@ class Broadcast(Model):
 
         return None
 
-    def to_fpi(self) -> tuple[str, str]:
+    def to_fpi(self) -> tuple[Any, str]:
         return (
             self.field.get("device"),
             (f"/*{self.comment.value}*/\n" if self.comment.value != "" else "")

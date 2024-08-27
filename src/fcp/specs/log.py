@@ -1,19 +1,20 @@
-from typing import Any
-from serde import Model, fields
+from typing import Any, Optional
+from serde import serde, strict
 
 from .metadata import MetaData
 from .comment import Comment
 
 
-class Log(Model):
-    id: fields.Int()
-    name: fields.Str()
+@serde(type_check=strict)
+class Log:
+    id: int
+    name: str
     comment: Comment
-    string: fields.Str()
-    n_args: fields.Optional(fields.Int())
-    meta: fields.Optional(MetaData)
+    string: str
+    n_args: Optional[int]
+    meta: Optional[MetaData]
 
-    def get_name(self) -> fields.Str():
+    def get_name(self) -> str:
         return self.name
 
     def get_type(self) -> str:

@@ -2,17 +2,11 @@
 name = "fcp"
 version = "1.0.0"
 description = "CAN bus manager"
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 readme = "README.md"
 url = "https://github.com/joajfreitas/fcp-core"
 requires-python = ">=3.7"
-dependencies = [
-    "click",
-    "lark",
-    "coloredlogs",
-    "serde",
-    "termcolor"
-]
+dependencies = ["click", "lark", "coloredlogs", "pyserde", "termcolor"]
 
 [build-system]
 requires = ["hatchling"]
@@ -22,6 +16,4 @@ build-backend = "hatchling.build"
 fcp = "fcp.__main__:main"
 
 [tool.pytest.ini_options]
-addopts = [
-    "--import-mode=importlib",
-]
+addopts = ["--import-mode=importlib"]
