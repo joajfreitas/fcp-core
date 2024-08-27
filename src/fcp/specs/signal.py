@@ -58,8 +58,11 @@ class Signal:
             else:
                 return fmt.format(value1, value2)
 
+        # if comment is None then return empty string
+        comment = self.comment.value if self.comment else ""
+
         return (
-            (f"\t/*{self.comment.value}*/\n" if self.comment.value != "" else "")
+            (f"\t/*{comment}*/\n" if comment != "" else "")
             + f"\t{self.name} @{self.field_id}: {self.type} "
             + show2(self.scale, 1.0, self.offset, 0.0, "| scale({}, {})")
             + show2(self.min_value, 0.0, self.max_value, 0.0, "| range({}, {})")

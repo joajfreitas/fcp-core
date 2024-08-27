@@ -3,7 +3,7 @@ import traceback
 import logging
 
 from lark import Lark, Transformer, v_args, UnexpectedCharacters, ParseTree
-from typing import Any
+from typing import Any, Union, Callable, Tuple
 
 from lark.lexer import Token
 from lark.tree import Branch
@@ -130,11 +130,11 @@ def get_meta(tree: ParseTree, parser: Lark) -> MetaData:
         end_column=tree.meta.end_column,
         start_pos=tree.meta.start_pos,
         end_pos=tree.meta.end_pos,
-        filename=parser.filename.name,
+        filename=parser.filename.name,  # type: ignore
     )
 
 
-def convert_params(params: dict[str, tuple[str, str]]) -> dict[str, Any]:
+def convert_params(params: dict[str, Callable]) -> dict[str, Any]:
     convertion_table = {
         "range": lambda x: {"min_value": x[0], "max_value": x[1]},
         "scale": lambda x: {"scale": x[0], "offset": x[1]},
@@ -143,7 +143,7 @@ def convert_params(params: dict[str, tuple[str, str]]) -> dict[str, Any]:
         "endianess": lambda x: {"byte_order": x[0]},
     }
 
-    values = {}
+    values: dict[str, Callable] = {}
     for name, value in params.items():
         values.update(convertion_table[name](value))
 
@@ -158,9 +158,9 @@ class FcpV2Transformer(Transformer):
         with open(self.filename) as f:
             self.source = f.read()
 
-        self.error_logger = ErrorLogger({self.filename: self.source})
+        self.error_logger = ErrorLogger({self.filename.name: self.source})
 
-    def preamble(self, args: list[str]) -> Ok | Error:
+    def preamble(self, args: list[str]) -> Union[Ok, Error]:
         if args[0] == "3":
             return Ok(None)
         else:
@@ -176,10 +176,10 @@ class FcpV2Transformer(Transformer):
         return args[0]
 
     def import_identifier(self, args: list[str]) -> str:
-        identifier = "".join([arg.value for arg in args])
+        identifier = "".join([arg for arg in args])
         return identifier
 
-    def param(self, args: list[str]) -> str:
+    def param(self, args: list[str]) -> Tuple[str, ...]:
         return tuple(args)
 
     def param_argument(self, args: list[str]) -> str:
@@ -189,77 +189,77 @@ class FcpV2Transformer(Transformer):
         return args[0]
 
     @v_args(tree=True)
-    def field(self, tree: ParseTree) -> Ok | Error:
+    def field(self, tree: ParseTree) -> Union[Ok, Error]:
         if isinstance(tree.children[0], Comment):
-            comment, name, field_id, *values = tree.children
+            comment, name, field_id, *values = tree.children  # type: ignore
         else:
             name, field_id, *values = tree.children
-            comment = Comment("")
+            comment = Comment("")  # type: ignore
 
-        type = values[0][0]
+        type = values[0][0]  # type: ignore
 
-        params = {name.value: value for name, *value in values[1:]}
-        params = convert_params(params)
+        params = {name.value: value for name, *value in values[1:]}  # type: ignore
+        params = convert_params(params)  # type: ignore
 
-        meta = get_meta(tree, self)
+        meta = get_meta(tree, self)  # type: ignore
         return Ok(
             signal.Signal(
-                name=name,
+                name=name.value,  # type: ignore
                 type=type,
-                field_id=field_id,
+                field_id=field_id.value,  # type: ignore
                 meta=meta,
-                comment=comment,
+                comment=comment.value,  # type: ignore
                 **params,
             )
         )
 
     @v_args(tree=True)
-    def struct(self, tree: ParseTree) -> Ok | Error:
+    def struct(self, tree: ParseTree) -> Union[Ok, Error]:
         if isinstance(tree.children[0], Comment):
-            comment, name, *fields = tree.children
+            comment, name, *fields = tree.children  # type: ignore
         else:
             name, *fields = tree.children
-            comment = Comment("")
+            comment = Comment("")  # type: ignore
 
-        meta = get_meta(tree, self)
+        meta = get_meta(tree, self)  # type: ignore
         return Ok(
             struct.Struct(
-                name=name.value,
-                signals=[x.Q() for x in fields],
+                name=name.value,  # type: ignore
+                signals=[x.Q() for x in fields],  # type: ignore
                 meta=meta,
-                comment=comment,
+                comment=comment,  # type: ignore
             )
         )
 
     @v_args(tree=True)
-    def enum_field(self, tree: ParseTree) -> Ok | Error:
+    def enum_field(self, tree: ParseTree) -> Union[Ok, Error]:
         name, value = tree.children
 
-        meta = get_meta(tree, self)
-        return Ok(enum.Enumeration(name=name, value=value, meta=meta))
+        meta = get_meta(tree, self)  # type: ignore
+        return Ok(enum.Enumeration(name=name, value=value, meta=meta))  # type: ignore
 
     @v_args(tree=True)
-    def enum(self, tree: ParseTree) -> Ok | Error:
+    def enum(self, tree: ParseTree) -> Union[Ok, Error]:
         args = tree.children
 
         if isinstance(args[0], Comment):
-            comment, name, *fields = args
+            comment, name, *fields = args  # type: ignore
         else:
             name, *fields = args
-            comment = Comment("")
+            comment = Comment("")  # type: ignore
 
-        fields = [field.Q() for field in fields]
+        fields = [field.Q() for field in fields]  # type: ignore
 
-        meta = get_meta(tree, self)
-        return Ok(enum.Enum(name=name, enumeration=fields, meta=meta, comment=comment))
+        meta = get_meta(tree, self)  # type: ignore
+        return Ok(enum.Enum(name=name, enumeration=fields, meta=meta, comment=comment))  # type: ignore
 
     @result_shortcut
-    def imports(self, args: list[str]) -> Ok | Error:
+    def imports(self, args: list[str]) -> Union[Ok, Error]:
         filename = self.path / (args[0].replace(".", "/") + ".fcp")
         try:
             with open(filename) as f:
                 module = (
-                    FcpV2Transformer(filename).transform(fcp_parser.parse(f.read())).Q()
+                    FcpV2Transformer(filename).transform(fcp_parser.parse(f.read())).Q()  # type: ignore
                 )
                 module.filename = filename.name
         except Exception as e:
@@ -274,22 +274,22 @@ class FcpV2Transformer(Transformer):
 
     def number(self, args: list[str]) -> int | float:
         try:
-            return int(args[0].value)
+            return int(args[0].value)  # type: ignore
         except ValueError:
-            return float(args[0].value)
+            return float(args[0].value)  # type: ignore
 
     def string(self, args: list[str]) -> str:
-        return args[0].value[1:-1]
+        return args[0].value[1:-1]  # type: ignore
 
     def comment(self, args: list[str]) -> Comment:
-        return Comment(args[0].value.replace("/*", "").replace("*/", ""))
+        return Comment(args[0].value.replace("/*", "").replace("*/", ""))  # type: ignore
 
     def start(self, args: list[str]) -> Ok:
-        args = [arg.Q() for arg in args if arg.Q() is not None]
+        args = [arg.Q() for arg in args if arg.Q() is not None]  # type: ignore
 
         imports = list(filter(lambda x: isinstance(x, Module), args))
         not_imports = list(filter(lambda x: not isinstance(x, Module), args))
-        return Ok(Module(self.filename.name, not_imports, self.source, imports))
+        return Ok(Module(self.filename.name, not_imports, self.source, imports))  # type: ignore
 
 
 class FpiTransformer(Transformer):
@@ -300,9 +300,9 @@ class FpiTransformer(Transformer):
         with open(self.filename) as f:
             self.source = f.read()
 
-        self.error_logger = ErrorLogger({self.filename: self.source})
+        self.error_logger = ErrorLogger({self.filename: self.source})  # type: ignore
 
-    def preamble(self, args: list[str]) -> Ok | Error:
+    def preamble(self, args: list[str]) -> Union[Ok, Error]:
         if args[0] == "3":
             return Ok(None)
         else:
@@ -313,16 +313,16 @@ class FpiTransformer(Transformer):
             )
 
     def identifier(self, args: list[str]) -> str:
-        return args[0].value
+        return args[0].value  # type: ignore
 
     def value(self, args: list[str]) -> str:
         return args[0]
 
     def float(self, args: list[str]) -> float:
-        return float(args[0].value)
+        return float(args[0].value)  # type: ignore
 
     def integer(self, args: list[str]) -> int:
-        return int(args[0].value)
+        return int(args[0].value)  # type: ignore
 
     def string(self, args):
         return args[0].value[1:-1]
@@ -344,47 +344,47 @@ class FpiTransformer(Transformer):
     @v_args(tree=True)
     def signal(self, tree: ParseTree) -> broadcast.BroadcastSignal:
         name, *fields = tree.children
-        fields = {name: value for name, value in fields}
-        meta = get_meta(tree, self)
-        return broadcast.BroadcastSignal(name, fields, meta=meta)
+        fields = {name: value for name, value in fields}  # type: ignore
+        meta = get_meta(tree, self)  # type: ignore
+        return broadcast.BroadcastSignal(name, fields, meta=meta)  # type: ignore
 
     @v_args(tree=True)
-    def broadcast(self, tree: ParseTree) -> Ok | Error:
+    def broadcast(self, tree: ParseTree) -> Union[Ok, Error]:
         if isinstance(tree.children[0], Comment):
-            comment, name, *fields = tree.children
+            comment, name, *fields = tree.children  # type: ignore
         else:
             name, *fields = tree.children
-            comment = Comment("")
+            comment = Comment("")  # type: ignore
 
         signals = filter(lambda x: isinstance(x, broadcast.BroadcastSignal), fields)
         fields = list(
             filter(lambda x: not isinstance(x, broadcast.BroadcastSignal), fields)
         )
 
-        field_names = [field[0] for field in fields]
+        field_names = [field[0] for field in fields]  # type: ignore
         if len(field_names) != len(set(field_names)):
             return Error(self.error_logger.error(f"Duplicated key in broadcast {name}"))
 
-        meta = get_meta(tree, self)
+        meta = get_meta(tree, self)  # type: ignore
         return Ok(
             broadcast.Broadcast(
-                name=name,
-                field={name: value for name, value in fields},
-                signals=signals,
+                name=name,  # type: ignore
+                field={name: value for name, value in fields},  # type: ignore
+                signals=signals,  # type: ignore
                 meta=meta,
-                comment=comment,
+                comment=comment,  # type: ignore
             )
         )
 
     def comment(self, args: list[str]) -> Comment:
-        return Comment(args[0].value.replace("/*", "").replace("*/", ""))
+        return Comment(args[0].value.replace("/*", "").replace("*/", ""))  # type: ignore
 
-    def imports(self, args: list[str]) -> Ok | Error:
+    def imports(self, args: list[str]) -> Union[Ok, Error]:
         filename = self.path / (args[0] + ".fpi")
         try:
             with open(filename) as f:
                 module = (
-                    FpiTransformer(filename).transform(fpi_parser.parse(f.read())).Q()
+                    FpiTransformer(filename).transform(fpi_parser.parse(f.read())).Q()  # type: ignore
                 )
                 module.filename = filename.name
         except Exception as e:
@@ -395,96 +395,96 @@ class FpiTransformer(Transformer):
         return Ok(module)
 
     @v_args(tree=True)
-    def device(self, tree: ParseTree) -> Ok | Error:
+    def device(self, tree: ParseTree) -> Union[Ok, Error]:
         name, *children = tree.children
 
         fields = filter(lambda x: not isinstance(x, Ok), children)
-        fields = {name: value for name, value in fields}
+        fields = {name: value for name, value in fields}  # type: ignore
 
-        children = filter(lambda x: isinstance(x, Ok), children)
-        children = [child.unwrap() for child in children]
+        children = filter(lambda x: isinstance(x, Ok), children)  # type: ignore
+        children = [child.unwrap() for child in children]  # type: ignore
 
         commands = filter(lambda x: isinstance(x, cmd.Command), children)
         configs = filter(lambda x: isinstance(x, config.Config), children)
 
-        meta = get_meta(tree, self)
+        meta = get_meta(tree, self)  # type: ignore
         return Ok(
             device.Device(
-                name=name,
-                id=fields["id"],
-                commands=commands,
-                configs=configs,
+                name=name,  # type: ignore
+                id=fields["id"],  # type: ignore
+                commands=commands,  # type: ignore
+                configs=configs,  # type: ignore
                 meta=meta,
             )
         )
 
     @v_args(tree=True)
-    def log(self, tree: ParseTree) -> Ok | Error:
+    def log(self, tree: ParseTree) -> Union[Ok, Error]:
         if isinstance(tree.children[0], Comment):
-            comment, name, *fields = tree.children
+            comment, name, *fields = tree.children  # type: ignore
         else:
             name, *fields = tree.children
-            comment = Comment("")
+            comment = Comment("")  # type: ignore
 
-        meta = get_meta(tree, self)
-        fields = {name: value for name, value in fields}
+        meta = get_meta(tree, self)  # type: ignore
+        fields = {name: value for name, value in fields}  # type: ignore
 
-        n_args = fields.get("n_args") or 0
+        n_args = fields.get("n_args") or 0  # type: ignore
         return Ok(
             log.Log(
-                id=fields["id"],
-                name=name,
-                comment=comment,
-                string=fields["str"],
-                n_args=n_args,
+                id=fields["id"],  # type: ignore
+                name=name,  # type: ignore
+                comment=comment,  # type: ignore
+                string=fields["str"],  # type: ignore
+                n_args=n_args,  # type: ignore
                 meta=meta,
             )
         )
 
     @v_args(tree=True)
-    def config(self, tree: ParseTree) -> Ok | Error:
+    def config(self, tree: ParseTree) -> Union[Ok, Error]:
         if isinstance(tree.children[0], Comment):
-            comment, name, *fields = tree.children
+            comment, name, *fields = tree.children  # type: ignore
         else:
             name, *fields = tree.children
-            comment = Comment("")
+            comment = Comment("")  # type: ignore
 
-        type = fields[0][0]
-        fields = {name: value for name, value in fields[1:]}
-        meta = get_meta(tree, self)
+        type = fields[0][0]  # type: ignore
+        fields = {name: value for name, value in fields[1:]}  # type: ignore
+        meta = get_meta(tree, self)  # type: ignore
         return Ok(
             config.Config(
-                name,
-                fields["id"],
+                name,  # type: ignore
+                fields["id"],  # type: ignore
                 type,
-                fields["device"],
-                comment=comment,
+                fields["device"],  # type: ignore
+                comment=comment,  # type: ignore
                 meta=meta,
             )
         )
 
     @v_args(tree=True)
-    def command(self, tree: ParseTree) -> Ok | Error:
+    def command(self, tree: ParseTree) -> Union[Ok, Error]:
         if isinstance(tree.children[0], Comment):
-            comment, name, *fields = tree.children
+            comment, name, *fields = tree.children  # type: ignore
         else:
             name, *fields = tree.children
-            comment = Comment("")
+            comment = Comment("")  # type: ignore
 
         args = [field for field in fields if isinstance(field, cmd.CommandArg)]
         rets = [field for field in fields if isinstance(field, cmd.CommandRet)]
         fields = [field for field in fields if isinstance(field, tuple)]
 
-        fields = {name: value for name, value in fields}
-        meta = get_meta(tree, self)
+        fields = {name: value for name, value in fields}  # type: ignore
+        meta = get_meta(tree, self)  # type: ignore
         return Ok(
             cmd.Command(
-                name,
-                fields["id"],
-                args,
-                rets,
-                fields.get("device"),
-                comment=comment,
+                name,  # type: ignore
+                fields["id"],  # type: ignore
+                args,  # type: ignore
+                rets,  # type: ignore
+                fields.get("device"),  # type: ignore
+                comment=comment,  # type: ignore
                 meta=meta,
             )
         )
@@ -498,7 +498,7 @@ class FpiTransformer(Transformer):
             # comment = Comment("")
 
         type, *params = params
-        return cmd.CommandArg(name=name, type=type[0], id=id)
+        return cmd.CommandArg(name=name, type=type[0], id=id)  # type: ignore
 
     @v_args(tree=True)
     def cmd_ret(self, tree: ParseTree) -> cmd.CommandRet:
@@ -509,19 +509,19 @@ class FpiTransformer(Transformer):
             # comment = Comment("")
 
         type, *params = params
-        return cmd.CommandRet(name=name, type=type[0], id=id)
+        return cmd.CommandRet(name=name, type=type[0], id=id)  # type: ignore
 
     @result_shortcut
-    def start(self, args: list[str]) -> Ok | Error:
-        args = [arg.Q() for arg in args if arg.Q() is not None]
+    def start(self, args: list[str]) -> Union[Ok, Error]:
+        args = [arg.Q() for arg in args if arg.Q() is not None]  # type: ignore
 
         imports = list(filter(lambda x: isinstance(x, Module), args))
         not_imports = list(filter(lambda x: not isinstance(x, Module), args))
 
-        return Ok(Module(self.filename.name, not_imports, self.source, imports))
+        return Ok(Module(self.filename.name, not_imports, self.source, imports))  # type: ignore
 
 
-def resolve_imports(module: dict[str, Any]) -> Ok | Error:
+def resolve_imports(module: dict[str, Any]) -> Union[Ok, Error]:
     def merge(module1, module2):
         merged = {}
         keys = list(module1.keys()) + list(module2.keys())
@@ -530,17 +530,23 @@ def resolve_imports(module: dict[str, Any]) -> Ok | Error:
 
         return merged
 
-    nodes = {"enum": [], "struct": [], "broadcast": [], "device": [], "log": []}
+    nodes: dict[str, list[Any]] = {
+        "enum": [],
+        "struct": [],
+        "broadcast": [],
+        "device": [],
+        "log": [],
+    }
 
-    for child in module.imports:
+    for child in module.imports:  # type: ignore
         resolved = resolve_imports(child)
         if resolved.is_err():
             return resolved
 
         nodes = merge(nodes, resolved.unwrap())
 
-    for child in module.children:
-        child.filename = module.filename
+    for child in module.children:  # type: ignore
+        child.filename = module.filename  # type: ignore
 
         if child.get_type() not in nodes.keys():
             nodes[child.get_type()] = []
@@ -592,7 +598,7 @@ def get_sources(module: Any) -> dict[str, str]:
 
 
 @result_shortcut
-def get_fcp(fcp: str, fpi: str) -> Ok | Error:
+def get_fcp(fcp: str, fpi: str) -> Union[Ok, Error]:
     error_logger = ErrorLogger({})
     fcp_filename = fcp
 
@@ -614,7 +620,7 @@ def get_fcp(fcp: str, fpi: str) -> Ok | Error:
 
     fcp = FcpV2Transformer(fcp_filename).transform(fcp_ast).Q()
     fcp_sources = get_sources(fcp)
-    fcp = deduplicate(resolve_imports(fcp).Q()).Q()
+    fcp = deduplicate(resolve_imports(fcp).Q()).Q()  # type: ignore
 
     fpi_filename = fpi
     with open(fpi_filename) as f:
@@ -622,7 +628,11 @@ def get_fcp(fcp: str, fpi: str) -> Ok | Error:
 
     fpi = FpiTransformer(fpi_filename).transform(fpi_ast).Q()
     fpi_sources = get_sources(fpi)
-    fpi = deduplicate(resolve_imports(fpi).Q()).Q()
+    fpi = deduplicate(resolve_imports(fpi).Q()).Q()  # type: ignore
 
+<<<<<<< HEAD
     fcp_sources.update(fpi_sources)
     return Ok((convert(merge(fcp, fpi).Q()), fcp_sources))
+=======
+    return Ok((convert(merge(fcp, fpi).Q()), fcp_sources | fpi_sources))  # type: ignore
+>>>>>>> c2a9dcd (Typing for passing mypy tests)

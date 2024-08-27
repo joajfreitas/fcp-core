@@ -7,7 +7,7 @@ import pathlib
 import pkgutil
 import sys
 
-from typing import Any
+from typing import Any, Union
 from types import ModuleType
 
 
@@ -27,19 +27,19 @@ class CodeGenerator:
 
         self.output_path = pathlib.Path(output_path)
 
-        for path, content in self.generate(fcp, templates, skels).items():
+        for path, content in self._generate(fcp, output_path, templates, skels).items():
             logging.info(f"Generating {path}")
             os.makedirs(path.parent, exist_ok=True)
             with open(path, "w", encoding="utf-8") as file:
                 file.write(content)
 
-    def verify(self, fcp: Any) -> Result:
+    def verify(self, fcp: Any) -> Union[Ok, Error]:
         if fcp is not None:
             return Ok(())
         else:
             return Error(["Received a None object instead of FcpV2"])
 
-    def generate(self, fcp: Any, output_path: str, templates: Any, skel: Any) -> Any:
+    def _generate(self, fcp: Any, output_path: str, templates: Any, skel: Any) -> Any:
         """Function to override from generator. Implements actual code generation."""
         return
 
@@ -75,11 +75,11 @@ class GeneratorManager:
 
         templates = {}
         for template in os.listdir(template_dir):
-            template = pathlib.Path(template_dir) / pathlib.Path(template)
-            if not template.is_file():
+            template_path = pathlib.Path(template_dir) / pathlib.Path(template)
+            if not template_path.is_file():
                 continue
-            with open(template, encoding="utf-8") as file:
-                templates[template.stem] = file.read()
+            with open(template_path, encoding="utf-8") as file:
+                templates[template_path.stem] = file.read()
 
         return templates
 
@@ -100,7 +100,7 @@ class GeneratorManager:
     @result_shortcut
     def generate(
         self,
-        generator: str,
+        generator_name: str,
         template_dir: str,
         skel_dir: str,
         fcp: Any,
@@ -108,8 +108,8 @@ class GeneratorManager:
         output_path: str,
     ) -> Ok:
         """Generate code"""
-        verifier = self.get_generator(generator).Verifier(sources)
-        generator = self.get_generator(generator).Generator()
+        verifier = self.get_generator(generator_name).Verifier(sources)
+        generator = self.get_generator(generator_name).Generator()
 
         verifier.verify(fcp).Q()
 
