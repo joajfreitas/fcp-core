@@ -5,8 +5,6 @@ import logging
 from lark import Lark, Transformer, v_args, UnexpectedCharacters, ParseTree
 from typing import Any, Union, Callable, Tuple
 
-from lark.lexer import Token
-from lark.tree import Branch
 from serde import from_dict
 
 from .specs import device
@@ -587,16 +585,8 @@ def merge(fcp: dict[str, Any], fpi: dict[str, Any]) -> Ok:
 
 
 def convert(module: dict[str, Any]) -> Ok:
-    to_list = lambda t, v: [from_dict(t, x) for x in v]
-
-    a = v2.FcpV2(
-        broadcasts=to_list(broadcast.Broadcast, module["broadcast"].values()),
-        devices=to_list(device.Device, module["device"].values()),
-        structs=to_list(struct.Struct, module["struct"].values()),
-        enums=to_list(enum.Enum, module["enum"].values()),
-        logs=to_list(log.Log, module["log"].values()),
-        version="3.0",
-    )
+    def to_list(t: type, v: list[dict[str, Any]]) -> list:
+        return [from_dict(t, x) for x in v]
 
     return Ok(
         v2.FcpV2(

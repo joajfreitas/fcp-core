@@ -1,7 +1,5 @@
 from typing import Any, Optional
 from serde import serde, strict
-from typing import Optional
-import json
 
 from .metadata import MetaData
 from .comment import Comment
