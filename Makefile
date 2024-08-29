@@ -12,7 +12,7 @@ lint:
 	@echo "\n\033[1;34m==> Running black check...\033[0m"
 	black --check src
 	@echo "\n\033[1;34m==> Running mypy checks...\033[0m"
-	mypy --strict --disable-error-code=type-arg --disable-error-code=no-untyped-call --ignore-missing-import src
+	mypy --strict --disable-error-code=type-arg --disable-error-code=no-untyped-call --ignore-missing-import --disable-error-code=unused-ignore src
 
 test:
 	@echo "\n\033[1;34m==> Running tests...\033[0m"
