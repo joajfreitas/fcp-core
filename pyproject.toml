@@ -1,5 +1,5 @@
 [project]
-dependencies = ["click", "lark", "coloredlogs", "pyserde", "termcolor=2.4.0"]
+dependencies = ["click", "lark", "coloredlogs", "pyserde", "termcolor==2.4.0"]
 
 [build-system]
 requires = ["hatchling"]
