@@ -32,7 +32,10 @@ class FcpV2:
     broadcasts: list[broadcast.Broadcast]
     logs: list[log.Log]
     version: str = "1.0"
+<<<<<<< HEAD
 >>>>>>> f20376f (Changed old serde to pyserde)
+=======
+>>>>>>> 925c042 (backup)
 
     def add_device(self, device: device.Device) -> None:
         self.devices.append(device)

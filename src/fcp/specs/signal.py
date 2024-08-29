@@ -32,7 +32,7 @@ class Signal:
     name: str
     start: Optional[int]
     unit: Optional[str]
-    comment: Optional[Comment]
+    comment: Optional[Comment] | str
     length: Optional[int]
     min_value: Optional[float]
     max_value: Optional[float]

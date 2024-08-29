@@ -62,7 +62,7 @@ class Error(Result):
     def err(self) -> list[str]:
         return self.error
 
-    def compound(self, result: Result) -> Union[Ok, Error]:
+    def compound(self, result: Result) -> Union[Ok, Any]:
         if isinstance(result, Error):
             v1 = self.error
             v2 = result.error
