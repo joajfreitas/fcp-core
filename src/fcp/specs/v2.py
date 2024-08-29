@@ -1,4 +1,4 @@
-from typing import Tuple, Any
+from typing import Tuple, Any, Optional
 from serde import serde, strict
 
 from . import device
@@ -41,7 +41,7 @@ class FcpV2:
         self.devices.append(device)
 
     def get_broadcasts(
-        self, device: device.Device | None = None
+        self, device: Optional[device.Device] = None
     ) -> list[broadcast.Broadcast]:
         if device is None:
             return [broadcast for broadcast in self.broadcasts]

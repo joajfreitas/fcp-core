@@ -281,7 +281,7 @@ class FcpV2Transformer(Transformer):
     def value(self, args: list[str]) -> str:
         return args[0]
 
-    def number(self, args: list[str]) -> int | float:
+    def number(self, args: list[str]) -> Union[int, float]:
         try:
             return int(args[0].value)  # type: ignore
         except ValueError:

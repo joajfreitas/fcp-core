@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Optional, Union
 from serde import serde, strict
 
 from .metadata import MetaData
@@ -53,7 +53,7 @@ class Signal:
 
         def show2(
             value1: Any, default1: Any, value2: Any, default2: Any, fmt: Any
-        ) -> str | Any:
+        ) -> Union[str, Any]:
             if value1 == default1 and value2 == default2:
                 return ""
             else:
