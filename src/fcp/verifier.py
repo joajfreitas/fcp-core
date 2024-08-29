@@ -3,7 +3,6 @@ from functools import reduce
 from collections import Counter
 from termcolor import colored
 from typing import Any, Tuple, Generator, Callable, Union
-from pathlib import Path
 
 from .result import Ok, Error, Result
 
