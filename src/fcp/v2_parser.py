@@ -215,9 +215,9 @@ class FcpV2Transformer(Transformer):
             signal.Signal(
                 name=name,  # type: ignore
                 type=type,
-                field_id=field_id,  # type: ignore
+                field_id=field_id,
                 meta=meta,
-                comment=comment,  # type: ignore
+                comment=comment,
                 **params,
             )
         )
@@ -236,7 +236,7 @@ class FcpV2Transformer(Transformer):
                 name=name.value,  # type: ignore
                 signals=[x.Q() for x in fields],  # type: ignore
                 meta=meta,
-                comment=comment,  # type: ignore
+                comment=comment,
             )
         )
 
@@ -379,9 +379,9 @@ class FpiTransformer(Transformer):
             broadcast.Broadcast(
                 name=name,  # type: ignore
                 field={name: value for name, value in fields},  # type: ignore
-                signals=signals,  # type: ignore
+                signals=signals,
                 meta=meta,
-                comment=comment,  # type: ignore
+                comment=comment,
             )
         )
 
@@ -421,8 +421,8 @@ class FpiTransformer(Transformer):
             device.Device(
                 name=name,  # type: ignore
                 id=fields["id"],  # type: ignore
-                commands=commands,  # type: ignore
-                configs=configs,  # type: ignore
+                commands=commands,
+                configs=configs,
                 meta=meta,
             )
         )
@@ -442,8 +442,8 @@ class FpiTransformer(Transformer):
         return Ok(
             log.Log(
                 id=fields["id"],  # type: ignore
-                name=name,  # type: ignore
-                comment=comment,  # type: ignore
+                name=name,
+                comment=comment,
                 string=fields["str"],  # type: ignore
                 n_args=n_args,
                 meta=meta,
@@ -467,7 +467,7 @@ class FpiTransformer(Transformer):
                 fields["id"],  # type: ignore
                 type,
                 fields["device"],  # type: ignore
-                comment=comment,  # type: ignore
+                comment=comment,
                 meta=meta,
             )
         )
@@ -490,10 +490,10 @@ class FpiTransformer(Transformer):
             cmd.Command(
                 name,  # type: ignore
                 fields["id"],  # type: ignore
-                args,  # type: ignore
-                rets,  # type: ignore
+                args,
+                rets,
                 fields.get("device"),  # type: ignore
-                comment=comment,  # type: ignore
+                comment=comment,
                 meta=meta,
             )
         )
@@ -589,7 +589,7 @@ def convert(module: dict[str, Any]) -> Ok:
         return [from_dict(t, x) for x in v]
 
     return Ok(
-        v2.FcpV2(
+        v2.FcpV2(  # type: ignore
             broadcasts=to_list(broadcast.Broadcast, module["broadcast"].values()),
             devices=to_list(device.Device, module["device"].values()),
             structs=to_list(struct.Struct, module["struct"].values()),
