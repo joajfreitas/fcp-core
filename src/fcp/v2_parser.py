@@ -7,6 +7,7 @@ from typing import Any, Union, Callable, Tuple
 
 from lark.lexer import Token
 from lark.tree import Branch
+from serde import from_dict
 
 from .specs import device
 from .specs import broadcast
@@ -146,10 +147,14 @@ def convert_params(params: dict[str, Callable]) -> dict[str, Any]:
     values: dict[str, Callable] = {}
     for name, value in params.items():
 <<<<<<< HEAD
+<<<<<<< HEAD
         values.update(convertion_table[name](value))
 =======
         values = values | convertion_table[name](value)  # type: ignore
 >>>>>>> a3dc73d (Passing strict mypy rules and fixed tests for new serde)
+=======
+        values.update(convertion_table[name](value))  # type: ignore
+>>>>>>> 925c042 (backup)
 
     return values
 
@@ -208,9 +213,14 @@ class FcpV2Transformer(Transformer):
         meta = get_meta(tree, self)  # type: ignore
         return Ok(
             signal.Signal(
-                name=name.value,  # type: ignore
+                name=name.value,  # type: §ignore
+                start=None,  # type: ignore
+                unit=None,  # type: ignore
+                length=None,  # type: ignore
+                min_value=None,  # type: ignore
+                max_value=None,  # type: ignore
                 type=type,
-                field_id=field_id.value,  # type: ignore
+                field_id=field_id,  # type: ignore
                 meta=meta,
                 comment=comment.value,  # type: ignore
                 **params,
@@ -580,13 +590,24 @@ def merge(fcp: dict[str, Any], fpi: dict[str, Any]) -> Ok:
 
 
 def convert(module: dict[str, Any]) -> Ok:
+    to_list = lambda t, v: [from_dict(t, x) for x in v]
+
+    a = v2.FcpV2(
+        broadcasts=to_list(broadcast.Broadcast, module["broadcast"].values()),
+        devices=to_list(device.Device, module["device"].values()),
+        structs=to_list(struct.Struct, module["struct"].values()),
+        enums=to_list(enum.Enum, module["enum"].values()),
+        logs=to_list(log.Log, module["log"].values()),
+        version="3.0",
+    )
+
     return Ok(
         v2.FcpV2(
-            broadcasts=module["broadcast"].values(),
-            devices=module["device"].values(),
-            structs=module["struct"].values(),
-            enums=module["enum"].values(),
-            logs=module["log"].values(),
+            broadcasts=to_list(broadcast.Broadcast, module["broadcast"].values()),
+            devices=to_list(device.Device, module["device"].values()),
+            structs=to_list(struct.Struct, module["struct"].values()),
+            enums=to_list(enum.Enum, module["enum"].values()),
+            logs=to_list(log.Log, module["log"].values()),
             version="3.0",
         )
     )
@@ -636,7 +657,11 @@ def get_fcp(fcp: str, fpi: str) -> Union[Ok, Error]:
 
 <<<<<<< HEAD
     fcp_sources.update(fpi_sources)
+<<<<<<< HEAD
     return Ok((convert(merge(fcp, fpi).Q()), fcp_sources))
 =======
     return Ok((convert(merge(fcp, fpi).Q()), fcp_sources | fpi_sources))  # type: ignore
 >>>>>>> c2a9dcd (Typing for passing mypy tests)
+=======
+    return Ok((convert(merge(fcp, fpi).Q()), fcp_sources))  # type: ignore
+>>>>>>> 925c042 (backup)

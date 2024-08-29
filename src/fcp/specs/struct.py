@@ -13,7 +13,7 @@ class Struct:
     name: str
     signals: list[Signal]
     meta: Optional[MetaData]
-    comment: Comment
+    comment: Optional[Comment]
 
     def get_name(self) -> str:
         return self.name
