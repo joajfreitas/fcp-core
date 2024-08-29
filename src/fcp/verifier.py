@@ -10,43 +10,43 @@ from .result import Ok, Error, Result
 class colors:
     @staticmethod
     def red(s: str) -> str:
-        return colored(s, "red")
+        return str(colored(s, "red"))
 
     @staticmethod
     def yellow(s: str) -> str:
-        return colored(s, "yellow")
+        return str(colored(s, "yellow"))
 
     @staticmethod
     def orange(s: str) -> str:
-        return colored(s, "light_red")
+        return str(colored(s, "light_red"))
 
     @staticmethod
     def blue(s: str) -> str:
-        return colored(s, "blue")
+        return str(colored(s, "blue"))
 
     @staticmethod
     def white(s: str) -> str:
-        return colored(s, "white")
+        return str(colored(s, "white"))
 
     @staticmethod
     def boldred(s: str) -> str:
-        return colored(s, "red", attrs=["bold"])
+        return str(colored(s, "red", attrs=["bold"]))
 
     @staticmethod
     def boldyellow(s: str) -> str:
-        return colored(s, "yellow", attrs=["bold"])
+        return str(colored(s, "yellow", attrs=["bold"]))
 
     @staticmethod
     def boldorange(s: str) -> str:
-        return colored(s, "light_red", attrs=["bold"])
+        return str(colored(s, "light_red", attrs=["bold"]))
 
     @staticmethod
     def boldblue(s: str) -> str:
-        return colored(s, "blue", attrs=["bold"])
+        return str(colored(s, "blue", attrs=["bold"]))
 
     @staticmethod
     def boldwhite(s: str) -> str:
-        return colored(s, "white", attrs=["bold"])
+        return str(colored(s, "white", attrs=["bold"]))
 
 
 def simple_error(f: Callable) -> Callable:  # type: ignore
