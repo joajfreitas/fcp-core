@@ -157,7 +157,7 @@ def convert_params(params: dict[str, Callable]) -> dict[str, Any]:
     return values
 
 
-class FcpV2Transformer(Transformer):
+class FcpV2Transformer(Transformer):  # type: ignore
     def __init__(self, filename: str) -> None:
         self.filename = pathlib.Path(filename)
         self.path = self.filename.parent
@@ -195,7 +195,7 @@ class FcpV2Transformer(Transformer):
     def field_id(self, args: list[str]) -> str:
         return args[0]
 
-    @v_args(tree=True)
+    @v_args(tree=True)  # type: ignore
     def field(self, tree: ParseTree) -> Union[Ok, Error]:
         if isinstance(tree.children[0], Comment):
             comment, name, field_id, *values = tree.children
@@ -222,7 +222,7 @@ class FcpV2Transformer(Transformer):
             )
         )
 
-    @v_args(tree=True)
+    @v_args(tree=True)  # type: ignore
     def struct(self, tree: ParseTree) -> Union[Ok, Error]:
         if isinstance(tree.children[0], Comment):
             comment, name, *fields = tree.children
@@ -240,14 +240,14 @@ class FcpV2Transformer(Transformer):
             )
         )
 
-    @v_args(tree=True)
+    @v_args(tree=True)  # type: ignore
     def enum_field(self, tree: ParseTree) -> Union[Ok, Error]:
         name, value = tree.children
 
         meta = get_meta(tree, self)  # type: ignore
         return Ok(enum.Enumeration(name=name, value=value, meta=meta))  # type: ignore
 
-    @v_args(tree=True)
+    @v_args(tree=True)  # type: ignore
     def enum(self, tree: ParseTree) -> Union[Ok, Error]:
         args = tree.children
 
@@ -301,7 +301,7 @@ class FcpV2Transformer(Transformer):
         return Ok(Module(self.filename.name, not_imports, self.source, imports))  # type: ignore
 
 
-class FpiTransformer(Transformer):
+class FpiTransformer(Transformer):  # type: ignore
     def __init__(self, filename: str) -> None:
         self.filename = pathlib.Path(filename)
         self.path = self.filename.parent
@@ -345,19 +345,19 @@ class FpiTransformer(Transformer):
     def param_argument(self, args: list[str]) -> str:
         return args[0]
 
-    @v_args(tree=True)
+    @v_args(tree=True)  # type: ignore
     def field(self, tree: ParseTree) -> tuple[Any, ...]:
         name, value = tree.children
         return (name, value)
 
-    @v_args(tree=True)
+    @v_args(tree=True)  # type: ignore
     def signal(self, tree: ParseTree) -> broadcast.BroadcastSignal:
         name, *fields = tree.children
         fields = {name: value for name, value in fields}  # type: ignore
         meta = get_meta(tree, self)  # type: ignore
         return broadcast.BroadcastSignal(name, fields, meta=meta)  # type: ignore
 
-    @v_args(tree=True)
+    @v_args(tree=True)  # type: ignore
     def broadcast(self, tree: ParseTree) -> Union[Ok, Error]:
         if isinstance(tree.children[0], Comment):
             comment, name, *fields = tree.children
@@ -403,7 +403,7 @@ class FpiTransformer(Transformer):
 
         return Ok(module)
 
-    @v_args(tree=True)
+    @v_args(tree=True)  # type: ignore
     def device(self, tree: ParseTree) -> Union[Ok, Error]:
         name, *children = tree.children
 
@@ -427,7 +427,7 @@ class FpiTransformer(Transformer):
             )
         )
 
-    @v_args(tree=True)
+    @v_args(tree=True)  # type: ignore
     def log(self, tree: ParseTree) -> Union[Ok, Error]:
         if isinstance(tree.children[0], Comment):
             comment, name, *fields = tree.children
@@ -450,7 +450,7 @@ class FpiTransformer(Transformer):
             )
         )
 
-    @v_args(tree=True)
+    @v_args(tree=True)  # type: ignore
     def config(self, tree: ParseTree) -> Union[Ok, Error]:
         if isinstance(tree.children[0], Comment):
             comment, name, *fields = tree.children
@@ -472,7 +472,7 @@ class FpiTransformer(Transformer):
             )
         )
 
-    @v_args(tree=True)
+    @v_args(tree=True)  # type: ignore
     def command(self, tree: ParseTree) -> Union[Ok, Error]:
         if isinstance(tree.children[0], Comment):
             comment, name, *fields = tree.children
@@ -498,7 +498,7 @@ class FpiTransformer(Transformer):
             )
         )
 
-    @v_args(tree=True)
+    @v_args(tree=True)  # type: ignore
     def cmd_arg(self, tree: ParseTree) -> cmd.CommandArg:
         if isinstance(tree.children[0], Comment):
             comment, name, id, *params = tree.children
@@ -509,7 +509,7 @@ class FpiTransformer(Transformer):
         type, *params = params
         return cmd.CommandArg(name=name, type=type[0], id=id)  # type: ignore
 
-    @v_args(tree=True)
+    @v_args(tree=True)  # type: ignore
     def cmd_ret(self, tree: ParseTree) -> cmd.CommandRet:
         if isinstance(tree.children[0], Comment):
             comment, name, id, *params = tree.children
