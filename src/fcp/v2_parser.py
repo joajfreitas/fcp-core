@@ -201,6 +201,8 @@ class FcpV2Transformer(Transformer):
     def field(self, tree: ParseTree) -> Union[Ok, Error]:
         if isinstance(tree.children[0], Comment):
             comment, name, field_id, *values = tree.children
+            comment = Comment(comment.value)  # type: ignore
+            name = name.value if name else ""  # type: ignore
         else:
             name, field_id, *values = tree.children
             comment = Comment("")  # type: ignore
@@ -213,16 +215,11 @@ class FcpV2Transformer(Transformer):
         meta = get_meta(tree, self)  # type: ignore
         return Ok(
             signal.Signal(
-                name=name.value,  # type: §ignore
-                start=None,  # type: ignore
-                unit=None,  # type: ignore
-                length=None,  # type: ignore
-                min_value=None,  # type: ignore
-                max_value=None,  # type: ignore
+                name=name,  # type: ignore
                 type=type,
                 field_id=field_id,  # type: ignore
                 meta=meta,
-                comment=comment.value,  # type: ignore
+                comment=comment,  # type: ignore
                 **params,
             )
         )

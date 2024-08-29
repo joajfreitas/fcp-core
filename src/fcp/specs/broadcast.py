@@ -9,7 +9,7 @@ from .comment import Comment
 class BroadcastSignal:
     name: str
     field: dict[str, Any]
-    meta: Optional[MetaData]
+    meta: Optional[MetaData] = None
 
     def get_name(self) -> str:
         return self.name
@@ -48,8 +48,8 @@ class Broadcast:
     name: str
     field: dict[str, Any]
     signals: list[BroadcastSignal]
-    meta: Optional[MetaData]
     comment: Comment
+    meta: Optional[MetaData] = None
 
     def get_name(self) -> str:
         return self.name
