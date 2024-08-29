@@ -2,7 +2,7 @@
 
 import sys
 import logging
-import coloredlogs  # type: ignore
+import coloredlogs
 
 import click
 

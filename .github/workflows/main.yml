@@ -1,46 +1,46 @@
 name: main
 
 on:
-  push:
-    branches: [master]
-  pull_request:
-    branches: [master]
+    push:
+        branches: [master]
+    pull_request:
+        branches: [master]
 
 env:
-  CARGO_TERM_COLOR: always
-  RUSTFLAGS: -D warnings
+    CARGO_TERM_COLOR: always
+    RUSTFLAGS: -D warnings
 
 jobs:
-  ci:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: chartboost/ruff-action@v1
-        with:
-          src: './src'
-      - uses: psf/black@stable
-        with:
-          options: "--check --verbose"
-          src: "./src"
-          version: "~= 24.0"
-      - name: Run mypy
-        run: |
-          pip install mypy
-          mypy --strict --disable-error-code=type-arg --disable-error-code=no-untyped-call src
+    ci:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: chartboost/ruff-action@v1
+              with:
+                  src: "./src"
+            - uses: psf/black@stable
+              with:
+                  options: "--check --verbose"
+                  src: "./src"
+                  version: "~= 24.0"
+            - name: Run mypy
+              run: |
+                  pip install mypy
+                  mypy --strict --disable-error-code=type-arg --disable-error-code=no-untyped-call  --ignore-missing-import src
 
-  tests:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python: ["3.9", "3.10", "3.11", "3.12"]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python }}
-      - name: Install tox and any other packages
-        run: pip install tox
-      - name: Run tox
-        # Run tox using the version of Python in `PATH`
-        run: tox -e py
+    tests:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                python: ["3.9", "3.10", "3.11", "3.12"]
+        steps:
+            - uses: actions/checkout@v4
+            - name: Setup Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: ${{ matrix.python }}
+            - name: Install tox and any other packages
+              run: pip install tox
+            - name: Run tox
+              # Run tox using the version of Python in `PATH`
+              run: tox -e py
