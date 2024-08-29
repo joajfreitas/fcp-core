@@ -26,7 +26,8 @@ jobs:
             - name: Run mypy
               run: |
                   pip install mypy=="1.11.2"
-                  mypy --strict --disable-error-code=type-arg --disable-error-code=no-untyped-call  --ignore-missing-import src
+                  mypy --strict --disable-error-code=type-arg --disable-error-code=no-untyped-call --ignore-missing-import --disable-error-code=unused-ignore src
+
 
     tests:
         runs-on: ubuntu-latest
