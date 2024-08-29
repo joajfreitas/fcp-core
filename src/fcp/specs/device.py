@@ -22,7 +22,7 @@ class Device:
     id: int
     commands: list[cmd.Command]
     configs: list[config.Config]
-    meta: Optional[metadata.MetaData]
+    meta: Optional[metadata.MetaData] = None
 
     def get_name(self) -> str:
         return self.name

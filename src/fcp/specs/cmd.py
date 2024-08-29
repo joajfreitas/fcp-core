@@ -10,7 +10,7 @@ class CommandArg:
     name: str
     id: int
     type: str
-    comment: Optional[Comment]
+    comment: Optional[Comment] = None
 
     def to_fpi(self) -> str:
         comment = self.comment.value if self.comment is not None else ""
@@ -22,7 +22,7 @@ class CommandRet:
     name: str
     id: int
     type: str
-    comment: Optional[Comment]
+    comment: Optional[Comment] = None
 
     def to_fpi(self) -> str:
         comment = self.comment.value if self.comment is not None else ""
@@ -37,7 +37,7 @@ class Command:
     rets: list[CommandRet]
     device: str
     comment: Comment
-    meta: Optional[MetaData]
+    meta: Optional[MetaData] = None
 
     def get_name(self) -> str:
         return self.name

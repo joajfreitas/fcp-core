@@ -9,7 +9,7 @@ from .comment import Comment
 class Enumeration:
     name: str
     value: int
-    meta: Optional[MetaData]
+    meta: Optional[MetaData] = None
 
 
 @serde(type_check=strict)
@@ -20,8 +20,8 @@ class Enum:
 
     name: str
     enumeration: list[Enumeration]
-    meta: Optional[MetaData]
     comment: Comment
+    meta: Optional[MetaData] = None
 
     def get_name(self) -> str:
         return self.name

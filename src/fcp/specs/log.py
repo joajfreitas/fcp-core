@@ -11,8 +11,8 @@ class Log:
     name: str
     comment: Comment
     string: str
-    n_args: Optional[int]
-    meta: Optional[MetaData]
+    n_args: Optional[int] = None
+    meta: Optional[MetaData] = None
 
     def get_name(self) -> str:
         return self.name

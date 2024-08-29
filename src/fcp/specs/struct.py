@@ -12,8 +12,8 @@ class Struct:
 
     name: str
     signals: list[Signal]
-    meta: Optional[MetaData]
-    comment: Optional[Comment]
+    comment: Comment
+    meta: Optional[MetaData] = None
 
     def get_name(self) -> str:
         return self.name
@@ -29,9 +29,10 @@ class Struct:
         return None
 
     def to_fcp(self) -> tuple[str, str]:
+        comment = f"/*{self.comment.value}*/\n" if self.comment else ""
         return (
             "struct",
-            (f"/*{self.comment.value}*/\n" if self.comment.value != "" else "")
+            comment
             + f"struct {self.name} {{\n"
             + ";\n".join(map(lambda signal: signal.to_fcp(), self.signals))
             + ";\n};",

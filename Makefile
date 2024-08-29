@@ -1,20 +1,39 @@
-# Minimal makefile for Sphinx documentation
-#
+.PHONY: format lint check test ci help
 
-# You can set these variables from the command line, and also
-# from the environment for the first two.
-SPHINXOPTS    ?=
-SPHINXBUILD   ?= sphinx-build
-SOURCEDIR     = docs
-BUILDDIR      = build
+default: help
 
-# Put it first so that "make" without argument is like "make help".
+# Formatting code with Black
+format:
+	@echo "\033[1;34m==> Formatting code with Black...\033[0m"
+	black src
+
+# Linting code with ruff and black
+lint:
+	@echo "\033[1;34m==> Running lint checks with ruff...\033[0m"
+	ruff src
+	@echo "\033[1;34m==> Running black check...\033[0m"
+	black --check --verbose src
+
+# Type checking with mypy
+typecheck:
+	@echo "\033[1;34m==> Running mypy checks...\033[0m"
+	mypy --strict --disable-error-code=type-arg --disable-error-code=no-untyped-call src
+
+# Run tests
+test:
+	@echo "\033[1;34m==> Running tests...\033[0m"
+	tox -e py
+
+# Run all CI checks (lint, check, test)
+ci: lint typecheck test
+	@echo "\033[1;32m==> All CI checks completed successfully.\033[0m"
+
+# Display help message
 help:
-	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
-
-.PHONY: help Makefile
-
-# Catch-all target: route all unknown targets to Sphinx using the new
-# "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: Makefile
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@echo "\033[1;33mAvailable targets:\033[0m"
+	@echo "  \033[1;32mformat\033[0m  - Format code with Black"
+	@echo "  \033[1;32mlint\033[0m    - Run lint checks with ruff and black"
+	@echo "  \033[1;32mtypecheck\033[0m   - Run mypy type checks"
+	@echo "  \033[1;32mtest\033[0m    - Run tests with tox"
+	@echo "  \033[1;32mci\033[0m      - Run all CI checks (lint, check, test)"
+	@echo "  \033[1;32mhelp\033[0m    - Display this help message"

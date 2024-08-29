@@ -19,8 +19,8 @@ class Config:
     id: int
     device: str
     comment: Comment
-    meta: Optional[MetaData]
     type: str = "unsigned"
+    meta: Optional[MetaData] = None
 
     def get_name(self) -> str:
         return self.name

@@ -1,6 +1,7 @@
 from typing import Any, Optional
 from serde import serde, strict
 from typing import Optional
+import json
 
 from .metadata import MetaData
 from .comment import Comment
@@ -30,19 +31,19 @@ class Signal:
     """
 
     name: str
-    start: Optional[int]
-    unit: Optional[str]
-    comment: Optional[Comment] | str
-    length: Optional[int]
-    min_value: Optional[float]
-    max_value: Optional[float]
     field_id: int
-    meta: Optional[MetaData]
+    start: Optional[int] = None
+    unit: Optional[str] = None
+    comment: Optional[Comment] = None
+    length: Optional[int] = None
+    min_value: Optional[float] = None
+    max_value: Optional[float] = None
+    meta: Optional[MetaData] = None
     scale: Optional[float] = 1.0
     offset: Optional[float] = 0.0
     type: Optional[str] = "unsigned"
     byte_order: Optional[str] = "little_endian"
-    mux: Optional[str] = ""
+    mux: str = ""
     mux_count: Optional[int] = 1
 
     def to_fcp(self) -> str:
