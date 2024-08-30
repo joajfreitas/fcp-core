@@ -18,24 +18,12 @@ class FcpV2:
     Commands and Arguments.
     """
 
-<<<<<<< HEAD
-    structs: fields.List(struct.Struct)
-    enums: fields.List(enum.Enum)
-    devices: fields.List(device.Device)
-    broadcasts: fields.List(broadcast.Broadcast)
-    logs: fields.List(log.Log)
-    version: fields.Str()
-=======
     structs: list[struct.Struct]
     enums: list[enum.Enum]
     devices: list[device.Device]
     broadcasts: list[broadcast.Broadcast]
     logs: list[log.Log]
     version: str = "1.0"
-<<<<<<< HEAD
->>>>>>> f20376f (Changed old serde to pyserde)
-=======
->>>>>>> 925c042 (backup)
 
     def add_device(self, device: device.Device) -> None:
         self.devices.append(device)

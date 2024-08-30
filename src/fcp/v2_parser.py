@@ -144,15 +144,7 @@ def convert_params(params: dict[str, Callable]) -> dict[str, Any]:
 
     values: dict[str, Callable] = {}
     for name, value in params.items():
-<<<<<<< HEAD
-<<<<<<< HEAD
-        values.update(convertion_table[name](value))
-=======
-        values = values | convertion_table[name](value)  # type: ignore
->>>>>>> a3dc73d (Passing strict mypy rules and fixed tests for new serde)
-=======
         values.update(convertion_table[name](value))  # type: ignore
->>>>>>> 925c042 (backup)
 
     return values
 
@@ -626,7 +618,7 @@ def get_fcp(fcp: str, fpi: str) -> Union[Ok, Error]:
                     fcp_filename,
                     e.line,
                     e.column,
-                    e._format_expected(e.allowed),  #
+                    e._format_expected(e.allowed),
                 )
             )
 
@@ -642,13 +634,5 @@ def get_fcp(fcp: str, fpi: str) -> Union[Ok, Error]:
     fpi_sources = get_sources(fpi)
     fpi = deduplicate(resolve_imports(fpi).Q()).Q()  # type: ignore
 
-<<<<<<< HEAD
     fcp_sources.update(fpi_sources)
-<<<<<<< HEAD
-    return Ok((convert(merge(fcp, fpi).Q()), fcp_sources))
-=======
-    return Ok((convert(merge(fcp, fpi).Q()), fcp_sources | fpi_sources))  # type: ignore
->>>>>>> c2a9dcd (Typing for passing mypy tests)
-=======
     return Ok((convert(merge(fcp, fpi).Q()), fcp_sources))  # type: ignore
->>>>>>> 925c042 (backup)

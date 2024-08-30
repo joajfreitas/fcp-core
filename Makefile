@@ -8,7 +8,7 @@ format:
 
 lint:
 	@echo "\n\033[1;34m==> Running lint checks with ruff...\033[0m"
-	ruff src
+	ruff check src
 	@echo "\n\033[1;34m==> Running black check...\033[0m"
 	black --check src
 	@echo "\n\033[1;34m==> Running mypy checks...\033[0m"
