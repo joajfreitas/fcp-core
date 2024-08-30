@@ -45,7 +45,7 @@ class Ok(Result):
 
 
 class Error(Result):
-    def __init__(self, error: Union[list[str], str]) -> None:
+    def __init__(self, error: Any) -> None:
         self.error = error if isinstance(error, list) else [error]
 
     def unwrap(self) -> tuple[None, None]:
