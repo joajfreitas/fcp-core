@@ -33,19 +33,8 @@ def test_fcp_v2_init(fcp_v2):
 
 
 def test_fcp_v2_to_json(fcp_v2):
-    assert (
-<<<<<<< HEAD
-        fcp_v2.to_json()
-        == '{"structs": [], "enums": [], "devices": [], "broadcasts": [], "logs": [], "version": "3.0"}'
-=======
-        to_json(fcp_v2)
-<<<<<<< HEAD
-        == '{"structs":[],"enums":[],"devices":[],"broadcasts":[],"logs":[],"version":"1.0"}'
->>>>>>> a3dc73d (Passing strict mypy rules and fixed tests for new serde)
-=======
-        == '{"structs":[],"enums":[],"devices":[],"broadcasts":[],"logs":[],"version":"3.0"}'
->>>>>>> 925c042 (backup)
-    )
+    assert to_json(fcp_v2) == '{"structs":[],"enums":[],"devices":[],"broadcasts":[],"logs":[],"version":"3.0"}'
+    
 
 
 def test_fcp_v2_to_dict(fcp_v2):
