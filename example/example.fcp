@@ -11,5 +11,5 @@ enum SensorState {
 
 struct SensorInformation {
     temperature @ 0: Temperature;
-    sensor_state @ 1: SensorState
+    sensor_state @ 1: SensorState;
 };
