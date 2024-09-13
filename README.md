@@ -2,11 +2,31 @@
 
 # FST Communication Protocol
 
-Interface description language with a focus on communication protocols.
+FCP is an interface description language to exchange information independently of language and platform.
 
 ## Install
 
 	$ pip install fcp
+
+## Example
+
+```
+version: "3"
+
+use temperature::Temperature;
+
+/*this is a comment*/
+enum SensorState {
+        Off;
+        On;
+        Error;
+};
+
+struct SensorInformation {
+    temperature @ 0: Temperature;
+    sensor_state @ 1: SensorState
+};
+```
 
 ## Documentation
 
