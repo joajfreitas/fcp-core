@@ -12,3 +12,22 @@ repos:
     rev: 22.10.0
     hooks:
     -   id: black
+<<<<<<< HEAD
+=======
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.6.5
+    hooks:
+      # Run the linter.
+      - id: ruff
+-   repo: https://github.com/crate-ci/typos
+    rev: v1.24.6
+    hooks:
+    -   id: typos
+-   repo: local
+    hooks:
+    -   id: make ci
+        name: make ci
+        entry: /bin/bash -c "make ci"
+        language: script
+>>>>>>> 88ca601 (Add example to README)
