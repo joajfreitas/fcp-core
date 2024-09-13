@@ -12,7 +12,7 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 @pytest.mark.parametrize("test_name", ["001"])
-def test_parser(test_name):
+def test_parser(test_name: str) -> None:
     config_dir = os.path.join(THIS_DIR, "configs")
     fpi_config = os.path.join(config_dir, "test.fpi")
     fcp_config = os.path.join(config_dir, test_name + ".fcp")
@@ -21,7 +21,7 @@ def test_parser(test_name):
     fcp_v2, sources = get_fcp(fcp_config, fpi_config).unwrap()
 
     # Convert FcpV2 object to JSON string and then to a dictionary
-    fcp_json_dict = json.loads(to_json(from_dict(FcpV2, fcp_v2.unwrap())))
+    fcp_json_dict = fcp_v2.unwrap().to_json()
 
     # Load the expected JSON result as a dictionary to compare with the generated JSON
     with open(result_path, "r") as result_file:
