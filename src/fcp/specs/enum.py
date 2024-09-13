@@ -1,4 +1,4 @@
-from serde import serde, strict
+from serde import serde, strict, field
 from typing import Optional
 
 from .metadata import MetaData
@@ -21,7 +21,7 @@ class Enum:
     name: str
     enumeration: list[Enumeration]
     comment: Comment
-    meta: Optional[MetaData] = None
+    meta: Optional[MetaData] = field(skip=True)
 
     def get_name(self) -> str:
         return self.name

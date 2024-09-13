@@ -5,41 +5,13 @@
       "signals": [
         {
           "name": "bar",
-          "start": null,
-          "unit": null,
           "comment": {
             "value": ""
           },
-          "length": null,
-          "min_value": null,
-          "max_value": null,
           "field_id": 0,
-          "meta": {
-            "line": 4,
-            "end_line": 4,
-            "column": 5,
-            "end_column": 17,
-            "start_pos": 31,
-            "end_pos": 43,
-            "filename": "001.fcp"
-          },
-          "scale": 1.0,
-          "offset": 0.0,
-          "type": "u8",
-          "byte_order": "little_endian",
-          "mux": "",
-          "mux_count": 1
+          "type": "u8"
         }
       ],
-      "meta": {
-        "line": 3,
-        "end_line": 5,
-        "column": 1,
-        "end_column": 3,
-        "start_pos": 14,
-        "end_pos": 46,
-        "filename": "001.fcp"
-      },
       "comment": {
         "value": ""
       }

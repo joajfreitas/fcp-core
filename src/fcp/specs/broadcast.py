@@ -1,4 +1,4 @@
-from serde import serde, strict
+from serde import serde, strict, field
 from typing import Any, Optional, Union
 
 from .metadata import MetaData
@@ -49,7 +49,7 @@ class Broadcast:
     field: dict[str, Any]
     signals: list[BroadcastSignal]
     comment: Comment
-    meta: Optional[MetaData] = None
+    meta: Optional[MetaData] = field(skip=True)
 
     def get_name(self) -> str:
         return self.name

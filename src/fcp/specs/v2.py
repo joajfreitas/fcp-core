@@ -1,5 +1,5 @@
 from typing import Tuple, Any, Optional
-from serde import serde, strict
+from serde import serde, strict, to_dict
 
 from . import device
 from . import log
@@ -61,6 +61,19 @@ class FcpV2:
             fpi_structure[node[0]].append(node[1])
 
         return fpi_structure
+
+    def to_json(self) -> Any:
+        def remove_none_fields(obj: Any) -> Any:
+            if isinstance(obj, dict):
+                return {
+                    k: remove_none_fields(v) for k, v in obj.items() if v is not None
+                }
+            elif isinstance(obj, list):
+                return [remove_none_fields(x) for x in obj]
+            else:
+                return obj
+
+        return remove_none_fields(to_dict(self))
 
     def __repr__(self) -> str:
         sig_count = len([sig for struct in self.structs for sig in struct.signals])

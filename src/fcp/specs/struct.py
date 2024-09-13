@@ -1,4 +1,4 @@
-from serde import serde, strict
+from serde import serde, strict, field
 from typing import Optional
 
 from .signal import Signal
@@ -13,7 +13,7 @@ class Struct:
     name: str
     signals: list[Signal]
     comment: Comment
-    meta: Optional[MetaData] = None
+    meta: Optional[MetaData] = field(skip=True)
 
     def get_name(self) -> str:
         return self.name
