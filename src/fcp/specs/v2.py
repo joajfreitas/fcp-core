@@ -51,6 +51,19 @@ class FcpV2:
 
         return fcp_structure
 
+    def to_dict(self) -> Any:
+        def remove_none_fields(obj: Any) -> Any:
+            if isinstance(obj, dict):
+                return {
+                    k: remove_none_fields(v) for k, v in obj.items() if v is not None
+                }
+            elif isinstance(obj, list):
+                return [remove_none_fields(x) for x in obj]
+            else:
+                return obj
+
+        return remove_none_fields(to_dict(self))
+
     def __repr__(self) -> str:
         sig_count = len([sig for struct in self.structs for sig in struct.signals])
         return f"(Spec: devs={len(self.devices)}, broadcasts={len(self.broadcasts)}, structs={len(self.structs)}, sigs={sig_count})"

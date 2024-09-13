@@ -1,4 +1,4 @@
-import serde
+from serde import serde, strict, field
 from typing import Any, Optional, Union
 
 from .metadata import MetaData

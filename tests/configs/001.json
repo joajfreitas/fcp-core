@@ -1,0 +1,25 @@
+{
+  "structs": [
+    {
+      "name": "foo",
+      "signals": [
+        {
+          "name": "bar",
+          "comment": {
+            "value": ""
+          },
+          "field_id": 0,
+          "type": "u8"
+        }
+      ],
+      "comment": {
+        "value": ""
+      }
+    }
+  ],
+  "enums": [],
+  "devices": [],
+  "broadcasts": [],
+  "logs": [],
+  "version": "3.0"
+}
