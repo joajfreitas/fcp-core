@@ -12,7 +12,7 @@ class Struct:
 
     name: str
     signals: list[Signal]
-    comment: Comment
+    comment: Optional[Comment]
     meta: Optional[MetaData] = field(skip=True)
 
     def get_name(self) -> str:
