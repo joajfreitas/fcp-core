@@ -195,7 +195,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
             name = name.value if name else ""  # type: ignore
         else:
             name, field_id, *values = tree.children
-            comment = Comment("")  # type: ignore
+            comment = None  # type: ignore
 
         type = values[0][0]  # type: ignore
 
@@ -220,7 +220,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
             comment, name, *fields = tree.children
         else:
             name, *fields = tree.children
-            comment = Comment("")  # type: ignore
+            comment = None  # type: ignore
 
         meta = get_meta(tree, self)  # type: ignore
         return Ok(
@@ -247,7 +247,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
             comment, name, *fields = args
         else:
             name, *fields = args
-            comment = Comment("")  # type: ignore
+            comment = None  # type: ignore
 
         fields = [field.Q() for field in fields]  # type: ignore
 

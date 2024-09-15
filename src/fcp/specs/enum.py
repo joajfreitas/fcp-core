@@ -20,7 +20,7 @@ class Enum:
 
     name: str
     enumeration: list[Enumeration]
-    comment: Comment
+    comment: Optional[Comment]
     meta: Optional[MetaData] = field(skip=True)
 
     def get_name(self) -> str:
