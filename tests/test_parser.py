@@ -8,6 +8,7 @@ from serde.se import to_dict
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
+from pprint import pprint
 
 @pytest.mark.parametrize(
     "test_name", ["001_basic_struct", "002_basic_enum", "003_comments"]
