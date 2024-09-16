@@ -4,7 +4,7 @@ import json
 from pprint import pprint
 
 from fcp.v2_parser import get_fcp
-from serde.se import to_dict
+from fcp.v2 import default_serialization
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -18,7 +18,11 @@ def test_parser(test_name: str) -> None:
     fcp_config = os.path.join(config_dir, test_name + ".fcp")
     result_path = os.path.join(config_dir, test_name + ".json")
 
+<<<<<<< HEAD
     fcp_v2, sources = get_fcp(fcp_config).unwrap()
+=======
+    fcp_v2, _ = get_fcp(fcp_config, fpi_config).unwrap()
+>>>>>>> e6e4a6b (wip)
 
     fcp_json_dict = fcp_v2.unwrap().to_dict()
 
@@ -27,3 +31,13 @@ def test_parser(test_name: str) -> None:
         expected_result_dict = json.dumps(json.load(result_file), indent=2)
 
     assert fcp_json_dict == expected_result_dict
+    #assert 1 == 2
+
+def test_default_serialization():
+    config_dir = os.path.join(THIS_DIR, "configs")
+    fpi_config = os.path.join(config_dir, "test.fpi")
+    fcp_config = os.path.join(config_dir, "004_struct_composition.fcp")
+
+    fcp_v2, _ = get_fcp(fcp_config, fpi_config).unwrap()
+
+    default_serialization(fcp_v2, {})
