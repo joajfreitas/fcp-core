@@ -3,7 +3,7 @@ from typing import Optional
 
 from .signal import Signal
 from .metadata import MetaData
-from .comment import Comment
+from .comment import Comment, comment_serializer, comment_deserializer
 
 
 @serde(type_check=strict)
@@ -12,7 +12,7 @@ class Struct:
 
     name: str
     signals: list[Signal]
-    comment: Optional[Comment]
+    comment: Optional[Comment] = field(serializer=comment_serializer, deserializer=comment_deserializer)
     meta: Optional[MetaData] = field(skip=True)
 
     def get_name(self) -> str:
