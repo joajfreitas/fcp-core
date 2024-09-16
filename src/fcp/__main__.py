@@ -19,14 +19,14 @@ def setup_logging() -> None:
     )
 
 
-@click.command(name="generate")
-@click.argument("generator")
-@click.argument("fcp")
-@click.argument("fpi")
-@click.argument("output")
-@click.option("--templates")
-@click.option("--skel")
-@click.option("--noformat", is_flag=True, default=False)
+@click.command(name="generate")  # type: ignore
+@click.argument("generator")  # type: ignore
+@click.argument("fcp")  # type: ignore
+@click.argument("fpi")  # type: ignore
+@click.argument("output")  # type: ignore
+@click.option("--templates")  # type: ignore
+@click.option("--skel")  # type: ignore
+@click.option("--noformat", is_flag=True, default=False)  # type: ignore
 def generate_cmd(
     generator: str,
     fcp: str,
@@ -47,8 +47,8 @@ def generate_cmd(
     ).unwrap()
 
 
-@click.group(invoke_without_command=True)
-@click.option("--version", is_flag=True, default=False)
+@click.group(invoke_without_command=True)  # type: ignore
+@click.option("--version", is_flag=True, default=False)  # type: ignore
 def main(version: str) -> None:
     """CLI utility for management of FCP JSON files."""
 
