@@ -20,7 +20,6 @@ def test_parser(test_name: str) -> None:
 
     fcp_v2, sources = get_fcp(fcp_config).unwrap()
 
-    # Convert FcpV2 object to JSON string and then to a dictionary
     fcp_json_dict = fcp_v2.unwrap().to_dict()
 
     # Load the expected json result
