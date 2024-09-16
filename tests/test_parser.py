@@ -1,14 +1,13 @@
 import pytest
 import os
 import json
-from typing import Any
+from pprint import pprint
 
 from fcp.v2_parser import get_fcp
 from serde.se import to_dict
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
-from pprint import pprint
 
 @pytest.mark.parametrize(
     "test_name", ["001_basic_struct", "002_basic_enum", "003_comments"]
