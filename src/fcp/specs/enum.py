@@ -9,7 +9,9 @@ from .comment import Comment, comment_serializer, comment_deserializer
 class Enumeration:
     name: str
     value: int
-    comment: Optional[Comment] = field(default=None, serializer=comment_serializer, deserializer=comment_deserializer)
+    comment: Optional[Comment] = field(
+        default=None, serializer=comment_serializer, deserializer=comment_deserializer
+    )
     meta: Optional[MetaData] = field(default=None)
 
 
@@ -21,7 +23,9 @@ class Enum:
 
     name: str
     enumeration: list[Enumeration]
-    comment: Optional[Comment] = field(default=None, serializer=comment_serializer, deserializer=comment_deserializer)
+    comment: Optional[Comment] = field(
+        default=None, serializer=comment_serializer, deserializer=comment_deserializer
+    )
     meta: Optional[MetaData] = field(default=None, skip=True)
 
     def get_name(self) -> str:
