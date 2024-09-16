@@ -31,7 +31,9 @@ class Signal:
     name: str
     field_id: int
     unit: Optional[str] = None
-    comment: Optional[Comment] = field(default=None, serializer=comment_serializer, deserializer=comment_deserializer)
+    comment: Optional[Comment] = field(
+        default=None, serializer=comment_serializer, deserializer=comment_deserializer
+    )
     min_value: Optional[float] = None
     max_value: Optional[float] = None
     meta: Optional[MetaData] = field(skip=True, default=None)
