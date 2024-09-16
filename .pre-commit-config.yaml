@@ -12,8 +12,6 @@ repos:
     rev: 22.10.0
     hooks:
     -   id: black
-<<<<<<< HEAD
-=======
 -   repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
     rev: v0.6.5
@@ -30,4 +28,3 @@ repos:
         name: make ci
         entry: /bin/bash -c "make ci"
         language: script
->>>>>>> 88ca601 (Add example to README)
