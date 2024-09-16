@@ -1,4 +1,4 @@
-""" Main """
+"""Main"""
 
 import sys
 import logging

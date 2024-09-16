@@ -35,7 +35,7 @@ fcp_parser = Lark(
     param_argument: value ","?
 
     enum: comment* "enum" identifier "{" enum_field* "}" ";"
-    enum_field : identifier "="? value? ";"
+    enum_field : comment* identifier "="? value? ";"
 
     imports: "import" import_identifier ";"
 
@@ -234,10 +234,14 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
     @v_args(tree=True)  # type: ignore
     def enum_field(self, tree: ParseTree) -> Union[Ok, Error]:
-        name, value = tree.children
+        if isinstance(tree.children[0], Comment):
+            comment, name, value = tree.children
+        else:
+            name, value = tree.children
+            comment = None  # type: ignore
 
         meta = get_meta(tree, self)  # type: ignore
-        return Ok(enum.Enumeration(name=name, value=value, meta=meta))  # type: ignore
+        return Ok(enum.Enumeration(name=name, value=value, comment=comment, meta=meta))  # type: ignore
 
     @v_args(tree=True)  # type: ignore
     def enum(self, tree: ParseTree) -> Union[Ok, Error]:

@@ -2,7 +2,7 @@ from typing import Any, Optional, Union
 from serde import serde, strict, field
 
 from .metadata import MetaData
-from .comment import Comment
+from .comment import Comment, comment_serializer, comment_deserializer
 
 
 class SignalValueError(Exception):
@@ -31,7 +31,7 @@ class Signal:
     name: str
     field_id: int
     unit: Optional[str] = None
-    comment: Optional[Comment] = None
+    comment: Optional[Comment] = field(default=None, serializer=comment_serializer, deserializer=comment_deserializer)
     min_value: Optional[float] = None
     max_value: Optional[float] = None
     meta: Optional[MetaData] = field(skip=True, default=None)

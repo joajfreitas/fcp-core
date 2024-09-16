@@ -13,7 +13,7 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 from pprint import pprint
 
 
-@pytest.mark.parametrize("test_name", ["001", "002"])
+@pytest.mark.parametrize("test_name", ["001", "002", "003"])
 def test_parser(test_name: str) -> None:
     def drop_meta(obj):
         if isinstance(obj, dict):
