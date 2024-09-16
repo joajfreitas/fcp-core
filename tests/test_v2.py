@@ -6,7 +6,7 @@ from serde import from_dict, to_dict
 from typing import Dict, Any
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore
 def fcp_v2() -> FcpV2:
     return FcpV2(
         devices=[], structs=[], broadcasts=[], enums=[], logs=[], version="3.0"
