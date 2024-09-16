@@ -124,8 +124,8 @@ class FcpV2Transformer(Transformer):  # type: ignore
     def underscore(self, args: list[str]) -> str:
         return "_"
 
-    def identifier(self, args: list[str]) -> str:
-        return args[0]
+    def identifier(self, args: list[Any]) -> Any:
+        return args[0].value
 
     def import_identifier(self, args: list[str]) -> str:
         identifier = "".join([arg for arg in args])
@@ -145,7 +145,6 @@ class FcpV2Transformer(Transformer):  # type: ignore
         if isinstance(tree.children[0], Comment):
             comment, name, field_id, *values = tree.children
             comment = Comment(comment.value)  # type: ignore
-            name = name.value if name else ""  # type: ignore
         else:
             name, field_id, *values = tree.children
             comment = None  # type: ignore
@@ -178,7 +177,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         meta = get_meta(tree, self)  # type: ignore
         return Ok(
             struct.Struct(
-                name=name.value,  # type: ignore
+                name=name,
                 signals=[x.Q() for x in fields],  # type: ignore
                 meta=meta,
                 comment=comment,  # type: ignore
@@ -194,6 +193,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
             comment = None  # type: ignore
 
         meta = get_meta(tree, self)  # type: ignore
+
         return Ok(enum.Enumeration(name=name, value=value, comment=comment, meta=meta))  # type: ignore
 
     @v_args(tree=True)  # type: ignore
