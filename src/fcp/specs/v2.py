@@ -1,5 +1,5 @@
-from typing import Tuple, Any, Optional
-from serde import serde, strict
+from typing import Tuple, Any, Optional, Callable
+from serde import serde, strict, to_dict
 
 from . import device
 from . import log
@@ -52,17 +52,21 @@ class FcpV2:
         return fcp_structure
 
     def to_dict(self) -> Any:
-        def remove_none_fields(obj: Any) -> Any:
-            if isinstance(obj, dict):
-                return {
-                    k: remove_none_fields(v) for k, v in obj.items() if v is not None
-                }
-            elif isinstance(obj, list):
-                return [remove_none_fields(x) for x in obj]
-            else:
-                return obj
+        def filter_tree(filter: Callable[[Any, Any], bool]) -> Callable[[Any], Any]:
+            def closure(tree: Any) -> Any:
+                if isinstance(tree, dict):
+                    return {k: closure(v) for k, v in tree.items() if filter(k, v)}
+                elif isinstance(tree, list):
+                    return [closure(x) for x in tree]
+                else:
+                    return tree
 
-        return remove_none_fields(to_dict(self))
+            return closure
+
+        remove_none_fields = filter_tree(lambda k, v: v is not None)
+        remove_meta = filter_tree(lambda k, v: k != "meta")
+
+        return remove_meta(remove_none_fields(to_dict(self)))
 
     def __repr__(self) -> str:
         sig_count = len([sig for struct in self.structs for sig in struct.signals])
