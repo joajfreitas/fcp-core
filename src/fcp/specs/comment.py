@@ -2,33 +2,19 @@ from typing import Optional
 from serde import serde, strict
 
 
-def comment_serializer(comment):
-    if comment is not None:
-        return comment.value
-    else:
-        return None
-
-
-def comment_deserializer(comment):
-    if comment is not None:
-        return Comment(comment)
-    else:
-        return None
-
-
 @serde(type_check=strict)
 class Comment:
     value: str
 
 
-def comment_serializer(comment: Optional[Comment]) -> Optional[str]:
+def comment_serializer(comment: Comment) -> str:
     if comment is not None:
         return comment.value
     else:
         return None
 
 
-def comment_deserializer(comment: Optional[str]) -> Optional[Comment]:
+def comment_deserializer(comment: str) -> Comment:
     if comment is not None:
         return Comment(value=comment)  # type: ignore
     else:
