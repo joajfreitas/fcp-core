@@ -134,17 +134,17 @@ def get_meta(tree: ParseTree, parser: Lark) -> MetaData:
 
 
 def convert_params(params: dict[str, Callable]) -> dict[str, Any]:
-    convertion_table = {
+    conversion_table = {
         "range": lambda x: {"min_value": x[0], "max_value": x[1]},
         "scale": lambda x: {"scale": x[0], "offset": x[1]},
         "mux": lambda x: {"mux": x[0], "mux_count": x[1]},
         "unit": lambda x: {"unit": x[0]},
-        "endianess": lambda x: {"byte_order": x[0]},
+        "endianness": lambda x: {"byte_order": x[0]},
     }
 
     values: dict[str, Callable] = {}
     for name, value in params.items():
-        values.update(convertion_table[name](value))  # type: ignore
+        values.update(conversion_table[name](value))  # type: ignore
 
     return values
 

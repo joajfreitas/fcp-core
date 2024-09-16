@@ -50,7 +50,7 @@ def generate_cmd(
 @click.group(invoke_without_command=True)
 @click.option("--version", is_flag=True, default=False)
 def main(version: str) -> None:
-    """CLI utility for managment of FCP JSON files."""
+    """CLI utility for management of FCP JSON files."""
 
     if len(sys.argv) == 1:
         print("fcp cli util.\nVersion:", VERSION, "\nFor usage see fcp --help")

@@ -12,7 +12,7 @@
  * [x] Update logger setup
  * [X] Implement configuration verifier
  * [X] Implement fcp v1 -> fcp v2
- * [X] Implement automatic signal start 
+ * [X] Implement automatic signal start
  * [ ] Update documentation generator
 
 ### Stage 3
