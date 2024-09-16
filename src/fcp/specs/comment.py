@@ -2,14 +2,18 @@ from typing import Optional
 from serde import serde, strict
 
 
-def comment_serializer(cls, o):
-    print("ser", cls, o)
-    return None
+def comment_serializer(comment):
+    if comment is not None:
+        return comment.value
+    else:
+        return None
 
 
-def comment_deserializer(cls, o):
-    print("de", cls, o)
-    return None
+def comment_deserializer(comment):
+    if comment is not None:
+        return Comment(comment)
+    else:
+        return None
 
 
 @serde(type_check=strict)
