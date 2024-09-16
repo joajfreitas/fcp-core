@@ -1,4 +1,5 @@
 SRC:=src
+RUN_UNDER?=
 
 .PHONY: format ruff format_check mypy lint check test ci help
 
@@ -6,25 +7,25 @@ default: help
 
 format:
 	@echo -e "\033[1;34m==> Formatting code with Black...\033[0m"
-	black $(SRC)
+	$(RUN_UNDER) black $(SRC)
 
 ruff:
 	@echo -e "\033[1;34m==> Running lint checks with ruff...\033[0m"
-	ruff check $(SRC)
+	$(RUN_UNDER) ruff check $(SRC)
 
 format_check:
 	@echo -e "\033[1;34m==> Running black check...\033[0m"
-	black --check $(SRC)
+	$(RUN_UNDER) black --check $(SRC)
 
 mypy:
 	@echo -e "\033[1;34m==> Running mypy checks...\033[0m"
-	mypy --strict --disable-error-code=type-arg --disable-error-code=no-untyped-call --ignore-missing-import --disable-error-code=unused-ignore $(SRC)
+	$(RUN_UNDER) mypy --strict --disable-error-code=type-arg --disable-error-code=no-untyped-call --ignore-missing-import --disable-error-code=unused-ignore $(SRC)
 
 lint: ruff format_check mypy
 
 test:
 	@echo -e "\033[1;34m==> Running tests...\033[0m"
-	tox -e py
+	$(RUN_UNDER) tox -e py
 
 ci: lint test
 	@echo -e "\n\033[1;32m==> All CI checks completed successfully.\033[0m"
