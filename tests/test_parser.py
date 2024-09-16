@@ -13,7 +13,9 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 from pprint import pprint
 
 
-@pytest.mark.parametrize("test_name", ["001", "002", "003"])
+@pytest.mark.parametrize(
+    "test_name", ["001_basic_struct", "002_basic_enum", "003_comments"]
+)
 def test_parser(test_name: str) -> None:
     def drop_meta(obj):
         if isinstance(obj, dict):
@@ -30,10 +32,10 @@ def test_parser(test_name: str) -> None:
 
     fcp_v2, sources = get_fcp(fcp_config, fpi_config).unwrap()
 
-    # Convert FcpV2 object to JSON string and then to a dictionary
+    # Convert FcpV2 object to dictionary
     fcp_json_dict = drop_meta(fcp_v2.unwrap().to_json())
 
-    # Load the expected JSON result as a dictionary to compare with the generated JSON
+    # Load the expected json result
     with open(result_path, "r") as result_file:
         expected_result_dict = json.load(result_file)
 
