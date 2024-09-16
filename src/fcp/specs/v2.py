@@ -1,5 +1,6 @@
 from typing import Tuple, Any, Optional, Callable
 from serde import serde, strict, to_dict
+import struct
 
 from . import device
 from . import log
@@ -81,3 +82,72 @@ def decompose_id(sid: int) -> Tuple[int, int]:
 def make_sid(dev_id: int, msg_id: int) -> int:
     """Find the sid from the dev_id and the msg_id"""
     return (msg_id << 5) + dev_id
+
+def default_serialization(fcp: FcpV2, typename: str, data: Dict[str, Any]) -> [int]:
+    """
+    ```fcp
+    struct foo {
+        var1: u8;
+        var2: u16;
+    };
+
+    struct bar {
+        var1: foo;
+        var2: f32;
+    };
+    ```
+
+    data:
+
+    {
+        "foo":
+            {
+                "var1": 3,
+                "var2": 256
+            },
+        "bar":
+            {
+                "var1":
+                    {
+                        "var1": 4,
+                        "var2": 257
+                    },
+                "var2": 10.1
+            }
+    }
+
+    [3, 1, 0, 4, 1, 1, 65, 33, 153, 154]
+    """
+
+    def serialize_signal(signal, value):
+        convertions = {
+            "u8": lambda x: x.to_bytes(1, signed=False),
+            "u16": lambda x: x.to_bytes(2, signed=False),
+            "u32": lambda x: x.to_bytes(4, signed=False),
+            "u64": lambda x: x.to_bytes(8, signed=False),
+            "i8": lambda x: x.to_bytes(1, signed=True),
+            "i16": lambda x: x.to_bytes(2, signed=True),
+            "i32": lambda x: x.to_bytes(4, signed=True),
+            "i64": lambda x: x.to_bytes(8, signed=True) ,
+            "f32": lambda x: bytearray(struct.pack("f", x)),
+            "f64": lambda x: bytearray(struct.pack("d", x))
+        }
+        return convertions[signal.type](value)
+
+    structs = {struct.name: struct for struct in fcp.structs}
+
+    def serialize_struct(struct, value):
+
+        pass
+
+    
+    buffer = bytearray()
+    
+    for struct in fcp.structs:
+        tmp = data[struct.name]
+        for signal in struct.signals:
+            buffer += convertions[signal.type](tmp[signal.name])
+
+    return serialize_struct(structs[typename], data)
+
+
