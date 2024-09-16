@@ -15,18 +15,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
-            - uses: chartboost/ruff-action@v1
-              with:
-                  src: "./src"
-            - uses: psf/black@stable
-              with:
-                  options: "--check --verbose"
-                  src: "./src"
-                  version: "~= 24.0"
-            - name: Run mypy
-              run: |
-                  pip install mypy=="1.11.2"
-                  mypy --strict --disable-error-code=type-arg --disable-error-code=no-untyped-call --ignore-missing-import --disable-error-code=unused-ignore src
+            - run: make RUN_UNDER=uvx ci
 
 
     tests:
