@@ -1,11 +1,11 @@
-from serde import serde, strict, field
+import serde
 from typing import Any, Optional, Union
 
 from .metadata import MetaData
 from .comment import Comment
 
 
-@serde(type_check=strict)
+@serde.serde(type_check=serde.strict)
 class BroadcastSignal:
     name: str
     field: dict[str, Any]
@@ -41,7 +41,7 @@ class BroadcastSignal:
         return f"\tsignal {self.name} {{\n\t\t" + "\n\t\t".join(fields) + "\n\t};"
 
 
-@serde(type_check=strict)
+@serde.serde(type_check=serde.strict)
 class Broadcast:
     """Broadcast object"""
 
@@ -49,7 +49,7 @@ class Broadcast:
     field: dict[str, Any]
     signals: list[BroadcastSignal]
     comment: Comment
-    meta: Optional[MetaData] = field(skip=True)
+    meta: Optional[MetaData] = serde.field(skip=True)
 
     def get_name(self) -> str:
         return self.name

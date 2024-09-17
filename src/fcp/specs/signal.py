@@ -60,12 +60,9 @@ class Signal:
         return (
             (f"\t/*{comment}*/\n" if comment != "" else "")
             + f"\t{self.name} @{self.field_id}: {self.type} "
-            + show2(self.scale, 1.0, self.offset, 0.0, "| scale({}, {})")
             + show2(self.min_value, 0.0, self.max_value, 0.0, "| range({}, {})")
-            + show2(self.mux, "", self.mux_count, 1, '| mux("{}", {})')
-            + show(self.byte_order, "little", '| endianess("{}")')
             + show(self.unit, "", '| unit("{}")')
         )
 
     def __repr__(self) -> str:
-        return f"<Signal name={self.name} start={self.start} end={self.length} scale={self.scale} offset={self.offset}>"
+        return f"<Signal name={self.name} type={self.type}>"

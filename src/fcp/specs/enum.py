@@ -37,8 +37,7 @@ class Enum:
     def to_fcp(self) -> tuple[str, str]:
         return (
             "enum",
-            (f"/*{self.comment.value}*/\n" if self.comment.value != "" else "")
-            + f"enum {self.name} {{\n\t"
+            f"enum {self.name} {{\n\t"
             + "\n\t".join([f"{enum.name}: {enum.value};" for enum in self.enumeration])
             + "\n};",
         )

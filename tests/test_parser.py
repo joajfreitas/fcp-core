@@ -1,23 +1,19 @@
-from fcp.specs.v2 import FcpV2
 import pytest
 import os
 import json
+from pprint import pprint
 
-from serde import from_dict
-from serde.json import to_json
 
 from fcp.v2_parser import get_fcp
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
-from pprint import pprint
-
 
 @pytest.mark.parametrize(
     "test_name", ["001_basic_struct", "002_basic_enum", "003_comments"]
-)
+)  # type: ignore
 def test_parser(test_name: str) -> None:
-    def drop_meta(obj):
+    def drop_meta(obj: Any) -> Any:
         if isinstance(obj, dict):
             return {k: drop_meta(v) for k, v in obj.items() if k != "meta"}
         elif isinstance(obj, list):
