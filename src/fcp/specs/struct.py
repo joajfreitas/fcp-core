@@ -8,7 +8,7 @@ from .comment import Comment, comment_serializer, comment_deserializer
 
 @serde(type_check=strict)
 class Struct:
-    """Broadcast object"""
+    """Struct object"""
 
     name: str
     signals: list[Signal]

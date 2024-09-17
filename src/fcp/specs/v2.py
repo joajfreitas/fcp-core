@@ -1,4 +1,4 @@
-from typing import Tuple, Any, Optional, Callable
+from typing import Tuple, Any, Optional, Callable, Dict
 from serde import serde, strict, to_dict
 import struct
 
@@ -6,7 +6,8 @@ from . import device
 from . import log
 from . import broadcast
 from . import enum
-from . import struct
+from .signal import Signal
+from .struct import Struct
 
 
 def handle_key_not_found(d: dict[str, Any], key: str) -> list[Any]:
@@ -19,7 +20,7 @@ class FcpV2:
     Commands and Arguments.
     """
 
-    structs: list[struct.Struct]
+    structs: list[Struct]
     enums: list[enum.Enum]
     devices: list[device.Device]
     broadcasts: list[broadcast.Broadcast]
@@ -83,7 +84,8 @@ def make_sid(dev_id: int, msg_id: int) -> int:
     """Find the sid from the dev_id and the msg_id"""
     return (msg_id << 5) + dev_id
 
-def default_serialization(fcp: FcpV2, typename: str, data: Dict[str, Any]) -> [int]:
+
+def default_serialization(fcp: FcpV2, typename: str, data: Dict[str, Any]) -> bytearray:
     """
     ```fcp
     struct foo {
@@ -119,8 +121,10 @@ def default_serialization(fcp: FcpV2, typename: str, data: Dict[str, Any]) -> [i
     [3, 1, 0, 4, 1, 1, 65, 33, 153, 154]
     """
 
-    def serialize_signal(signal, value):
-        convertions = {
+    structs = {struct.name: struct for struct in fcp.structs}
+
+    def serialize_signal(signal: Signal, value: Dict["str", Any] | Any) -> bytearray:
+        conversions: Dict[str, Callable[[Any], bytearray]] = {
             "u8": lambda x: x.to_bytes(1, signed=False),
             "u16": lambda x: x.to_bytes(2, signed=False),
             "u32": lambda x: x.to_bytes(4, signed=False),
@@ -128,26 +132,23 @@ def default_serialization(fcp: FcpV2, typename: str, data: Dict[str, Any]) -> [i
             "i8": lambda x: x.to_bytes(1, signed=True),
             "i16": lambda x: x.to_bytes(2, signed=True),
             "i32": lambda x: x.to_bytes(4, signed=True),
-            "i64": lambda x: x.to_bytes(8, signed=True) ,
+            "i64": lambda x: x.to_bytes(8, signed=True),
             "f32": lambda x: bytearray(struct.pack("f", x)),
-            "f64": lambda x: bytearray(struct.pack("d", x))
+            "f64": lambda x: bytearray(struct.pack("d", x)),
         }
-        return convertions[signal.type](value)
 
-    structs = {struct.name: struct for struct in fcp.structs}
+        if signal.type in conversions.keys():
+            return conversions[signal.type](value)
+        elif signal.type is not None:
+            return serialize_struct(structs[signal.type], value)
+        else:
+            raise ValueError()
 
-    def serialize_struct(struct, value):
-
-        pass
-
-    
-    buffer = bytearray()
-    
-    for struct in fcp.structs:
-        tmp = data[struct.name]
+    def serialize_struct(struct: Struct, data: Dict["str", Any]) -> bytearray:
+        buffer = bytearray()
         for signal in struct.signals:
-            buffer += convertions[signal.type](tmp[signal.name])
+            buffer += serialize_signal(signal, data[signal.name])
+
+        return buffer
 
     return serialize_struct(structs[typename], data)
-
-
