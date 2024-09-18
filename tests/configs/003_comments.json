@@ -6,22 +6,30 @@
         {
           "name": "bar",
           "field_id": 0,
-          "type": "u8",
-          "comment": "the bar field"
+          "comment": "the bar field",
+          "type": "u8"
         }
       ],
       "comment": "the foo struct"
     }
   ],
   "enums": [
-      {
-          "name": "baz",
-          "enumeration": [
-              {"name": "Var1", "value": 0, "comment": "the variant var1"},
-              {"name": "Var2", "value": 1, "comment": "the variant var2"}
-          ],
-          "comment": "the enum baz"
-      }
+    {
+      "name": "baz",
+      "enumeration": [
+        {
+          "name": "Var1",
+          "value": 0,
+          "comment": "the variant var1"
+        },
+        {
+          "name": "Var2",
+          "value": 1,
+          "comment": "the variant var2"
+        }
+      ],
+      "comment": "the enum baz"
+    }
   ],
   "devices": [],
   "broadcasts": [],

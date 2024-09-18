@@ -1,11 +1,10 @@
 import pytest
 import os
 import json
-from pprint import pprint
 from typing import Any
 
-
 from fcp.v2_parser import get_fcp
+from serde.se import to_dict
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -22,6 +21,14 @@ def test_parser(test_name: str) -> None:
         else:
             return obj
 
+    def drop_null_members(obj: Any) -> Any:
+        if isinstance(obj, dict):
+            return {k: drop_null_members(v) for k, v in obj.items() if v is not None}
+        elif isinstance(obj, list):
+            return [drop_null_members(x) for x in obj]
+        else:
+            return obj
+
     config_dir = os.path.join(THIS_DIR, "configs")
     fcp_config = os.path.join(config_dir, test_name + ".fcp")
     result_path = os.path.join(config_dir, test_name + ".json")
@@ -29,12 +36,12 @@ def test_parser(test_name: str) -> None:
     fcp_v2, sources = get_fcp(fcp_config).unwrap()
 
     # Convert FcpV2 object to dictionary
-    fcp_json_dict = drop_meta(fcp_v2.unwrap().to_json())
+    fcp_json_dict = json.dumps(
+        drop_null_members(drop_meta(to_dict(fcp_v2.unwrap()))), indent=2
+    )
 
     # Load the expected json result
     with open(result_path, "r") as result_file:
-        expected_result_dict = json.load(result_file)
+        expected_result_dict = json.dumps(json.load(result_file), indent=2)
 
-    pprint(fcp_json_dict)
-    pprint(expected_result_dict)
     assert fcp_json_dict == expected_result_dict

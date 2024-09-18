@@ -1,7 +1,7 @@
 import pytest
 from fcp import FcpV2
-from serde.json import to_json, to_dict, from_json
-from serde import from_dict
+from serde.json import to_json, from_json
+from serde import from_dict, to_dict
 
 from typing import Dict, Any
 
