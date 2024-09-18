@@ -1,3 +1,4 @@
+from pprint import pprint
 from fcp.codegen import CodeGenerator
 from fcp.verifier import BaseVerifier
 
@@ -11,5 +12,6 @@ class Generator(CodeGenerator):
         pass
 
     def generate(self, fcp, templates={}, skels={}):
-        print(fcp)
+        pprint(fcp.to_dict())
+
         return {}
