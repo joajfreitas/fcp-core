@@ -1,0 +1,18 @@
+[project]
+name = "fcp_nop"
+version = "0.1.0"
+description = "Noop plugin for fcp"
+license = { file = "LICENSE" }
+readme = "README.md"
+url = "https://github.com/joajfreitas/fcp-core"
+requires-python = ">=3.9"
+dependencies = [
+    "fcp>=1.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib"]
