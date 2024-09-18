@@ -32,5 +32,6 @@ struct SensorInformation {
 
 See [readthedocs.io](https://fcp-core.readthedocs.io/en/latest/)
 
+ * [Contributing](./CONTRIBUTING.md)
  * [Authors](./AUTHORS)
  * [License](./LICENSE)
