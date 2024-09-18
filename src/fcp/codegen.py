@@ -27,7 +27,7 @@ class CodeGenerator:
 
         self.output_path = pathlib.Path(output_path)
 
-        for path, content in self.generate(fcp, output_path, templates, skels).items():
+        for path, content in self.generate(fcp, templates, skels).items():
             logging.info(f"Generating {path}")
             os.makedirs(path.parent, exist_ok=True)
             with open(path, "w", encoding="utf-8") as file:
@@ -39,7 +39,7 @@ class CodeGenerator:
         else:
             return Error(["Received a None object instead of FcpV2"])
 
-    def generate(self, fcp: Any, output_path: str, templates: Any, skel: Any) -> Any:
+    def generate(self, fcp: Any, templates: Any, skel: Any) -> Any:
         """Function to override from generator. Implements actual code generation."""
         return
 
