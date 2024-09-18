@@ -19,13 +19,13 @@ def setup_logging() -> None:
     )
 
 
-@click.command(name="generate")
-@click.argument("generator")
-@click.argument("fcp")
-@click.argument("output")
-@click.option("--templates")
-@click.option("--skel")
-@click.option("--noformat", is_flag=True, default=False)
+@click.command(name="generate")  # type: ignore
+@click.argument("generator")  # type: ignore
+@click.argument("fcp")  # type: ignore
+@click.argument("output")  # type: ignore
+@click.option("--templates")  # type: ignore
+@click.option("--skel")  # type: ignore
+@click.option("--noformat", is_flag=True, default=False)  # type: ignore
 def generate_cmd(
     generator: str,
     fcp: str,
