@@ -263,16 +263,16 @@ class Verifier(BaseVerifier):
                 )
             )
 
-    def check_signal_type(self, signal: Any) -> Union[Ok, Error]:
-        types = [
-            signess + str(width) for signess in ["i", "u"] for width in range(1, 65)
-        ]
-        types += ["f32", "f64"]
+    # def check_signal_type(self, signal: Any) -> Union[Ok, Error]:
+    #    types = [
+    #        signess + str(width) for signess in ["i", "u"] for width in range(1, 65)
+    #    ]
+    #    types += ["f32", "f64"]
 
-        if signal.type in types:
-            return Ok(())
-        else:
-            return Error(self.error_logger.log_node(signal, "Invalid signal type"))
+    #    if signal.type in types:
+    #        return Ok(())
+    #    else:
+    #        return Error(self.error_logger.log_node(signal, "Invalid signal type"))
 
     @simple_error
     def check_signal_name_is_identifier(self, signal: Any) -> Tuple[bool, str]:
