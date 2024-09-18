@@ -1,10 +1,7 @@
-from typing import Tuple, Any, Optional, Callable, Dict, Union
+from typing import Tuple, Any, Callable, Dict, Union
 from serde import serde, strict, to_dict
 import struct
 
-from . import device
-from . import log
-from . import broadcast
 from . import enum
 from .signal import Signal
 from .struct import Struct
@@ -16,31 +13,13 @@ def handle_key_not_found(d: dict[str, Any], key: str) -> list[Any]:
 
 @serde(type_check=strict)
 class FcpV2:
-    """FCP root node. Holds all Devices, Messages, Signals, Logs, Configs,
+    """FCP root node. Holds all Signals, Configs,
     Commands and Arguments.
     """
 
     structs: list[Struct]
     enums: list[enum.Enum]
-    devices: list[device.Device]
-    broadcasts: list[broadcast.Broadcast]
-    logs: list[log.Log]
     version: str = "1.0"
-
-    def add_device(self, device: device.Device) -> None:
-        self.devices.append(device)
-
-    def get_broadcasts(
-        self, device: Optional[device.Device] = None
-    ) -> list[broadcast.Broadcast]:
-        if device is None:
-            return [broadcast for broadcast in self.broadcasts]
-        else:
-            return [
-                broadcast
-                for broadcast in self.broadcasts
-                if broadcast.field["device"] == device
-            ]
 
     def to_fcp(self) -> dict[str, list[dict[str, Any]]]:
         nodes = [node.to_fcp() for node in self.enums + self.structs]
@@ -72,7 +51,7 @@ class FcpV2:
 
     def __repr__(self) -> str:
         sig_count = len([sig for struct in self.structs for sig in struct.signals])
-        return f"(Spec: devs={len(self.devices)}, broadcasts={len(self.broadcasts)}, structs={len(self.structs)}, sigs={sig_count})"
+        return f"(Spec: structs={len(self.structs)}, sigs={sig_count})"
 
 
 def decompose_id(sid: int) -> Tuple[int, int]:
