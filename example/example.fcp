@@ -1,12 +1,12 @@
 version: "3"
 
-use temperature::Temperature;
+import temperature;
 
 /*this is a comment*/
 enum SensorState {
-	Off;
-	On;
-	Error;
+	Off = 0;
+	On = 1;
+	Error = 2;
 };
 
 struct SensorInformation {
