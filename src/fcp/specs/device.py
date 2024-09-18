@@ -1,4 +1,4 @@
-from serde import serde, strict
+from serde import serde, strict, field
 from typing import Optional
 
 from . import cmd
@@ -22,7 +22,7 @@ class Device:
     id: int
     commands: list[cmd.Command]
     configs: list[config.Config]
-    meta: Optional[metadata.MetaData] = None
+    meta: Optional[metadata.MetaData] = field(skip=True)
 
     def get_name(self) -> str:
         return self.name

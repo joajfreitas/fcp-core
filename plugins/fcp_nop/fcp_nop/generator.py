@@ -1,5 +1,5 @@
 from fcp.codegen import CodeGenerator
-from fcp.verifier import BaseVerifier, simple_error
+from fcp.verifier import BaseVerifier
 
 
 class Verifier(BaseVerifier):

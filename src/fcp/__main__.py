@@ -1,4 +1,4 @@
-""" Main """
+"""Main"""
 
 import sys
 import logging
@@ -45,10 +45,10 @@ def generate_cmd(
     ).unwrap()
 
 
-@click.group(invoke_without_command=True)
-@click.option("--version", is_flag=True, default=False)
+@click.group(invoke_without_command=True)  # type: ignore
+@click.option("--version", is_flag=True, default=False)  # type: ignore
 def main(version: str) -> None:
-    """CLI utility for managment of FCP JSON files."""
+    """CLI utility for management of FCP JSON files."""
 
     if len(sys.argv) == 1:
         print("fcp cli util.\nVersion:", VERSION, "\nFor usage see fcp --help")

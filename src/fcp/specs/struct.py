@@ -1,9 +1,9 @@
-from serde import serde, strict
+from serde import serde, strict, field
 from typing import Optional
 
 from .signal import Signal
 from .metadata import MetaData
-from .comment import Comment
+from .comment import Comment, comment_serializer, comment_deserializer
 
 
 @serde(type_check=strict)
@@ -12,8 +12,10 @@ class Struct:
 
     name: str
     signals: list[Signal]
-    comment: Comment
-    meta: Optional[MetaData] = None
+    comment: Optional[Comment] = field(
+        serializer=comment_serializer, deserializer=comment_deserializer
+    )
+    meta: Optional[MetaData] = field(skip=True)
 
     def get_name(self) -> str:
         return self.name

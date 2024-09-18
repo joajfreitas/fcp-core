@@ -1,8 +1,8 @@
 from typing import Any, Optional, Union
-from serde import serde, strict
+from serde import serde, strict, field
 
 from .metadata import MetaData
-from .comment import Comment
+from .comment import Comment, comment_serializer, comment_deserializer
 
 
 class SignalValueError(Exception):
@@ -30,19 +30,14 @@ class Signal:
 
     name: str
     field_id: int
-    start: Optional[int] = None
     unit: Optional[str] = None
-    comment: Optional[Comment] = None
-    length: Optional[int] = None
+    comment: Optional[Comment] = field(
+        default=None, serializer=comment_serializer, deserializer=comment_deserializer
+    )
     min_value: Optional[float] = None
     max_value: Optional[float] = None
-    meta: Optional[MetaData] = None
-    scale: Optional[float] = 1.0
-    offset: Optional[float] = 0.0
+    meta: Optional[MetaData] = field(skip=True, default=None)
     type: Optional[str] = "unsigned"
-    byte_order: Optional[str] = "little_endian"
-    mux: str = ""
-    mux_count: Optional[int] = 1
 
     def to_fcp(self) -> str:
         def show(value: Any, default: Any, fmt: Any) -> str:
@@ -65,12 +60,9 @@ class Signal:
         return (
             (f"\t/*{comment}*/\n" if comment != "" else "")
             + f"\t{self.name} @{self.field_id}: {self.type} "
-            + show2(self.scale, 1.0, self.offset, 0.0, "| scale({}, {})")
             + show2(self.min_value, 0.0, self.max_value, 0.0, "| range({}, {})")
-            + show2(self.mux, "", self.mux_count, 1, '| mux("{}", {})')
-            + show(self.byte_order, "little", '| endianess("{}")')
             + show(self.unit, "", '| unit("{}")')
         )
 
     def __repr__(self) -> str:
-        return f"<Signal name={self.name} start={self.start} end={self.length} scale={self.scale} offset={self.offset}>"
+        return f"<Signal name={self.name} type={self.type}>"

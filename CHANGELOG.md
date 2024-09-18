@@ -19,23 +19,23 @@ typedef struct _signal {
 	double scale;
 	double offset;
 	fcp_type_t type;
-	fcp_endianess_t endianess;
+	fcp_endianness_t endianness;
 } fcp_signal_t;
 ```
 
-The `fcp_signal_t` now includes the signal type and endianess. Check the
-`fcp_type_t` and `fcp_endianess_t` enums for possible values.
+The `fcp_signal_t` now includes the signal type and endianness. Check the
+`fcp_type_t` and `fcp_endianness_t` enums for possible values.
 
 Example usage:
 ```
-uint64_t value = fcp_decode_signal_uint64_t(msg, 
+uint64_t value = fcp_decode_signal_uint64_t(msg,
 	(fcp_signal_t) {
-		.start = start, 
-		.length = length, 
-		.scale = scale, 
-		.offset = offset, 
-		.type= type 
-		.endianess = endianess
+		.start = start,
+		.length = length,
+		.scale = scale,
+		.offset = offset,
+		.type= type
+		.endianness = endianness
 	}
 );
 ```
@@ -48,7 +48,7 @@ The `fcp c_gen` command was updated to make use of the new signal_parser
 functions.
 
 Those that make use of `c_gen` should not notice any changes **except** for a
-substancial increase in program size.
+substantial increase in program size.
 
 If this increase in program size is troublesome remember that the compilation
 of devices can be stopped by defining: NO_DCU, NO_MASTER, NO_IIB, ...
@@ -65,7 +65,7 @@ notify me via discord.
 
 * Show release notes at gui startup
 * Notify of new Fcp versions
-* GUI Undo/Redo 
+* GUI Undo/Redo
 
 ### Bug Fixes
 * Recent file list is the same for any Fcp instance
@@ -112,7 +112,7 @@ notify me via discord.
 ## v0.54.0
 
 ### Bugs
- 
+
  * Nag users about new version of FCP
 
 ### Features

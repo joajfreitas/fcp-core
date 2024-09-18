@@ -1,0 +1,6 @@
+version: "3"
+
+struct Temperature {
+    temperature: u32 | unit("C");
+    timestamp: u32 | unit("s");
+}

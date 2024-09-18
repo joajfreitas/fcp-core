@@ -1,45 +1,36 @@
-![](https://gitlab.com/joajfreitas/can-ids-spec/badges/master/pipeline.svg)
+![](https://github.com/joajfreitas/fcp-core/actions/workflows/ci.yml/badge.svg)
 
-# FST CAN Protocol
-JSON specification for can bus messages and helper tools.
+# FST Communication Protocol
+
+FCP is an interface description language to exchange information independently of language and platform.
 
 ## Install
 
 	$ pip install fcp
 
-## Usage
+## Example
 
-	$ fcp
-	Usage: fcp [OPTIONS] COMMAND [ARGS]...
-	
-	Options:
-	  --version
-	  --help     Show this message and exit.
-	
-	Commands:
-	  c-gen             Transform FCP json into a C library.
-	  docs              Generate FCP documentation.
-	  dump-cfg-list
-	  dump-cmd-list
-	  dump-dev-list
-	  dump-log-list
-	  dump-msg-list
-	  dump-signal-list
-	  gui               Launch FCP json editor GUI.
-	  init              Create a basic FCP json file.
-	  print-dev
-	  print-log
-	  print-msg
-	  print-signal
-	  read-dbc          Transform a DBC file into FCP json.
-	  validate          Verify correctness of FCP json file.
-	  write_dbc         Transform FCP json file into a DBC :param json_file:
+```
+version: "3"
 
-## Implementations
+use temperature::Temperature;
 
- * Rust: https://gitlab.com/joajfreitas/fcp-rust
- * C++: https://gitlab.com/joajfreitas/fcp-cpp
+/*this is a comment*/
+enum SensorState {
+        Off;
+        On;
+        Error;
+};
+
+struct SensorInformation {
+    temperature @ 0: Temperature;
+    sensor_state @ 1: SensorState
+};
+```
 
 ## Documentation
 
 See [readthedocs.io](https://fcp-core.readthedocs.io/en/latest/)
+
+ * [Authors](./AUTHORS)
+ * [License](./LICENSE)

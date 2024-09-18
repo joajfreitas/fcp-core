@@ -1,15 +1,18 @@
-from serde import serde, strict
+from serde import serde, strict, field
 from typing import Optional
 
 from .metadata import MetaData
-from .comment import Comment
+from .comment import Comment, comment_serializer, comment_deserializer
 
 
 @serde(type_check=strict)
 class Enumeration:
     name: str
     value: int
-    meta: Optional[MetaData] = None
+    comment: Optional[Comment] = field(
+        default=None, serializer=comment_serializer, deserializer=comment_deserializer
+    )
+    meta: Optional[MetaData] = field(default=None)
 
 
 @serde(type_check=strict)
@@ -20,8 +23,10 @@ class Enum:
 
     name: str
     enumeration: list[Enumeration]
-    comment: Comment
-    meta: Optional[MetaData] = None
+    comment: Optional[Comment] = field(
+        default=None, serializer=comment_serializer, deserializer=comment_deserializer
+    )
+    meta: Optional[MetaData] = field(default=None, skip=True)
 
     def get_name(self) -> str:
         return self.name
@@ -32,8 +37,7 @@ class Enum:
     def to_fcp(self) -> tuple[str, str]:
         return (
             "enum",
-            (f"/*{self.comment.value}*/\n" if self.comment.value != "" else "")
-            + f"enum {self.name} {{\n\t"
+            f"enum {self.name} {{\n\t"
             + "\n\t".join([f"{enum.name}: {enum.value};" for enum in self.enumeration])
             + "\n};",
         )

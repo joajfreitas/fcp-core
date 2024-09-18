@@ -1,5 +1,5 @@
 from typing import Tuple, Any, Optional
-from serde import serde, strict
+from serde import serde, strict, to_dict
 
 from . import device
 from . import log

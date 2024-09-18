@@ -1,28 +1,15 @@
 version: "3"
 
-import iib;
+use temperature::Temperature;
 
 /*this is a comment*/
-enum master_state {
-	OFF = 0;
-	ON  = 1;
-	INVALID = 2;
+enum SensorState {
+	Off;
+	On;
+	Error;
 };
 
-enum master_state2 {
-	OFF = 0;
-	ON  = 1;
-	INVALID = 2;
-};
-
-/* this is a comment */
-struct master_ts {
-	/* this is a comment regarding master_ts_state */
-	master_ts_state @ 0: u1 | unit("m/s");
-	master_ts_off_reason @ 1: u7;
-};
-
-struct master_cell_error {
-	cell_id @ 0: u8;
-	cell_error @ 1: u16;
+struct SensorInformation {
+    temperature @ 0: Temperature;
+    sensor_state @ 1: SensorState;
 };

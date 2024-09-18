@@ -33,7 +33,7 @@ fcp_parser = Lark(
     param_argument: value ","?
 
     enum: comment* "enum" identifier "{" enum_field* "}" ";"
-    enum_field : identifier "="? value? ";"
+    enum_field : comment* identifier "="? value? ";"
 
     imports: "import" import_identifier ";"
 
@@ -87,17 +87,17 @@ def get_meta(tree: ParseTree, parser: Lark) -> MetaData:
 
 
 def convert_params(params: dict[str, Callable]) -> dict[str, Any]:
-    convertion_table = {
+    conversion_table = {
         "range": lambda x: {"min_value": x[0], "max_value": x[1]},
         "scale": lambda x: {"scale": x[0], "offset": x[1]},
         "mux": lambda x: {"mux": x[0], "mux_count": x[1]},
         "unit": lambda x: {"unit": x[0]},
-        "endianess": lambda x: {"byte_order": x[0]},
+        "endianness": lambda x: {"byte_order": x[0]},
     }
 
     values: dict[str, Callable] = {}
     for name, value in params.items():
-        values.update(convertion_table[name](value))  # type: ignore
+        values.update(conversion_table[name](value))  # type: ignore
 
     return values
 
@@ -148,7 +148,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
             name = name.value if name else ""  # type: ignore
         else:
             name, field_id, *values = tree.children
-            comment = Comment("")  # type: ignore
+            comment = None  # type: ignore
 
         type = values[0][0]  # type: ignore
 
@@ -173,7 +173,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
             comment, name, *fields = tree.children
         else:
             name, *fields = tree.children
-            comment = Comment("")  # type: ignore
+            comment = None  # type: ignore
 
         meta = get_meta(tree, self)  # type: ignore
         return Ok(
@@ -187,10 +187,14 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
     @v_args(tree=True)  # type: ignore
     def enum_field(self, tree: ParseTree) -> Union[Ok, Error]:
-        name, value = tree.children
+        if isinstance(tree.children[0], Comment):
+            comment, name, value = tree.children
+        else:
+            name, value = tree.children
+            comment = None  # type: ignore
 
         meta = get_meta(tree, self)  # type: ignore
-        return Ok(enum.Enumeration(name=name, value=value, meta=meta))  # type: ignore
+        return Ok(enum.Enumeration(name=name, value=value, comment=comment, meta=meta))  # type: ignore
 
     @v_args(tree=True)  # type: ignore
     def enum(self, tree: ParseTree) -> Union[Ok, Error]:
@@ -200,7 +204,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
             comment, name, *fields = args
         else:
             name, *fields = args
-            comment = Comment("")  # type: ignore
+            comment = None  # type: ignore
 
         fields = [field.Q() for field in fields]  # type: ignore
 
