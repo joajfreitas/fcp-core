@@ -179,35 +179,6 @@ class BaseVerifier:
         result = result.compound(
             self.apply_checks("struct", map(lambda x: (x,), fcp_v2.structs))
         )
-        result = result.compound(
-            self.apply_checks("broadcast", map(lambda x: (x,), fcp_v2.broadcasts))
-        )
-
-        structs = {struct.name: struct for struct in fcp_v2.structs}
-
-        paired_structs = [
-            (structs[broadcast.field["type"]], broadcast)
-            for broadcast in fcp_v2.broadcasts
-        ]
-
-        paired_signals = []
-        for struct, broadcast in paired_structs:
-            struct_signals = {signal.name: signal for signal in struct.signals}
-            paired_signals += [
-                (struct_signals[broadcast_signal.name], broadcast_signal)
-                for broadcast_signal in broadcast.signals
-            ]
-
-        result = result.compound(self.apply_checks("paired_struct", paired_structs))
-        result = result.compound(self.apply_checks("paired_signal", paired_signals))
-
-        for broadcast in fcp_v2.broadcasts:
-            result = result.compound(
-                self.apply_checks("broadcast_signal", broadcast.signals)
-            )
-
-        for struct in fcp_v2.structs:
-            result = result.compound(self.apply_checks("signal", struct.signals))
 
         return result
 
@@ -230,21 +201,6 @@ class Verifier(BaseVerifier):
             return Error(
                 self.error_logger.log_duplicates(
                     "Found duplicate typenames in fcp configuration", duplicates
-                )
-            )
-
-    def check_fcp_v2_duplicate_broadcasts(self, fcp_v2: Any) -> Union[Ok, Error]:
-        def naming(x: Any) -> Any:
-            return x.name
-
-        duplicates = list(Verifier.get_duplicates(fcp_v2.broadcasts, naming, naming))
-        if len(duplicates) == 0:
-            return Ok(())
-        else:
-            return Error(
-                self.error_logger.log_duplicates(
-                    "Found duplicate broadcasts in fcp configuration",
-                    duplicates,
                 )
             )
 
