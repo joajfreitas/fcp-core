@@ -125,14 +125,14 @@ def default_serialization(fcp: FcpV2, typename: str, data: Dict[str, Any]) -> by
 
     def serialize_signal(signal: Signal, value: Dict["str", Any] | Any) -> bytearray:
         conversions: Dict[str, Callable[[Any], bytearray]] = {
-            "u8": lambda x: x.to_bytes(1, signed=False),
-            "u16": lambda x: x.to_bytes(2, signed=False),
-            "u32": lambda x: x.to_bytes(4, signed=False),
-            "u64": lambda x: x.to_bytes(8, signed=False),
-            "i8": lambda x: x.to_bytes(1, signed=True),
-            "i16": lambda x: x.to_bytes(2, signed=True),
-            "i32": lambda x: x.to_bytes(4, signed=True),
-            "i64": lambda x: x.to_bytes(8, signed=True),
+            "u8": lambda x: x.to_bytes(1, signed=False, byteorder="little"),
+            "u16": lambda x: x.to_bytes(2, signed=False, byteorder="little"),
+            "u32": lambda x: x.to_bytes(4, signed=False, byteorder="little"),
+            "u64": lambda x: x.to_bytes(8, signed=False, byteorder="little"),
+            "i8": lambda x: x.to_bytes(1, signed=True, byteorder="little"),
+            "i16": lambda x: x.to_bytes(2, signed=True, byteorder="little"),
+            "i32": lambda x: x.to_bytes(4, signed=True, byteorder="little"),
+            "i64": lambda x: x.to_bytes(8, signed=True, byteorder="little"),
             "f32": lambda x: bytearray(struct.pack("f", x)),
             "f64": lambda x: bytearray(struct.pack("d", x)),
         }
