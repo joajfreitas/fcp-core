@@ -17,29 +17,6 @@ class BroadcastSignal:
     def get_type(self) -> str:
         return "broadcast_signal"
 
-    def to_fpi(self) -> str:
-        def default(name: str, param: Any) -> bool:
-            defaults = {
-                "mux": "",
-                "mux_count": 1,
-                "scale": 1.0,
-                "offset": 0.0,
-                "byte_order": "little_endian",
-                "start": 0,
-                "min_value": 0.0,
-                "max_value": 0.0,
-            }
-
-            return bool(defaults.get(name) != param)
-
-        fields = [
-            f"{name}: {param};"
-            for name, param in self.field.items()
-            if (name not in {"type"}) and default(name, param)
-        ]
-
-        return f"\tsignal {self.name} {{\n\t\t" + "\n\t\t".join(fields) + "\n\t};"
-
 
 @serde(type_check=strict)
 class Broadcast:
@@ -79,17 +56,6 @@ class Broadcast:
                 return signal.field.get("mux")
 
         return None
-
-    def to_fpi(self) -> tuple[Any, str]:
-        return (
-            self.field.get("device"),
-            (f"/*{self.comment.value}*/\n" if self.comment.value != "" else "")
-            + f"broadcast {self.name} {{\n\t"
-            + "\n\t".join([f"{name}: {field};" for name, field in self.field.items()])
-            + "\n"
-            + "\n".join(signal.to_fpi() for signal in self.signals)
-            + "\n};\n",
-        )
 
     def __repr__(self) -> str:
         return f"<Broadcast name={self.name}"

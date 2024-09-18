@@ -13,8 +13,6 @@ from .specs import signal
 from .specs import struct
 from .specs import enum
 from .specs.comment import Comment
-from .specs import cmd
-from .specs import config
 from .specs import log
 from .specs import v2
 from .result import Ok, Error, result_shortcut
@@ -56,51 +54,6 @@ fcp_parser = Lark(
     %import common.DIGIT   // imports from terminal library
     %import common.SIGNED_NUMBER   // imports from terminal library
     %import common.ESCAPED_STRING   // imports from terminal library
-    %import common.C_COMMENT // imports from terminal library
-    %ignore " "           // Disregard spaces in text
-    %ignore "\\n"
-    %ignore "\\t"
-""",
-    propagate_positions=True,
-)
-
-fpi_parser = Lark(
-    """
-    start: preamble (broadcast | device | imports | log)*
-
-    preamble: "version" ":" string
-
-    broadcast: comment* "broadcast" identifier "{" (field | signal)* "}" ";"
-    field: identifier ":" (value) ";"
-    value : integer | float | string | identifier
-    signal: "signal" identifier "{" field* "}" ";"
-
-    log : comment* "log" identifier ":" param+ ";"
-    command : comment* "command" identifier ":" param+ "{"? (cmd_arg | cmd_ret)* "}"? ";"
-    cmd_arg: comment* "arg" identifier "@" integer ":" param+ ";"
-    cmd_ret: comment* "ret" identifier "@" integer ":" param+ ";"
-    config : comment* "config" identifier ":" param+ ";"
-
-    param: identifier param_args?  "|"?
-    param_args : "(" param_argument+ ")"
-    param_argument: value ","?
-
-    integer: SIGNED_INT
-    float: SIGNED_NUMBER
-    string: ESCAPED_STRING
-
-    device : "device" identifier ":" param+ "{" (command | config)* "}" ";"
-
-    comment : C_COMMENT
-    imports: "import" identifier ";"
-
-    identifier: CNAME
-
-    %import common.WORD
-    %import common.CNAME
-    %import common.SIGNED_NUMBER
-    %import common.ESCAPED_STRING   // imports from terminal library
-    %import common.SIGNED_INT
     %import common.C_COMMENT // imports from terminal library
     %ignore " "           // Disregard spaces in text
     %ignore "\\n"
@@ -293,235 +246,6 @@ class FcpV2Transformer(Transformer):  # type: ignore
         return Ok(Module(self.filename.name, not_imports, self.source, imports))  # type: ignore
 
 
-class FpiTransformer(Transformer):  # type: ignore
-    def __init__(self, filename: str) -> None:
-        self.filename = pathlib.Path(filename)
-        self.path = self.filename.parent
-
-        with open(self.filename) as f:
-            self.source = f.read()
-
-        self.error_logger = ErrorLogger({self.filename: self.source})  # type: ignore
-
-    def preamble(self, args: list[str]) -> Union[Ok, Error]:
-        if args[0] == "3":
-            return Ok(None)
-        else:
-            return Error(
-                self.error_logger.error(
-                    f"Expected IDL version 3 [{self.filename.name}]"
-                )
-            )
-
-    def identifier(self, args: list[str]) -> str:
-        return args[0].value  # type: ignore
-
-    def value(self, args: list[str]) -> str:
-        return args[0]
-
-    def float(self, args: list[str]) -> float:
-        return float(args[0].value)  # type: ignore
-
-    def integer(self, args: list[str]) -> int:
-        return int(args[0].value)  # type: ignore
-
-    def string(self, args: list) -> Any:
-        return args[0].value[1:-1]
-
-    def param(self, args: list[str]) -> tuple[str, ...]:
-        return tuple(args)
-
-    def param_args(self, args: list[str]) -> str:
-        return args[0]
-
-    def param_argument(self, args: list[str]) -> str:
-        return args[0]
-
-    @v_args(tree=True)  # type: ignore
-    def field(self, tree: ParseTree) -> tuple[Any, ...]:
-        name, value = tree.children
-        return (name, value)
-
-    @v_args(tree=True)  # type: ignore
-    def signal(self, tree: ParseTree) -> broadcast.BroadcastSignal:
-        name, *fields = tree.children
-        fields = {name: value for name, value in fields}  # type: ignore
-        meta = get_meta(tree, self)  # type: ignore
-        return broadcast.BroadcastSignal(name, fields, meta=meta)  # type: ignore
-
-    @v_args(tree=True)  # type: ignore
-    def broadcast(self, tree: ParseTree) -> Union[Ok, Error]:
-        if isinstance(tree.children[0], Comment):
-            comment, name, *fields = tree.children
-        else:
-            name, *fields = tree.children
-            comment = Comment("")  # type: ignore
-
-        signals = filter(lambda x: isinstance(x, broadcast.BroadcastSignal), fields)
-        fields = list(
-            filter(lambda x: not isinstance(x, broadcast.BroadcastSignal), fields)
-        )
-
-        field_names = [field[0] for field in fields]  # type: ignore
-        if len(field_names) != len(set(field_names)):
-            return Error(self.error_logger.error(f"Duplicated key in broadcast {name}"))
-
-        meta = get_meta(tree, self)  # type: ignore
-        return Ok(
-            broadcast.Broadcast(
-                name=name,  # type: ignore
-                field={name: value for name, value in fields},  # type: ignore
-                signals=signals,  # type: ignore
-                meta=meta,
-                comment=comment,  # type: ignore
-            )
-        )
-
-    def comment(self, args: list[str]) -> Comment:
-        return Comment(args[0].value.replace("/*", "").replace("*/", ""))  # type: ignore
-
-    def imports(self, args: list[str]) -> Union[Ok, Error]:
-        filename = self.path / (args[0] + ".fpi")
-        try:
-            with open(filename) as f:
-                module = (
-                    FpiTransformer(filename).transform(fpi_parser.parse(f.read())).Q()  # type: ignore
-                )
-                module.filename = filename.name
-        except Exception as e:
-            # logging.error(e)
-            traceback.print_exc()
-            return Error(self.error_logger.error(f"Could not import {filename}\n{e}"))
-
-        return Ok(module)
-
-    @v_args(tree=True)  # type: ignore
-    def device(self, tree: ParseTree) -> Union[Ok, Error]:
-        name, *children = tree.children
-
-        fields = filter(lambda x: not isinstance(x, Ok), children)
-        fields = {name: value for name, value in fields}  # type: ignore
-
-        children = filter(lambda x: isinstance(x, Ok), children)  # type: ignore
-        children = [child.unwrap() for child in children]  # type: ignore
-
-        commands = filter(lambda x: isinstance(x, cmd.Command), children)
-        configs = filter(lambda x: isinstance(x, config.Config), children)
-
-        meta = get_meta(tree, self)  # type: ignore
-        return Ok(
-            device.Device(
-                name=name,  # type: ignore
-                id=fields["id"],  # type: ignore
-                commands=commands,  # type: ignore
-                configs=configs,  # type: ignore
-                meta=meta,
-            )
-        )
-
-    @v_args(tree=True)  # type: ignore
-    def log(self, tree: ParseTree) -> Union[Ok, Error]:
-        if isinstance(tree.children[0], Comment):
-            comment, name, *fields = tree.children
-        else:
-            name, *fields = tree.children
-            comment = Comment("")  # type: ignore
-
-        meta = get_meta(tree, self)  # type: ignore
-        fields = {name: value for name, value in fields}  # type: ignore
-
-        n_args = fields.get("n_args") or 0  # type: ignore
-        return Ok(
-            log.Log(
-                id=fields["id"],  # type: ignore
-                name=name,  # type: ignore
-                comment=comment,  # type: ignore
-                string=fields["str"],  # type: ignore
-                n_args=n_args,
-                meta=meta,
-            )
-        )
-
-    @v_args(tree=True)  # type: ignore
-    def config(self, tree: ParseTree) -> Union[Ok, Error]:
-        if isinstance(tree.children[0], Comment):
-            comment, name, *fields = tree.children
-        else:
-            name, *fields = tree.children
-            comment = Comment("")  # type: ignore
-
-        type = fields[0][0]  # type: ignore
-        fields = {name: value for name, value in fields[1:]}  # type: ignore
-        meta = get_meta(tree, self)  # type: ignore
-        return Ok(
-            config.Config(
-                name,  # type: ignore
-                fields["id"],  # type: ignore
-                type,
-                fields["device"],  # type: ignore
-                comment=comment,  # type: ignore
-                meta=meta,
-            )
-        )
-
-    @v_args(tree=True)  # type: ignore
-    def command(self, tree: ParseTree) -> Union[Ok, Error]:
-        if isinstance(tree.children[0], Comment):
-            comment, name, *fields = tree.children
-        else:
-            name, *fields = tree.children
-            comment = Comment("")  # type: ignore
-
-        args = [field for field in fields if isinstance(field, cmd.CommandArg)]
-        rets = [field for field in fields if isinstance(field, cmd.CommandRet)]
-        fields = [field for field in fields if isinstance(field, tuple)]
-
-        fields = {name: value for name, value in fields}  # type: ignore
-        meta = get_meta(tree, self)  # type: ignore
-        return Ok(
-            cmd.Command(
-                name,  # type: ignore
-                fields["id"],  # type: ignore
-                args,  # type: ignore
-                rets,  # type: ignore
-                fields.get("device"),  # type: ignore
-                comment=comment,  # type: ignore
-                meta=meta,
-            )
-        )
-
-    @v_args(tree=True)  # type: ignore
-    def cmd_arg(self, tree: ParseTree) -> cmd.CommandArg:
-        if isinstance(tree.children[0], Comment):
-            comment, name, id, *params = tree.children
-        else:
-            name, id, *params = tree.children
-            # comment = Comment("")
-
-        type, *params = params
-        return cmd.CommandArg(name=name, type=type[0], id=id)  # type: ignore
-
-    @v_args(tree=True)  # type: ignore
-    def cmd_ret(self, tree: ParseTree) -> cmd.CommandRet:
-        if isinstance(tree.children[0], Comment):
-            comment, name, id, *params = tree.children
-        else:
-            name, id, *params = tree.children
-            # comment = Comment("")
-
-        type, *params = params
-        return cmd.CommandRet(name=name, type=type[0], id=id)  # type: ignore
-
-    @result_shortcut
-    def start(self, args: list[str]) -> Union[Ok, Error]:
-        args = [arg.Q() for arg in args if arg.Q() is not None]  # type: ignore
-
-        imports = list(filter(lambda x: isinstance(x, Module), args))
-        not_imports = list(filter(lambda x: not isinstance(x, Module), args))
-
-        return Ok(Module(self.filename.name, not_imports, self.source, imports))  # type: ignore
-
-
 def resolve_imports(module: dict[str, Any]) -> Union[Ok, Error]:
     def merge(module1: dict, module2: dict) -> dict:
         merged = {}
@@ -569,13 +293,6 @@ def deduplicate(module: dict[str, Any]) -> Ok:
     )
 
 
-def merge(fcp: dict[str, Any], fpi: dict[str, Any]) -> Ok:
-    fcp = {key: fcp[key] for key in fcp.keys() & {"struct", "enum"}}
-    fpi = {key: fpi[key] for key in fpi.keys() & {"device", "broadcast", "log"}}
-    fcp.update(fpi)
-    return Ok(fcp)
-
-
 def convert(module: dict[str, Any]) -> Ok:
     def to_list(t: type, v: list[dict[str, Any]]) -> list:
         return [from_dict(t, x) for x in v]
@@ -602,7 +319,7 @@ def get_sources(module: Any) -> dict[str, str]:
 
 
 @result_shortcut
-def get_fcp(fcp: str, fpi: str) -> Union[Ok, Error]:
+def get_fcp(fcp: str) -> Union[Ok, Error]:
     error_logger = ErrorLogger({})
     fcp_filename = fcp
 
@@ -626,13 +343,4 @@ def get_fcp(fcp: str, fpi: str) -> Union[Ok, Error]:
     fcp_sources = get_sources(fcp)
     fcp = deduplicate(resolve_imports(fcp).Q()).Q()  # type: ignore
 
-    fpi_filename = fpi
-    with open(fpi_filename) as f:
-        fpi_ast = fpi_parser.parse(f.read())
-
-    fpi = FpiTransformer(fpi_filename).transform(fpi_ast).Q()
-    fpi_sources = get_sources(fpi)
-    fpi = deduplicate(resolve_imports(fpi).Q()).Q()  # type: ignore
-
-    fcp_sources.update(fpi_sources)
-    return Ok((convert(merge(fcp, fpi).Q()), fcp_sources))  # type: ignore
+    return Ok((convert(fcp), fcp_sources))  # type: ignore

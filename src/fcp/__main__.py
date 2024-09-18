@@ -22,7 +22,6 @@ def setup_logging() -> None:
 @click.command(name="generate")
 @click.argument("generator")
 @click.argument("fcp")
-@click.argument("fpi")
 @click.argument("output")
 @click.option("--templates")
 @click.option("--skel")
@@ -30,13 +29,12 @@ def setup_logging() -> None:
 def generate_cmd(
     generator: str,
     fcp: str,
-    fpi: str,
     output: str,
     templates: str,
     skel: str,
     noformat: bool,
 ) -> None:
-    fcp_v2, sources = get_fcp(fcp, fpi).unwrap()
+    fcp_v2, sources = get_fcp(fcp).unwrap()
     fcp_v2 = fcp_v2.unwrap()
 
     Verifier(sources).verify(fcp_v2).unwrap()

@@ -51,17 +51,6 @@ class FcpV2:
 
         return fcp_structure
 
-    def to_fpi(self) -> dict[str, list[dict[str, Any]]]:
-        nodes = [node.to_fpi() for node in self.devices + self.broadcasts + self.logs]
-        fpi_structure: dict[str, list[Any]] = {}
-
-        for node in nodes:
-            if node[0] not in fpi_structure.keys():
-                fpi_structure[node[0]] = []
-            fpi_structure[node[0]].append(node[1])
-
-        return fpi_structure
-
     def __repr__(self) -> str:
         sig_count = len([sig for struct in self.structs for sig in struct.signals])
         return f"(Spec: devs={len(self.devices)}, broadcasts={len(self.broadcasts)}, structs={len(self.structs)}, sigs={sig_count})"

@@ -30,15 +30,5 @@ class Device:
     def get_type(self) -> str:
         return "device"
 
-    def to_fpi(self) -> tuple[str, str]:
-        return (
-            self.name,
-            f"device {self.name} : id({self.id}) {{\n\t"
-            + "\n".join([cmd.to_fpi() for cmd in self.commands])
-            + "\n"
-            + "\n".join([cfg.to_fpi() for cfg in self.configs])
-            + "};",
-        )
-
     def __repr__(self) -> str:
         return f"<Device name={self.name} id={self.id}"
