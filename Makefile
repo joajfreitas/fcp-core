@@ -32,8 +32,8 @@ ci: lint test
 
 help:
 	@printf "\033[1;33mAvailable targets:\033[0m\n"
-	@printf "\t\033[1;32mformat\033[0m  - Format code with Black"
-	@printf "\t\033[1;32mlint\033[0m    - Run lint checks with ruff and black"
-	@printf "\t\033[1;32mtest\033[0m    - Run tests with tox"
-	@printf "\t\033[1;32mci\033[0m      - Run all CI checks (lint, check, test)"
-	@printf "\t\033[1;32mhelp\033[0m    - Display this help message"
+	@printf "\t\033[1;32mformat\033[0m  - Format code with Black\n"
+	@printf "\t\033[1;32mlint\033[0m    - Run lint checks with ruff and black\n"
+	@printf "\t\033[1;32mtest\033[0m    - Run tests with tox\n"
+	@printf "\t\033[1;32mci\033[0m      - Run all CI checks (lint, check, test)\n"
+	@printf "\t\033[1;32mhelp\033[0m    - Display this help message\n"
