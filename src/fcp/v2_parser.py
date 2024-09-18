@@ -7,13 +7,10 @@ from typing import Any, Union, Callable, Tuple
 
 from serde import from_dict
 
-from .specs import device
-from .specs import broadcast
 from .specs import signal
 from .specs import struct
 from .specs import enum
 from .specs.comment import Comment
-from .specs import log
 from .specs import v2
 from .result import Ok, Error, result_shortcut
 from .specs.metadata import MetaData
@@ -58,7 +55,7 @@ fcp_parser = Lark(
     %ignore " "           // Disregard spaces in text
     %ignore "\\n"
     %ignore "\\t"
-""",
+    """,
     propagate_positions=True,
 )
 
@@ -303,11 +300,8 @@ def convert(module: dict[str, Any]) -> Ok:
 
     return Ok(
         v2.FcpV2(  # type: ignore
-            broadcasts=to_list(broadcast.Broadcast, module["broadcast"].values()),
-            devices=to_list(device.Device, module["device"].values()),
             structs=to_list(struct.Struct, module["struct"].values()),
             enums=to_list(enum.Enum, module["enum"].values()),
-            logs=to_list(log.Log, module["log"].values()),
             version="3.0",
         )
     )

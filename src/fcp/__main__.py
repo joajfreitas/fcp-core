@@ -25,14 +25,12 @@ def setup_logging() -> None:
 @click.argument("output")  # type: ignore
 @click.option("--templates")  # type: ignore
 @click.option("--skel")  # type: ignore
-@click.option("--noformat", is_flag=True, default=False)  # type: ignore
 def generate_cmd(
     generator: str,
     fcp: str,
     output: str,
     templates: str,
     skel: str,
-    noformat: bool,
 ) -> None:
     fcp_v2, sources = get_fcp(fcp).unwrap()
     fcp_v2 = fcp_v2.unwrap()
