@@ -1,4 +1,4 @@
-from typing import Tuple, Any, Optional, Callable, Dict
+from typing import Tuple, Any, Optional, Callable, Dict, Union
 from serde import serde, strict, to_dict
 import struct
 
@@ -115,7 +115,9 @@ def default_serialization(fcp: FcpV2, typename: str, data: Dict[str, Any]) -> by
 
     structs = {struct.name: struct for struct in fcp.structs}
 
-    def serialize_signal(signal: Signal, value: Dict["str", Any] | Any) -> bytearray:
+    def serialize_signal(
+        signal: Signal, value: Union[Dict["str", Any], Any]
+    ) -> bytearray:
         conversions: Dict[str, Callable[[Any], bytearray]] = {
             "u8": lambda x: x.to_bytes(1, signed=False, byteorder="little"),
             "u16": lambda x: x.to_bytes(2, signed=False, byteorder="little"),
