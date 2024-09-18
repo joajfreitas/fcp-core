@@ -151,7 +151,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
         type = values[0][0]  # type: ignore
 
-        params = {name.value: value for name, *value in values[1:]}  # type: ignore
+        params = {name: value for name, *value in values[1:]}  # type: ignore
         params = convert_params(params)  # type: ignore
 
         meta = get_meta(tree, self)  # type: ignore
