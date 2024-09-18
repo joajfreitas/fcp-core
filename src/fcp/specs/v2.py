@@ -102,23 +102,15 @@ def default_serialization(fcp: FcpV2, typename: str, data: Dict[str, Any]) -> by
     data:
 
     {
-        "foo":
+        "var1":
             {
-                "var1": 3,
-                "var2": 256
+                "var1": 4,
+                "var2": 257
             },
-        "bar":
-            {
-                "var1":
-                    {
-                        "var1": 4,
-                        "var2": 257
-                    },
-                "var2": 10.1
-            }
+        "var2": 10.1
     }
 
-    [3, 1, 0, 4, 1, 1, 65, 33, 153, 154]
+    [4, 1, 1, 65, 33, 153, 154]
     """
 
     structs = {struct.name: struct for struct in fcp.structs}
