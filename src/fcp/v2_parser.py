@@ -25,16 +25,27 @@ fcp_parser = Lark(
     preamble: "version" ":" string
 
     struct: comment* "struct" identifier "{" field+ "}"
+<<<<<<< HEAD
     field: comment* identifier field_id ":" param+ ","
+=======
+    field: comment* identifier field_id ":" param+ ";"
+>>>>>>> 408bb12 (Remove need for trailing semicolons after struct and enum definitions)
     field_id: "@" number
     param: identifier "("? param_argument* ")"? "|"?
     param_argument: value ","?
 
     enum: comment* "enum" identifier "{" enum_field* "}"
+<<<<<<< HEAD
     enum_field : comment* identifier "="? value? ","
 
     extension: identifier "extends" identifier "{" (extension_field | signal_block)+ "}"
     signal_block: "signal" identifier "{" extension_field+ "}" ","
+    extension_field: identifier ":" value ","
+=======
+    enum_field : comment* identifier "="? value? ";"
+>>>>>>> 408bb12 (Remove need for trailing semicolons after struct and enum definitions)
+
+    extension: identifier "extends" identifier "{" +extension_field "}"
     extension_field: identifier ":" value ","
 
     mod_expr: "mod" identifier ";"
