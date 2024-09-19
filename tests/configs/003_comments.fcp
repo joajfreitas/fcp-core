@@ -4,7 +4,7 @@ version: "3"
 struct foo {
     /*the bar field*/
     bar @ 0: u8;
-};
+}
 
 /*the enum baz*/
 enum baz {
@@ -12,4 +12,4 @@ enum baz {
     Var1 = 0;
     /*the variant var2*/
     Var2 = 1;
-};
+}

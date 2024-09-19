@@ -25,13 +25,13 @@ fcp_parser = Lark(
 
     preamble: "version" ":" string
 
-    struct: comment* "struct" identifier "{" field+ "}" ";"
+    struct: comment* "struct" identifier "{" field+ "}"
     field: comment* identifier field_id ":" param+ ";"
     field_id: "@" number
     param: identifier "("? param_argument* ")"? "|"?
     param_argument: value ","?
 
-    enum: comment* "enum" identifier "{" enum_field* "}" ";"
+    enum: comment* "enum" identifier "{" enum_field* "}"
     enum_field : comment* identifier "="? value? ";"
 
     extension: identifier "extends" identifier "{" (extension_field | signal_block)+ "}"
