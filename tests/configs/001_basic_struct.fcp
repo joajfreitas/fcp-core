@@ -1,5 +1,5 @@
 version: "3"
 
 struct foo {
-    bar @ 0: u8;
+    bar @ 0: u8,
 }

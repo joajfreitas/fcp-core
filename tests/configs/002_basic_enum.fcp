@@ -1,6 +1,6 @@
 version: "3"
 
 enum foo {
-    bar = 0;
-    baz = 1;
+    bar = 0,
+    baz = 1,
 }
