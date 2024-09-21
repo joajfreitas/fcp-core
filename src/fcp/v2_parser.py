@@ -272,11 +272,14 @@ class FcpV2Transformer(Transformer):  # type: ignore
         return Comment(args[0].value.replace("/*", "").replace("*/", ""))  # type: ignore
 
     def start(self, args: List[str]) -> Ok:
+        def is_import(x: Any) -> bool:
+            return isinstance(x, Module)
+
         args = [arg.Q() for arg in args if arg.Q() is not None]  # type: ignore
 
-        imports = list(filter(lambda x: isinstance(x, Module), args))
-        not_imports = list(filter(lambda x: not isinstance(x, Module), args))
-        return Ok(Module(self.filename.name, not_imports, self.source, imports))  # type: ignore
+        imports = [arg for arg in args if is_import(arg)]
+        types = [arg for arg in args if not is_import(arg)]
+        return Ok(Module(self.filename.name, types, self.source, imports))  # type: ignore
 
 
 def resolve_imports(module: Dict[str, Any]) -> Union[Ok, Error]:
