@@ -52,8 +52,7 @@ class FcpV2:
         return remove_meta(remove_none_fields(to_dict(self)))
 
     def __repr__(self) -> str:
-        sig_count = len([sig for struct in self.structs for sig in struct.signals])
-        return f"(Spec: structs={len(self.structs)}, sigs={sig_count})"
+        return str(to_dict(self))
 
 
 def decompose_id(sid: int) -> Tuple[int, int]:
