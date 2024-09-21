@@ -3,7 +3,7 @@ import traceback
 import logging
 
 from lark import Lark, Transformer, v_args, UnexpectedCharacters, ParseTree
-from typing import Any, Union, Callable, Tuple
+from typing import Any, Union, Callable, Tuple, List, Dict
 
 from serde import from_dict
 
@@ -11,7 +11,6 @@ from .specs import signal
 from .specs import struct
 from .specs import enum
 from .specs import extension
-from .specs import field
 from .specs import signal_block
 from .specs.comment import Comment
 from .specs import v2
@@ -89,7 +88,7 @@ def get_meta(tree: ParseTree, parser: Lark) -> MetaData:
     )
 
 
-def convert_params(params: dict[str, Callable]) -> dict[str, Any]:
+def convert_params(params: Dict[str, Callable]) -> Dict[str, Any]:
     conversion_table = {
         "range": lambda x: {"min_value": x[0], "max_value": x[1]},
         "scale": lambda x: {"scale": x[0], "offset": x[1]},
@@ -98,7 +97,7 @@ def convert_params(params: dict[str, Callable]) -> dict[str, Any]:
         "endianness": lambda x: {"byte_order": x[0]},
     }
 
-    values: dict[str, Callable] = {}
+    values: Dict[str, Callable] = {}
     for name, value in params.items():
         values.update(conversion_table[name](value))  # type: ignore
 
@@ -115,32 +114,32 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
         self.error_logger = ErrorLogger({self.filename.name: self.source})
 
-    def preamble(self, args: list[str]) -> Union[Ok, Error]:
+    def preamble(self, args: List[str]) -> Union[Ok, Error]:
         if args[0] == "3":
             return Ok(None)
         else:
             return Error("Expected IDL version 3")
 
-    def dot(self, args: list[str]) -> str:
+    def dot(self, args: List[str]) -> str:
         return "."
 
-    def underscore(self, args: list[str]) -> str:
+    def underscore(self, args: List[str]) -> str:
         return "_"
 
-    def identifier(self, args: list[Any]) -> Any:
+    def identifier(self, args: List[Any]) -> Any:
         return args[0].value
 
-    def import_identifier(self, args: list[str]) -> str:
+    def import_identifier(self, args: List[str]) -> str:
         identifier = "".join([arg for arg in args])
         return identifier
 
-    def param(self, args: list[str]) -> Tuple[str, ...]:
+    def param(self, args: List[str]) -> Tuple[str, ...]:
         return tuple(args)
 
-    def param_argument(self, args: list[str]) -> str:
+    def param_argument(self, args: List[str]) -> str:
         return args[0]
 
-    def field_id(self, args: list[str]) -> str:
+    def field_id(self, args: List[str]) -> str:
         return args[0]
 
     @v_args(tree=True)  # type: ignore
@@ -215,7 +214,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         return Ok(enum.Enum(name=name, enumeration=fields, meta=meta, comment=comment))  # type: ignore
 
     @result_shortcut
-    def imports(self, args: list[str]) -> Union[Ok, Error]:
+    def imports(self, args: List[str]) -> Union[Ok, Error]:
         filename = self.path / (args[0].replace(".", "/") + ".fcp")
         try:
             with open(filename) as f:
@@ -231,45 +230,47 @@ class FcpV2Transformer(Transformer):  # type: ignore
         return Ok(module)
 
     @result_shortcut
-    def extension(self, args):
+    def extension(self, args: List[Any]) -> Union[Ok, Error]:
+        def is_signal_block(x: Any) -> bool:
+            return isinstance(x, signal_block.SignalBlock)
+
         name, type, *fields = args
-        is_signal_block = lambda x: isinstance(x, signal_block.SignalBlock)
 
         signal_blocks = [field for field in fields if is_signal_block(field)]
         fields = [field for field in fields if not is_signal_block(field)]
 
-        return Ok(extension.Extension(name, type, dict(fields), signal_blocks))
+        return Ok(extension.Extension(name, type, dict(fields), signal_blocks))  # type: ignore
 
-    def extension_field(self, args):
+    def extension_field(self, args: List[Any]) -> Tuple[str, Any]:
         name, value = args
         return (name, value)
 
-    def signal_block(self, args):
+    def signal_block(self, args: List[Any]) -> signal_block.SignalBlock:
         name, *fields = args
 
-        fields = {field[0]: field[1] for field in fields}
-        return signal_block.SignalBlock(name, fields)
+        fields: Dict[str, Any] = {field[0]: field[1] for field in fields}  # type: ignore[no-redef]
+        return signal_block.SignalBlock(name, fields)  # type: ignore
 
-    def signal_field(self, args):
+    def signal_field(self, args: List[Any]) -> Tuple[str, Any]:
         name, value = args
         return (name, value)
 
-    def value(self, args: list[str]) -> str:
+    def value(self, args: List[str]) -> str:
         return args[0]
 
-    def number(self, args: list[str]) -> Union[int, float]:
+    def number(self, args: List[str]) -> Union[int, float]:
         try:
             return int(args[0].value)  # type: ignore
         except ValueError:
             return float(args[0].value)  # type: ignore
 
-    def string(self, args: list[str]) -> str:
+    def string(self, args: List[str]) -> str:
         return args[0].value[1:-1]  # type: ignore
 
-    def comment(self, args: list[str]) -> Comment:
+    def comment(self, args: List[str]) -> Comment:
         return Comment(args[0].value.replace("/*", "").replace("*/", ""))  # type: ignore
 
-    def start(self, args: list[str]) -> Ok:
+    def start(self, args: List[str]) -> Ok:
         args = [arg.Q() for arg in args if arg.Q() is not None]  # type: ignore
 
         imports = list(filter(lambda x: isinstance(x, Module), args))
@@ -277,8 +278,8 @@ class FcpV2Transformer(Transformer):  # type: ignore
         return Ok(Module(self.filename.name, not_imports, self.source, imports))  # type: ignore
 
 
-def resolve_imports(module: dict[str, Any]) -> Union[Ok, Error]:
-    def merge(module1: dict, module2: dict) -> dict:
+def resolve_imports(module: Dict[str, Any]) -> Union[Ok, Error]:
+    def merge(module1: Dict, module2: Dict) -> Dict:
         merged = {}
         keys = list(module1.keys()) + list(module2.keys())
         for key in keys:
@@ -286,7 +287,7 @@ def resolve_imports(module: dict[str, Any]) -> Union[Ok, Error]:
 
         return merged
 
-    nodes: dict[str, list[Any]] = {
+    nodes: Dict[str, List[Any]] = {
         "enum": [],
         "struct": [],
         "broadcast": [],
@@ -315,7 +316,7 @@ def resolve_imports(module: dict[str, Any]) -> Union[Ok, Error]:
     return Ok(nodes)
 
 
-def deduplicate(module: dict[str, Any]) -> Ok:
+def deduplicate(module: Dict[str, Any]) -> Ok:
     return Ok(
         {
             type: {node.get_name(): node for node in module[type]}
@@ -324,8 +325,8 @@ def deduplicate(module: dict[str, Any]) -> Ok:
     )
 
 
-def convert(module: dict[str, Any]) -> Ok:
-    def to_list(t: type, v: list[dict[str, Any]]) -> list:
+def convert(module: Dict[str, Any]) -> Ok:
+    def to_list(t: type, v: List[Dict[str, Any]]) -> List:
         return [from_dict(t, x) for x in v]
 
     return Ok(
@@ -339,7 +340,7 @@ def convert(module: dict[str, Any]) -> Ok:
 
 
 @result_shortcut
-def get_sources(module: Any) -> dict[str, str]:
+def get_sources(module: Any) -> Dict[str, str]:
     sources = {module.filename: module.source}
     for mod in module.imports:
         sources.update(get_sources(mod))
