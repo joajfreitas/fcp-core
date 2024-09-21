@@ -1,4 +1,4 @@
-from serde import serde, strict, field
+from serde import serde, strict, field, to_dict
 from typing import Optional
 
 from .signal import Signal
@@ -40,5 +40,5 @@ class Struct:
             + ";\n};",
         )
 
-    def __repr__(self) -> str:
-        return f"<Struct name={self.name}"
+    def __repr__(self):
+        return str(to_dict(self))
