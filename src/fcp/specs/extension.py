@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import Any
 from serde import serde, strict, to_dict
 
 from .signal_block import SignalBlock
@@ -8,8 +8,8 @@ from .signal_block import SignalBlock
 class Extension:
     name: str
     type: str
-    fields: Dict[str, Any]
-    signals: List[SignalBlock]
+    fields: dict[str, Any]
+    signals: list[SignalBlock]
 
     def get_type(self) -> str:
         return "extension"
