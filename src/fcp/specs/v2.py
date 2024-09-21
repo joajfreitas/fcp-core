@@ -1,4 +1,4 @@
-from typing import Tuple, Any, Callable, Dict, Union
+from typing import Tuple, Any, Callable, Union
 from serde import serde, strict, to_dict
 import struct
 
@@ -66,7 +66,7 @@ def make_sid(dev_id: int, msg_id: int) -> int:
     return (msg_id << 5) + dev_id
 
 
-def default_serialization(fcp: FcpV2, typename: str, data: Dict[str, Any]) -> bytearray:
+def default_serialization(fcp: FcpV2, typename: str, data: dict[str, Any]) -> bytearray:
     """
     ```fcp
     struct foo {
@@ -97,9 +97,9 @@ def default_serialization(fcp: FcpV2, typename: str, data: Dict[str, Any]) -> by
     structs = {struct.name: struct for struct in fcp.structs}
 
     def serialize_signal(
-        signal: Signal, value: Union[Dict["str", Any], Any]
+        signal: Signal, value: Union[dict["str", Any], Any]
     ) -> bytearray:
-        conversions: Dict[str, Callable[[Any], bytearray]] = {
+        conversions: dict[str, Callable[[Any], bytearray]] = {
             "u8": lambda x: x.to_bytes(1, signed=False, byteorder="little"),
             "u16": lambda x: x.to_bytes(2, signed=False, byteorder="little"),
             "u32": lambda x: x.to_bytes(4, signed=False, byteorder="little"),
@@ -119,7 +119,7 @@ def default_serialization(fcp: FcpV2, typename: str, data: Dict[str, Any]) -> by
         else:
             raise ValueError()
 
-    def serialize_struct(struct: Struct, data: Dict["str", Any]) -> bytearray:
+    def serialize_struct(struct: Struct, data: dict["str", Any]) -> bytearray:
         buffer = bytearray()
         for signal in struct.signals:
             buffer += serialize_signal(signal, data[signal.name])
