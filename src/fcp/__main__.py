@@ -43,6 +43,15 @@ def generate_cmd(
     ).unwrap()
 
 
+@click.command()
+@click.argument("fcp")  # type: ignore
+def show(fcp):
+    fcp_v2, sources = get_fcp(fcp).unwrap()
+    fcp_v2 = fcp_v2.unwrap()
+
+    print(fcp_v2)
+
+
 @click.group(invoke_without_command=True)  # type: ignore
 @click.option("--version", is_flag=True, default=False)  # type: ignore
 def main(version: str) -> None:
@@ -55,6 +64,7 @@ def main(version: str) -> None:
 
 
 main.add_command(generate_cmd)
+main.add_command(show)
 
 if __name__ == "__main__":
     setup_logging()
