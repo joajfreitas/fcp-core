@@ -37,7 +37,7 @@ class Signal:
     min_value: Optional[float] = None
     max_value: Optional[float] = None
     meta: Optional[MetaData] = field(skip=True, default=None)
-    type: Optional[str] = "unsigned"
+    type: Optional[str] = None
 
     def to_fcp(self) -> str:
         def show(value: Any, default: Any, fmt: Any) -> str:

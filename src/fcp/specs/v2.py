@@ -5,6 +5,7 @@ import struct
 from . import enum
 from .signal import Signal
 from .struct import Struct
+from .extension import Extension
 
 
 def handle_key_not_found(d: dict[str, Any], key: str) -> list[Any]:
@@ -19,6 +20,7 @@ class FcpV2:
 
     structs: list[Struct]
     enums: list[enum.Enum]
+    extensions: list[Extension]
     version: str = "1.0"
 
     def to_fcp(self) -> dict[str, list[dict[str, Any]]]:

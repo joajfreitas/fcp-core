@@ -1,0 +1,13 @@
+version: "3"
+
+struct A {
+    field1 @0: u8,
+}
+
+A_protocol1 extends A {
+    id: 2,
+    signal field1 {
+        bitstart: 0,
+        bitlength: 8,
+    },
+}

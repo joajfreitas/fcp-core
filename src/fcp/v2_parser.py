@@ -10,6 +10,9 @@ from serde import from_dict
 from .specs import signal
 from .specs import struct
 from .specs import enum
+from .specs import extension
+from .specs import field
+from .specs import signal_block
 from .specs.comment import Comment
 from .specs import v2
 from .result import Ok, Error, result_shortcut
@@ -23,14 +26,17 @@ fcp_parser = Lark(
 
     preamble: "version" ":" string
 
-    struct: comment* "struct" identifier "{" field+ "}" ";"
-    field: comment* identifier field_id ":" param+ ";"
-    field_id: "@" number
+    struct: comment* "struct" identifier "{" field+ "}"
+    field: comment* identifier "@" number ":" param+ ","
     param: identifier "("? param_argument* ")"? "|"?
     param_argument: value ","?
 
-    enum: comment* "enum" identifier "{" enum_field* "}" ";"
-    enum_field : comment* identifier "="? value? ";"
+    enum: comment* "enum" identifier "{" enum_field* "}"
+    enum_field : comment* identifier "="? value? ","
+
+    extension: identifier "extends" identifier "{" (extension_field | signal_block)+ "}"
+    signal_block: "signal" identifier "{" extension_field+ "}" ","
+    extension_field: identifier ":" value ","
 
     imports: "import" import_identifier ";"
 
@@ -224,6 +230,30 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
         return Ok(module)
 
+    @result_shortcut
+    def extension(self, args):
+        name, type, *fields = args
+        is_signal_block = lambda x: isinstance(x, signal_block.SignalBlock)
+
+        signal_blocks = [field for field in fields if is_signal_block(field)]
+        fields = [field for field in fields if not is_signal_block(field)]
+
+        return Ok(extension.Extension(name, type, dict(fields), signal_blocks))
+
+    def extension_field(self, args):
+        name, value = args
+        return (name, value)
+
+    def signal_block(self, args):
+        name, *fields = args
+
+        fields = {field[0]: field[1] for field in fields}
+        return signal_block.SignalBlock(name, fields)
+
+    def signal_field(self, args):
+        name, value = args
+        return (name, value)
+
     def value(self, args: list[str]) -> str:
         return args[0]
 
@@ -302,6 +332,7 @@ def convert(module: dict[str, Any]) -> Ok:
         v2.FcpV2(  # type: ignore
             structs=to_list(struct.Struct, module["struct"].values()),
             enums=to_list(enum.Enum, module["enum"].values()),
+            extensions=to_list(extension.Extension, module["extension"].values()),
             version="3.0",
         )
     )

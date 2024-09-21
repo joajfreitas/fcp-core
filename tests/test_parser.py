@@ -11,7 +11,13 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 @pytest.mark.parametrize(
     "test_name",
-    ["001_basic_struct", "002_basic_enum", "003_comments", "004_struct_composition"],
+    [
+        "001_basic_struct",
+        "002_basic_enum",
+        "003_comments",
+        "004_struct_composition",
+        "005_extends",
+    ],
 )  # type: ignore
 def test_parser(test_name: str) -> None:
     config_dir = os.path.join(THIS_DIR, "configs")

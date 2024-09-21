@@ -8,7 +8,7 @@ from typing import Dict, Any
 
 @pytest.fixture  # type: ignore
 def fcp_v2() -> FcpV2:
-    return FcpV2(structs=[], enums=[], version="3.0")
+    return FcpV2(structs=[], enums=[], extensions=[], version="3.0")
 
 
 @pytest.fixture  # type: ignore
@@ -16,13 +16,14 @@ def fcp_v2_dict() -> Dict[str, Any]:
     return {
         "structs": [],
         "enums": [],
+        "extensions": [],
         "version": "3.0",
     }
 
 
 @pytest.fixture  # type: ignore
 def fcp_v2_json() -> str:
-    return '{"structs": [], "enums": [], "devices": [], "broadcasts": [], "logs": [], "version": "3.0"}'
+    return '{"structs": [], "enums": [], "extensions": [], "version": "3.0"}'
 
 
 def test_fcp_v2_init(fcp_v2: FcpV2) -> None:
@@ -30,13 +31,16 @@ def test_fcp_v2_init(fcp_v2: FcpV2) -> None:
 
 
 def test_fcp_v2_to_json(fcp_v2: FcpV2) -> None:
-    assert to_json(fcp_v2) == '{"structs":[],"enums":[],"version":"3.0"}'
+    assert (
+        to_json(fcp_v2) == '{"structs":[],"enums":[],"extensions":[],"version":"3.0"}'
+    )
 
 
 def test_fcp_v2_to_dict(fcp_v2: FcpV2) -> None:
     assert to_dict(fcp_v2) == {
         "structs": [],
         "enums": [],
+        "extensions": [],
         "version": "3.0",
     }
 
