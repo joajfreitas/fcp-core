@@ -1,8 +1,8 @@
 version: "3"
 
 struct A {
-    field1 @0: u8,
-}
+    field1 @0: u8;
+};
 
 A_protocol1 extends A {
     id: 2,

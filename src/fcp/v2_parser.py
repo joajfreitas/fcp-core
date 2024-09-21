@@ -21,17 +21,18 @@ from .verifier import ErrorLogger
 
 fcp_parser = Lark(
     """
-    start: preamble (struct | enum | imports)*
+    start: preamble (struct | enum | imports | extension)*
 
     preamble: "version" ":" string
 
-    struct: comment* "struct" identifier "{" field+ "}"
-    field: comment* identifier "@" number ":" param+ ","
+    struct: comment* "struct" identifier "{" field+ "}" ";"
+    field: comment* identifier field_id ":" param+ ";"
+    field_id: "@" number
     param: identifier "("? param_argument* ")"? "|"?
     param_argument: value ","?
 
-    enum: comment* "enum" identifier "{" enum_field* "}"
-    enum_field : comment* identifier "="? value? ","
+    enum: comment* "enum" identifier "{" enum_field* "}" ";"
+    enum_field : comment* identifier "="? value? ";"
 
     extension: identifier "extends" identifier "{" (extension_field | signal_block)+ "}"
     signal_block: "signal" identifier "{" extension_field+ "}" ","
@@ -290,8 +291,7 @@ def resolve_imports(module: Dict[str, Any]) -> Union[Ok, Error]:
     nodes: Dict[str, List[Any]] = {
         "enum": [],
         "struct": [],
-        "broadcast": [],
-        "device": [],
+        "extension": [],
         "log": [],
     }
 
