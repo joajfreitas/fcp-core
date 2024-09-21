@@ -47,9 +47,9 @@ def make_signal(signal, mux_signals, dev_name):
         )
 
     if signal.mux_count == 1:
-        #if len(mux_signals) > 0:
+        # if len(mux_signals) > 0:
         #    yield make_signal_closure(signal.name, signal, mux_signals, [1])
-        #else:
+        # else:
         yield make_signal_closure(signal.name, signal, mux_signals, None)
 
         return
@@ -89,4 +89,4 @@ def write_dbc(spec):
 
     db = CanDatabase(messages=messages, nodes=nodes)
     return db
-    #dump_file(db, dbc)
+    # dump_file(db, dbc)

@@ -10,6 +10,7 @@ from .specs import signal
 from .specs import struct
 from .specs import enum
 from .specs import extension
+from .specs import field
 from .specs import signal_block
 from .specs.comment import Comment
 from .specs import v2
@@ -25,8 +26,7 @@ fcp_parser = Lark(
     preamble: "version" ":" string
 
     struct: comment* "struct" identifier "{" field+ "}"
-    field: comment* identifier field_id ":" param+ ","
-    field_id: "@" number
+    field: comment* identifier "@" number ":" param+ ","
     param: identifier "("? param_argument* ")"? "|"?
     param_argument: value ","?
 
@@ -34,9 +34,8 @@ fcp_parser = Lark(
     enum_field : comment* identifier "="? value? ","
 
     extension: identifier "extends" identifier "{" (extension_field | signal_block)+ "}"
-    extension_field: identifier ":" value ","
     signal_block: "signal" identifier "{" extension_field+ "}" ","
-    signal_field: identifier ":" value ","
+    extension_field: identifier ":" value ","
 
     mod_expr: "mod" identifier ";"
 
