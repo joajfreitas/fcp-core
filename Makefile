@@ -1,7 +1,7 @@
 SRC:=src tests
 RUN_UNDER?=
 
-.PHONY: format ruff format_check mypy lint check test ci help
+.PHONY: format ruff format_check mypy lint check test ci help docs
 
 default: help
 
@@ -37,3 +37,6 @@ help:
 	@printf "\t\033[1;32mtest\033[0m    - Run tests with tox\n"
 	@printf "\t\033[1;32mci\033[0m      - Run all CI checks (lint, check, test)\n"
 	@printf "\t\033[1;32mhelp\033[0m    - Display this help message\n"
+
+docs:
+	sphinx-build -M html docs docs/build
