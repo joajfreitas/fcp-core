@@ -1,6 +1,6 @@
 version: "3"
 
-import temperature;
+mod temperature;
 
 /*this is a comment*/
 enum SensorState {
