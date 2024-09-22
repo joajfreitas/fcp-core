@@ -26,7 +26,7 @@ def test_parser(test_name: str) -> None:
 
     fcp_v2, sources = get_fcp(fcp_config).unwrap()
 
-    fcp_json_dict = fcp_v2.unwrap().to_dict()
+    fcp_json_dict = fcp_v2.to_dict()
 
     # Load the expected json result
     with open(result_path, "r") as result_file:
@@ -44,5 +44,5 @@ def test_default_serialization() -> None:
     fcp_v2, _ = get_fcp(fcp_config).unwrap()
 
     assert default_serialization(
-        fcp_v2.unwrap(), "baz", {"var": {"var1": 1, "var2": 2}}
+        fcp_v2, "baz", {"var": {"var1": 1, "var2": 2}}
     ) == bytearray([1, 2])

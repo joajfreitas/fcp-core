@@ -5,8 +5,6 @@ import logging
 from lark import Lark, Transformer, v_args, UnexpectedCharacters, ParseTree
 from typing import Any, Union, Callable, Tuple, List, Dict
 
-from serde import from_dict
-
 from .specs import signal
 from .specs import struct
 from .specs import enum
@@ -21,7 +19,7 @@ from .verifier import ErrorLogger
 
 fcp_parser = Lark(
     """
-    start: preamble (struct | enum | imports | extension)*
+    start: preamble (struct | enum | mod_expr | extension)*
 
     preamble: "version" ":" string
 
@@ -38,7 +36,7 @@ fcp_parser = Lark(
     signal_block: "signal" identifier "{" extension_field+ "}" ","
     extension_field: identifier ":" value ","
 
-    imports: "import" import_identifier ";"
+    mod_expr: "mod" identifier ";"
 
     import_identifier: (UNDERSCORE|LETTER|DOT) (UNDERSCORE|LETTER|DIGIT|DOT)*
     identifier: CNAME
@@ -69,12 +67,10 @@ fcp_parser = Lark(
 class Module:
     def __init__(self, filename: str, children: str, source: str, imports: str) -> None:
         self.filename = filename
-        self.children = children
         self.source = source
-        self.imports = imports
 
     def __repr__(self) -> str:
-        return f"{self.filename}: {self.children}, imports:{len(self.imports)}"
+        return f"Module {self.filename}"
 
 
 def get_meta(tree: ParseTree, parser: Lark) -> MetaData:
@@ -105,10 +101,23 @@ def convert_params(params: Dict[str, Callable]) -> Dict[str, Any]:
     return values
 
 
+class ParserContext:
+    def __init__(self) -> None:
+        self.modules: dict[str, str] = {}
+
+    def set_module(self, name: str, module: str) -> None:
+        self.modules[name] = module
+
+    def get_sources(self) -> dict[str, str]:
+        return {name: source for name, source in self.modules.items()}
+
+
 class FcpV2Transformer(Transformer):  # type: ignore
-    def __init__(self, filename: str) -> None:
+    def __init__(self, filename: str, parser_context: ParserContext) -> None:
         self.filename = pathlib.Path(filename)
         self.path = self.filename.parent
+        self.parser_context = parser_context
+        self.fcp = v2.FcpV2()
 
         with open(self.filename) as f:
             self.source = f.read()
@@ -178,7 +187,8 @@ class FcpV2Transformer(Transformer):  # type: ignore
             comment = None  # type: ignore
 
         meta = get_meta(tree, self)  # type: ignore
-        return Ok(
+
+        self.fcp.structs.append(
             struct.Struct(
                 name=name,
                 signals=[x.Q() for x in fields],  # type: ignore
@@ -186,6 +196,8 @@ class FcpV2Transformer(Transformer):  # type: ignore
                 comment=comment,  # type: ignore
             )
         )
+
+        return Ok(())
 
     @v_args(tree=True)  # type: ignore
     def enum_field(self, tree: ParseTree) -> Union[Ok, Error]:
@@ -212,23 +224,30 @@ class FcpV2Transformer(Transformer):  # type: ignore
         fields = [field.Q() for field in fields]  # type: ignore
 
         meta = get_meta(tree, self)  # type: ignore
-        return Ok(enum.Enum(name=name, enumeration=fields, meta=meta, comment=comment))  # type: ignore
+        self.fcp.enums.append(
+            enum.Enum(name=name, enumeration=fields, meta=meta, comment=comment)  # type: ignore
+        )
+
+        return Ok(())
 
     @result_shortcut
-    def imports(self, args: List[str]) -> Union[Ok, Error]:
+    def mod_expr(self, args: List[str]) -> Union[Ok, Error]:
         filename = self.path / (args[0].replace(".", "/") + ".fcp")
+
         try:
             with open(filename) as f:
-                module = (
-                    FcpV2Transformer(filename).transform(fcp_parser.parse(f.read())).Q()  # type: ignore
-                )
-                module.filename = filename.name
+                source = f.read()
+                fcp = FcpV2Transformer(filename, self.parser_context).transform(fcp_parser.parse(source)).Q()  # type: ignore
+                self.parser_context.set_module(str(filename), source)
+
+                self.fcp.merge(fcp)
+
         except Exception as e:
             logging.error(e)
             traceback.print_exc()
             return Error(self.error_logger.error(f"Could not import {filename}"))
 
-        return Ok(module)
+        return Ok(())
 
     @result_shortcut
     def extension(self, args: List[Any]) -> Union[Ok, Error]:
@@ -240,7 +259,11 @@ class FcpV2Transformer(Transformer):  # type: ignore
         signal_blocks = [field for field in fields if is_signal_block(field)]
         fields = [field for field in fields if not is_signal_block(field)]
 
-        return Ok(extension.Extension(name, type, dict(fields), signal_blocks))  # type: ignore
+        self.fcp.extensions.append(
+            extension.Extension(name, type, dict(fields), signal_blocks)  # type: ignore
+        )
+
+        return Ok(())
 
     def extension_field(self, args: List[Any]) -> Tuple[str, Any]:
         name, value = args
@@ -272,83 +295,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         return Comment(args[0].value.replace("/*", "").replace("*/", ""))  # type: ignore
 
     def start(self, args: List[str]) -> Ok:
-        def is_import(x: Any) -> bool:
-            return isinstance(x, Module)
-
-        args = [arg.Q() for arg in args if arg.Q() is not None]  # type: ignore
-
-        imports = [arg for arg in args if is_import(arg)]
-        types = [arg for arg in args if not is_import(arg)]
-        return Ok(Module(self.filename.name, types, self.source, imports))  # type: ignore
-
-
-def resolve_imports(module: Dict[str, Any]) -> Union[Ok, Error]:
-    def merge(module1: Dict, module2: Dict) -> Dict:
-        merged = {}
-        keys = list(module1.keys()) + list(module2.keys())
-        for key in keys:
-            merged[key] = (module1.get(key) or []) + (module2.get(key) or [])
-
-        return merged
-
-    nodes: Dict[str, List[Any]] = {
-        "enum": [],
-        "struct": [],
-        "extension": [],
-        "log": [],
-    }
-
-    for child in module.imports:  # type: ignore
-        resolved = resolve_imports(child)
-        if resolved.is_err():
-            return resolved
-
-        nodes = merge(nodes, resolved.unwrap())  # type: ignore
-
-    for child in module.children:  # type: ignore
-        child.filename = module.filename  # type: ignore
-
-        if child.get_type() not in nodes.keys():
-            nodes[child.get_type()] = []
-
-        if child.get_name() in [node.get_name() for node in nodes[child.get_type()]]:
-            return Error("Duplicated definitions")
-
-        nodes[child.get_type()].append(child)
-
-    return Ok(nodes)
-
-
-def deduplicate(module: Dict[str, Any]) -> Ok:
-    return Ok(
-        {
-            type: {node.get_name(): node for node in module[type]}
-            for type in module.keys()
-        }
-    )
-
-
-def convert(module: Dict[str, Any]) -> Ok:
-    def to_list(t: type, v: List[Dict[str, Any]]) -> List:
-        return [from_dict(t, x) for x in v]
-
-    return Ok(
-        v2.FcpV2(  # type: ignore
-            structs=to_list(struct.Struct, module["struct"].values()),
-            enums=to_list(enum.Enum, module["enum"].values()),
-            extensions=to_list(extension.Extension, module["extension"].values()),
-            version="3.0",
-        )
-    )
-
-
-@result_shortcut
-def get_sources(module: Any) -> Dict[str, str]:
-    sources = {module.filename: module.source}
-    for mod in module.imports:
-        sources.update(get_sources(mod))
-
-    return sources
+        return Ok(self.fcp)
 
 
 @result_shortcut
@@ -372,8 +319,6 @@ def get_fcp(fcp: str) -> Union[Ok, Error]:
                 )
             )
 
-    fcp = FcpV2Transformer(fcp_filename).transform(fcp_ast).Q()
-    fcp_sources = get_sources(fcp)
-    fcp = deduplicate(resolve_imports(fcp).Q()).Q()  # type: ignore
-
-    return Ok((convert(fcp), fcp_sources))  # type: ignore
+    parser_context = ParserContext()
+    fcp = FcpV2Transformer(fcp_filename, parser_context).transform(fcp_ast).Q()
+    return Ok((fcp, parser_context.get_sources()))
