@@ -5,19 +5,19 @@ import re
 from pprint import pprint
 
 from fcp.v2_parser import get_fcp
-from fcp import default_serialization
+from fcp import FcpV2, default_serialization
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def get_fcp_config(scope, name):
+def get_fcp_config(scope: str, name: str) -> FcpV2:
     config_dir = os.path.join(THIS_DIR, "configs", scope)
     fcp_config = os.path.join(config_dir, name + ".fcp")
 
     return get_fcp(fcp_config)
 
 
-def get_result_json(scope, name):
+def get_result_json(scope: str, name: str) -> FcpV2:
     config_dir = os.path.join(THIS_DIR, "configs", scope)
     result_path = os.path.join(config_dir, name + ".json")
 
@@ -25,7 +25,7 @@ def get_result_json(scope, name):
         return json.load(result_file)
 
 
-def get_result_txt(scope, name):
+def get_result_txt(scope: str, name: str) -> str:
     config_dir = os.path.join(THIS_DIR, "configs", scope)
     result_path = os.path.join(config_dir, name + ".txt")
 
@@ -76,9 +76,6 @@ def test_parsing_errors(test_name: str) -> None:
 
 def test_default_serialization() -> None:
     fcp_v2, _ = get_fcp_config("syntax", "004_struct_composition").unwrap()
-    fcp_json_dict = fcp_v2.to_dict()
-
-    expected_result_dict = get_result_json("syntax", "004_struct_composition")
 
     assert default_serialization(
         fcp_v2, "baz", {"var": {"var1": 1, "var2": 2}}
