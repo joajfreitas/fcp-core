@@ -1,5 +1,5 @@
 from typing import Tuple, Any, Callable, Union
-from serde import serde, strict, to_dict
+from serde import serde, strict, to_dict, field
 import struct
 
 from . import enum
@@ -18,10 +18,15 @@ class FcpV2:
     Commands and Arguments.
     """
 
-    structs: list[Struct]
-    enums: list[enum.Enum]
-    extensions: list[Extension]
-    version: str = "1.0"
+    structs: list[Struct] = field(default_factory=list)
+    enums: list[enum.Enum] = field(default_factory=list)
+    extensions: list[Extension] = field(default_factory=list)
+    version: str = "3.0"
+
+    def merge(self, fcp: "FcpV2") -> None:
+        self.structs += fcp.structs
+        self.enums += fcp.enums
+        self.extensions += fcp.extensions
 
     def to_fcp(self) -> dict[str, list[dict[str, Any]]]:
         nodes = [node.to_fcp() for node in self.enums + self.structs]
