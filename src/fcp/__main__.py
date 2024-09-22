@@ -3,6 +3,7 @@
 import sys
 import logging
 import coloredlogs
+from pprint import pprint
 
 import click
 
@@ -46,10 +47,8 @@ def generate_cmd(
 @click.command()
 @click.argument("fcp")  # type: ignore
 def show(fcp):
-    fcp_v2, sources = get_fcp(fcp).unwrap()
-    fcp_v2 = fcp_v2.unwrap()
-
-    print(fcp_v2)
+    fcp_v2, _ = get_fcp(fcp).unwrap()
+    pprint(fcp_v2.to_dict())
 
 
 @click.group(invoke_without_command=True)  # type: ignore
