@@ -10,7 +10,6 @@ from .specs import signal
 from .specs import struct
 from .specs import enum
 from .specs import extension
-from .specs import field
 from .specs import signal_block
 from .specs.comment import Comment
 from .specs import v2
