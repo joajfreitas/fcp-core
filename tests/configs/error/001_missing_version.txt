@@ -1,0 +1,7 @@
+Error: Unexpected character 's' -> /home/joaj/sources/fcp-core/tests/configs/error/001_missing_version.fcp:1:1
+
+Expected one of:
+    * VERSION
+
+1 | struct A {
+  | ~~~~~~~~~~

@@ -1,52 +1,11 @@
 import logging
 from functools import reduce
 from collections import Counter
-from termcolor import colored
 from typing import Any, Tuple, Generator, Callable, Union
 
 from .result import Ok, Error, Result
-
-
-class colors:
-    @staticmethod
-    def red(s: str) -> str:
-        return str(colored(s, "red"))
-
-    @staticmethod
-    def yellow(s: str) -> str:
-        return str(colored(s, "yellow"))
-
-    @staticmethod
-    def orange(s: str) -> str:
-        return str(colored(s, "light_red"))
-
-    @staticmethod
-    def blue(s: str) -> str:
-        return str(colored(s, "blue"))
-
-    @staticmethod
-    def white(s: str) -> str:
-        return str(colored(s, "white"))
-
-    @staticmethod
-    def boldred(s: str) -> str:
-        return str(colored(s, "red", attrs=["bold"]))
-
-    @staticmethod
-    def boldyellow(s: str) -> str:
-        return str(colored(s, "yellow", attrs=["bold"]))
-
-    @staticmethod
-    def boldorange(s: str) -> str:
-        return str(colored(s, "light_red", attrs=["bold"]))
-
-    @staticmethod
-    def boldblue(s: str) -> str:
-        return str(colored(s, "blue", attrs=["bold"]))
-
-    @staticmethod
-    def boldwhite(s: str) -> str:
-        return str(colored(s, "white", attrs=["bold"]))
+from .colors import Color
+from .error_logger import ErrorLog
 
 
 def simple_error(f: Callable) -> Callable:  # type: ignore
@@ -76,7 +35,7 @@ class ErrorLogger:
             prefix = prefix_with_line if i == 0 else prefix_without_line
             ss += prefix + line + "\n"
             line = line.replace("\t", "    ")
-            ss += prefix_without_line + colors.boldred("~" * len(line)) + "\n"
+            ss += prefix_without_line + Color.boldred("~" * len(line)) + "\n"
 
         return ss
 
@@ -85,17 +44,17 @@ class ErrorLogger:
     ) -> str:
         line_len = len(str(line))
 
-        prefix_with_line = colors.boldblue(f"{line} | ")
-        prefix_without_line = colors.boldblue(" " * line_len + " | ")
+        prefix_with_line = Color.boldblue(f"{line} | ")
+        prefix_without_line = Color.boldblue(" " * line_len + " | ")
 
         ss = (
             ""
             if error == ""
-            else colors.boldred("error: ") + colors.boldwhite(error) + "\n"
+            else Color.boldred("error: ") + Color.boldwhite(error) + "\n"
         )
         ss += (
             " " * line_len
-            + colors.boldblue("---> ")
+            + Color.boldblue("---> ")
             + f"{filename}:{line}:{column}"
             + "\n"
         )
@@ -117,33 +76,31 @@ class ErrorLogger:
 
     def log_duplicates(self, error: str, duplicates: list[Any]) -> str:
         return (
-            colors.boldblue("error: ")
-            + colors.boldwhite(error)
+            Color.boldblue("error: ")
+            + Color.boldwhite(error)
             + "\n"
             + "\n".join(map(lambda x: self.log_node(x), duplicates))
         )
 
-    def log_surrounding(
-        self, error: str, filename: str, line: int, column: int, tip: str = ""
-    ) -> str:
-        ss = self.error(error) + f" {filename}:{line}:{column}" + "\n"
-        lines = self.sources[filename].split("\n")
-        starting_line = line - 2 if line > 0 else 0
-        ending_line = line if line < len(lines) else len(lines)
-
-        prefix_with_line = colors.boldblue(f"{starting_line+1} | ")
-        prefix_without_line = colors.boldblue(" " * len(str(line)) + " | ")
-
-        source = "\n".join(lines[starting_line:ending_line])
-
-        ss += self.highlight(source, prefix_with_line, prefix_without_line)
-
-        ss += tip
-
-        return ss
+    def log_lark_unexpected_characters(self, filename, exception):
+        return (
+            ErrorLog()
+            .with_line(Color.boldwhite(f"Unexpected character '{exception.char}'"))
+            .with_line(" -> ")
+            .with_location(filename, exception.line, exception.column)
+            .with_newline(ammount=2)
+            .with_line("Expected one of:")
+            .with_newline()
+            .with_list(exception.allowed, transform=lambda x: "* " + x)
+            .with_newline(ammount=2)
+            .with_surrounding(
+                self.sources[filename], exception.line - 1, exception.column - 1
+            )
+            .error()
+        )
 
     def error(self, error: str) -> str:
-        return colors.boldred("Error: ") + colors.boldwhite(error)
+        return Color.boldred("Error: ") + Color.boldwhite(error)
 
 
 class BaseVerifier:

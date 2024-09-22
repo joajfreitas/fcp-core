@@ -47,8 +47,13 @@ def generate_cmd(
 @click.command()
 @click.argument("fcp")  # type: ignore
 def show(fcp):
-    fcp_v2, _ = get_fcp(fcp).unwrap()
-    pprint(fcp_v2.to_dict())
+    fcp_result = get_fcp(fcp)
+
+    if fcp_result.is_ok():
+        fcp, sources = fcp_result.unwrap()
+        pprint(fcp)
+    else:
+        print(fcp_result)
 
 
 @click.group(invoke_without_command=True)  # type: ignore
