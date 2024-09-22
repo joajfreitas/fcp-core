@@ -10,11 +10,9 @@ from fcp import FcpV2, default_serialization
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def get_fcp_config(scope: str, name: str) -> FcpV2:
+def get_fcp_config(scope: str, name: str) -> str:
     config_dir = os.path.join(THIS_DIR, "configs", scope)
-    fcp_config = os.path.join(config_dir, name + ".fcp")
-
-    return get_fcp(fcp_config)
+    return os.path.join(config_dir, name + ".fcp")
 
 
 def get_result_json(scope: str, name: str) -> FcpV2:
@@ -44,7 +42,7 @@ def get_result_txt(scope: str, name: str) -> str:
     ],
 )  # type: ignore
 def test_parser(test_name: str) -> None:
-    fcp_v2, _ = get_fcp_config("syntax", test_name).unwrap()
+    fcp_v2, _ = get_fcp(get_fcp_config("syntax", test_name)).unwrap()
     fcp_json_dict = fcp_v2.to_dict()
 
     expected_result_dict = get_result_json("syntax", test_name)
@@ -61,13 +59,18 @@ def test_parser(test_name: str) -> None:
     ],
 )  # type: ignore
 def test_parsing_errors(test_name: str) -> None:
-    error = get_fcp_config("error", test_name)
-    result = get_result_txt("error", test_name).replace("    ", "\t")
+    fcp_config = get_fcp_config("error", test_name)
+    fcp = get_fcp(fcp_config)
+    result = (
+        get_result_txt("error", test_name)
+        .replace("    ", "\t")
+        .replace("{filename}", fcp_config)
+    )
 
-    assert error.is_err()
+    assert fcp.is_err()
 
     ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
-    error = ansi_escape.sub("", str(error))
+    error = ansi_escape.sub("", str(fcp))
 
     print(error)
     print(result)
@@ -75,7 +78,7 @@ def test_parsing_errors(test_name: str) -> None:
 
 
 def test_default_serialization() -> None:
-    fcp_v2, _ = get_fcp_config("syntax", "004_struct_composition").unwrap()
+    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "004_struct_composition")).unwrap()
 
     assert default_serialization(
         fcp_v2, "baz", {"var": {"var1": 1, "var2": 2}}
