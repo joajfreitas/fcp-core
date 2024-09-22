@@ -4,12 +4,12 @@ import temperature;
 
 /*this is a comment*/
 enum SensorState {
-	Off = 0;
-	On = 1;
-	Error = 2;
-};
+	Off = 0,
+	On = 1,
+	Error = 2,
+}
 
 struct SensorInformation {
-    temperature @ 0: Temperature;
-    sensor_state @ 1: SensorState;
-};
+    temperature @ 0: Temperature,
+    sensor_state @ 1: SensorState,
+}
