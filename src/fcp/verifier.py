@@ -2,6 +2,7 @@ import logging
 from functools import reduce
 from collections import Counter
 from typing import Any, Tuple, Generator, Callable, Union
+from lark import UnexpectedCharacters
 
 from .result import Ok, Error, Result
 from .colors import Color
@@ -82,17 +83,19 @@ class ErrorLogger:
             + "\n".join(map(lambda x: self.log_node(x), duplicates))
         )
 
-    def log_lark_unexpected_characters(self, filename, exception):
+    def log_lark_unexpected_characters(
+        self, filename: str, exception: UnexpectedCharacters
+    ) -> str:
         return (
             ErrorLog()
             .with_line(Color.boldwhite(f"Unexpected character '{exception.char}'"))
             .with_line(" -> ")
             .with_location(filename, exception.line, exception.column)
-            .with_newline(ammount=2)
+            .with_newline(amount=2)
             .with_line("Expected one of:")
             .with_newline()
             .with_list(exception.allowed, transform=lambda x: "* " + x)
-            .with_newline(ammount=2)
+            .with_newline(amount=2)
             .with_surrounding(
                 self.sources[filename], exception.line - 1, exception.column - 1
             )

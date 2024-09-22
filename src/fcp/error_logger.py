@@ -1,3 +1,5 @@
+from typing import TypeVar, Callable
+
 from .colors import Color
 
 
@@ -13,27 +15,31 @@ def highlight(source: str, prefix_with_line: str, prefix_without_line: str) -> s
 
 
 class ErrorLog:
-    def __init__(self):
+    Self = TypeVar("Self", bound="ErrorLog")
+
+    def __init__(self) -> None:
         self.buffer = Color.boldred("Error: ")
 
-    def with_newline(self, ammount=1):
-        self.buffer += ammount * "\n"
+    def with_newline(self: Self, amount: int = 1) -> Self:
+        self.buffer += amount * "\n"
         return self
 
-    def with_list(self, list, transform=lambda x: x):
+    def with_list(
+        self: Self, list: list[str], transform: Callable[[str], str] = lambda x: x
+    ) -> Self:
         self.buffer += "\n".join(["\t" + transform(x) for x in list])
         return self
 
-    def with_line(self, line):
+    def with_line(self: Self, line: str) -> Self:
         self.buffer += line
         return self
 
-    def with_location(self, filename, line, column):
+    def with_location(self: Self, filename: str, line: int, column: int) -> Self:
         self.buffer += f"{filename}:{line}:{column}"
 
         return self
 
-    def with_surrounding(self, source, line, column):
+    def with_surrounding(self: Self, source: str, line: int, column: int) -> Self:
         lines = source.split("\n")
         starting_line = line - 2 if line > 0 else 0
         ending_line = line + 1 if line < len(lines) else len(lines)
