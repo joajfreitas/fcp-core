@@ -1,12 +1,36 @@
 import pytest
 import os
 import json
+import re
 from pprint import pprint
 
 from fcp.v2_parser import get_fcp
 from fcp import default_serialization
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def get_fcp_config(scope, name):
+    config_dir = os.path.join(THIS_DIR, "configs", scope)
+    fcp_config = os.path.join(config_dir, name + ".fcp")
+
+    return get_fcp(fcp_config)
+
+
+def get_result_json(scope, name):
+    config_dir = os.path.join(THIS_DIR, "configs", scope)
+    result_path = os.path.join(config_dir, name + ".json")
+
+    with open(result_path, "r") as result_file:
+        return json.load(result_file)
+
+
+def get_result_txt(scope, name):
+    config_dir = os.path.join(THIS_DIR, "configs", scope)
+    result_path = os.path.join(config_dir, name + ".txt")
+
+    with open(result_path, "r") as result_file:
+        return result_file.read()
 
 
 @pytest.mark.parametrize(
@@ -20,28 +44,41 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
     ],
 )  # type: ignore
 def test_parser(test_name: str) -> None:
-    config_dir = os.path.join(THIS_DIR, "configs")
-    fcp_config = os.path.join(config_dir, test_name + ".fcp")
-    result_path = os.path.join(config_dir, test_name + ".json")
-
-    fcp_v2, sources = get_fcp(fcp_config).unwrap()
-
+    fcp_v2, _ = get_fcp_config("syntax", test_name).unwrap()
     fcp_json_dict = fcp_v2.to_dict()
 
-    # Load the expected json result
-    with open(result_path, "r") as result_file:
-        expected_result_dict = json.load(result_file)
+    expected_result_dict = get_result_json("syntax", test_name)
 
     pprint(fcp_json_dict)
     pprint(expected_result_dict)
     assert fcp_json_dict == expected_result_dict
 
 
-def test_default_serialization() -> None:
-    config_dir = os.path.join(THIS_DIR, "configs")
-    fcp_config = os.path.join(config_dir, "004_struct_composition.fcp")
+@pytest.mark.parametrize(
+    "test_name",
+    [
+        "001_missing_version",
+    ],
+)  # type: ignore
+def test_parsing_errors(test_name: str) -> None:
+    error = get_fcp_config("error", test_name)
+    result = get_result_txt("error", test_name).replace("    ", "\t")
 
-    fcp_v2, _ = get_fcp(fcp_config).unwrap()
+    assert error.is_err()
+
+    ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+    error = ansi_escape.sub("", str(error))
+
+    print(error)
+    print(result)
+    assert error == result
+
+
+def test_default_serialization() -> None:
+    fcp_v2, _ = get_fcp_config("syntax", "004_struct_composition").unwrap()
+    fcp_json_dict = fcp_v2.to_dict()
+
+    expected_result_dict = get_result_json("syntax", "004_struct_composition")
 
     assert default_serialization(
         fcp_v2, "baz", {"var": {"var1": 1, "var2": 2}}

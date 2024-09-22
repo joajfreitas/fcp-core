@@ -81,7 +81,7 @@ class Error(Result):
 
     def __repr__(self) -> str:
         error = self.error if isinstance(self.error, list) else [self.error]  # type: ignore
-        return "Error:\n" + "\n".join(error)
+        return "\n".join(error)
 
 
 class ResultShortcutError(Exception):

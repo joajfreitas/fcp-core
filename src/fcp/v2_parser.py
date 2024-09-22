@@ -304,20 +304,12 @@ def get_fcp(fcp: str) -> Union[Ok, Error]:
     fcp_filename = fcp
 
     with open(fcp_filename) as f:
+        source = f.read()
+        error_logger.add_source(fcp_filename, source)
         try:
-            source = f.read()
-            error_logger.add_source(fcp_filename, source)
             fcp_ast = fcp_parser.parse(source)
         except UnexpectedCharacters as e:
-            return Error(
-                error_logger.log_surrounding(
-                    f"Cannot parse current file: {fcp_filename}:{e.line}:{e.column}",
-                    fcp_filename,
-                    e.line,
-                    e.column,
-                    e._format_expected(e.allowed),
-                )
-            )
+            return Error(error_logger.log_lark_unexpected_characters(fcp_filename, e))
 
     parser_context = ParserContext()
     fcp = FcpV2Transformer(fcp_filename, parser_context).transform(fcp_ast).Q()
