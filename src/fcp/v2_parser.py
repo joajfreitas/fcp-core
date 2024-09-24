@@ -32,7 +32,7 @@ fcp_parser = Lark(
     enum: comment* "enum" identifier "{" enum_field* "}"
     enum_field : comment* identifier "="? value? ","
 
-    extension: identifier "extends" identifier "{" (extension_field | signal_block)+ "}"
+    extension: identifier identifier "extends" identifier "{" (extension_field | signal_block)+ "}"
     signal_block: "signal" identifier "{" extension_field+ "}" ","
     extension_field: identifier ":" value ","
 
@@ -252,13 +252,13 @@ class FcpV2Transformer(Transformer):  # type: ignore
         def is_signal_block(x: Any) -> bool:
             return isinstance(x, signal_block.SignalBlock)
 
-        name, type, *fields = args
+        protocol, name, type, *fields = args
 
         signal_blocks = [field for field in fields if is_signal_block(field)]
         fields = [field for field in fields if not is_signal_block(field)]
 
         self.fcp.extensions.append(
-            extension.Extension(name, type, dict(fields), signal_blocks)  # type: ignore
+            extension.Extension(name, protocol, type, dict(fields), signal_blocks)  # type: ignore
         )
 
         return Ok(())

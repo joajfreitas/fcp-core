@@ -4,7 +4,7 @@ struct A {
     field1 @0: u8,
 }
 
-A_protocol1 extends A {
+protocol1 A extends A {
     id: 2,
     signal field1 {
         bitstart: 0,

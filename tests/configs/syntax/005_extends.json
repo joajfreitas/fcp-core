@@ -1,7 +1,8 @@
 {
   "extensions":[
       {
-          "name": "A_protocol1",
+          "name": "A",
+          "protocol": "protocol1",
           "type": "A",
           "fields": {
               "id": 2

@@ -28,6 +28,15 @@ class FcpV2:
         self.enums += fcp.enums
         self.extensions += fcp.extensions
 
+    def get_matching_extension(
+        self, struct: Struct, protocol: str
+    ) -> Optional[Extension]:
+        for extension in self.extensions:
+            if extension.type == struct.name and extension.protocol == protocol:
+                return extension
+
+        return None
+
     def to_fcp(self) -> Dict[str, List[Dict[str, Any]]]:
         nodes = [node.to_fcp() for node in self.enums + self.structs]
         fcp_structure: Dict[str, List[Any]] = {}
