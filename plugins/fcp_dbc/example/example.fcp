@@ -1,0 +1,35 @@
+version: "3"
+
+struct A {
+    field1 @0: u8 | unit("m/s"),
+    field2 @1: u8 | unit("m^2/s"),
+}
+
+can A extends A {
+    id: 10,
+    device: "ecu1",
+
+    signal field2 {
+        bitstart: 16,
+    },
+}
+
+struct B {
+    mux @0: u8,
+    field1 @1: u8,
+}
+
+can B extends B {
+    id: 11,
+    device: "ecu1",
+    
+    signal mux {
+        endianess: "big",
+    },
+
+    signal field1 {
+        mux_count: 4,
+        mux_signal: "mux",
+        endianess: "big",
+    },
+}
