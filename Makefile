@@ -1,4 +1,4 @@
-SRC:=src tests
+SRC:=src tests plugins
 RUN_UNDER?=
 
 .PHONY: format ruff format_check mypy lint check test ci help docs
