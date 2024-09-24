@@ -30,6 +30,7 @@ class Signal:
 
     name: str
     field_id: int
+    type: str
     unit: Optional[str] = None
     comment: Optional[Comment] = field(
         default=None, serializer=comment_serializer, deserializer=comment_deserializer
@@ -37,7 +38,6 @@ class Signal:
     min_value: Optional[float] = None
     max_value: Optional[float] = None
     meta: Optional[MetaData] = field(skip=True, default=None)
-    type: Optional[str] = None
 
     def to_fcp(self) -> Any:
         def show(value: Any, default: Any, fmt: Any) -> str:
