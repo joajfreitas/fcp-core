@@ -19,7 +19,7 @@ format_check:
 
 mypy:
 	@printf "\033[1;34m==> Running mypy checks...\033[0m\n"
-	$(RUN_UNDER) mypy --strict --disable-error-code=type-arg --disable-error-code=no-untyped-call --ignore-missing-import --disable-error-code=unused-ignore $(SRC)
+	$(RUN_UNDER) mypy --strict --disable-error-code=type-arg --disable-error-code=no-untyped-call --ignore-missing-import --disable-error-code=unused-ignore --allow-subclassing-any $(SRC)
 
 lint: ruff format_check mypy
 

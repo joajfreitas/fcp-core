@@ -22,14 +22,14 @@ struct B {
 can B extends B {
     id: 11,
     device: "ecu1",
-    
+
     signal mux {
-        endianess: "big",
+        endianness: "big",
     },
 
     signal field1 {
         mux_count: 4,
         mux_signal: "mux",
-        endianess: "big",
+        endianness: "big",
     },
 }

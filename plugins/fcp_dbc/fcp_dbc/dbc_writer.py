@@ -1,38 +1,37 @@
+from typing import Any
+
 from cantools.database.can.database import Database as CanDatabase
 from cantools.database.can.message import Message as CanMessage
 from cantools.database.can.signal import Signal as CanSignal
 
-from cantools.database import dump_file
-
-import copy
-
-from fcp.specs import SignalBlock, Signal
+from fcp.specs import Signal, SignalBlock
+from fcp import FcpV2
 
 
-def is_signed(signal):
-    return signal.type[0] == "i"
+def is_signed(signal: Signal) -> bool:
+    return bool(signal.type[0] == "i")
 
 
-def is_multiplexer(signal, mux_signals):
+def is_multiplexer(signal: Signal, mux_signals: list[str]) -> bool:
     return signal.name in mux_signals
 
 
 class SignalCodec:
-    def __init__(self):
+    def __init__(self) -> None:
         self.bitstart = 0
 
-    def get_fields(self):
+    def get_fields(self) -> Any:
         return self.ext.fields if self.ext else {}
 
-    def get_bitstart(self):
+    def get_bitstart(self) -> int:
         if self.ext is not None and self.ext.fields.get("bitstart"):
-            return self.ext.fields.get("bitstart")
+            return int(self.ext.fields.get("bitstart"))
         else:
             bitstart = self.bitstart
             self.bitstart += self.get_bitlength()
-            return bitstart
+            return int(bitstart)
 
-    def get_bitlength(self):
+    def get_bitlength(self) -> int:
         default_types = [
             "u8",
             "u16",
@@ -45,14 +44,14 @@ class SignalCodec:
             "f32",
             "f64",
         ]
+
         if self.signal.type in default_types:
             return int(self.signal.type[1:])
         else:
             raise ValueError("Can't deal with custom types")
 
-    def get_field(self, name):
+    def get_field(self, name: str) -> Any:
         fields = {
-            "endianness": "little",
             "scale": 1.0,
             "offset": 0.0,
             "minimum": 0,
@@ -64,7 +63,9 @@ class SignalCodec:
 
         return self.get_fields().get(name, fields.get(name))
 
-    def convert(self, signal, extension, mux_signals):
+    def convert(
+        self, signal: Signal, extension: SignalBlock, mux_signals: list[str]
+    ) -> CanSignal:
         self.signal = signal
         self.ext = extension
 
@@ -93,16 +94,7 @@ class SignalCodec:
         )
 
 
-def process_mux_signals(signals):
-    mux_signals = []
-    for key, val in signals.items():
-        if val.mux not in mux_signals:
-            mux_signals.append(val.mux)
-
-    return mux_signals
-
-
-def write_dbc(fcp):
+def write_dbc(fcp: FcpV2) -> str:
     messages = []
 
     for struct in fcp.structs:
@@ -136,4 +128,4 @@ def write_dbc(fcp):
 
     dbc = db.as_dbc_string(sort_signals="default")
     print(dbc)
-    return dbc
+    return str(dbc)
