@@ -1,4 +1,5 @@
-from typing import Any
+from typing import Any, Union
+from pathlib import Path
 
 from fcp.codegen import CodeGenerator
 from fcp.verifier import BaseVerifier
@@ -15,8 +16,11 @@ class Generator(CodeGenerator):
     def __init__(self) -> None:
         pass
 
-    def generate(
-        self, fcp: FcpV2, templates: Any = {}, skels: Any = {}
-    ) -> dict[str, str]:
-        print(write_dbc(fcp))
-        return {}
+    def generate(self, fcp: FcpV2, ctx: Any) -> list[str, Union[str, Path]]:
+        return [
+            {
+                "type": "file",
+                "path": Path(ctx.get("output")),
+                "contents": write_dbc(fcp),
+            }
+        ]

@@ -113,7 +113,6 @@ def write_dbc(fcp: FcpV2) -> str:
             for signal in struct.signals
         ]
 
-        print(signals)
         messages.append(
             CanMessage(
                 frame_id=extension.fields.get("id"),
@@ -126,6 +125,4 @@ def write_dbc(fcp: FcpV2) -> str:
 
     db = CanDatabase(messages=messages, nodes=[])
 
-    dbc = db.as_dbc_string(sort_signals="default")
-    print(dbc)
-    return str(dbc)
+    return str(db.as_dbc_string(sort_signals="default"))

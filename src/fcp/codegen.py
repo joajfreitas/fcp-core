@@ -6,6 +6,7 @@ import os
 import pathlib
 import pkgutil
 import sys
+from pathlib import Path
 
 from beartype.typing import Any
 from types import ModuleType
@@ -14,24 +15,40 @@ from .types import Nil
 from .result import Result, Ok, Err, catch
 
 
+def handle_file(result: Dict[str, Union[str, Path]]) -> None:
+    path: Path = Path(result.get("path"))  # type: ignore
+    logging.info(f"Generating {path}")
+    path.write_text(str(result.get("contents")))
+
+
+def handle_result(result: Dict[str, Union[str, Path]]) -> None:
+    if result.get("type") == "file":
+        handle_file(result)
+    else:
+        logging.error(f"Cannot handle result of type: {result.get('type')}")
+
+
 class CodeGenerator:
     """Base class for generators."""
 
     def __init__(self) -> None:
         pass
 
-    def gen(self, fcp: Result, templates: Any, skels: Any, output_path: str) -> None:
+    def gen(self, fcp: FcpV2, templates: Any, skels: Any, output_path: str) -> None:
         """Function called from fcp to trigger generator. Do not override."""
 
         self.verify(fcp).unwrap()
 
         self.output_path = pathlib.Path(output_path)
 
-        for path, content in self.generate(fcp, templates, skels).items():
-            logging.info(f"Generating {path}")
-            os.makedirs(path.parent, exist_ok=True)
-            with open(path, "w", encoding="utf-8") as file:
-                file.write(content)
+        ctx = {
+            "templates": templates,
+            "skels": skels,
+            "output": self.output_path,
+        }
+
+        for result in self.generate(fcp, ctx):
+            handle_result(result)
 
     def verify(self, fcp: Any) -> Result[Nil, str]:
         if fcp is not None:
@@ -39,9 +56,9 @@ class CodeGenerator:
         else:
             return Err("Received a None object instead of FcpV2")
 
-    def generate(self, fcp: Any, templates: Any, skel: Any) -> Any:
+    def generate(self, fcp: FcpV2, ctx: Any) -> list[str, Union[str, Path]]:
         """Function to override from generator. Implements actual code generation."""
-        return
+        return {}  # type: ignore
 
 
 class GeneratorManager:
