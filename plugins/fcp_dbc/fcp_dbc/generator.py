@@ -14,5 +14,5 @@ class Generator(CodeGenerator):
         pass
 
     def generate(self, fcp, templates={}, skels={}):
-        print(write_dbc(fcp.to_dict()))
+        print(write_dbc(fcp))
         return {}

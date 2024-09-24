@@ -34,7 +34,6 @@ def generate_cmd(
     skel: str,
 ) -> None:
     fcp_v2, sources = get_fcp(fcp).unwrap()
-    fcp_v2 = fcp_v2.unwrap()
 
     Verifier(sources).verify(fcp_v2).unwrap()
 
