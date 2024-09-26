@@ -16,22 +16,15 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - uses: yezz123/setup-uv@v4
-            - run: make RUN_UNDER="uv tool run -p 3.12" ci
+            - run: make RUN_UNDER="uvx -p 3.12" ci
 
 
     tests:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                python: ["3.9", "3.10", "3.11", "3.12"]
+                python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         steps:
             - uses: actions/checkout@v4
-            - name: Setup Python
-              uses: actions/setup-python@v5
-              with:
-                  python-version: ${{ matrix.python }}
-            - name: Install tox and any other packages
-              run: pip install tox
-            - name: Run tox
-              # Run tox using the version of Python in `PATH`
-              run: tox -e py
+            - uses: yezz123/setup-uv@v4
+            - run: make RUN_UNDER="uvx -p ${{ matrix.python }}" test
