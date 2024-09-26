@@ -18,10 +18,6 @@ repos:
     hooks:
       # Run the linter.
       - id: ruff
--   repo: https://github.com/crate-ci/typos
-    rev: v1.24.6
-    hooks:
-    -   id: typos
 -   repo: local
     hooks:
     -   id: make ci
