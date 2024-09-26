@@ -115,7 +115,7 @@ class ParserContext:
 
 class FcpV2Transformer(Transformer):  # type: ignore
     def __init__(
-        self, filename: str | pathlib.Path, parser_context: ParserContext
+        self, filename: Union[str | pathlib.Path], parser_context: ParserContext
     ) -> None:
         self.filename = pathlib.Path(filename)
         self.path = self.filename.parent
