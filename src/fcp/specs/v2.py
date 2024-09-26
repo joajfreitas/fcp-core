@@ -1,4 +1,4 @@
-from typing import Tuple, Any, Callable, Union
+from beartype.typing import Tuple, Any, Callable, Union, List, Dict
 from serde import serde, strict, to_dict, field
 import struct
 
@@ -8,7 +8,7 @@ from .struct import Struct
 from .extension import Extension
 
 
-def handle_key_not_found(d: dict[str, Any], key: str) -> list[Any]:
+def handle_key_not_found(d: Dict[str, Any], key: str) -> List[Any]:
     return d.get(key).items() if d.get(key) is not None else []  # type: ignore
 
 
@@ -18,9 +18,9 @@ class FcpV2:
     Commands and Arguments.
     """
 
-    structs: list[Struct] = field(default_factory=list)
-    enums: list[enum.Enum] = field(default_factory=list)
-    extensions: list[Extension] = field(default_factory=list)
+    structs: List[Struct] = field(default_factory=list)
+    enums: List[enum.Enum] = field(default_factory=list)
+    extensions: List[Extension] = field(default_factory=list)
     version: str = "3.0"
 
     def merge(self, fcp: "FcpV2") -> None:
@@ -28,9 +28,9 @@ class FcpV2:
         self.enums += fcp.enums
         self.extensions += fcp.extensions
 
-    def to_fcp(self) -> dict[str, list[dict[str, Any]]]:
+    def to_fcp(self) -> Dict[str, List[Dict[str, Any]]]:
         nodes = [node.to_fcp() for node in self.enums + self.structs]
-        fcp_structure: dict[str, list[Any]] = {}
+        fcp_structure: Dict[str, List[Any]] = {}
 
         for node in nodes:
             if node[0] not in fcp_structure.keys():
@@ -70,7 +70,7 @@ def make_sid(dev_id: int, msg_id: int) -> int:
     return (msg_id << 5) + dev_id
 
 
-def default_serialization(fcp: FcpV2, typename: str, data: dict[str, Any]) -> bytearray:
+def default_serialization(fcp: FcpV2, typename: str, data: Dict[str, Any]) -> bytearray:
     """
     ```fcp
     struct foo {
@@ -100,10 +100,8 @@ def default_serialization(fcp: FcpV2, typename: str, data: dict[str, Any]) -> by
 
     structs = {struct.name: struct for struct in fcp.structs}
 
-    def serialize_signal(
-        signal: Signal, value: Union[dict["str", Any], Any]
-    ) -> bytearray:
-        conversions: dict[str, Callable[[Any], bytearray]] = {
+    def serialize_signal(signal: Signal, value: Union[Dict["str", Any], Any]) -> Any:
+        conversions: Dict[str, Callable[[Any], bytearray]] = {
             "u8": lambda x: x.to_bytes(1, signed=False, byteorder="little"),
             "u16": lambda x: x.to_bytes(2, signed=False, byteorder="little"),
             "u32": lambda x: x.to_bytes(4, signed=False, byteorder="little"),
@@ -123,7 +121,7 @@ def default_serialization(fcp: FcpV2, typename: str, data: dict[str, Any]) -> by
         else:
             raise ValueError()
 
-    def serialize_struct(struct: Struct, data: dict["str", Any]) -> bytearray:
+    def serialize_struct(struct: Struct, data: Dict["str", Any]) -> bytearray:
         buffer = bytearray()
         for signal in struct.signals:
             buffer += serialize_signal(signal, data[signal.name])

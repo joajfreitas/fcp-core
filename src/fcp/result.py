@@ -1,7 +1,7 @@
 import sys
 import traceback
 
-from typing import Any, Union
+from beartype.typing import Any, Union, Tuple, List
 from functools import wraps
 
 
@@ -48,7 +48,7 @@ class Error(Result):
     def __init__(self, error: Any) -> None:
         self.error = error if isinstance(error, list) else [error]
 
-    def unwrap(self) -> tuple[None, None]:
+    def unwrap(self) -> Tuple[None, None]:
         error = self.error
 
         for err in error:
@@ -59,7 +59,7 @@ class Error(Result):
 
         return (None, None)
 
-    def err(self) -> list[str]:
+    def err(self) -> List[str]:
         return self.error
 
     def compound(self, result: Result) -> Union[Ok, Any]:

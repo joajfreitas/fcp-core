@@ -1,7 +1,7 @@
+from beartype.typing import Any, Tuple, Generator, Callable, Union, Dict, List
 import logging
 from functools import reduce
 from collections import Counter
-from typing import Any, Tuple, Generator, Callable, Union
 from lark import UnexpectedCharacters
 
 from .result import Ok, Error, Result
@@ -22,7 +22,7 @@ def simple_error(f: Callable) -> Callable:  # type: ignore
 
 
 class ErrorLogger:
-    def __init__(self, sources: dict[str, str]) -> None:
+    def __init__(self, sources: Dict[str, str]) -> None:
         self.sources = sources
 
     def add_source(self, name: str, source: str) -> None:
@@ -75,7 +75,7 @@ class ErrorLogger:
             source[node.meta.start_pos : node.meta.end_pos],
         )
 
-    def log_duplicates(self, error: str, duplicates: list[Any]) -> str:
+    def log_duplicates(self, error: str, duplicates: List[Any]) -> str:
         return (
             Color.boldblue("error: ")
             + Color.boldwhite(error)
@@ -109,7 +109,7 @@ class ErrorLogger:
 class BaseVerifier:
     """Base class for verifiers"""
 
-    def __init__(self, sources: dict[str, str]) -> None:
+    def __init__(self, sources: Dict[str, str]) -> None:
         self.error_logger = ErrorLogger(sources)
 
     def apply_check(self, category: str, value: Any) -> Union[Ok, Error, Result]:
@@ -144,7 +144,7 @@ class BaseVerifier:
 
 
 class Verifier(BaseVerifier):
-    def __init__(self, sources: dict[str, str]) -> None:
+    def __init__(self, sources: Dict[str, str]) -> None:
         self.error_logger = ErrorLogger(sources)
 
     def check_fcp_v2_duplicate_typenames(self, fcp_v2: Any) -> Union[Ok, Error]:

@@ -1,9 +1,9 @@
+from beartype.typing import Any, Union, Callable, Tuple, List, Dict
 import pathlib
 import traceback
 import logging
 
 from lark import Lark, Transformer, v_args, UnexpectedCharacters, ParseTree
-from typing import Any, Union, Callable, Tuple, List, Dict
 
 from .specs import signal
 from .specs import struct
@@ -103,12 +103,12 @@ def convert_params(params: Dict[str, Callable]) -> Dict[str, Any]:
 
 class ParserContext:
     def __init__(self) -> None:
-        self.modules: dict[str, str] = {}
+        self.modules: Dict[str, str] = {}
 
     def set_module(self, name: str, module: str) -> None:
         self.modules[name] = module
 
-    def get_sources(self) -> dict[str, str]:
+    def get_sources(self) -> Dict[str, str]:
         return {name: source for name, source in self.modules.items()}
 
 
@@ -146,10 +146,10 @@ class FcpV2Transformer(Transformer):  # type: ignore
     def param(self, args: List[str]) -> Tuple[str, ...]:
         return tuple(args)
 
-    def param_argument(self, args: List[str]) -> str:
+    def param_argument(self, args: List[str]) -> Any:
         return args[0]
 
-    def field_id(self, args: List[str]) -> str:
+    def field_id(self, args: List[str]) -> Any:
         return args[0]
 
     @v_args(tree=True)  # type: ignore
@@ -279,7 +279,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         name, value = args
         return (name, value)
 
-    def value(self, args: List[str]) -> str:
+    def value(self, args: List[str]) -> Any:
         return args[0]
 
     def number(self, args: List[str]) -> Union[int, float]:

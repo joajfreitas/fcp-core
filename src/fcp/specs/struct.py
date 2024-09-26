@@ -1,5 +1,5 @@
+from beartype.typing import Optional, List, Tuple
 from serde import serde, strict, field, to_dict
-from typing import Optional
 
 from .signal import Signal
 from .metadata import MetaData
@@ -11,7 +11,7 @@ class Struct:
     """Struct object"""
 
     name: str
-    signals: list[Signal]
+    signals: List[Signal]
     comment: Optional[Comment] = field(
         serializer=comment_serializer, deserializer=comment_deserializer
     )
@@ -30,7 +30,7 @@ class Struct:
 
         return None
 
-    def to_fcp(self) -> tuple[str, str]:
+    def to_fcp(self) -> Tuple[str, str]:
         comment = f"/*{self.comment.value}*/\n" if self.comment else ""
         return (
             "struct",

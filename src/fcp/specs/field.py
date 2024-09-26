@@ -1,4 +1,4 @@
-from typing import Any
+from beartype.typing import Any
 from serde import serde, strict, to_dict
 
 

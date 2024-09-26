@@ -1,5 +1,5 @@
 from serde import serde, strict, field
-from typing import Optional
+from beartype.typing import Optional, List, Tuple
 
 from .metadata import MetaData
 from .comment import Comment, comment_serializer, comment_deserializer
@@ -22,7 +22,7 @@ class Enum:
     """
 
     name: str
-    enumeration: list[Enumeration]
+    enumeration: List[Enumeration]
     comment: Optional[Comment] = field(
         default=None, serializer=comment_serializer, deserializer=comment_deserializer
     )
@@ -34,7 +34,7 @@ class Enum:
     def get_type(self) -> str:
         return "enum"
 
-    def to_fcp(self) -> tuple[str, str]:
+    def to_fcp(self) -> Tuple[str, str]:
         return (
             "enum",
             f"enum {self.name} {{\n\t"

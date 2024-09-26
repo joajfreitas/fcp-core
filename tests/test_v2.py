@@ -3,7 +3,7 @@ from fcp import FcpV2
 from serde.json import to_json, from_json
 from serde import from_dict, to_dict
 
-from typing import Dict, Any
+from beartype.typing import Dict, Any
 
 
 @pytest.fixture  # type: ignore

@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from beartype.typing import Any, Optional, Union
 from serde import serde, strict, field
 
 from .metadata import MetaData
@@ -39,7 +39,7 @@ class Signal:
     meta: Optional[MetaData] = field(skip=True, default=None)
     type: Optional[str] = None
 
-    def to_fcp(self) -> str:
+    def to_fcp(self) -> Any:
         def show(value: Any, default: Any, fmt: Any) -> str:
             if value == default:
                 return ""

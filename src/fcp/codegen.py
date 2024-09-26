@@ -7,7 +7,7 @@ import pathlib
 import pkgutil
 import sys
 
-from typing import Any, Union
+from beartype.typing import Any, Union
 from types import ModuleType
 
 
