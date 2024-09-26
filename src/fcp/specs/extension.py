@@ -1,4 +1,4 @@
-from beartype.typing import Any, Dict, List
+from beartype.typing import Any, Dict, List, Optional
 from serde import serde, strict, to_dict
 
 from .signal_block import SignalBlock
@@ -19,7 +19,7 @@ class Extension:
 
         return None
 
-    def get_signal_fields(self, name: str) -> Optional[dict[str, Any]]:
+    def get_signal_fields(self, name: str) -> Optional[Dict[str, Any]]:
         signal = self.get_signal(name)
 
         if signal is None:

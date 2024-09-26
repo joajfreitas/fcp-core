@@ -1,4 +1,4 @@
-from typing import Any
+from beartype.typing import Any, List
 
 from cantools.database.can.database import Database as CanDatabase
 from cantools.database.can.message import Message as CanMessage
@@ -12,7 +12,7 @@ def is_signed(signal: Signal) -> bool:
     return bool(signal.type[0] == "i")
 
 
-def is_multiplexer(signal: Signal, mux_signals: list[str]) -> bool:
+def is_multiplexer(signal: Signal, mux_signals: List[str]) -> bool:
     return signal.name in mux_signals
 
 
@@ -64,7 +64,7 @@ class SignalCodec:
         return self.get_fields().get(name, fields.get(name))
 
     def convert(
-        self, signal: Signal, extension: SignalBlock, mux_signals: list[str]
+        self, signal: Signal, extension: SignalBlock, mux_signals: List[str]
     ) -> CanSignal:
         self.signal = signal
         self.ext = extension

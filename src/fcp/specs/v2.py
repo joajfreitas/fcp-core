@@ -1,4 +1,4 @@
-from beartype.typing import Tuple, Any, Callable, Union, List, Dict
+from beartype.typing import Tuple, Any, Callable, Union, List, Dict, Optional
 from serde import serde, strict, to_dict, field
 import struct
 

@@ -8,7 +8,7 @@ import pkgutil
 import sys
 from pathlib import Path
 
-from beartype.typing import Any
+from beartype.typing import Any, Dict, Union
 from types import ModuleType
 
 from .types import Nil
@@ -57,7 +57,7 @@ class CodeGenerator:
         else:
             return Err("Received a None object instead of FcpV2")
 
-    def generate(self, fcp: FcpV2, ctx: Any) -> list[str, Union[str, Path]]:
+    def generate(self, fcp: FcpV2, ctx: Any) -> Dict[str, Union[str, Path]]:
         """Function to override from generator. Implements actual code generation."""
         return {}  # type: ignore
 

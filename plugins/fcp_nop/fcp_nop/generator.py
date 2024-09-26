@@ -1,5 +1,5 @@
 from pprint import pprint
-from typing import Any
+from beartype.typing import Any, Dict
 from fcp.codegen import CodeGenerator
 from fcp.verifier import BaseVerifier
 from fcp import FcpV2
@@ -15,7 +15,7 @@ class Generator(CodeGenerator):
 
     def generate(
         self, fcp: FcpV2, templates: Any = {}, skels: Any = {}
-    ) -> dict[str, str]:
+    ) -> Dict[str, str]:
         pprint(fcp.to_dict())
 
         return {}
