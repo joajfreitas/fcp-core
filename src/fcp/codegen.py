@@ -13,6 +13,7 @@ from types import ModuleType
 
 from .types import Nil
 from .result import Result, Ok, Err, catch
+from . import FcpV2
 
 
 def handle_file(result: Dict[str, Union[str, Path]]) -> None:

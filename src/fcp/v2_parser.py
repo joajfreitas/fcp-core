@@ -6,6 +6,7 @@ import logging
 from lark import Lark, Transformer, v_args, UnexpectedCharacters, ParseTree
 
 from .types import Nil, Never
+
 from .specs import signal
 from .specs import struct
 from .specs import enum
