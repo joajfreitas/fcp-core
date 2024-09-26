@@ -7,7 +7,7 @@ from cantools.database.can.signal import Signal as CanSignal
 from fcp.specs import Signal, SignalBlock
 from fcp import FcpV2
 
-from fcp.maybe import Maybe
+from fcp.maybe import Maybe, Some, Nothing
 from fcp.result import Err, Result
 
 
@@ -24,11 +24,17 @@ class SignalCodec:
         self.bitstart = 0
 
     def get_fields(self) -> Maybe[Dict[str, Any]]:
-        return self.ext.and_then(lambda ext: ext.fields)
+        return self.ext.and_then(lambda ext: Some(ext.fields))
 
     def get_bitstart(self) -> int:
-        if self.get_fields().is_some():
-            return int(self.get_fields().value().get("bitstart"))
+        bitstart: Maybe[int] = self.get_fields().and_then(
+            lambda fields: (
+                Some(fields["bitstart"]) if "bitstart" in fields.keys() else Nothing()
+            )
+        )
+
+        if bitstart.is_some():
+            return int(bitstart.unwrap())
         else:
             bitstart = self.bitstart
             self.bitstart += self.get_bitlength()
@@ -68,7 +74,7 @@ class SignalCodec:
         if fields.is_nothing():
             return default_fields.get(name)
         else:
-            return self.get_fields().get(name, default_fields.get(name))
+            return fields.unwrap().get(name, default_fields.get(name))
 
     def convert(
         self, signal: Signal, extension: SignalBlock, mux_signals: List[str]
@@ -113,10 +119,8 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
         extension = extension.unwrap()
 
         mux_signals = [
-            extension.and_then(
-                lambda extension: extension.get_signal_fields(signal.name).and_then(
-                    lambda fields: fields.get("mux_signal")
-                )
+            extension.get_signal_fields(signal.name).and_then(
+                lambda fields: fields.get("mux_signal")
             )
             for signal in struct.signals
         ]
@@ -127,15 +131,13 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
 
         signals = []
         for signal in struct.signals:
-            signal_block = extension.and_then(
-                lambda extension: extension.get_signal(signal.name)
-            )
+            signal_block = extension.get_signal(signal.name)
 
             signals.append(signal_codec.convert(signal, signal_block, mux_signals))
 
         messages.append(
             CanMessage(
-                frame_id=extension.attempt().fields.get("id"),
+                frame_id=extension.fields.get("id"),
                 name=struct.name,
                 length=8,
                 signals=signals,
@@ -145,4 +147,4 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
 
     db = CanDatabase(messages=messages, nodes=[])
 
-    return str(db.as_dbc_string(sort_signals="default"))
+    return Some(str(db.as_dbc_string(sort_signals="default")))
