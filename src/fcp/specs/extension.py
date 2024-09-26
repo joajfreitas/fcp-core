@@ -3,6 +3,8 @@ from serde import serde, strict, to_dict
 
 from .signal_block import SignalBlock
 
+from ..maybe import Maybe, Nothing, Some
+
 
 @serde(type_check=strict)
 class Extension:
@@ -19,13 +21,13 @@ class Extension:
 
         return None
 
-    def get_signal_fields(self, name: str) -> Optional[Dict[str, Any]]:
+    def get_signal_fields(self, name: str) -> Maybe[Dict[str, Any]]:
         signal = self.get_signal(name)
 
         if signal is None:
-            return {}
+            return Nothing()
         else:
-            return signal.fields
+            return Some(signal.fields)
 
     def get_type(self) -> str:
         return "extension"

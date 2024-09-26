@@ -1,7 +1,8 @@
-from beartype.typing import Tuple, Any, Callable, Union, List, Dict, Optional
+from beartype.typing import Tuple, Any, Callable, Union, List, Dict
 from serde import serde, strict, to_dict, field
 import struct
 
+from ..maybe import Maybe, Some, Nothing
 from . import enum
 from .signal import Signal
 from .struct import Struct
@@ -28,14 +29,12 @@ class FcpV2:
         self.enums += fcp.enums
         self.extensions += fcp.extensions
 
-    def get_matching_extension(
-        self, struct: Struct, protocol: str
-    ) -> Optional[Extension]:
+    def get_matching_extension(self, struct: Struct, protocol: str) -> Maybe[Extension]:
         for extension in self.extensions:
             if extension.type == struct.name and extension.protocol == protocol:
-                return extension
+                return Some(extension)
 
-        return None
+        return Nothing()
 
     def to_fcp(self) -> Dict[str, List[Dict[str, Any]]]:
         nodes = [node.to_fcp() for node in self.enums + self.structs]

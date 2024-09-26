@@ -21,7 +21,6 @@
 from __future__ import annotations
 
 import sys
-import functools
 from typing import (
     Any,
     Callable,
@@ -32,6 +31,8 @@ from typing import (
     Type,
     TypeVar,
     Union,
+    ParamSpec,
+    cast,
 )
 
 if sys.version_info >= (3, 10):  # pragma: no cover
@@ -40,7 +41,7 @@ else:  # pragma: no cover
     from typing_extensions import ParamSpec, TypeAlias, TypeGuard
 
 
-import result
+from . import result
 
 
 T = TypeVar("T", covariant=True)  # Success type
@@ -363,13 +364,18 @@ class UnwrapError(Exception):
         return self._maybe
 
 
-def catch(f: Any) -> Any:
-    @functools.wraps(f)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
+V = TypeVar("V")
+Params = ParamSpec("Params")
+
+
+def catch(f: Callable[Params, Maybe[V]]) -> Callable[Params, Maybe[V]]:
+    def wrapper(*args: Params.args, **kwargs: Params.kwargs) -> Maybe[V]:
         try:
             return f(*args, **kwargs)
         except AttemptError:
             return Nothing()
+
+    return cast(Callable[Params, Maybe[V]], wrapper)
 
 
 def is_some(maybe: Maybe[T]) -> TypeGuard[Some[T]]:

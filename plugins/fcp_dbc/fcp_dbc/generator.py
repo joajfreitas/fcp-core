@@ -1,4 +1,4 @@
-from typing import Any, Union, List
+from beartype.typing import Any, Union, Dict
 from pathlib import Path
 
 from fcp.codegen import CodeGenerator
@@ -16,11 +16,11 @@ class Generator(CodeGenerator):
     def __init__(self) -> None:
         pass
 
-    def generate(self, fcp: FcpV2, ctx: Any) -> List[str, Union[str, Path]]:
+    def generate(self, fcp: FcpV2, ctx: Any) -> Dict[str, Union[str, Path]]:
         return [
             {
                 "type": "file",
                 "path": Path(ctx.get("output")),
-                "contents": write_dbc(fcp),
+                "contents": write_dbc(fcp).unwrap(),
             }
         ]

@@ -1,4 +1,4 @@
-from beartype.typing import Any, List
+from beartype.typing import Any, List, Dict
 
 from cantools.database.can.database import Database as CanDatabase
 from cantools.database.can.message import Message as CanMessage
@@ -6,6 +6,9 @@ from cantools.database.can.signal import Signal as CanSignal
 
 from fcp.specs import Signal, SignalBlock
 from fcp import FcpV2
+
+from fcp.maybe import Maybe
+from fcp.result import Err, Result
 
 
 def is_signed(signal: Signal) -> bool:
@@ -20,12 +23,12 @@ class SignalCodec:
     def __init__(self) -> None:
         self.bitstart = 0
 
-    def get_fields(self) -> Any:
-        return self.ext.fields if self.ext else {}
+    def get_fields(self) -> Maybe[Dict[str, Any]]:
+        return self.ext.and_then(lambda ext: ext.fields)
 
     def get_bitstart(self) -> int:
-        if self.ext is not None and self.ext.fields.get("bitstart"):
-            return int(self.ext.fields.get("bitstart"))
+        if self.get_fields().is_some():
+            return int(self.get_fields().value().get("bitstart"))
         else:
             bitstart = self.bitstart
             self.bitstart += self.get_bitlength()
@@ -51,7 +54,7 @@ class SignalCodec:
             raise ValueError("Can't deal with custom types")
 
     def get_field(self, name: str) -> Any:
-        fields = {
+        default_fields = {
             "scale": 1.0,
             "offset": 0.0,
             "minimum": 0,
@@ -61,7 +64,11 @@ class SignalCodec:
             "mux_count": None,
         }
 
-        return self.get_fields().get(name, fields.get(name))
+        fields = self.get_fields()
+        if fields.is_nothing():
+            return default_fields.get(name)
+        else:
+            return self.get_fields().get(name, default_fields.get(name))
 
     def convert(
         self, signal: Signal, extension: SignalBlock, mux_signals: List[str]
@@ -94,28 +101,41 @@ class SignalCodec:
         )
 
 
-def write_dbc(fcp: FcpV2) -> str:
+def write_dbc(fcp: FcpV2) -> Result[str, str]:
     messages = []
 
     for struct in fcp.structs:
         extension = fcp.get_matching_extension(struct, "can")
 
+        if extension.is_nothing():
+            return Err(f"Missing extends block for struct {struct.name}")
+
+        extension = extension.unwrap()
+
         mux_signals = [
-            extension.get_signal_fields(signal.name).get("mux_signal")
+            extension.and_then(
+                lambda extension: extension.get_signal_fields(signal.name).and_then(
+                    lambda fields: fields.get("mux_signal")
+                )
+            )
             for signal in struct.signals
         ]
 
         mux_signals = [x for x in mux_signals if x is not None]
 
         signal_codec = SignalCodec()
-        signals = [
-            signal_codec.convert(signal, extension.get_signal(signal.name), mux_signals)
-            for signal in struct.signals
-        ]
+
+        signals = []
+        for signal in struct.signals:
+            signal_block = extension.and_then(
+                lambda extension: extension.get_signal(signal.name)
+            )
+
+            signals.append(signal_codec.convert(signal, signal_block, mux_signals))
 
         messages.append(
             CanMessage(
-                frame_id=extension.fields.get("id"),
+                frame_id=extension.attempt().fields.get("id"),
                 name=struct.name,
                 length=8,
                 signals=signals,

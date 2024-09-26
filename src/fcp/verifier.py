@@ -127,7 +127,7 @@ class BaseVerifier:
         results: List[Result[Any]] = list(
             map(lambda value: self.apply_check(category, value), values)
         )
-        result: Result[Any] = reduce(lambda x, y: y, results)
+        result: Result[Any] = reduce(lambda x, y: y, results, Ok(()))
 
         return result
 
