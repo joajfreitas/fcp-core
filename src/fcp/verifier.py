@@ -1,4 +1,4 @@
-from beartype.typing import Any, Tuple, Generator, Callable, Union, Dict, List
+from beartype.typing import Any, Tuple, Generator, Callable, Dict, List
 import logging
 from functools import reduce
 from collections import Counter
@@ -124,10 +124,12 @@ class BaseVerifier:
         return result
 
     def apply_checks(self, category: str, values: Any) -> Result[Any, str]:
-        results: list[Result[Any]] = list(
+        results: List[Result[Any]] = list(
             map(lambda value: self.apply_check(category, value), values)
         )
-        return reduce(lambda x, y: y, results)
+        result: Result[Any] = reduce(lambda x, y: y, results)
+
+        return result
 
     def verify(self, fcp_v2: Any) -> Result[Any, str]:
         logging.debug("Running verifier")
