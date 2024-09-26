@@ -39,9 +39,7 @@ def generate_cmd(
     Verifier(sources).verify(fcp_v2).unwrap()
 
     generator_manager = GeneratorManager()
-    generator_manager.generate(
-        generator, templates, skel, fcp_v2, sources, output
-    ).unwrap()
+    generator_manager.generate(generator, templates, skel, fcp_v2, sources, output)
 
 
 @click.command()

@@ -5,6 +5,7 @@ import logging
 
 from lark import Lark, Transformer, v_args, UnexpectedCharacters, ParseTree
 
+from .types import Nil
 from .specs import signal
 from .specs import struct
 from .specs import enum
@@ -12,7 +13,7 @@ from .specs import extension
 from .specs import signal_block
 from .specs.comment import Comment
 from .specs import v2
-from .result import Ok, Error, result_shortcut
+from .result import Result, Ok, Err, catch
 from .specs.metadata import MetaData
 from .verifier import ErrorLogger
 
@@ -113,7 +114,9 @@ class ParserContext:
 
 
 class FcpV2Transformer(Transformer):  # type: ignore
-    def __init__(self, filename: str, parser_context: ParserContext) -> None:
+    def __init__(
+        self, filename: str | pathlib.Path, parser_context: ParserContext
+    ) -> None:
         self.filename = pathlib.Path(filename)
         self.path = self.filename.parent
         self.parser_context = parser_context
@@ -124,11 +127,11 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
         self.error_logger = ErrorLogger({self.filename.name: self.source})
 
-    def preamble(self, args: List[str]) -> Union[Ok, Error]:
+    def preamble(self, args: List[str]) -> Result[None, str]:
         if args[0] == "3":
             return Ok(None)
         else:
-            return Error("Expected IDL version 3")
+            return Err("Expected IDL version 3")
 
     def dot(self, args: List[str]) -> str:
         return "."
@@ -153,7 +156,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         return args[0]
 
     @v_args(tree=True)  # type: ignore
-    def field(self, tree: ParseTree) -> Union[Ok, Error]:
+    def field(self, tree: ParseTree) -> signal.Signal:
         if isinstance(tree.children[0], Comment):
             comment, name, field_id, *values = tree.children
             comment = Comment(comment.value)  # type: ignore
@@ -167,19 +170,17 @@ class FcpV2Transformer(Transformer):  # type: ignore
         params = convert_params(params)  # type: ignore
 
         meta = get_meta(tree, self)  # type: ignore
-        return Ok(
-            signal.Signal(
-                name=name,  # type: ignore
-                type=type,
-                field_id=field_id,  # type: ignore
-                meta=meta,
-                comment=comment,  # type: ignore
-                **params,
-            )
+        return signal.Signal(
+            name=name,  # type: ignore
+            field_id=field_id,  # type: ignore
+            type=type,
+            meta=meta,
+            comment=comment,  # type: ignore
+            **params,
         )
 
     @v_args(tree=True)  # type: ignore
-    def struct(self, tree: ParseTree) -> Union[Ok, Error]:
+    def struct(self, tree: ParseTree) -> Never:
         if isinstance(tree.children[0], Comment):
             comment, name, *fields = tree.children
         else:
@@ -191,16 +192,14 @@ class FcpV2Transformer(Transformer):  # type: ignore
         self.fcp.structs.append(
             struct.Struct(
                 name=name,
-                signals=[x.Q() for x in fields],  # type: ignore
+                signals=fields,
                 meta=meta,
                 comment=comment,  # type: ignore
             )
         )
 
-        return Ok(())
-
     @v_args(tree=True)  # type: ignore
-    def enum_field(self, tree: ParseTree) -> Union[Ok, Error]:
+    def enum_field(self, tree: ParseTree) -> enum.Enumeration:
         if isinstance(tree.children[0], Comment):
             comment, name, value = tree.children
         else:
@@ -209,10 +208,10 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
         meta = get_meta(tree, self)  # type: ignore
 
-        return Ok(enum.Enumeration(name=name, value=value, comment=comment, meta=meta))  # type: ignore
+        return enum.Enumeration(name=name, value=value, comment=comment, meta=meta)  # type: ignore
 
     @v_args(tree=True)  # type: ignore
-    def enum(self, tree: ParseTree) -> Union[Ok, Error]:
+    def enum(self, tree: ParseTree) -> Never:
         args = tree.children
 
         if isinstance(args[0], Comment):
@@ -221,23 +220,23 @@ class FcpV2Transformer(Transformer):  # type: ignore
             name, *fields = args
             comment = None  # type: ignore
 
-        fields = [field.Q() for field in fields]  # type: ignore
-
         meta = get_meta(tree, self)  # type: ignore
         self.fcp.enums.append(
             enum.Enum(name=name, enumeration=fields, meta=meta, comment=comment)  # type: ignore
         )
 
-        return Ok(())
-
-    @result_shortcut
-    def mod_expr(self, args: List[str]) -> Union[Ok, Error]:
+    @catch
+    def mod_expr(self, args: List[str]) -> Result[Nil, str]:
         filename = self.path / (args[0].replace(".", "/") + ".fcp")
 
         try:
             with open(filename) as f:
                 source = f.read()
-                fcp = FcpV2Transformer(filename, self.parser_context).transform(fcp_parser.parse(source)).Q()  # type: ignore
+                fcp = (
+                    FcpV2Transformer(filename, self.parser_context)
+                    .transform(fcp_parser.parse(source))
+                    .attempt()
+                )
                 self.parser_context.set_module(str(filename), source)
 
                 self.fcp.merge(fcp)
@@ -245,12 +244,12 @@ class FcpV2Transformer(Transformer):  # type: ignore
         except Exception as e:
             logging.error(e)
             traceback.print_exc()
-            return Error(self.error_logger.error(f"Could not import {filename}"))
+            return Err(self.error_logger.error(f"Could not import {filename}"))
 
         return Ok(())
 
-    @result_shortcut
-    def extension(self, args: List[Any]) -> Union[Ok, Error]:
+    @catch
+    def extension(self, args: List[Any]) -> Result[Nil, str]:
         def is_signal_block(x: Any) -> bool:
             return isinstance(x, signal_block.SignalBlock)
 
@@ -294,14 +293,13 @@ class FcpV2Transformer(Transformer):  # type: ignore
     def comment(self, args: List[str]) -> Comment:
         return Comment(args[0].value.replace("/*", "").replace("*/", ""))  # type: ignore
 
-    def start(self, args: List[str]) -> Ok:
+    def start(self, args: List[str]) -> Result[v2.FcpV2, str]:
         return Ok(self.fcp)
 
 
-@result_shortcut
-def get_fcp(fcp: str) -> Union[Ok, Error]:
+@catch
+def get_fcp(fcp_filename: str) -> Result[Tuple[v2.FcpV2, Dict[str, str]], str]:
     error_logger = ErrorLogger({})
-    fcp_filename = fcp
 
     with open(fcp_filename) as f:
         source = f.read()
@@ -309,8 +307,8 @@ def get_fcp(fcp: str) -> Union[Ok, Error]:
         try:
             fcp_ast = fcp_parser.parse(source)
         except UnexpectedCharacters as e:
-            return Error(error_logger.log_lark_unexpected_characters(fcp_filename, e))
+            return Err(error_logger.log_lark_unexpected_characters(fcp_filename, e))
 
     parser_context = ParserContext()
-    fcp = FcpV2Transformer(fcp_filename, parser_context).transform(fcp_ast).Q()
+    fcp = FcpV2Transformer(fcp_filename, parser_context).transform(fcp_ast).attempt()
     return Ok((fcp, parser_context.get_sources()))

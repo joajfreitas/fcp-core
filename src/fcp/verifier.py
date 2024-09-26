@@ -4,19 +4,19 @@ from functools import reduce
 from collections import Counter
 from lark import UnexpectedCharacters
 
-from .result import Ok, Error, Result
+from .result import Ok, Err, Result
 from .colors import Color
 from .error_logger import ErrorLog
 
 
 def simple_error(f: Callable) -> Callable:  # type: ignore
     # @functools.wraps(f)
-    def wrapper(obj: Any, *args: Any) -> Union[Ok, Error]:
+    def wrapper(obj: Any, *args: Any) -> Result:
         cond, error = f(obj, *args)
         if not cond:
             return Ok(())
         else:
-            return Error(obj.error_logger.log_node(args[0], error))
+            return Err(obj.error_logger.log_node(args[0], error))
 
     return wrapper
 
@@ -112,33 +112,31 @@ class BaseVerifier:
     def __init__(self, sources: Dict[str, str]) -> None:
         self.error_logger = ErrorLogger(sources)
 
-    def apply_check(self, category: str, value: Any) -> Union[Ok, Error, Result]:
+    def apply_check(self, category: str, value: Any) -> Result[Any, str]:
         result = Ok(())
         for name, f in self.__class__.__dict__.items():
             if name.startswith(f"check_{category}"):
                 if isinstance(value, tuple):
-                    result = result.compound(f(self, *value))
+                    result = f(self, *value)
                 else:
-                    result = result.compound(f(self, value))
+                    result = f(self, value)
 
         return result
 
-    def apply_checks(self, category: str, values: Any) -> Union[Ok, Error]:
-        results = list(map(lambda value: self.apply_check(category, value), values))
-        return reduce(lambda x, y: x.compound(y), results, Ok(()))
+    def apply_checks(self, category: str, values: Any) -> Result[Any, str]:
+        results: list[Result[Any]] = list(
+            map(lambda value: self.apply_check(category, value), values)
+        )
+        return reduce(lambda x, y: y, results)
 
-    def verify(self, fcp_v2: Any) -> Union[Ok, Error]:
+    def verify(self, fcp_v2: Any) -> Result[Any, str]:
         logging.debug("Running verifier")
 
-        result = Ok(())
+        result: Result[Any] = Ok(())
 
-        result = result.compound(self.apply_check("fcp_v2", fcp_v2))
-        result = result.compound(
-            self.apply_checks("enum", map(lambda x: (x,), fcp_v2.enums))
-        )
-        result = result.compound(
-            self.apply_checks("struct", map(lambda x: (x,), fcp_v2.structs))
-        )
+        result = self.apply_check("fcp_v2", fcp_v2)
+        result = self.apply_checks("enum", map(lambda x: (x,), fcp_v2.enums))
+        result = self.apply_checks("struct", map(lambda x: (x,), fcp_v2.structs))
 
         return result
 
@@ -147,7 +145,7 @@ class Verifier(BaseVerifier):
     def __init__(self, sources: Dict[str, str]) -> None:
         self.error_logger = ErrorLogger(sources)
 
-    def check_fcp_v2_duplicate_typenames(self, fcp_v2: Any) -> Union[Ok, Error]:
+    def check_fcp_v2_duplicate_typenames(self, fcp_v2: Any) -> Result:
         def naming(x: Any) -> Any:
             return x.name
 
@@ -158,13 +156,13 @@ class Verifier(BaseVerifier):
         if len(duplicates) == 0:
             return Ok(())
         else:
-            return Error(
+            return Err(
                 self.error_logger.log_duplicates(
                     "Found duplicate typenames in fcp configuration", duplicates
                 )
             )
 
-    def check_struct_duplicate_signals(self, struct: Any) -> Union[Ok, Error]:
+    def check_struct_duplicate_signals(self, struct: Any) -> Result:
         def naming(x: Any) -> Any:
             return x.name
 
@@ -172,7 +170,7 @@ class Verifier(BaseVerifier):
         if len(duplicates) == 0:
             return Ok(())
         else:
-            return Error(
+            return Err(
                 self.error_logger.log_duplicates(
                     f"Found duplicate signals in struct {struct.name}",
                     duplicates,
@@ -197,7 +195,7 @@ class Verifier(BaseVerifier):
             f"{signal.name} is not a valid identifier",
         )
 
-    def check_enum_duplicated_values(self, enum: Any) -> Union[Ok, Error]:
+    def check_enum_duplicated_values(self, enum: Any) -> Result:
         duplicates = list(
             Verifier.get_duplicates(
                 enum.enumeration, lambda x: x.value, lambda x: x.name
@@ -206,7 +204,7 @@ class Verifier(BaseVerifier):
         if len(duplicates) == 0:
             return Ok(())
         else:
-            return Error(f"Found duplicate values in enum {enum.name}: {duplicates}")
+            return Err(f"Found duplicate values in enum {enum.name}: {duplicates}")
 
     @simple_error
     def check_enum_name_is_identifier(self, enum: Any) -> Tuple[bool, str]:

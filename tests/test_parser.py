@@ -70,10 +70,8 @@ def test_parsing_errors(test_name: str) -> None:
     assert fcp.is_err()
 
     ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
-    error = ansi_escape.sub("", str(fcp))
+    error = ansi_escape.sub("", str(fcp.err()))
 
-    print(error)
-    print(result)
     assert error == result
 
 

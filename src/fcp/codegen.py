@@ -10,8 +10,8 @@ import sys
 from beartype.typing import Any, Union
 from types import ModuleType
 
-
-from .result import Ok, Error, Result, result_shortcut
+from .types import Nil
+from .result import Result, Ok, Err, catch
 
 
 class CodeGenerator:
@@ -33,11 +33,11 @@ class CodeGenerator:
             with open(path, "w", encoding="utf-8") as file:
                 file.write(content)
 
-    def verify(self, fcp: Any) -> Union[Ok, Error]:
+    def verify(self, fcp: Any) -> Result[Nil, str]:
         if fcp is not None:
             return Ok(())
         else:
-            return Error(["Received a None object instead of FcpV2"])
+            return Err("Received a None object instead of FcpV2")
 
     def generate(self, fcp: Any, templates: Any, skel: Any) -> Any:
         """Function to override from generator. Implements actual code generation."""
@@ -97,7 +97,7 @@ class GeneratorManager:
 
         return skels
 
-    @result_shortcut
+    @catch
     def generate(
         self,
         generator_name: str,
@@ -106,12 +106,12 @@ class GeneratorManager:
         fcp: Any,
         sources: Any,
         output_path: str,
-    ) -> Ok:
+    ) -> Result[Nil, str]:
         """Generate code"""
         verifier = self.get_generator(generator_name).Verifier(sources)
         generator = self.get_generator(generator_name).Generator()
 
-        verifier.verify(fcp).Q()
+        verifier.verify(fcp).attempt()
 
         templates = self.get_templates(template_dir)
         skels = self.get_skels(skel_dir)
