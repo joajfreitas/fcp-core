@@ -1,4 +1,4 @@
-from beartype.typing import Any, Dict, List, Optional
+from beartype.typing import Any, Dict, List
 from serde import serde, strict, to_dict, field
 
 from .signal_block import SignalBlock
@@ -14,7 +14,7 @@ class Extension:
     type: str
     fields: Dict[str, Any]
     signals: List[SignalBlock]
-    meta: Optional[MetaData] = field(skip=True)
+    meta: MetaData = field(skip=True)
 
     def get_signal(self, name: str) -> Maybe[SignalBlock]:
         for signal in self.signals:

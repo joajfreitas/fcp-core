@@ -105,7 +105,7 @@ class SignalCodec:
         )
 
 
-@catch
+@catch  # type: ignore
 def write_dbc(fcp: FcpV2) -> Result[str, str]:
     messages = []
 

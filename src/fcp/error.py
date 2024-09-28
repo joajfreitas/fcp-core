@@ -1,9 +1,6 @@
 from beartype.typing import Any
 from enum import Enum
 
-from .maybe import Maybe, Nothing
-from .colors import Color
-
 
 class Level(Enum):
     Debug = 0
@@ -13,12 +10,10 @@ class Level(Enum):
 
 
 class FcpError:
-    def __init__(
-        self, msg: str, level: Level = Level.Error, node: Maybe[Any] = Nothing()
-    ):
+    def __init__(self, msg: str, node: Any, level: Level = Level.Error):
         self.msg = msg
         self.level = level
         self.node = node
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.msg

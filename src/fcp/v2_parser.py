@@ -17,7 +17,7 @@ from .specs import v2
 from .result import Result, Ok, Err
 from .maybe import catch
 from .specs.metadata import MetaData
-from .verifier import ErrorLogger
+from .error_logger import ErrorLogger
 
 
 fcp_parser = Lark(
@@ -249,7 +249,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
         return Ok(())
 
-    @v_args(tree=True)
+    @v_args(tree=True)  # type: ignore
     def extension(self, tree: ParseTree) -> Nil:
         def is_signal_block(x: Any) -> bool:
             return isinstance(x, signal_block.SignalBlock)
@@ -267,14 +267,14 @@ class FcpV2Transformer(Transformer):  # type: ignore
                 fields=dict(fields),
                 signals=signal_blocks,
                 meta=get_meta(tree, self),
-            )
+            )  # type: ignore
         )
 
     def extension_field(self, args: List[Any]) -> Tuple[str, Any]:
         name, value = args
         return (name, value)
 
-    @v_args(tree=True)
+    @v_args(tree=True)  # type: ignore
     def signal_block(self, tree: ParseTree) -> signal_block.SignalBlock:
         name, *fields = tree.children
 

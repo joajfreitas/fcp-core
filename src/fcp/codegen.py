@@ -11,8 +11,8 @@ from pathlib import Path
 from beartype.typing import Any, Dict, Union
 from types import ModuleType
 
-from .types import Nil
-from .result import Result, Ok, Err
+from .types import Nil, Never
+from .result import Result, Ok
 from .maybe import catch
 from . import FcpV2
 from .verifier import Verifier
@@ -60,14 +60,14 @@ class CodeGenerator:
         """Function to override from generator. Implements actual code generation."""
         return {}  # type: ignore
 
-    def register_checks(self, verifier):
-        return
+    def register_checks(self, verifier: Verifier) -> Never:  # type: ignore
+        pass
 
 
 class GeneratorManager:
     """Manager for generators"""
 
-    def __init__(self, verifier) -> None:
+    def __init__(self, verifier: Verifier) -> None:
         self.verifier = verifier
 
     def list_generators(self) -> Any:

@@ -1,4 +1,4 @@
-from beartype.typing import Any, Dict, Optional
+from beartype.typing import Any, Dict
 from serde import serde, strict, to_dict
 
 from .metadata import MetaData
@@ -8,7 +8,7 @@ from .metadata import MetaData
 class SignalBlock:
     name: str
     fields: Dict[str, Any]
-    meta: Optional[MetaData]
+    meta: MetaData
 
     def __repr__(self) -> str:
         return str(to_dict(self))

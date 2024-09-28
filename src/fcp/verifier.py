@@ -1,38 +1,22 @@
-from beartype.typing import Any, Tuple, Generator, Callable, Dict, List
-import logging
-from functools import reduce
-from collections import Counter
-
-from .result import Ok, Err, Result
+from beartype.typing import Callable, NoReturn, Dict
+from .result import Ok, Result
 from .maybe import catch
-from .colors import Color
-from .error_logger import ErrorLog
 from .error import FcpError
 from .types import Nil
 from .specs.v2 import FcpV2
-from .error_logger import ErrorLogger
-
-
-def register(verifier, category):
-    def decorator(f):
-        verifier.register(category, f)
-        return f
-
-    return decorator
 
 
 class Verifier:
-    def __init__(self):
-        self.checks = {}
-        pass
+    def __init__(self) -> None:
+        self.checks: Dict[str, Callable] = {}
 
-    def register(self, category, function):
+    def register(self, category: str, function: Callable) -> NoReturn:
         if category not in self.checks.keys():
             self.checks[category] = []
         self.checks[category].append(function)
 
     @catch
-    def run_checks(self, category, fcp):
+    def run_checks(self, category: str, fcp: FcpV2) -> Result[Nil, FcpError]:
         for check in self.checks.get(category) or []:
             for node in fcp.get(category).attempt():
                 check(fcp, fcp, node).attempt()
@@ -50,6 +34,14 @@ class Verifier:
         return Ok(())
 
 
+def register(verifier: Verifier, category: str) -> Callable:
+    def decorator(f: Callable) -> Callable:
+        verifier.register(category, f)
+        return f
+
+    return decorator
+
+
 class GeneralVerifier(Verifier):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()

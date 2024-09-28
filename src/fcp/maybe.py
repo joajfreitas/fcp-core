@@ -410,7 +410,7 @@ def catch(f: Any) -> Any:
             return f(*args, **kwargs)
         except result.ResultAttemptError as err:
             return err.error
-        except MaybeAttemptError as err:
+        except MaybeAttemptError:
             return Nothing()
 
     return wrapper

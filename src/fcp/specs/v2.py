@@ -13,7 +13,7 @@ def handle_key_not_found(d: Dict[str, Any], key: str) -> List[Any]:
     return d.get(key).items() if d.get(key) is not None else []  # type: ignore
 
 
-def flatten(xss):
+def flatten(xss: List[List[Any]]) -> List[Any]:
     return [x for xs in xss for x in xs]
 
 
@@ -33,7 +33,7 @@ class FcpV2:
         self.enums += fcp.enums
         self.extensions += fcp.extensions
 
-    def get(self, category) -> Maybe[List[Any]]:
+    def get(self, category: str) -> Maybe[List[Any]]:
         if category == "struct":
             return Some(self.structs)
         elif category == "enum":

@@ -153,15 +153,16 @@ class ErrorLogger:
         )
 
     def log_fcp_error(self, fcp_error: FcpError) -> str:
+        meta = fcp_error.node.meta
         return (
             ErrorLog()
             .with_log_level(fcp_error.level)
             .with_line(fcp_error.msg)
             .with_newline()
             .with_surrounding(
-                self.sources[fcp_error.node.meta.filename],
-                fcp_error.node.meta.line,
-                fcp_error.node.meta.column,
+                self.sources[meta.filename],
+                meta.line,
+                meta.column,
             )
             .error()
         )
