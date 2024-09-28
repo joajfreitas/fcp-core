@@ -1,4 +1,3 @@
-from beartype.typing import Self
 from serde import serde, strict
 
 
@@ -13,7 +12,7 @@ class MetaData:
     filename: str
 
     @staticmethod
-    def default_metadata() -> Self:
+    def default_metadata() -> "MetaData":
         return MetaData(
             line=1,
             end_line=1,

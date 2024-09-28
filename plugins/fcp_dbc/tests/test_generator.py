@@ -1,5 +1,5 @@
 import pytest
-from beartype.typing import Never
+from beartype.typing import NoReturn
 
 from fcp_dbc import Generator
 
@@ -45,7 +45,7 @@ def fcp_v2() -> FcpV2:
     )
 
 
-def test_dbc_generator(fcp_v2: FcpV2) -> Never:
+def test_dbc_generator(fcp_v2: FcpV2) -> NoReturn:
     generator = Generator()
     results = generator.generate(
         fcp_v2,
