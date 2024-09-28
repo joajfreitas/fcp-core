@@ -274,11 +274,14 @@ class FcpV2Transformer(Transformer):  # type: ignore
         name, value = args
         return (name, value)
 
-    def signal_block(self, args: List[Any]) -> signal_block.SignalBlock:
-        name, *fields = args
+    @v_args(tree=True)
+    def signal_block(self, tree: ParseTree) -> signal_block.SignalBlock:
+        name, *fields = tree.children
 
         fields: Dict[str, Any] = {field[0]: field[1] for field in fields}  # type: ignore[no-redef]
-        return signal_block.SignalBlock(name, fields)  # type: ignore
+        return signal_block.SignalBlock(
+            name=name, fields=fields, meta=get_meta(tree, self)
+        )  # type: ignore
 
     def signal_field(self, args: List[Any]) -> Tuple[str, Any]:
         name, value = args
