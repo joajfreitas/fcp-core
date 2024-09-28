@@ -43,7 +43,7 @@ class FcpV2:
             if extension.protocol == protocol:
                 yield extension
 
-    def get_matching_struct(self, name: str) -> Maybe[Struct]:
+    def get_struct(self, name: str) -> Maybe[Struct]:
         for struct in self.structs:
             if struct.name == name:
                 return Some(struct)

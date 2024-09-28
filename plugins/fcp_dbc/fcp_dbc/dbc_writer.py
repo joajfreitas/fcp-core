@@ -105,11 +105,12 @@ class SignalCodec:
         )
 
 
+@catch
 def write_dbc(fcp: FcpV2) -> Result[str, str]:
     messages = []
 
     for extension in fcp.get_matching_extensions("can"):
-        struct = fcp.get_matching_struct(extension.type).unwrap()
+        struct = fcp.get_struct(extension.type).attempt()
         mux_signals = [
             extension.get_signal_fields(signal.name).and_then(
                 lambda fields: fields.get("mux_signal")
