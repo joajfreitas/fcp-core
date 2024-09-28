@@ -6,6 +6,7 @@ from fcp.verifier import BaseVerifier
 from fcp import FcpV2
 
 from .dbc_writer import write_dbc
+from fcp.result import Err
 
 
 class Verifier(BaseVerifier):

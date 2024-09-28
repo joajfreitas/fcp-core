@@ -1,4 +1,4 @@
-from beartype.typing import Tuple, Any, Callable, Union, List, Dict
+from beartype.typing import Tuple, Any, Callable, Union, List, Dict, Generator
 from serde import serde, strict, to_dict, field
 import struct
 
@@ -33,6 +33,18 @@ class FcpV2:
         for extension in self.extensions:
             if extension.type == struct.name and extension.protocol == protocol:
                 return Some(extension)
+
+        return Nothing()
+
+    def get_matching_extensions(self, protocol: str) -> Generator[Extension]:
+        for extension in self.extensions:
+            if extension.protocol == protocol:
+                yield extension
+
+    def get_matching_struct(self, name: str) -> Maybe[Struct]:
+        for struct in self.structs:
+            if struct.name == name:
+                return Some(struct)
 
         return Nothing()
 

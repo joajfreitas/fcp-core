@@ -407,3 +407,10 @@ def is_nothing(maybe: Maybe[T]) -> TypeGuard[Nothing]:
     ```
     """
     return maybe.is_nothing()
+
+
+def maybe(value: Any) -> Maybe:
+    if value is None:
+        return Nothing()
+    else:
+        return Some(value)

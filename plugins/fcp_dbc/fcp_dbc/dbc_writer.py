@@ -7,7 +7,7 @@ from cantools.database.can.signal import Signal as CanSignal
 from fcp.specs import Signal, SignalBlock
 from fcp import FcpV2
 
-from fcp.maybe import Maybe, Some, Nothing
+from fcp.maybe import Maybe, Some, Nothing, maybe
 from fcp.result import Err, Result
 
 
@@ -23,15 +23,12 @@ class SignalCodec:
     def __init__(self) -> None:
         self.bitstart = 0
 
-    def get_fields(self) -> Maybe[Dict[str, Any]]:
-        return self.ext.and_then(lambda ext: Some(ext.fields))
+    def get_fields(self) -> Dict[str, Any]:
+        return self.ext.and_then(lambda ext: Some(ext.fields)).unwrap_or({})
 
     def get_bitstart(self) -> int:
-        bitstart: Maybe[int] = self.get_fields().and_then(
-            lambda fields: (
-                Some(fields["bitstart"]) if "bitstart" in fields.keys() else Nothing()
-            )
-        )
+        fields = self.get_fields()
+        bitstart = maybe(fields.get("bitstart"))
 
         if bitstart.is_some():
             return int(bitstart.unwrap())
@@ -70,7 +67,7 @@ class SignalCodec:
             "mux_count": None,
         }
 
-        fields = self.get_fields()
+        fields = maybe(self.get_fields())
         if fields.is_nothing():
             return default_fields.get(name)
         else:
@@ -110,14 +107,8 @@ class SignalCodec:
 def write_dbc(fcp: FcpV2) -> Result[str, str]:
     messages = []
 
-    for struct in fcp.structs:
-        extension = fcp.get_matching_extension(struct, "can")
-
-        if extension.is_nothing():
-            return Err(f"Missing extends block for struct {struct.name}")
-
-        extension = extension.unwrap()
-
+    for extension in fcp.get_matching_extensions("can"):
+        struct = fcp.get_matching_struct(extension.type).unwrap()
         mux_signals = [
             extension.get_signal_fields(signal.name).and_then(
                 lambda fields: fields.get("mux_signal")
