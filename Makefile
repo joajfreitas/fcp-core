@@ -1,7 +1,7 @@
 SRC:=src tests plugins
-RUN_UNDER?=
+RUN_UNDER?=uvx
 
-.PHONY: format ruff format_check mypy lint check test ci help docs
+.PHONY: format ruff format_check mypy lint check test ci help docs docs-publish
 
 default: help
 
@@ -39,4 +39,9 @@ help:
 	@printf "\t\033[1;32mhelp\033[0m    - Display this help message\n"
 
 docs:
-	sphinx-build -M html docs docs/build
+	@printf "\033[1;34m==> Building docs...\033[0m\n"
+	@$(RUN_UNDER) --from 'sphinx<7.0.0' --with sphinx_rtd_theme sphinx-build -M html docs docs/build
+
+docs-publish: docs
+	@printf "\033[1;34m==> Building published docs...\033[0m\n"
+	@tar -cf docs/build/artifact.tar docs/build/html/**/* docs/build/html/*
