@@ -4,6 +4,7 @@ from lark import UnexpectedCharacters
 from typing_extensions import Self
 
 from .colors import Color
+from .error import FcpError, Level
 
 
 def highlight(source: str, prefix_with_line: str, prefix_without_line: str) -> str:
@@ -53,6 +54,16 @@ class ErrorLog:
         ss = highlight(source, prefix_with_line, prefix_without_line)
 
         self.buffer += ss
+
+        return self
+
+    def with_log_level(self, level: Level) -> Self:
+        if level == Level.Error:
+            self.buffer += Color.red("Error: ")
+        elif level == Level.Warn:
+            self.buffer += Color.yellow("Warning: ")
+        elif level == Level.Info:
+            self.buffer += Color.blue("Info: ")
 
         return self
 
