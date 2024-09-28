@@ -13,9 +13,9 @@ class Struct:
     name: str
     signals: List[Signal]
     comment: Optional[Comment] = field(
-        serializer=comment_serializer, deserializer=comment_deserializer
+        default=None, serializer=comment_serializer, deserializer=comment_deserializer
     )
-    meta: Optional[MetaData] = field(skip=True)
+    meta: Optional[MetaData] = field(default=None, skip=True)
 
     def get_name(self) -> str:
         return self.name

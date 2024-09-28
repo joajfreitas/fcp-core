@@ -1,3 +1,4 @@
+from beartype.typing import Self
 from serde import serde, strict
 
 
@@ -10,3 +11,15 @@ class MetaData:
     start_pos: int
     end_pos: int
     filename: str
+
+    @staticmethod
+    def default_metadata() -> Self:
+        return MetaData(
+            line=1,
+            end_line=1,
+            column=1,
+            end_column=1,
+            start_pos=1,
+            end_pos=1,
+            filename="default.fcp",
+        )  # type: ignore
