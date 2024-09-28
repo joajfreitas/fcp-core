@@ -13,3 +13,4 @@ Contents
 .. toctree::
 
    syntax
+   fcp_dbc
