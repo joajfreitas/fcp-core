@@ -249,21 +249,26 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
         return Ok(())
 
-    @catch
-    def extension(self, args: List[Any]) -> Result[Nil, str]:
+    @v_args(tree=True)
+    def extension(self, tree: ParseTree) -> Nil:
         def is_signal_block(x: Any) -> bool:
             return isinstance(x, signal_block.SignalBlock)
 
-        protocol, name, type, *fields = args
+        protocol, name, type, *fields = tree.children
 
         signal_blocks = [field for field in fields if is_signal_block(field)]
         fields = [field for field in fields if not is_signal_block(field)]
 
         self.fcp.extensions.append(
-            extension.Extension(name, protocol, type, dict(fields), signal_blocks)  # type: ignore
+            extension.Extension(
+                name=name,
+                protocol=protocol,
+                type=type,
+                fields=dict(fields),
+                signals=signal_blocks,
+                meta=get_meta(tree, self),
+            )
         )
-
-        return Ok(())
 
     def extension_field(self, args: List[Any]) -> Tuple[str, Any]:
         name, value = args
