@@ -2,12 +2,12 @@ from beartype.typing import Any, Tuple, Generator, Callable, Dict, List
 import logging
 from functools import reduce
 from collections import Counter
-from lark import UnexpectedCharacters
 
 from .result import Ok, Err, Result
 from .maybe import catch
 from .colors import Color
 from .error_logger import ErrorLog
+from .error_logger import ErrorLogger
 
 
 def simple_error(f: Callable) -> Callable:  # type: ignore
@@ -22,89 +22,11 @@ def simple_error(f: Callable) -> Callable:  # type: ignore
     return wrapper
 
 
-class ErrorLogger:
-    def __init__(self, sources: Dict[str, str]) -> None:
-        self.sources = sources
 
-    def add_source(self, name: str, source: str) -> None:
-        self.sources[name] = source
 
-    def highlight(
-        self, source: str, prefix_with_line: str, prefix_without_line: str
-    ) -> str:
-        ss = ""
-        for i, line in enumerate(source.split("\n")):
-            prefix = prefix_with_line if i == 0 else prefix_without_line
-            ss += prefix + line + "\n"
-            line = line.replace("\t", "    ")
-            ss += prefix_without_line + Color.boldred("~" * len(line)) + "\n"
 
-        return ss
 
-    def log_location(
-        self, error: str, filename: str, line: int, column: int, source: str
-    ) -> str:
-        line_len = len(str(line))
 
-        prefix_with_line = Color.boldblue(f"{line} | ")
-        prefix_without_line = Color.boldblue(" " * line_len + " | ")
-
-        ss = (
-            ""
-            if error == ""
-            else Color.boldred("error: ") + Color.boldwhite(error) + "\n"
-        )
-        ss += (
-            " " * line_len
-            + Color.boldblue("---> ")
-            + f"{filename}:{line}:{column}"
-            + "\n"
-        )
-        ss += prefix_without_line + "\n"
-
-        ss += self.highlight(source, prefix_with_line, prefix_without_line)
-
-        return ss
-
-    def log_node(self, node: Any, error: str = "") -> str:
-        source = self.sources[node.meta.filename]
-        return self.log_location(
-            error,
-            node.meta.filename,
-            node.meta.line,
-            node.meta.column,
-            source[node.meta.start_pos : node.meta.end_pos],
-        )
-
-    def log_duplicates(self, error: str, duplicates: List[Any]) -> str:
-        return (
-            Color.boldblue("error: ")
-            + Color.boldwhite(error)
-            + "\n"
-            + "\n".join(map(lambda x: self.log_node(x), duplicates))
-        )
-
-    def log_lark_unexpected_characters(
-        self, filename: str, exception: UnexpectedCharacters
-    ) -> str:
-        return (
-            ErrorLog()
-            .with_line(Color.boldwhite(f"Unexpected character '{exception.char}'"))
-            .with_line(" -> ")
-            .with_location(filename, exception.line, exception.column)
-            .with_newline(amount=2)
-            .with_line("Expected one of:")
-            .with_newline()
-            .with_list(exception.allowed, transform=lambda x: "* " + x)
-            .with_newline(amount=2)
-            .with_surrounding(
-                self.sources[filename], exception.line - 1, exception.column - 1
-            )
-            .error()
-        )
-
-    def error(self, error: str) -> str:
-        return Color.boldred("Error: ") + Color.boldwhite(error)
 
 
 class BaseVerifier:
