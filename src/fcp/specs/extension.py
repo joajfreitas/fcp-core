@@ -1,7 +1,8 @@
-from beartype.typing import Any, Dict, List
-from serde import serde, strict, to_dict
+from beartype.typing import Any, Dict, List, Optional
+from serde import serde, strict, to_dict, field
 
 from .signal_block import SignalBlock
+from .metadata import MetaData
 
 from ..maybe import Maybe, Nothing, Some, catch
 
@@ -13,6 +14,7 @@ class Extension:
     type: str
     fields: Dict[str, Any]
     signals: List[SignalBlock]
+    meta: Optional[MetaData] = field(skip=True)
 
     def get_signal(self, name: str) -> Maybe[SignalBlock]:
         for signal in self.signals:
@@ -21,13 +23,14 @@ class Extension:
 
         return Nothing()
 
+    @catch
     def get_signal_fields(self, name: str) -> Maybe[Dict[str, Any]]:
         signal = self.get_signal(name)
 
         if signal.is_nothing():
             return Nothing()
         else:
-            return Some(signal.unwrap().fields)
+            return Some(signal.attempt().fields)
 
     def get_type(self) -> str:
         return "extension"
