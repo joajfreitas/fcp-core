@@ -13,6 +13,10 @@ def handle_key_not_found(d: Dict[str, Any], key: str) -> List[Any]:
     return d.get(key).items() if d.get(key) is not None else []  # type: ignore
 
 
+def flatten(xss):
+    return [x for xs in xss for x in xs]
+
+
 @serde(type_check=strict)
 class FcpV2:
     """FCP root node. Holds all Signals, Configs,
@@ -28,6 +32,20 @@ class FcpV2:
         self.structs += fcp.structs
         self.enums += fcp.enums
         self.extensions += fcp.extensions
+
+    def get(self, category) -> Maybe[List[Any]]:
+        if category == "struct":
+            return Some(self.structs)
+        elif category == "enum":
+            return Some(self.enums)
+        elif category == "extension":
+            return Some(self.extensions)
+        elif category == "signal":
+            return Some(flatten([struct.signals for struct in self.structs]))
+        elif category == "signal_block":
+            return Some(flatten([extension.signals for extension in self.extensions]))
+        else:
+            return Nothing()
 
     def get_matching_extension(self, struct: Struct, protocol: str) -> Maybe[Extension]:
         for extension in self.extensions:
