@@ -23,3 +23,6 @@ fcp = "fcp.__main__:main"
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]
+
+[tool.ruff.lint]
+ignore = ["F402"]

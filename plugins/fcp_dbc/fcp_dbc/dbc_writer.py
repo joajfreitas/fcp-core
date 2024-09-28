@@ -7,8 +7,8 @@ from cantools.database.can.signal import Signal as CanSignal
 from fcp.specs import Signal, SignalBlock
 from fcp import FcpV2
 
-from fcp.maybe import Maybe, Some, Nothing, maybe
-from fcp.result import Err, Result
+from fcp.maybe import Some, maybe
+from fcp.result import Result
 
 
 def is_signed(signal: Signal) -> bool:

@@ -36,7 +36,9 @@ class FcpV2:
 
         return Nothing()
 
-    def get_matching_extensions(self, protocol: str) -> Generator[Extension]:
+    def get_matching_extensions(
+        self, protocol: str
+    ) -> Generator[Extension, None, None]:
         for extension in self.extensions:
             if extension.protocol == protocol:
                 yield extension
