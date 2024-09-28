@@ -5,6 +5,7 @@ from collections import Counter
 from lark import UnexpectedCharacters
 
 from .result import Ok, Err, Result
+from .maybe import catch
 from .colors import Color
 from .error_logger import ErrorLog
 

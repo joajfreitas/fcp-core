@@ -31,8 +31,9 @@ from typing import (
     Type,
     TypeVar,
     Union,
-    cast,
 )
+
+import functools
 
 if sys.version_info >= (3, 10):  # pragma: no cover
     from typing import ParamSpec, TypeAlias, TypeGuard
@@ -313,7 +314,7 @@ class Nothing:
         """
         Return the value or early exists the caller with error.
         """
-        exc = AttemptError(
+        exc = MaybeAttemptError(
             self,
             "Called `Maybe.unwrap()` on a `Nothing` value",
         )
@@ -335,7 +336,7 @@ also just write `isinstance(res, (Some, Nothing))
 """
 
 
-class AttemptError(Exception):
+class MaybeAttemptError(Exception):
     pass
 
 
@@ -361,20 +362,6 @@ class UnwrapError(Exception):
         Returns the original maybe.
         """
         return self._maybe
-
-
-V = TypeVar("V")
-Params = ParamSpec("Params")
-
-
-def catch(f: Callable[Params, Maybe[V]]) -> Callable[Params, Maybe[V]]:
-    def wrapper(*args: Params.args, **kwargs: Params.kwargs) -> Maybe[V]:
-        try:
-            return f(*args, **kwargs)
-        except AttemptError:
-            return Nothing()
-
-    return cast(Callable[Params, Maybe[V]], wrapper)
 
 
 def is_some(maybe: Maybe[T]) -> TypeGuard[Some[T]]:
@@ -414,3 +401,16 @@ def maybe(value: Any) -> Maybe:
         return Nothing()
     else:
         return Some(value)
+
+
+def catch(f: Any) -> Any:
+    @functools.wraps(f)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        try:
+            return f(*args, **kwargs)
+        except result.ResultAttemptError as err:
+            return err.error
+        except MaybeAttemptError as err:
+            return Nothing()
+
+    return wrapper

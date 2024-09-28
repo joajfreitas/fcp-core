@@ -12,7 +12,8 @@ from beartype.typing import Any, Dict, Union
 from types import ModuleType
 
 from .types import Nil
-from .result import Result, Ok, Err, catch
+from .result import Result, Ok, Err
+from .maybe import catch
 from . import FcpV2
 
 

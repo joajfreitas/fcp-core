@@ -48,7 +48,6 @@ if sys.version_info >= (3, 10):
 else:
     from typing_extensions import ParamSpec, TypeAlias
 
-
 T = TypeVar("T", covariant=True)  # Success type
 E = TypeVar("E", covariant=True)  # Error type
 U = TypeVar("U")
@@ -448,7 +447,7 @@ class Err(Generic[E]):
         """
         Return the value or early exists the caller with error.
         """
-        raise AttemptError(self)
+        raise ResultAttemptError(self)
 
 
 # define Result as a generic type alias for use
@@ -697,18 +696,7 @@ async def do_async(
         return out
 
 
-class AttemptError(Exception):
+class ResultAttemptError(Exception):
     def __init__(self, error: Err) -> None:
         super().__init__()
         self.error = error
-
-
-def catch(f: Any) -> Any:
-    @functools.wraps(f)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
-        try:
-            return f(*args, **kwargs)
-        except AttemptError as err:
-            return err.error
-
-    return wrapper

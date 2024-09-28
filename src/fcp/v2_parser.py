@@ -14,7 +14,8 @@ from .specs import extension
 from .specs import signal_block
 from .specs.comment import Comment
 from .specs import v2
-from .result import Result, Ok, Err, catch
+from .result import Result, Ok, Err
+from .maybe import catch
 from .specs.metadata import MetaData
 from .verifier import ErrorLogger
 

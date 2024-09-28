@@ -9,6 +9,7 @@ from fcp import FcpV2
 
 from fcp.maybe import Some, maybe
 from fcp.result import Result
+from fcp.maybe import catch
 
 
 def is_signed(signal: Signal) -> bool:

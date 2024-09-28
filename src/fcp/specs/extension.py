@@ -3,7 +3,7 @@ from serde import serde, strict, to_dict
 
 from .signal_block import SignalBlock
 
-from ..maybe import Maybe, Nothing, Some
+from ..maybe import Maybe, Nothing, Some, catch
 
 
 @serde(type_check=strict)
