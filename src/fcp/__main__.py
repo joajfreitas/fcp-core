@@ -10,7 +10,8 @@ import click
 from .version import VERSION
 from .v2_parser import get_fcp
 from .codegen import GeneratorManager
-from .verifier import Verifier
+from .verifier import GeneralVerifier
+from .error_logger import ErrorLogger
 
 
 def setup_logging() -> None:
@@ -34,11 +35,14 @@ def generate_cmd(
     skel: str,
 ) -> None:
     fcp_v2, sources = get_fcp(fcp).unwrap()
+    generator_manager = GeneratorManager(GeneralVerifier())
+    result = generator_manager.generate(
+        generator, templates, skel, fcp_v2, sources, output
+    )
 
-    Verifier(sources).verify(fcp_v2).unwrap()
-
-    generator_manager = GeneratorManager()
-    generator_manager.generate(generator, templates, skel, fcp_v2, sources, output)
+    if result.is_err():
+        error_logger = ErrorLogger(sources)
+        print(error_logger.log_fcp_error(result.err()))
 
 
 @click.command()

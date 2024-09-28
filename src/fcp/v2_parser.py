@@ -126,6 +126,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         with open(self.filename) as f:
             self.source = f.read()
 
+        self.parser_context.set_module(self.filename.name, self.source)
         self.error_logger = ErrorLogger({self.filename.name: self.source})
 
     def preamble(self, args: List[str]) -> Result[None, str]:
@@ -238,7 +239,6 @@ class FcpV2Transformer(Transformer):  # type: ignore
                     .transform(fcp_parser.parse(source))
                     .attempt()
                 )
-                self.parser_context.set_module(str(filename), source)
 
                 self.fcp.merge(fcp)
 

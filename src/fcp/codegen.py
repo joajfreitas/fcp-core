@@ -15,6 +15,7 @@ from .types import Nil
 from .result import Result, Ok, Err
 from .maybe import catch
 from . import FcpV2
+from .verifier import Verifier
 
 
 def handle_file(result: Dict[str, Union[str, Path]]) -> None:
@@ -39,8 +40,6 @@ class CodeGenerator:
     def gen(self, fcp: FcpV2, templates: Any, skels: Any, output_path: str) -> None:
         """Function called from fcp to trigger generator. Do not override."""
 
-        self.verify(fcp).unwrap()
-
         self.output_path = pathlib.Path(output_path)
 
         ctx = {
@@ -52,22 +51,24 @@ class CodeGenerator:
         for result in self.generate(fcp, ctx):
             handle_result(result)
 
-    def verify(self, fcp: Any) -> Result[Nil, str]:
-        if fcp is not None:
-            return Ok(())
-        else:
-            return Err("Received a None object instead of FcpV2")
+    def verify(self, fcp: Any, verifier: Verifier) -> Result[Nil, str]:
+        self.register_checks(verifier)
+
+        return verifier.verify(fcp)
 
     def generate(self, fcp: FcpV2, ctx: Any) -> Dict[str, Union[str, Path]]:
         """Function to override from generator. Implements actual code generation."""
         return {}  # type: ignore
 
+    def register_checks(self, verifier):
+        return
+
 
 class GeneratorManager:
     """Manager for generators"""
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, verifier) -> None:
+        self.verifier = verifier
 
     def list_generators(self) -> Any:
         """Find installed generators"""
@@ -127,10 +128,10 @@ class GeneratorManager:
         output_path: str,
     ) -> Result[Nil, str]:
         """Generate code"""
-        verifier = self.get_generator(generator_name).Verifier(sources)
-        generator = self.get_generator(generator_name).Generator()
 
-        verifier.verify(fcp).attempt()
+        generator = self.get_generator(generator_name).Generator()
+        generator.register_checks(self.verifier)
+        self.verifier.verify(fcp).attempt()
 
         templates = self.get_templates(template_dir)
         skels = self.get_skels(skel_dir)
