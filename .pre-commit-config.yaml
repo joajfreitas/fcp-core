@@ -22,5 +22,5 @@ repos:
     hooks:
     -   id: make ci
         name: make ci
-        entry: /bin/bash -c "make RUN_UNDER='uvx -p 3.12' ci"
+        entry: /bin/bash -c "make ci"
         language: script
