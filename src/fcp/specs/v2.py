@@ -3,7 +3,7 @@ from serde import serde, strict, to_dict, field
 import struct
 
 from ..maybe import Maybe, Some, Nothing
-from . import enum
+from .enum import Enum
 from .signal import Signal
 from .struct import Struct
 from .extension import Extension
@@ -24,7 +24,7 @@ class FcpV2:
     """
 
     structs: List[Struct] = field(default_factory=list)
-    enums: List[enum.Enum] = field(default_factory=list)
+    enums: List[Enum] = field(default_factory=list)
     extensions: List[Extension] = field(default_factory=list)
     version: str = "3.0"
 
@@ -32,6 +32,13 @@ class FcpV2:
         self.structs += fcp.structs
         self.enums += fcp.enums
         self.extensions += fcp.extensions
+
+    def get_type(self, name: str) -> Maybe[Union[Enum, Struct]]:
+        for type in self.structs + self.enums:
+            if name == type.name:
+                return Some(type)
+
+        return Nothing()
 
     def get(self, category: str) -> Maybe[List[Any]]:
         if category == "struct":

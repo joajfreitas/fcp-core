@@ -43,4 +43,4 @@ class Enum:
         )
 
     def __repr__(self) -> str:
-        return "name: {}".format(self.name)
+        return "Enum name: {}".format(self.name)
