@@ -30,7 +30,7 @@ class MessageCodec:
     def get_fields(self, extension: Extension) -> Dict[str, Any]:
         return extension.fields
 
-    def get_bitstart(self, extension: Extension) -> int:
+    def get_bitstart(self, signal: Signal, extension: Extension) -> int:
         fields = self.get_fields(extension)
         bitstart = maybe(fields.get("bitstart"))
 
@@ -38,7 +38,7 @@ class MessageCodec:
             return int(bitstart.unwrap())
         else:
             bitstart = self.bitstart
-            self.bitstart += self.get_bitlength()
+            self.bitstart += self.get_bitlength(signal)
             return int(bitstart)
 
     def get_default_types(self) -> List[str]:
@@ -55,13 +55,13 @@ class MessageCodec:
             "f64",
         ]
 
-    def get_bitlength(self) -> int:
+    def get_bitlength(self, signal: Signal) -> int:
         default_types = self.get_default_types()
 
-        if self.signal.type in default_types:
-            return int(self.signal.type[1:])
+        if signal.type in default_types:
+            return int(signal.type[1:])
 
-        type = self.fcp.get_type(self.signal.type)
+        type = self.fcp.get_type(signal.type)
         if type.is_some() and isinstance(type.unwrap(), Enum):
             return ceil(log2(len(type.unwrap().enumeration)))
         else:
@@ -114,7 +114,7 @@ class MessageCodec:
         self.signals.append(
             CanSignal(
                 prefix + signal.name,
-                self.get_bitstart(extension)
+                self.get_bitstart(signal, extension)
                 + (7 if self.get_field("endianness", extension) == "big" else 0),
                 ceil(log2(len(enum.unwrap().enumeration))),
                 byte_order=(
@@ -125,8 +125,8 @@ class MessageCodec:
                 is_signed=is_signed(signal),
                 minimum=self.get_field("minimum", extension),
                 maximum=self.get_field("maximum", extension),
-                unit=self.signal.unit or None,
-                comment=self.signal.comment or None,
+                unit=signal.unit or None,
+                comment=signal.comment or None,
                 is_multiplexer=signal.name in mux_signals,
                 multiplexer_ids=(
                     list(range(mux_count))
@@ -148,20 +148,20 @@ class MessageCodec:
     ) -> NoReturn:
         self.signals.append(
             CanSignal(
-                prefix + self.signal.name,
-                self.get_bitstart(extension)
+                prefix + signal.name,
+                self.get_bitstart(signal, extension)
                 + (7 if self.get_field("endianness", extension) == "big" else 0),
-                self.get_bitlength(),
+                self.get_bitlength(signal),
                 byte_order=(
                     "big_endian"
                     if self.get_field("endianness", extension) == "big"
                     else "little_endian"
                 ),
-                is_signed=is_signed(self.signal),
+                is_signed=is_signed(signal),
                 minimum=self.get_field("minimum", extension),
                 maximum=self.get_field("maximum", extension),
-                unit=self.signal.unit or None,
-                comment=self.signal.comment or None,
+                unit=signal.unit or None,
+                comment=signal.comment or None,
                 is_multiplexer=signal.name in mux_signals,
                 multiplexer_ids=(
                     list(range(mux_count))
@@ -181,8 +181,6 @@ class MessageCodec:
         mux_signals: List[str],
         prefix: str = "",
     ) -> NoReturn:
-        self.signal = signal
-
         if signal.type in self.get_default_types():
             self.convert_default_signal(
                 signal, extension, signal_block, mux_signals, prefix=prefix
