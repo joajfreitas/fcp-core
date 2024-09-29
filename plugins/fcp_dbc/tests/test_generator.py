@@ -1,5 +1,6 @@
 import os
 import pytest
+from pathlib import Path
 
 from fcp_dbc import Generator
 
@@ -43,7 +44,7 @@ def get_bo(dbc: str) -> str:
     ],
 )  # type: ignore
 def test_dbc_generator(test_name: str) -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config(test_name)).unwrap()
+    fcp_v2, _ = get_fcp(Path(get_fcp_config(test_name))).unwrap()
     dbc = get_result_dbc(test_name)
     generator = Generator()
 

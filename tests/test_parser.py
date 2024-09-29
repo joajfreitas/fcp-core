@@ -3,6 +3,7 @@ import os
 import json
 import re
 from pprint import pprint
+from pathlib import Path
 
 from fcp.v2_parser import get_fcp
 from fcp import FcpV2, default_serialization
@@ -42,7 +43,7 @@ def get_result_txt(scope: str, name: str) -> str:
     ],
 )  # type: ignore
 def test_parser(test_name: str) -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", test_name)).unwrap()
+    fcp_v2, _ = get_fcp(Path(get_fcp_config("syntax", test_name))).unwrap()
     fcp_json_dict = fcp_v2.to_dict()
 
     expected_result_dict = get_result_json("syntax", test_name)
@@ -59,12 +60,12 @@ def test_parser(test_name: str) -> None:
     ],
 )  # type: ignore
 def test_parsing_errors(test_name: str) -> None:
-    fcp_config = get_fcp_config("error", test_name)
+    fcp_config = Path(get_fcp_config("error", test_name))
     fcp = get_fcp(fcp_config)
     result = (
         get_result_txt("error", test_name)
         .replace("    ", "\t")
-        .replace("{filename}", fcp_config)
+        .replace("{filename}", fcp_config.name)
     )
 
     assert fcp.is_err()
@@ -72,11 +73,16 @@ def test_parsing_errors(test_name: str) -> None:
     ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
     error = ansi_escape.sub("", str(fcp.err()))
 
+    print(result)
+    print(error)
+
     assert error == result
 
 
 def test_default_serialization() -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "004_struct_composition")).unwrap()
+    fcp_v2, _ = get_fcp(
+        Path(get_fcp_config("syntax", "004_struct_composition"))
+    ).unwrap()
 
     assert default_serialization(
         fcp_v2, "baz", {"var": {"var1": 1, "var2": 2}}

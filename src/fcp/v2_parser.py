@@ -307,16 +307,18 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
 
 @catch
-def get_fcp(fcp_filename: str) -> Result[Tuple[v2.FcpV2, Dict[str, str]], str]:
+def get_fcp(fcp_filename: pathlib.Path) -> Result[Tuple[v2.FcpV2, Dict[str, str]], str]:
     error_logger = ErrorLogger({})
 
     with open(fcp_filename) as f:
         source = f.read()
-        error_logger.add_source(fcp_filename, source)
+        error_logger.add_source(fcp_filename.name, source)
         try:
             fcp_ast = fcp_parser.parse(source)
         except UnexpectedCharacters as e:
-            return Err(error_logger.log_lark_unexpected_characters(fcp_filename, e))
+            return Err(
+                error_logger.log_lark_unexpected_characters(fcp_filename.name, e)
+            )
 
     parser_context = ParserContext()
     fcp = FcpV2Transformer(fcp_filename, parser_context).transform(fcp_ast).attempt()

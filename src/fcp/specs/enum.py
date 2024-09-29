@@ -12,7 +12,7 @@ class Enumeration:
     comment: Optional[Comment] = field(
         default=None, serializer=comment_serializer, deserializer=comment_deserializer
     )
-    meta: Optional[MetaData] = field(default=None)
+    meta: Optional[MetaData] = field(default=None, skip=True)
 
 
 @serde(type_check=strict)
