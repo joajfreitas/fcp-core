@@ -1,4 +1,4 @@
-BO_ 10 Foo: 8 Vector__XXX
+BO_ 10 Foo: 5 Vector__XXX
  SG_ s3_s2_s2 : 32|8@1+ (1,0) [0|0] "" Vector__XXX
  SG_ s3_s2_s1 : 24|8@1+ (1,0) [0|0] "" Vector__XXX
  SG_ s3_s1 : 16|8@1+ (1,0) [0|0] "" Vector__XXX

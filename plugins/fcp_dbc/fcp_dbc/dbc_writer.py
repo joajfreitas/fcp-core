@@ -216,6 +216,9 @@ class MessageCodec:
 
             self.convert_signal(signal, extension, signal_block, mux_signals)
 
+    def get_dlc(self) -> int:
+        return ceil(self.bitstart / 8)
+
 
 @catch  # type: ignore
 def write_dbc(fcp: FcpV2) -> Result[str, str]:
@@ -231,7 +234,7 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
             CanMessage(
                 frame_id=extension.fields.get("id"),
                 name=struct.name,
-                length=8,
+                length=message_codec.get_dlc(),
                 signals=message_codec.signals,
                 senders=[],
             )
