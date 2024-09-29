@@ -8,8 +8,9 @@ from cantools.database.can.signal import Signal as CanSignal
 from fcp.specs import Signal, Enum, Struct, Extension, SignalBlock
 from fcp import FcpV2
 
+from fcp.types import Nil
 from fcp.maybe import Some, maybe
-from fcp.result import Result
+from fcp.result import Result, Err, Ok
 from fcp.maybe import catch
 
 
@@ -111,13 +112,13 @@ class MessageCodec:
         signal_block: SignalBlock,
         mux_signals: List[str],
         prefix: str = "",
-    ) -> NoReturn:
+    ) -> Signal:
 
         signal = self.convert_default_signal(
             signal, extension, signal_block, mux_signals, prefix
         )
 
-        signal.length = ceil(log2(len(enum.unwrap().enumeration)))
+        signal.length = ceil(log2(len(enum.enumeration)))
 
         return signal
 
@@ -154,6 +155,7 @@ class MessageCodec:
             receivers=[],
         )
 
+    @catch  # type: ignore
     def convert_signal(
         self,
         signal: Signal,
@@ -161,30 +163,31 @@ class MessageCodec:
         signal_block: SignalBlock,
         mux_signals: List[str],
         prefix: str = "",
-    ) -> NoReturn:
+    ) -> Result[Nil, str]:
         if signal.type in self.get_default_types():
             self.signals.append(
                 self.convert_default_signal(
                     signal, extension, signal_block, mux_signals, prefix=prefix
                 )
             )
-            return
+            return Ok(())
 
-        type = self.fcp.get_type(signal.type)
-        if type.is_some() and isinstance(type.unwrap(), Enum):
+        type = self.fcp.get_type(signal.type).attempt()
+        if isinstance(type, Enum):
             self.signals.append(
                 self.convert_enum(signal, type, extension, signal_block, mux_signals)
             )
             return
-        elif type.is_some() and isinstance(type.unwrap(), Struct):
+        elif isinstance(type, Struct):
             self.convert_struct(
-                signal, type.unwrap(), extension, signal_block, mux_signals, prefix
+                signal, type, extension, signal_block, mux_signals, prefix
             )
             return
 
-        raise KeyError()
+        return Err("Can't deal with this")
 
-    def convert(self, struct: Struct, extension: Extension) -> NoReturn:
+    @catch  # type: ignore
+    def convert(self, struct: Struct, extension: Extension) -> Result[Nil, str]:
         mux_signals = [
             extension.get_signal_fields(signal.name).and_then(
                 lambda fields: fields.get("mux_signal")
@@ -199,6 +202,8 @@ class MessageCodec:
 
             self.convert_signal(signal, extension, signal_block, mux_signals)
 
+        return Ok(())
+
     def get_dlc(self) -> int:
         return ceil(self.bitstart / 8)
 
@@ -211,7 +216,7 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
         struct = fcp.get_struct(extension.type).attempt()
 
         message_codec = MessageCodec(fcp)
-        message_codec.convert(struct, extension)
+        message_codec.convert(struct, extension).attempt()
 
         messages.append(
             CanMessage(
