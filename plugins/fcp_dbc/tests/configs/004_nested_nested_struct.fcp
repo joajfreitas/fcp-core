@@ -1,0 +1,21 @@
+version: "3"
+
+struct Baz {
+    s1 @0: u8,
+    s2 @1: u8,
+}
+
+struct Bar {
+    s1 @0: u8,
+    s2 @1: Baz,
+}
+
+struct Foo {
+    s1 @0: u8,
+    s2 @1: u8,
+    s3 @2: Bar,
+}
+
+can Foo extends Foo {
+    id: 10,
+}

@@ -91,10 +91,17 @@ class MessageCodec:
         extension: Extension,
         signal_block: SignalBlock,
         mux_signals: List[str],
+        prefix: str = "",
     ) -> NoReturn:
+
+        print(signal.name, prefix)
         for s in struct.signals:
             self.convert_signal(
-                s, extension, signal_block, mux_signals, prefix=signal.name + "_"
+                s,
+                extension,
+                signal_block,
+                mux_signals,
+                prefix=prefix + signal.name + "_",
             )
 
     def convert_enum(
@@ -189,7 +196,7 @@ class MessageCodec:
             return
         elif type.is_some() and isinstance(type.unwrap(), Struct):
             self.convert_struct(
-                signal, type.unwrap(), extension, signal_block, mux_signals
+                signal, type.unwrap(), extension, signal_block, mux_signals, prefix
             )
             return
 
