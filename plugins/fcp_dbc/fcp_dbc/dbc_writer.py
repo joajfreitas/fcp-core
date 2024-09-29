@@ -108,35 +108,18 @@ class MessageCodec:
         signal: Signal,
         enum: Enum,
         extension: Extension,
+        signal_block: SignalBlock,
         mux_signals: List[str],
         prefix: str = "",
     ) -> NoReturn:
-        self.signals.append(
-            CanSignal(
-                prefix + signal.name,
-                self.get_bitstart(signal, extension)
-                + (7 if self.get_field("endianness", extension) == "big" else 0),
-                ceil(log2(len(enum.unwrap().enumeration))),
-                byte_order=(
-                    "big_endian"
-                    if self.get_field("endianness", extension) == "big"
-                    else "little_endian"
-                ),
-                is_signed=is_signed(signal),
-                minimum=self.get_field("minimum", extension),
-                maximum=self.get_field("maximum", extension),
-                unit=signal.unit or None,
-                comment=signal.comment or None,
-                is_multiplexer=signal.name in mux_signals,
-                multiplexer_ids=(
-                    list(range(mux_count))
-                    if (mux_count := self.get_field("mux_count", extension)) is not None
-                    else None
-                ),
-                multiplexer_signal=self.get_field("mux_signal", extension),
-                receivers=[],
-            )
+
+        signal = self.convert_default_signal(
+            signal, extension, signal_block, mux_signals, prefix
         )
+
+        signal.length = ceil(log2(len(enum.unwrap().enumeration)))
+
+        return signal
 
     def convert_default_signal(
         self,
@@ -146,31 +129,29 @@ class MessageCodec:
         mux_signals: List[str],
         prefix: str = "",
     ) -> NoReturn:
-        self.signals.append(
-            CanSignal(
-                prefix + signal.name,
-                self.get_bitstart(signal, extension)
-                + (7 if self.get_field("endianness", extension) == "big" else 0),
-                self.get_bitlength(signal),
-                byte_order=(
-                    "big_endian"
-                    if self.get_field("endianness", extension) == "big"
-                    else "little_endian"
-                ),
-                is_signed=is_signed(signal),
-                minimum=self.get_field("minimum", extension),
-                maximum=self.get_field("maximum", extension),
-                unit=signal.unit or None,
-                comment=signal.comment or None,
-                is_multiplexer=signal.name in mux_signals,
-                multiplexer_ids=(
-                    list(range(mux_count))
-                    if (mux_count := self.get_field("mux_count", extension)) is not None
-                    else None
-                ),
-                multiplexer_signal=self.get_field("mux_signal", extension),
-                receivers=[],
-            )
+        return CanSignal(
+            prefix + signal.name,
+            self.get_bitstart(signal, extension)
+            + (7 if self.get_field("endianness", extension) == "big" else 0),
+            self.get_bitlength(signal),
+            byte_order=(
+                "big_endian"
+                if self.get_field("endianness", extension) == "big"
+                else "little_endian"
+            ),
+            is_signed=is_signed(signal),
+            minimum=self.get_field("minimum", extension),
+            maximum=self.get_field("maximum", extension),
+            unit=signal.unit or None,
+            comment=signal.comment or None,
+            is_multiplexer=signal.name in mux_signals,
+            multiplexer_ids=(
+                list(range(mux_count))
+                if (mux_count := self.get_field("mux_count", extension)) is not None
+                else None
+            ),
+            multiplexer_signal=self.get_field("mux_signal", extension),
+            receivers=[],
         )
 
     def convert_signal(
@@ -182,14 +163,18 @@ class MessageCodec:
         prefix: str = "",
     ) -> NoReturn:
         if signal.type in self.get_default_types():
-            self.convert_default_signal(
-                signal, extension, signal_block, mux_signals, prefix=prefix
+            self.signals.append(
+                self.convert_default_signal(
+                    signal, extension, signal_block, mux_signals, prefix=prefix
+                )
             )
             return
 
         type = self.fcp.get_type(signal.type)
         if type.is_some() and isinstance(type.unwrap(), Enum):
-            self.convert_enum(signal, type, extension, mux_signals)
+            self.signals.append(
+                self.convert_enum(signal, type, extension, signal_block, mux_signals)
+            )
             return
         elif type.is_some() and isinstance(type.unwrap(), Struct):
             self.convert_struct(
