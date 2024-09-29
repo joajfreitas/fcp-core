@@ -94,7 +94,6 @@ class MessageCodec:
         prefix: str = "",
     ) -> NoReturn:
 
-        print(signal.name, prefix)
         for s in struct.signals:
             self.convert_signal(
                 s,
