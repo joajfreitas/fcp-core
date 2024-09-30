@@ -13,19 +13,19 @@ FCP is an interface description language to exchange information independently o
 ```
 version: "3"
 
-use temperature::Temperature;
+mod temperature;
 
 /*this is a comment*/
 enum SensorState {
-        Off;
-        On;
-        Error;
-};
+        Off,
+        On,
+        Error,
+}
 
 struct SensorInformation {
-    temperature @ 0: Temperature;
-    sensor_state @ 1: SensorState
-};
+    temperature @ 0: Temperature,
+    sensor_state @ 1: SensorState,
+}
 ```
 
 ## Documentation
