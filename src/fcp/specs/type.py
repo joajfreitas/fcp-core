@@ -1,25 +1,27 @@
-from typing import List
+from beartype.typing import List
+
 
 class Type:
     def get_length(self) -> int:
-        raise NotImplemented()
-    
+        raise NotImplementedError()
+
     @staticmethod
     def get_default_types() -> List[str]:
-        ints = ["i"+str(i) for i in range(1, 65)]
-        uints = ["u"+str(i) for i in range(1, 65)]
+        ints = ["i" + str(i) for i in range(1, 65)]
+        uints = ["u" + str(i) for i in range(1, 65)]
 
         return ints + uints + ["f32", "f64"]
 
     @staticmethod
-    def make_type( name):
+    def make_type(name: str) -> "Type":
         if name in Type.get_default_types():
             return DefaultType(name)
         else:
-            raise NotImplemented()
+            raise NotImplementedError()
+
 
 class DefaultType(Type):
-    def __init__(self, name):
+    def __init__(self, name: str) -> None:
         self.name = name
         self.length = int(name[1:])
 

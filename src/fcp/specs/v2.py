@@ -1,4 +1,4 @@
-from beartype.typing import Tuple, Any, Callable, Union, List, Dict, Generator
+from beartype.typing import Any, Callable, Union, List, Dict, Generator
 from serde import serde, strict, to_dict, field
 import struct
 
@@ -78,7 +78,6 @@ class FcpV2:
                 return Some(struct)
 
         return Nothing()
-
 
     def to_fcp(self) -> Dict[str, List[Dict[str, Any]]]:
         nodes = [node.to_fcp() for node in self.enums + self.structs]

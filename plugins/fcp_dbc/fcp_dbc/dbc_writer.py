@@ -45,7 +45,7 @@ class MessageCodec:
 
     def get_bitlength(self, signal: Signal) -> int:
         if signal.type in Type.get_default_types():
-            return Type.make_type(signal.type).get_length()
+            return int(Type.make_type(signal.type).get_length())
 
         type = self.fcp.get_type(signal.type)
         if type.is_some() and isinstance(type.unwrap(), Enum):
