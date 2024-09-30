@@ -7,6 +7,7 @@ from .enum import Enum
 from .signal import Signal
 from .struct import Struct
 from .extension import Extension
+from .type import Type
 
 
 def handle_key_not_found(d: Dict[str, Any], key: str) -> List[Any]:
@@ -37,6 +38,9 @@ class FcpV2:
         for type in self.structs + self.enums:
             if name == type.name:
                 return Some(type)
+
+        if name in Type.get_default_types():
+            return Some(Type.make_type(name))
 
         return Nothing()
 
@@ -75,6 +79,7 @@ class FcpV2:
 
         return Nothing()
 
+
     def to_fcp(self) -> Dict[str, List[Dict[str, Any]]]:
         nodes = [node.to_fcp() for node in self.enums + self.structs]
         fcp_structure: Dict[str, List[Any]] = {}
@@ -105,16 +110,6 @@ class FcpV2:
 
     def __repr__(self) -> str:
         return str(to_dict(self))
-
-
-def decompose_id(sid: int) -> Tuple[int, int]:
-    """Find the dev_id and the msg_id from the sid."""
-    return sid & 0x1F, (sid >> 5) & 0x3F
-
-
-def make_sid(dev_id: int, msg_id: int) -> int:
-    """Find the sid from the dev_id and the msg_id"""
-    return (msg_id << 5) + dev_id
 
 
 def default_serialization(fcp: FcpV2, typename: str, data: Dict[str, Any]) -> bytearray:

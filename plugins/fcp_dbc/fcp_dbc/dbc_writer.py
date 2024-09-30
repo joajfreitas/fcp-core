@@ -12,6 +12,7 @@ from fcp.types import Nil
 from fcp.maybe import Some, maybe
 from fcp.result import Result, Err, Ok
 from fcp.maybe import catch
+from fcp.specs.type import Type
 
 
 def is_signed(signal: Signal) -> bool:
@@ -42,25 +43,9 @@ class MessageCodec:
             self.bitstart += self.get_bitlength(signal)
             return int(bitstart)
 
-    def get_default_types(self) -> List[str]:
-        return [
-            "u8",
-            "u16",
-            "u32",
-            "u64",
-            "i8",
-            "i16",
-            "i32",
-            "i64",
-            "f32",
-            "f64",
-        ]
-
     def get_bitlength(self, signal: Signal) -> int:
-        default_types = self.get_default_types()
-
-        if signal.type in default_types:
-            return int(signal.type[1:])
+        if signal.type in Type.get_default_types():
+            return Type.make_type(signal.type).get_length()
 
         type = self.fcp.get_type(signal.type)
         if type.is_some() and isinstance(type.unwrap(), Enum):
@@ -164,7 +149,7 @@ class MessageCodec:
         mux_signals: List[str],
         prefix: str = "",
     ) -> Result[Nil, str]:
-        if signal.type in self.get_default_types():
+        if signal.type in Type.get_default_types():
             self.signals.append(
                 self.convert_default_signal(
                     signal, extension, signal_block, mux_signals, prefix=prefix
