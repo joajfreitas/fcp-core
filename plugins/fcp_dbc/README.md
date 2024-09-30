@@ -29,13 +29,13 @@ $ fcp generate dbc <fcp source> <output file>
 
 ## Example
 
-```
+```fcp
 version: "3"
 
 enum SensorState {
-    Off,
-    On,
-    Error,
+    Off = 0,
+    On = 1,
+    Error = 2,
 }
 
 struct SensorInformation {

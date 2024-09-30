@@ -26,3 +26,23 @@ addopts = ["--import-mode=importlib"]
 
 [tool.ruff.lint]
 ignore = ["F402"]
+
+[tool.mypy]
+disable_error_code = ["no-redef"]
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py310
+
+[testenv]
+extras = test
+commands = pytest
+"""
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "cantools",
+    "marko",
+]

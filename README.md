@@ -10,16 +10,16 @@ FCP is an interface description language to exchange information independently o
 
 ## Example
 
-```
+```fcp
 version: "3"
 
 mod temperature;
 
 /*this is a comment*/
 enum SensorState {
-        Off,
-        On,
-        Error,
+        Off = 0,
+        On = 1,
+        Error = 2,
 }
 
 struct SensorInformation {

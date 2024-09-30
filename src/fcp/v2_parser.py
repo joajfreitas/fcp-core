@@ -32,7 +32,7 @@ fcp_parser = Lark(
     param_argument: value ","?
 
     enum: comment* "enum" identifier "{" enum_field* "}"
-    enum_field : comment* identifier "="? value? ","
+    enum_field : comment* identifier "=" value ","
 
     extension: identifier identifier "extends" identifier "{" (extension_field | signal_block)+ "}"
     signal_block: "signal" identifier "{" extension_field+ "}" ","
