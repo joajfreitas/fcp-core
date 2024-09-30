@@ -1,0 +1,11 @@
+version: "3"
+
+struct Foo {
+    s1 @0: u3,
+    s2 @1: u4,
+    s3 @2: u1,
+}
+
+can Foo extends Foo {
+    id: 10,
+}
