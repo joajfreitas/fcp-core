@@ -36,14 +36,14 @@ SignalBlock
 Example
 =======
 
-.. code-block:: fcp
+.. code-block:: protobuf
 
     version: "3"
 
     enum SensorState {
-        Off,
-        On,
-        Error,
+        Off = 0,
+        On = 1,
+        Error = 2,
     }
 
     struct SensorInformation {

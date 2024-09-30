@@ -45,4 +45,6 @@ test = [
     "pytest",
     "cantools",
     "marko",
+    "docutils",
+    "pygments",
 ]
