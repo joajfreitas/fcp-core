@@ -37,7 +37,7 @@ envlist = py310
 
 [testenv]
 extras = test
-commands = pytest
+commands = pytest {posargs}
 """
 
 [project.optional-dependencies]

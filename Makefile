@@ -1,5 +1,6 @@
 SRC:=src tests plugins
 RUN_UNDER?=uvx
+ARGS?=
 
 .PHONY: format ruff format_check mypy lint check test ci help docs docs-publish
 
@@ -25,7 +26,7 @@ lint: ruff format_check mypy
 
 test:
 	@printf "\033[1;34m==> Running tests...\033[0m\n"
-	$(RUN_UNDER) tox -e py
+	$(RUN_UNDER) tox -e py -- $(ARGS)
 
 ci: lint test
 	@printf "\n\033[1;32m==> All CI checks completed successfully.\033[0m\n"
