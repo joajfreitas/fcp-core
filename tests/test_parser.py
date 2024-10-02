@@ -71,7 +71,10 @@ def test_parsing_errors(test_name: str) -> None:
     assert fcp.is_err()
 
     ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
-    error = ansi_escape.sub("", str(fcp.err()))
+
+    # Remove full path (user dependednt) from message and keep only the error and file
+    error = ansi_escape.sub("", str(fcp.err())).split("/")
+    error = error[0] + error[-1]
 
     print(result)
     print(error)
