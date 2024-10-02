@@ -74,12 +74,12 @@ def test_parsing_errors(test_name: str) -> None:
 
     # Remove full path (user dependednt) from message and keep only the error and file
     error = ansi_escape.sub("", str(fcp.err())).split("/")
-    error = error[0] + error[-1]
+    error = error[0] + error[-1]  # type: ignore
 
     print(result)
     print(error)
 
-    assert error == result
+    assert error == result  # type: ignore
 
 
 def test_default_serialization() -> None:
