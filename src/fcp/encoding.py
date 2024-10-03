@@ -5,6 +5,7 @@ from .specs.enum import Enum
 from .specs.signal import Signal
 from .specs.type import Type
 from .specs.v2 import FcpV2
+from .specs.extension import Extension
 
 
 class Value:
@@ -65,11 +66,11 @@ class PackedEncoding:
         else:
             raise KeyError(f"Invalid type {type}")
 
-    def generate(self, type: Union[Struct, Enum, Signal]) -> List[EncodablePiece]:
+    def generate(self, extension: Extension) -> List[EncodablePiece]:
         self.encoding = []
         self.bitstart = 0
 
-        self._generate(type)
+        self._generate(self.fcp.get_type(extension.type).unwrap())
         return self.encoding
 
 

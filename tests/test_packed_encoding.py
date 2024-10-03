@@ -4,7 +4,9 @@ import pytest
 from fcp.encoding import PackedEncoding, Value
 
 from fcp.specs.struct import Struct
+from fcp.specs.extension import Extension
 from fcp.specs.signal import Signal
+from fcp.specs.metadata import MetaData
 from fcp.specs.v2 import FcpV2
 
 
@@ -27,11 +29,23 @@ def example_struct() -> Struct:
     )
 
 
+def make_example_extension(type: str) -> Extension:
+    return Extension(
+        name="A",
+        protocol="can",
+        type=type,
+        fields={},
+        signals=[],
+        meta=MetaData.default_metadata(),
+    )
+
+
 def test_packed_encoding(example_struct: Struct) -> NoReturn:
-    fcp = FcpV2(structs=[example_struct])
+    example_extension = make_example_extension("A")
+    fcp = FcpV2(structs=[example_struct], extensions=[example_extension])
 
     packed_encoding = PackedEncoding(fcp)
-    assert packed_encoding.generate(example_struct) == [
+    assert packed_encoding.generate(example_extension) == [
         Value(name="s1", bitstart=0, bitlength=32),
         Value(name="s2", bitstart=32, bitlength=16),
     ]
@@ -45,12 +59,12 @@ def test_struct(example_struct: Struct) -> NoReturn:
             Signal(name="s2", field_id=1, type="u8"),
         ],
     )
-
-    fcp = FcpV2(structs=[example_struct, b_struct])
+    example_extension = make_example_extension("B")
+    fcp = FcpV2(structs=[example_struct, b_struct], extensions=[example_extension])
 
     packed_encoding = PackedEncoding(fcp)
 
-    assert packed_encoding.generate(b_struct) == [
+    assert packed_encoding.generate(example_extension) == [
         Value("A::s1", bitstart=0, bitlength=32),
         Value("A::s2", bitstart=32, bitlength=16),
         Value("s2", bitstart=48, bitlength=8),
