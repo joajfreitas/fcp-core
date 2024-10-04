@@ -14,19 +14,21 @@ class Value:
     def __init__(
         self,
         name: str,
+        type: str,
         bitstart: int,
         bitlength: int,
         endianess: str = "little",
         extended_data: Dict[str, Any] = dict(),
     ) -> None:
         self.name = name
+        self.type = type
         self.bitstart = bitstart
         self.bitlength = bitlength
         self.endianess = endianess
         self.extended_data = extended_data
 
     def __repr__(self) -> str:
-        return f"Value name={self.name} bitstart={self.bitstart} bitlength={self.bitlength} endianess={self.endianess}"
+        return f"Value name={self.name} type={self.type} bitstart={self.bitstart} bitlength={self.bitlength} endianess={self.endianess}"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Value):
@@ -34,6 +36,7 @@ class Value:
 
         return (
             self.name == other.name
+            and self.type == other.type
             and self.bitstart == other.bitstart
             and self.bitlength == other.bitlength
             and self.endianess == other.endianess
@@ -78,6 +81,7 @@ class PackedEncoder:
         self.encoding.append(
             Value(
                 prefix + signal.name,
+                signal.type,
                 self.bitstart,
                 type_length,
                 endianess=fields.get("endianess") or "little",
@@ -92,7 +96,12 @@ class PackedEncoder:
             log2(max([enumeration.value for enumeration in enum.enumeration]) + 1)
         )
 
-        self.encoding.append(Value(prefix[:-2], self.bitstart, type_length))
+        if type_length > 64:
+            raise ValueError(f"Way too large an enum, computed size: {type_length}")
+
+        self.encoding.append(
+            Value(prefix[:-2], "u" + str(type_length), self.bitstart, type_length)
+        )
         self.bitstart += type_length
 
     def _generate(
