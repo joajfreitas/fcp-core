@@ -1,4 +1,4 @@
-from beartype.typing import Union, NoReturn, List, Dict, Any, Optional
+from beartype.typing import Union, NoReturn, List, Dict, Any
 from math import log2, ceil
 
 from .specs.struct import Struct
@@ -17,15 +17,13 @@ class Value:
         bitstart: int,
         bitlength: int,
         endianess: str = "little",
-        mux_signal: Optional[str] = None,
-        mux_count: Optional[int] = None,
+        extended_data: Dict[str, Any] = dict(),
     ) -> None:
         self.name = name
         self.bitstart = bitstart
         self.bitlength = bitlength
         self.endianess = endianess
-        self.mux_signal = mux_signal
-        self.mux_count = mux_count
+        self.extended_data = extended_data
 
     def __repr__(self) -> str:
         return f"Value name={self.name} bitstart={self.bitstart} bitlength={self.bitlength} endianess={self.endianess}"
@@ -83,8 +81,7 @@ class PackedEncoder:
                 self.bitstart,
                 type_length,
                 endianess=fields.get("endianess") or "little",
-                mux_signal=fields.get("mux_signal"),
-                mux_count=fields.get("mux_count"),
+                extended_data=fields,
             )
         )
 

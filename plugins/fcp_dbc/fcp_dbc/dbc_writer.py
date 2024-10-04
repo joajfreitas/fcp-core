@@ -198,12 +198,14 @@ def make_signals(encoding: List[EncodeablePiece]) -> List[Signal]:
     signals = []
 
     mux_signals = [
-        piece.mux_signal for piece in encoding if piece.mux_signal is not None
+        piece.extended_data.get("mux_signal")
+        for piece in encoding
+        if piece.extended_data.get("mux_signal") is not None
     ]
 
     for piece in encoding:
-        if piece.mux_count is not None:
-            mux_ids = list(range(0, piece.mux_count))
+        if piece.extended_data.get("mux_count") is not None:
+            mux_ids = list(range(0, piece.extended_data.get("mux_count")))
         else:
             mux_ids = None
 
@@ -222,7 +224,7 @@ def make_signals(encoding: List[EncodeablePiece]) -> List[Signal]:
                 comment=None,
                 is_multiplexer=piece.name in mux_signals,
                 multiplexer_ids=mux_ids,
-                multiplexer_signal=piece.mux_signal,
+                multiplexer_signal=piece.extended_data.get("mux_signal"),
             )
         )
 
