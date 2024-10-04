@@ -42,6 +42,7 @@ def get_bo(dbc: str) -> str:
         "003_nested_struct",
         "004_nested_nested_struct",
         "005_small_types",
+        "006_big_endian",
     ],
 )  # type: ignore
 def test_dbc_generator(test_name: str) -> None:
