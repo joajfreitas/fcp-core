@@ -201,9 +201,11 @@ def make_signals(encoding: List[EncodeablePiece]) -> List[Signal]:
         signals.append(
             CanSignal(
                 piece.name.replace("::", "_"),
-                piece.bitstart,
+                (piece.bitstart + 7) if piece.endianess != "little" else piece.bitstart,
                 piece.bitlength,
-                "little",
+                byte_order=(
+                    "big_endian" if piece.endianess == "big" else "little_endian"
+                ),
                 is_signed=False,
                 minimum=0,
                 maximum=0,
