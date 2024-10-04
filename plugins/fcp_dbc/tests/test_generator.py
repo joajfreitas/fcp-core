@@ -28,7 +28,9 @@ def get_bo(dbc: str) -> str:
     bo_sections = [
         section
         for section in sections
-        if section.startswith("BO_") or section.startswith(" SG_")
+        if section.startswith("BO_")
+        or section.startswith(" SG_")
+        or section.startswith("SG_MUL_VAL_")
     ]
 
     return "\n".join(bo_sections) + "\n"
@@ -43,6 +45,7 @@ def get_bo(dbc: str) -> str:
         "004_nested_nested_struct",
         "005_small_types",
         "006_big_endian",
+        "007_muxed_signals",
     ],
 )  # type: ignore
 def test_dbc_generator(test_name: str) -> None:

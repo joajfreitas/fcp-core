@@ -197,7 +197,16 @@ class MessageCodec:
 def make_signals(encoding: List[EncodeablePiece]) -> List[Signal]:
     signals = []
 
+    mux_signals = [
+        piece.mux_signal for piece in encoding if piece.mux_signal is not None
+    ]
+
     for piece in encoding:
+        if piece.mux_count is not None:
+            mux_ids = list(range(0, piece.mux_count))
+        else:
+            mux_ids = None
+
         signals.append(
             CanSignal(
                 piece.name.replace("::", "_"),
@@ -211,9 +220,9 @@ def make_signals(encoding: List[EncodeablePiece]) -> List[Signal]:
                 maximum=0,
                 unit=None,
                 comment=None,
-                is_multiplexer=False,
-                multiplexer_ids=None,
-                multiplexer_signal=None,
+                is_multiplexer=piece.name in mux_signals,
+                multiplexer_ids=mux_ids,
+                multiplexer_signal=piece.mux_signal,
             )
         )
 

@@ -1,0 +1,4 @@
+BO_ 10 Foo: 2 Vector__XXX
+ SG_ s2 m0 : 8|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ s1 M : 0|8@1+ (1,0) [0|0] "" Vector__XXX
+SG_MUL_VAL_ 10 s2 s1 0-3;
