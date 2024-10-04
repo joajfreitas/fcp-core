@@ -1,4 +1,5 @@
 from beartype.typing import Union, NoReturn, List
+from math import log2, ceil
 
 from .specs.struct import Struct
 from .specs.enum import Enum
@@ -28,10 +29,10 @@ class Value:
         )
 
 
-EncodablePiece = Union[Value]
+EncodeablePiece = Union[Value]
 
 
-class PackedEncoding:
+class PackedEncoder:
     def __init__(self, fcp: FcpV2):
         self.fcp = fcp
         self.encoding: List[Value] = []
@@ -42,9 +43,12 @@ class PackedEncoding:
             self.generate_signal(signal, prefix)
 
     def generate_signal(self, signal: Signal, prefix: str = "") -> NoReturn:
+
+        print("signal.name", signal.name, prefix)
         if signal.type not in Type.get_default_types():
             self._generate(
-                self.fcp.get_type(signal.type).unwrap(), prefix=signal.type + "::"
+                self.fcp.get_type(signal.type).unwrap(),
+                prefix=prefix + signal.name + "::",
             )
             return
 
@@ -53,8 +57,13 @@ class PackedEncoding:
 
         self.bitstart += type_length
 
-    def generate_enum(self, enum: Enum) -> NoReturn:
-        pass
+    def generate_enum(self, enum: Enum, prefix: str) -> NoReturn:
+        type_length = ceil(
+            log2(max([enumeration.value for enumeration in enum.enumeration]) + 1)
+        )
+
+        self.encoding.append(Value(prefix[:-2], self.bitstart, type_length))
+        self.bitstart += type_length
 
     def _generate(
         self, type: Union[Struct, Enum, Signal], prefix: str = ""
@@ -63,10 +72,12 @@ class PackedEncoding:
             self.generate_struct(type, prefix)
         elif isinstance(type, Signal):
             self.generate_signal(type, prefix)
+        elif isinstance(type, Enum):
+            self.generate_enum(type, prefix)
         else:
             raise KeyError(f"Invalid type {type}")
 
-    def generate(self, extension: Extension) -> List[EncodablePiece]:
+    def generate(self, extension: Extension) -> List[EncodeablePiece]:
         self.encoding = []
         self.bitstart = 0
 
@@ -74,8 +85,8 @@ class PackedEncoding:
         return self.encoding
 
 
-def make_encoding(name: str, fcp: FcpV2) -> Union[PackedEncoding]:
+def make_encoder(name: str, fcp: FcpV2) -> Union[PackedEncoder]:
     if name == "packed":
-        return PackedEncoding(fcp)
+        return PackedEncoder(fcp)
 
     raise KeyError(f"Invalid encoding name {name}")

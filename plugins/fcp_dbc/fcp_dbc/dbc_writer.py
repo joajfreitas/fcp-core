@@ -13,6 +13,7 @@ from fcp.maybe import Some, maybe
 from fcp.result import Result, Err, Ok
 from fcp.maybe import catch
 from fcp.specs.type import Type
+from fcp.encoding import make_encoder, EncodeablePiece
 
 
 def is_signed(signal: Signal) -> bool:
@@ -193,22 +194,49 @@ class MessageCodec:
         return ceil(self.bitstart / 8)
 
 
+def make_signals(encoding: List[EncodeablePiece]) -> List[Signal]:
+    signals = []
+
+    for piece in encoding:
+        signals.append(
+            CanSignal(
+                piece.name.replace("::", "_"),
+                piece.bitstart,
+                piece.bitlength,
+                "little",
+                is_signed=False,
+                minimum=0,
+                maximum=0,
+                unit=None,
+                comment=None,
+                is_multiplexer=False,
+                multiplexer_ids=None,
+                multiplexer_signal=None,
+            )
+        )
+
+    dlc = ceil((piece.bitstart + piece.bitlength) / 8)
+
+    return signals, dlc
+
+
 @catch  # type: ignore
 def write_dbc(fcp: FcpV2) -> Result[str, str]:
     messages = []
 
-    for extension in fcp.get_matching_extensions("can"):
-        struct = fcp.get_struct(extension.type).attempt()
+    encoder = make_encoder("packed", fcp)
 
-        message_codec = MessageCodec(fcp)
-        message_codec.convert(struct, extension).attempt()
+    for extension in fcp.get_matching_extensions("can"):
+        encoding = encoder.generate(extension)
+
+        signals, dlc = make_signals(encoding)
 
         messages.append(
             CanMessage(
                 frame_id=extension.fields.get("id"),
-                name=struct.name,
-                length=message_codec.get_dlc(),
-                signals=message_codec.signals,
+                name=extension.name,
+                length=dlc,
+                signals=signals,
                 senders=[],
             )
         )
