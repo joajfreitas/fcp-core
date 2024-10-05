@@ -261,7 +261,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         fields = [field for field in fields if not is_signal_block(field)]
 
         self.fcp.extensions.append(
-            impl.Extension(
+            impl.Impl(
                 name=name,
                 protocol=protocol,
                 type=type,

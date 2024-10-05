@@ -8,7 +8,7 @@ from ..maybe import Maybe, Nothing, Some, catch
 
 
 @serde(type_check=strict)
-class Extension:
+class Impl:
     name: str
     protocol: str
     type: str

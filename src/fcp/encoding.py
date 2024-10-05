@@ -6,7 +6,7 @@ from .specs.enum import Enum
 from .specs.signal import Signal
 from .specs.type import Type
 from .specs.v2 import FcpV2
-from .specs.impl import Extension
+from .specs.impl import Impl
 from .maybe import Some
 
 
@@ -53,13 +53,13 @@ class PackedEncoder:
         self.bitstart = 0
 
     def generate_struct(
-        self, struct: Struct, extension: Extension, prefix: str = ""
+        self, struct: Struct, extension: Impl, prefix: str = ""
     ) -> NoReturn:
         for signal in sorted(struct.signals, key=lambda signal: signal.field_id):
             self.generate_signal(signal, extension, prefix)
 
     def generate_signal(
-        self, signal: Signal, extension: Extension, prefix: str = ""
+        self, signal: Signal, extension: Impl, prefix: str = ""
     ) -> NoReturn:
 
         fields: Dict[str, Any] = (
@@ -91,7 +91,7 @@ class PackedEncoder:
 
         self.bitstart += type_length
 
-    def generate_enum(self, enum: Enum, extension: Extension, prefix: str) -> NoReturn:
+    def generate_enum(self, enum: Enum, extension: Impl, prefix: str) -> NoReturn:
         type_length = ceil(
             log2(max([enumeration.value for enumeration in enum.enumeration]) + 1)
         )
@@ -105,7 +105,7 @@ class PackedEncoder:
         self.bitstart += type_length
 
     def _generate(
-        self, type: Union[Struct, Enum, Signal], extension: Extension, prefix: str = ""
+        self, type: Union[Struct, Enum, Signal], extension: Impl, prefix: str = ""
     ) -> NoReturn:
         if isinstance(type, Struct):
             self.generate_struct(type, extension, prefix)
@@ -116,7 +116,7 @@ class PackedEncoder:
         else:
             raise KeyError(f"Invalid type {type}")
 
-    def generate(self, extension: Extension) -> List[EncodeablePiece]:
+    def generate(self, extension: Impl) -> List[EncodeablePiece]:
         self.encoding = []
         self.bitstart = 0
 

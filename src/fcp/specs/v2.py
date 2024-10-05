@@ -6,7 +6,7 @@ from ..maybe import Maybe, Some, Nothing
 from .enum import Enum
 from .signal import Signal
 from .struct import Struct
-from .impl import Extension
+from .impl import Impl
 from .type import Type
 
 
@@ -26,7 +26,7 @@ class FcpV2:
 
     structs: List[Struct] = field(default_factory=list)
     enums: List[Enum] = field(default_factory=list)
-    extensions: List[Extension] = field(default_factory=list)
+    extensions: List[Impl] = field(default_factory=list)
     version: str = "3.0"
 
     def merge(self, fcp: "FcpV2") -> None:
@@ -58,16 +58,14 @@ class FcpV2:
         else:
             return Nothing()
 
-    def get_matching_extension(self, struct: Struct, protocol: str) -> Maybe[Extension]:
+    def get_matching_extension(self, struct: Struct, protocol: str) -> Maybe[Impl]:
         for extension in self.extensions:
             if extension.type == struct.name and extension.protocol == protocol:
                 return Some(extension)
 
         return Nothing()
 
-    def get_matching_extensions(
-        self, protocol: str
-    ) -> Generator[Extension, None, None]:
+    def get_matching_extensions(self, protocol: str) -> Generator[Impl, None, None]:
         for extension in self.extensions:
             if extension.protocol == protocol:
                 yield extension

@@ -4,7 +4,7 @@ import pytest
 from fcp.encoding import PackedEncoder, Value
 
 from fcp.specs.struct import Struct
-from fcp.specs.impl import Extension
+from fcp.specs.impl import Impl
 from fcp.specs.signal import Signal
 from fcp.specs.metadata import MetaData
 from fcp.specs.v2 import FcpV2
@@ -29,8 +29,8 @@ def example_struct() -> Struct:
     )
 
 
-def make_example_extension(type: str) -> Extension:
-    return Extension(
+def make_example_extension(type: str) -> Impl:
+    return Impl(
         name="A",
         protocol="can",
         type=type,

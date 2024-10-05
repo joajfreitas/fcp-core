@@ -14,7 +14,7 @@ Usage
 Supported schema fields
 =======================
 
-Extension
+Impl
 ---------
 
 #. **id**: CAN bus frame identifier

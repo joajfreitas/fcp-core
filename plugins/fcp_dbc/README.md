@@ -10,7 +10,7 @@ $ fcp generate dbc <fcp source> <output file>
 
 ## Supported schema fields
 
-### Extension
+### Impl
 
  * **id**: CAN bus frame identifier
  * **device**: Sender name

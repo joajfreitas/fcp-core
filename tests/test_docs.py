@@ -89,12 +89,13 @@ def test_source_files_structure() -> None:
             if os.path.splitext(file_name)[1] == ".py":
                 assert file_name in code_blocks[1]
 
+
 def test_dir_tree_structure() -> None:
     code_blocks = get_rst_code_blocks("docs/hacking.rst", "bash")
 
     code_blocks = [block for _, block in code_blocks]
 
-    for _, dirs, _  in itertools.chain(os.walk("src"), os.walk("plugins")):
+    for _, dirs, _ in itertools.chain(os.walk("src"), os.walk("plugins")):
         for dir in dirs:
             if dir == "__pycache__":
                 continue
