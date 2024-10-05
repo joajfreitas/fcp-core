@@ -22,7 +22,7 @@ from .error_logger import ErrorLogger
 
 fcp_parser = Lark(
     """
-    start: preamble (struct | enum | mod_expr | extension)*
+    start: preamble (struct | enum | mod_expr | impl)*
 
     preamble: "version" ":" string
 
@@ -34,7 +34,7 @@ fcp_parser = Lark(
     enum: comment* "enum" identifier "{" enum_field* "}"
     enum_field : comment* identifier "=" value ","
 
-    extension: identifier identifier "extends" identifier "{" (extension_field | signal_block)+ "}"
+    impl: "impl" identifier "for" identifier "{" (extension_field | signal_block)+ "}"
     signal_block: "signal" identifier "{" extension_field+ "}" ","
     extension_field: identifier ":" value ","
 
@@ -250,11 +250,12 @@ class FcpV2Transformer(Transformer):  # type: ignore
         return Ok(())
 
     @v_args(tree=True)  # type: ignore
-    def extension(self, tree: ParseTree) -> Nil:
+    def impl(self, tree: ParseTree) -> Nil:
         def is_signal_block(x: Any) -> bool:
             return isinstance(x, signal_block.SignalBlock)
 
-        protocol, name, type, *fields = tree.children
+        protocol, name, *fields = tree.children
+        type = name  # type and name are the same!
 
         signal_blocks = [field for field in fields if is_signal_block(field)]
         fields = [field for field in fields if not is_signal_block(field)]

@@ -6,6 +6,6 @@ struct Foo {
     s3 @2: u1,
 }
 
-can Foo extends Foo {
+impl can for Foo {
     id: 10,
 }

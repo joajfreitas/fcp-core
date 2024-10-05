@@ -52,7 +52,7 @@ Example
         sensor_id @2: u8,
     }
 
-    can SensorInformation extends SensorInformation {
+    impl can for SensorInformation {
         id: 100,
         device: "ecu1",
 

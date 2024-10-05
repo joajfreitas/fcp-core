@@ -5,7 +5,7 @@ struct Foo {
     s2 @1: u8,
 }
 
-can Foo extends Foo {
+impl can for Foo {
     id: 10,
 
     signal s2 {
