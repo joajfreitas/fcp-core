@@ -12,12 +12,12 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def get_fcp_config(scope: str, name: str) -> str:
-    config_dir = os.path.join(THIS_DIR, "configs", scope)
+    config_dir = os.path.join(THIS_DIR, "schemas", scope)
     return os.path.join(config_dir, name + ".fcp")
 
 
 def get_result_json(scope: str, name: str) -> FcpV2:
-    config_dir = os.path.join(THIS_DIR, "configs", scope)
+    config_dir = os.path.join(THIS_DIR, "schemas", scope)
     result_path = os.path.join(config_dir, name + ".json")
 
     with open(result_path, "r") as result_file:
@@ -25,7 +25,7 @@ def get_result_json(scope: str, name: str) -> FcpV2:
 
 
 def get_result_txt(scope: str, name: str) -> str:
-    config_dir = os.path.join(THIS_DIR, "configs", scope)
+    config_dir = os.path.join(THIS_DIR, "schemas", scope)
     result_path = os.path.join(config_dir, name + ".txt")
 
     with open(result_path, "r") as result_file:

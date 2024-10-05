@@ -10,12 +10,12 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def get_fcp_config(name: str) -> str:
-    config_dir = os.path.join(THIS_DIR, "configs")
+    config_dir = os.path.join(THIS_DIR, "schemas")
     return os.path.join(config_dir, name + ".fcp")
 
 
 def get_result_dbc(name: str) -> str:
-    config_dir = os.path.join(THIS_DIR, "configs")
+    config_dir = os.path.join(THIS_DIR, "schemas")
     result_path = os.path.join(config_dir, name + ".dbc")
 
     with open(result_path, "r") as result_file:
