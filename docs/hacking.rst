@@ -52,3 +52,5 @@ Directory structure
     ├── v2_parser.py         - Fcp v2 parser
     ├── verifier.py          - Post parsing error analysis
     └── version.py           - fcp version
+
+.. image:: assets/fcp_object_tree.svg
