@@ -6,7 +6,7 @@ from ..maybe import Maybe, Some, Nothing
 from .enum import Enum
 from .signal import Signal
 from .struct import Struct
-from .extension import Extension
+from .impl import Extension
 from .type import Type
 
 

@@ -4,7 +4,7 @@ import pytest
 from fcp.encoding import PackedEncoder, Value
 
 from fcp.specs.struct import Struct
-from fcp.specs.extension import Extension
+from fcp.specs.impl import Extension
 from fcp.specs.signal import Signal
 from fcp.specs.metadata import MetaData
 from fcp.specs.v2 import FcpV2

@@ -10,7 +10,7 @@ from .types import Nil, Never
 from .specs import signal
 from .specs import struct
 from .specs import enum
-from .specs import extension
+from .specs import impl
 from .specs import signal_block
 from .specs.comment import Comment
 from .specs import v2
@@ -261,7 +261,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         fields = [field for field in fields if not is_signal_block(field)]
 
         self.fcp.extensions.append(
-            extension.Extension(
+            impl.Extension(
                 name=name,
                 protocol=protocol,
                 type=type,

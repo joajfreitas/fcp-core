@@ -6,7 +6,7 @@ from .specs.enum import Enum
 from .specs.signal import Signal
 from .specs.type import Type
 from .specs.v2 import FcpV2
-from .specs.extension import Extension
+from .specs.impl import Extension
 from .maybe import Some
 
 

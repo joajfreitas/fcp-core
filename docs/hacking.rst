@@ -5,7 +5,7 @@ Hacking
 Directory structure
 ===================
 
-.. code-block::
+.. code-block:: bash
 
     ├── docs                 - Documentation
     ├── example              - Example fcp schemas
@@ -24,7 +24,7 @@ Directory structure
         └── schemas          - Schemas used in fcp unit tests
 
 
-.. code-block::
+.. code-block:: bash
     
     src/fcp
     ├── codegen.py           - Support for codegenerator plugins

@@ -23,7 +23,7 @@ def get_markdown_fcp_code_blocks(filename: str) -> List[str]:
     return code_blocks
 
 
-def get_rst_fcp_code_blocks(filename: str) -> List[str]:
+def get_rst_code_blocks(filename: str, language=None) -> List[str]:
 
     with open(filename, encoding="utf-8") as file:
         doctree = publish_doctree(file.read())
@@ -32,7 +32,9 @@ def get_rst_fcp_code_blocks(filename: str) -> List[str]:
         return (
             node.tagname == "literal_block"
             and "code" in node.attributes["classes"]
-            and "protobuf" in node.attributes["classes"]
+            and (language in node.attributes["classes"])
+            if language is not None
+            else True
         )
 
     code_blocks = doctree.findall(condition=is_code_block)
@@ -46,7 +48,9 @@ def get_rst_files(directory: str) -> Generator[Tuple[str, str], None, None]:
     for path in os.listdir(directory):
         filename = root / path
         if filename.is_file() and filename.suffix == ".rst":
-            for _, code_block in get_rst_fcp_code_blocks(str(filename)):
+            for _, code_block in get_rst_code_blocks(
+                str(filename), "protobuf"
+            ):  # protobuf? using fcp would fail the documentation build. TODO: implement fcp syntax for rst
                 yield (str(filename), code_block)
 
 
@@ -72,3 +76,15 @@ def test_rst(filename: str, fcp_code_block: str):
         fp.write(fcp_code_block)
 
     fcp_v2, _ = get_fcp(Path(tmp_name)).unwrap()
+
+
+def test_source_files_structure():
+    code_blocks = get_rst_code_blocks("docs/hacking.rst", "bash")
+
+    code_blocks = [block for _, block in code_blocks]
+    print(code_blocks[1])
+
+    for (dir_path, dir_names, file_names) in os.walk("src/fcp"):
+        for file_name in file_names:
+            if os.path.splitext(file_name)[1] == ".py":
+                assert file_name in code_blocks[1]
