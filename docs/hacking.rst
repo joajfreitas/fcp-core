@@ -19,7 +19,8 @@ Directory structure
     │       ├── fcp_nop      - Source code of fcp_nop
     │       └── tests        - Tests for fcp_nop
     ├── src
-    │   ├── fcp              - Fcp source code
+    │   └── fcp              - Fcp source code
+    │       └── specs        - Fcp object tree
     └── tests                - Tests for fcp
         └── schemas          - Schemas used in fcp unit tests
 

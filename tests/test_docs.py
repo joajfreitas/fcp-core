@@ -1,9 +1,10 @@
-from beartype.typing import List, Any, Generator, Tuple
+from beartype.typing import List, Any, Generator, Tuple, Optional
 import marko
 from marko.block import FencedCode
 import pytest
 from pathlib import Path
 import os
+import itertools
 
 from docutils.core import publish_doctree  # type: ignore
 
@@ -23,7 +24,7 @@ def get_markdown_fcp_code_blocks(filename: str) -> List[str]:
     return code_blocks
 
 
-def get_rst_code_blocks(filename: str, language=None) -> List[str]:
+def get_rst_code_blocks(filename: str, language: Optional[str] = None) -> List[str]:
 
     with open(filename, encoding="utf-8") as file:
         doctree = publish_doctree(file.read())
@@ -78,13 +79,24 @@ def test_rst(filename: str, fcp_code_block: str):
     fcp_v2, _ = get_fcp(Path(tmp_name)).unwrap()
 
 
-def test_source_files_structure():
+def test_source_files_structure() -> None:
     code_blocks = get_rst_code_blocks("docs/hacking.rst", "bash")
 
     code_blocks = [block for _, block in code_blocks]
-    print(code_blocks[1])
 
-    for (dir_path, dir_names, file_names) in os.walk("src/fcp"):
+    for _, _, file_names in os.walk("src/fcp"):
         for file_name in file_names:
             if os.path.splitext(file_name)[1] == ".py":
                 assert file_name in code_blocks[1]
+
+def test_dir_tree_structure() -> None:
+    code_blocks = get_rst_code_blocks("docs/hacking.rst", "bash")
+
+    code_blocks = [block for _, block in code_blocks]
+
+    for _, dirs, _  in itertools.chain(os.walk("src"), os.walk("plugins")):
+        for dir in dirs:
+            if dir == "__pycache__":
+                continue
+
+            assert dir in code_blocks[0]
