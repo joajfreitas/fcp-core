@@ -1,0 +1,35 @@
+version: "3"
+
+struct Pedals {
+    acc_pos @0: u8 | unit("%"),
+    brake_pos @1: u8 | unit("%"),
+}
+
+impl can for Pedals {
+    id: 10,
+    device: "ecu",
+
+    signal field2 {
+        bitstart: 16,
+    },
+}
+
+struct CellVoltage {
+    mux @0: u8,
+    voltage @1: u16 | unit("mv"),
+}
+
+impl can for CellVoltage {
+    id: 11,
+    device: "ecu",
+
+    signal mux {
+        endianness: "big",
+    },
+
+    signal voltage {
+        mux_count: 4,
+        mux_signal: "mux",
+        endianness: "big",
+    },
+}
