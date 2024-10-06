@@ -81,6 +81,7 @@ def test_parsing_errors(test_name: str) -> None:
     "test_name",
     [
         "001_duplicate_types.fcp",
+        "002_duplicate_impls.fcp",
     ],
 )  # type: ignore
 def test_verifier_errors(test_name: str) -> None:

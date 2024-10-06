@@ -4,6 +4,7 @@ from .maybe import catch
 from .error import FcpError
 from .types import Nil
 from .specs.v2 import FcpV2
+from .specs.impl import Impl
 
 
 class Verifier:
@@ -66,5 +67,16 @@ def make_general_verifier() -> GeneralVerifier:
             return Err(FcpError("Duplicate type names", node=type))
         else:
             return Ok(())
+
+    @register(general_verifier, "impl")  # type: ignore
+    def check_duplicate_impl(
+        self: Any, fcp: FcpV2, left: Impl
+    ) -> Result[Nil, FcpError]:
+
+        for right in fcp.impls:
+            if left.name == right.name and left.protocol == right.protocol:
+                return Err(FcpError("Duplicate impls", node=left))
+
+        return Ok(())
 
     return general_verifier
