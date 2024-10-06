@@ -44,17 +44,22 @@ class FcpV2:
 
         return Nothing()
 
+    def get_types(self) -> List[Any]:
+        return self.structs + self.enums
+
     def get(self, category: str) -> Maybe[List[Any]]:
         if category == "struct":
             return Some(self.structs)
         elif category == "enum":
             return Some(self.enums)
-        elif category == "extension":
+        elif category == "impl":
             return Some(self.extensions)
         elif category == "signal":
             return Some(flatten([struct.signals for struct in self.structs]))
         elif category == "signal_block":
             return Some(flatten([extension.signals for extension in self.extensions]))
+        elif category == "type":
+            return Some(self.get_types())
         else:
             return Nothing()
 

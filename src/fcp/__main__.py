@@ -10,7 +10,7 @@ import click
 from .version import VERSION
 from .v2_parser import get_fcp
 from .codegen import GeneratorManager
-from .verifier import GeneralVerifier
+from .verifier import make_general_verifier
 from .error_logger import ErrorLogger
 
 
@@ -35,7 +35,7 @@ def generate_cmd(
     skel: str,
 ) -> None:
     fcp_v2, sources = get_fcp(fcp).unwrap()
-    generator_manager = GeneratorManager(GeneralVerifier())
+    generator_manager = GeneratorManager(make_general_verifier())
     result = generator_manager.generate(
         generator, templates, skel, fcp_v2, sources, output
     )

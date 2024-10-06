@@ -59,6 +59,4 @@ def test_dbc_generator(test_name: str) -> None:
     )
     result = get_bo(results[0].get("contents"))
 
-    print(result)
-    print(dbc)
     assert result == dbc

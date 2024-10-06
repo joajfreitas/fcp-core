@@ -1,5 +1,5 @@
-from beartype.typing import Callable, NoReturn, Dict
-from .result import Ok, Result
+from beartype.typing import Callable, NoReturn, Dict, Optional, Any
+from .result import Ok, Result, Err
 from .maybe import catch
 from .error import FcpError
 from .types import Nil
@@ -8,9 +8,13 @@ from .specs.v2 import FcpV2
 
 class Verifier:
     def __init__(self) -> None:
-        self.checks: Dict[str, Callable] = {}
+        self.checks: Dict[str, Callable] = {"uncategorized": []}
 
-    def register(self, category: str, function: Callable) -> NoReturn:
+    def register(self, function: Callable, category: Optional[str] = None) -> NoReturn:
+        if category is None:
+            self.checks["uncategorized"].append(function)
+            return
+
         if category not in self.checks.keys():
             self.checks[category] = []
         self.checks[category].append(function)
@@ -30,13 +34,15 @@ class Verifier:
         self.run_checks("enum", fcp).attempt()
         self.run_checks("extension", fcp).attempt()
         self.run_checks("signal_block", fcp).attempt()
+        self.run_checks("type", fcp).attempt()
+        self.run_checks("uncategorized", fcp).attempt()
 
         return Ok(())
 
 
-def register(verifier: Verifier, category: str) -> Callable:
+def register(verifier: Verifier, category: Optional[str] = None) -> Callable:
     def decorator(f: Callable) -> Callable:
-        verifier.register(category, f)
+        verifier.register(f, category)
         return f
 
     return decorator
@@ -45,3 +51,18 @@ def register(verifier: Verifier, category: str) -> Callable:
 class GeneralVerifier(Verifier):
     def __init__(self) -> None:
         super().__init__()
+
+
+def make_general_verifier() -> GeneralVerifier:
+    general_verifier = GeneralVerifier()
+
+    @register(general_verifier, "type")  # type: ignore
+    def check_duplicate_typenames(self: Any, fcp: FcpV2, type: Any):
+        type_names = [type.name for type in fcp.get_types()]
+
+        if type_names.count(type.name) > 1:
+            return Err(FcpError("Duplicate type names", node=type))
+        else:
+            Ok(())
+
+    return general_verifier
