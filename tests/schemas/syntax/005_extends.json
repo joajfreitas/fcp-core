@@ -1,5 +1,5 @@
 {
-  "extensions":[
+  "impls":[
       {
           "name": "A",
           "protocol": "protocol1",

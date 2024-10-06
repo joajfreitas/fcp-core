@@ -63,7 +63,7 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
 
     encoder = make_encoder("packed", fcp)
 
-    for extension in fcp.get_matching_extensions("can"):
+    for extension in fcp.get_matching_impls("can"):
         encoding = encoder.generate(extension)
 
         signals, dlc = make_signals(encoding)

@@ -26,13 +26,13 @@ class FcpV2:
 
     structs: List[Struct] = field(default_factory=list)
     enums: List[Enum] = field(default_factory=list)
-    extensions: List[Impl] = field(default_factory=list)
+    impls: List[Impl] = field(default_factory=list)
     version: str = "3.0"
 
     def merge(self, fcp: "FcpV2") -> None:
         self.structs += fcp.structs
         self.enums += fcp.enums
-        self.extensions += fcp.extensions
+        self.impls += fcp.impls
 
     def get_type(self, name: str) -> Maybe[Union[Enum, Struct]]:
         for type in self.structs + self.enums:
@@ -53,25 +53,25 @@ class FcpV2:
         elif category == "enum":
             return Some(self.enums)
         elif category == "impl":
-            return Some(self.extensions)
+            return Some(self.impls)
         elif category == "signal":
             return Some(flatten([struct.signals for struct in self.structs]))
         elif category == "signal_block":
-            return Some(flatten([extension.signals for extension in self.extensions]))
+            return Some(flatten([extension.signals for extension in self.impls]))
         elif category == "type":
             return Some(self.get_types())
         else:
             return Nothing()
 
     def get_matching_extension(self, struct: Struct, protocol: str) -> Maybe[Impl]:
-        for extension in self.extensions:
+        for extension in self.impls:
             if extension.type == struct.name and extension.protocol == protocol:
                 return Some(extension)
 
         return Nothing()
 
-    def get_matching_extensions(self, protocol: str) -> Generator[Impl, None, None]:
-        for extension in self.extensions:
+    def get_matching_impls(self, protocol: str) -> Generator[Impl, None, None]:
+        for extension in self.impls:
             if extension.protocol == protocol:
                 yield extension
 

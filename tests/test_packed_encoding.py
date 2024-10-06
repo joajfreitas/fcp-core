@@ -42,7 +42,7 @@ def make_example_extension(type: str) -> Impl:
 
 def test_packed_encoding(example_struct: Struct) -> NoReturn:
     example_extension = make_example_extension("A")
-    fcp = FcpV2(structs=[example_struct], extensions=[example_extension])
+    fcp = FcpV2(structs=[example_struct], impls=[example_extension])
 
     packed_encoding = PackedEncoder(fcp)
     assert packed_encoding.generate(example_extension) == [
@@ -60,7 +60,7 @@ def test_struct(example_struct: Struct) -> NoReturn:
         ],
     )
     example_extension = make_example_extension("B")
-    fcp = FcpV2(structs=[example_struct, b_struct], extensions=[example_extension])
+    fcp = FcpV2(structs=[example_struct, b_struct], impls=[example_extension])
 
     packed_encoding = PackedEncoder(fcp)
 
