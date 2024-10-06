@@ -2,11 +2,11 @@ import pytest
 import os
 import json
 import re
-from pprint import pprint
 from pathlib import Path
 
 from fcp.v2_parser import get_fcp
 from fcp import FcpV2, default_serialization
+from fcp.verifier import make_general_verifier
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -48,8 +48,6 @@ def test_parser(test_name: str) -> None:
 
     expected_result_dict = get_result_json("syntax", test_name)
 
-    pprint(fcp_json_dict)
-    pprint(expected_result_dict)
     assert fcp_json_dict == expected_result_dict
 
 
@@ -76,10 +74,20 @@ def test_parsing_errors(test_name: str) -> None:
     error = ansi_escape.sub("", str(fcp.err())).split("/")
     error = error[0] + error[-1]  # type: ignore
 
-    print(result)
-    print(error)
-
     assert error == result  # type: ignore
+
+
+@pytest.mark.parametrize(
+    "test_name",
+    [
+        "001_duplicate_types.fcp",
+    ],
+)  # type: ignore
+def test_verifier_errors(test_name: str) -> None:
+    fcp_v2, _ = get_fcp(Path("tests/schemas/verifier") / test_name).unwrap()
+
+    verifier = make_general_verifier()
+    assert verifier.verify(fcp_v2).is_err()
 
 
 def test_default_serialization() -> None:

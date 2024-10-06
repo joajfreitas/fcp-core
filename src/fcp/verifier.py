@@ -32,7 +32,7 @@ class Verifier:
         self.run_checks("struct", fcp).attempt()
         self.run_checks("signal", fcp).attempt()
         self.run_checks("enum", fcp).attempt()
-        self.run_checks("extension", fcp).attempt()
+        self.run_checks("impl", fcp).attempt()
         self.run_checks("signal_block", fcp).attempt()
         self.run_checks("type", fcp).attempt()
         self.run_checks("uncategorized", fcp).attempt()
@@ -57,12 +57,14 @@ def make_general_verifier() -> GeneralVerifier:
     general_verifier = GeneralVerifier()
 
     @register(general_verifier, "type")  # type: ignore
-    def check_duplicate_typenames(self: Any, fcp: FcpV2, type: Any):
+    def check_duplicate_typenames(
+        self: Any, fcp: FcpV2, type: Any
+    ) -> Result[Nil, FcpError]:
         type_names = [type.name for type in fcp.get_types()]
 
         if type_names.count(type.name) > 1:
             return Err(FcpError("Duplicate type names", node=type))
         else:
-            Ok(())
+            return Ok(())
 
     return general_verifier
