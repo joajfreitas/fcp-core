@@ -1,10 +1,12 @@
-from beartype.typing import Callable, NoReturn, Dict, Optional, Any
+from beartype.typing import Callable, NoReturn, Dict, Optional, Any, Tuple
 from .result import Ok, Result, Err
 from .maybe import catch
 from .error import FcpError
 from .types import Nil
 from .specs.v2 import FcpV2
 from .specs.impl import Impl
+from .specs.signal import Signal
+from .specs.struct import Struct
 
 
 class Verifier:
@@ -24,6 +26,7 @@ class Verifier:
     def run_checks(self, category: str, fcp: FcpV2) -> Result[Nil, FcpError]:
         for check in self.checks.get(category) or []:
             for node in fcp.get(category).attempt():
+                print("node", type(node))
                 check(fcp, fcp, node).attempt()
 
         return Ok(())
@@ -76,6 +79,18 @@ def make_general_verifier() -> GeneralVerifier:
         for right in fcp.impls:
             if left.name == right.name and left.protocol == right.protocol:
                 return Err(FcpError("Duplicate impls", node=left))
+
+        return Ok(())
+
+    @register(general_verifier, "signal")  # type: ignore
+    def check_duplicate_signals(
+        self: Any, fcp: FcpV2, left: Tuple[Struct, Signal]
+    ) -> Result[Nil, FcpError]:
+
+        struct, left_signal = left
+        for right in struct.signals:
+            if left_signal.name == right.name:
+                return Err(FcpError("Duplicate signals", node=left_signal))
 
         return Ok(())
 

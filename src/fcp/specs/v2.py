@@ -55,7 +55,14 @@ class FcpV2:
         elif category == "impl":
             return Some(self.impls)
         elif category == "signal":
-            return Some(flatten([struct.signals for struct in self.structs]))
+            return Some(
+                flatten(
+                    [
+                        [(struct, signal) for signal in struct.signals]
+                        for struct in self.structs
+                    ]
+                )
+            )
         elif category == "signal_block":
             return Some(flatten([extension.signals for extension in self.impls]))
         elif category == "type":
