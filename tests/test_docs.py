@@ -97,7 +97,7 @@ def test_dir_tree_structure() -> None:
 
     for _, dirs, _ in itertools.chain(os.walk("src"), os.walk("plugins")):
         for dir in dirs:
-            if dir == "__pycache__":
+            if dir == "__pycache__" or dir.startswith("."):
                 continue
 
             assert dir in code_blocks[0]
