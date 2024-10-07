@@ -62,6 +62,16 @@ def test_dbc_generator(test_name: str) -> None:
     assert result == dbc
 
 
+def test_verifier_no_error() -> None:
+    fcp_v2, _ = get_fcp(Path(get_fcp_config("verifier", "000_no_error"))).unwrap()
+
+    verifier = make_general_verifier()
+    generator = Generator()
+    generator.register_checks(verifier)
+
+    assert verifier.verify(fcp_v2).is_ok()
+
+
 @pytest.mark.parametrize(
     "test_name",
     [
