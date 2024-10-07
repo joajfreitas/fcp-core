@@ -58,6 +58,7 @@ def make_signals(encoding: List[EncodeablePiece]) -> Tuple[List[Signal], int]:
 @catch  # type: ignore
 def write_dbc(fcp: FcpV2) -> Result[str, str]:
     messages = []
+    nodes = []
 
     encoder = make_encoder("packed", fcp)
 
@@ -79,7 +80,10 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
                 senders=[],
             )
         )
+        device = extension.fields.get("device")
+        if device is not None and device not in nodes:
+            nodes.append(device)
 
-    db = CanDatabase(messages=messages, nodes=[])
+    db = CanDatabase(messages=messages, nodes=nodes)
 
     return Ok(str(db.as_dbc_string(sort_signals="default")))
