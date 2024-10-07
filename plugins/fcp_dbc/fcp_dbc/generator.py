@@ -7,6 +7,7 @@ from fcp.result import Result, Err, Ok
 from fcp import FcpV2
 from fcp.error import FcpError
 from fcp.types import Nil
+from fcp.specs.impl import Impl
 
 from .dbc_writer import write_dbc
 
@@ -25,16 +26,16 @@ class Generator(CodeGenerator):
         ]
 
     def register_checks(self, verifier: Verifier) -> NoReturn:
-        @register(verifier, "extension")  # type: ignore
-        def check_extension_valid_type(
-            self: Any, fcp: FcpV2, extension: Any
+        @register(verifier, "impl")  # type: ignore
+        def check_impl_valid_type(
+            self: Any, fcp: FcpV2, impl: Impl
         ) -> Result[Nil, FcpError]:
-            struct = fcp.get_struct(extension.type)
+            struct = fcp.get_struct(impl.type)
             if struct.is_nothing():
                 return Err(
                     FcpError(
-                        f"No matching type for extension {extension.name}",
-                        node=extension,
+                        f"No matching type for impl {impl.name}",
+                        node=impl,
                     )
                 )
             else:

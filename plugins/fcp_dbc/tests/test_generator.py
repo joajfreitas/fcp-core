@@ -9,13 +9,13 @@ from fcp.v2_parser import get_fcp
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def get_fcp_config(name: str) -> str:
-    config_dir = os.path.join(THIS_DIR, "schemas")
+def get_fcp_config(dir: str, name: str) -> str:
+    config_dir = os.path.join(THIS_DIR, "schemas", dir)
     return os.path.join(config_dir, name + ".fcp")
 
 
-def get_result_dbc(name: str) -> str:
-    config_dir = os.path.join(THIS_DIR, "schemas")
+def get_result_dbc(dir: str, name: str) -> str:
+    config_dir = os.path.join(THIS_DIR, "schemas", dir)
     result_path = os.path.join(config_dir, name + ".dbc")
 
     with open(result_path, "r") as result_file:
@@ -49,8 +49,8 @@ def get_bo(dbc: str) -> str:
     ],
 )  # type: ignore
 def test_dbc_generator(test_name: str) -> None:
-    fcp_v2, _ = get_fcp(Path(get_fcp_config(test_name))).unwrap()
-    dbc = get_result_dbc(test_name)
+    fcp_v2, _ = get_fcp(Path(get_fcp_config("generator", test_name))).unwrap()
+    dbc = get_result_dbc("generator", test_name)
     generator = Generator()
 
     results = generator.generate(

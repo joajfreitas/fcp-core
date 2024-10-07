@@ -23,6 +23,7 @@ Directory structure
     │       └── specs        - Fcp object tree
     └── tests                - Tests for fcp
         └── schemas          - Schemas used in fcp unit tests
+            └── generator    - Schemas used to test the generator
 
 
 .. code-block:: bash
