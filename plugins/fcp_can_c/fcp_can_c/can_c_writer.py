@@ -1,6 +1,6 @@
 from beartype.typing import List
 from math import ceil
-
+from typing import Tuple
 from cantools.database.can.database import Database as CanDatabase
 from cantools.database.can.message import Message as CanMessage
 from cantools.database.can.signal import Signal as CanSignal
@@ -9,7 +9,7 @@ from fcp.specs import Signal
 from fcp import FcpV2
 
 from fcp.maybe import Some
-from fcp.result import Result
+from fcp.result import Result, Ok, Err
 from fcp.maybe import catch
 from fcp.encoding import make_encoder, EncodeablePiece, Value
 
@@ -18,7 +18,7 @@ def is_signed(value: Value) -> bool:
     return bool(value.type[0] == "i")
 
 
-def make_signals(encoding: List[EncodeablePiece]) -> List[Signal]:
+def make_signals(encoding: List[EncodeablePiece]) -> Tuple[List[Signal], int]:
     signals = []
 
     mux_signals = [
@@ -74,10 +74,10 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
                 name=extension.name,
                 length=dlc,
                 signals=signals,
-                senders=[],
+                senders=[extension.fields.get("device")],
             )
         )
 
     db = CanDatabase(messages=messages, nodes=[])
 
-    return Some(str(db.as_dbc_string(sort_signals="default")))
+    return Ok(str(db.as_dbc_string(sort_signals="default")))
