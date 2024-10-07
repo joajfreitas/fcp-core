@@ -3,8 +3,8 @@ import pytest
 from pathlib import Path
 
 from fcp_dbc import Generator
-
 from fcp.v2_parser import get_fcp
+from fcp.verifier import make_general_verifier
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -60,3 +60,19 @@ def test_dbc_generator(test_name: str) -> None:
     result = get_bo(results[0].get("contents"))
 
     assert result == dbc
+
+
+@pytest.mark.parametrize(
+    "test_name",
+    [
+        "001_duplicate_ids",
+    ],
+)  # type: ignore
+def test_verifier(test_name: str) -> None:
+    fcp_v2, _ = get_fcp(Path(get_fcp_config("verifier", test_name))).unwrap()
+
+    verifier = make_general_verifier()
+    generator = Generator()
+    generator.register_checks(verifier)
+
+    assert verifier.verify(fcp_v2).is_err()

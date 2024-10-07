@@ -23,11 +23,12 @@ Directory structure
     │       └── specs        - Fcp object tree
     └── tests                - Tests for fcp
         └── schemas          - Schemas used in fcp unit tests
-            └── generator    - Schemas used to test the generator
+            ├── generator    - Schemas used to test the generator
+            └── verifier     - Schemas used to test the verifier
 
 
 .. code-block:: bash
-    
+
     src/fcp
     ├── codegen.py           - Support for codegenerator plugins
     ├── colors.py            - Color for terminal output

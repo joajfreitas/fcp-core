@@ -40,3 +40,13 @@ class Generator(CodeGenerator):
                 )
             else:
                 return Ok(())
+
+        @register(verifier, "impl")  # type: ignore
+        def check_duplicate_can_ids(
+            self: Any, fcp: FcpV2, impl: Impl
+        ) -> Result[Nil, FcpError]:
+            impl_ids = [impl.fields.get("id") for impl in fcp.impls]
+            if impl_ids.count(impl.fields.get("id")) > 1:
+                return Err(FcpError("Duplicate ids", node=impl))
+            else:
+                return Ok(())
