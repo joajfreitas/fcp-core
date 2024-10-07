@@ -1,4 +1,4 @@
-from beartype.typing import List
+from typing import Tuple, List
 from math import ceil
 
 from cantools.database.can.database import Database as CanDatabase
@@ -8,8 +8,7 @@ from cantools.database.can.signal import Signal as CanSignal
 from fcp.specs import Signal
 from fcp import FcpV2
 
-from fcp.maybe import Some
-from fcp.result import Result
+from fcp.result import Result, Ok, Err
 from fcp.maybe import catch
 from fcp.encoding import make_encoder, EncodeablePiece, Value
 
@@ -18,8 +17,9 @@ def is_signed(value: Value) -> bool:
     return bool(value.type[0] == "i")
 
 
-def make_signals(encoding: List[EncodeablePiece]) -> List[Signal]:
+def make_signals(encoding: List[EncodeablePiece]) -> Tuple[List[Signal], int]:
     signals = []
+    dlc = 0
 
     mux_signals = [
         piece.extended_data.get("mux_signal")
@@ -28,10 +28,8 @@ def make_signals(encoding: List[EncodeablePiece]) -> List[Signal]:
     ]
 
     for piece in encoding:
-        if piece.extended_data.get("mux_count") is not None:
-            mux_ids = list(range(0, piece.extended_data.get("mux_count")))
-        else:
-            mux_ids = None
+        mux_count = piece.extended_data.get("mux_count")
+        mux_ids = list(range(0, mux_count)) if mux_count is not None else []
 
         signals.append(
             CanSignal(
@@ -52,7 +50,7 @@ def make_signals(encoding: List[EncodeablePiece]) -> List[Signal]:
             )
         )
 
-    dlc = ceil((piece.bitstart + piece.bitlength) / 8)
+        dlc = ceil((piece.bitstart + piece.bitlength) / 8)
 
     return signals, dlc
 
@@ -68,9 +66,13 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
 
         signals, dlc = make_signals(encoding)
 
+        id = extension.fields.get("id")
+        if id is None:
+            return Err("No id field found in extension")
+
         messages.append(
             CanMessage(
-                frame_id=extension.fields.get("id"),
+                frame_id=id,
                 name=extension.name,
                 length=dlc,
                 signals=signals,
@@ -80,4 +82,4 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
 
     db = CanDatabase(messages=messages, nodes=[])
 
-    return Some(str(db.as_dbc_string(sort_signals="default")))
+    return Ok(str(db.as_dbc_string(sort_signals="default")))
