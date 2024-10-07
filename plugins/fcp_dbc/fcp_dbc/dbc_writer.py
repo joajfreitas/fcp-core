@@ -43,7 +43,7 @@ def make_signals(encoding: List[EncodeablePiece]) -> Tuple[List[Signal], int]:
                 is_signed=is_signed(piece),
                 minimum=0,
                 maximum=0,
-                unit=None,
+                unit=piece.unit,
                 comment=None,
                 is_multiplexer=piece.name in mux_signals,
                 multiplexer_ids=mux_ids,
