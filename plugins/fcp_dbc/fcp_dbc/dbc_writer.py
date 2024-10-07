@@ -1,4 +1,4 @@
-from typing import Tuple, List
+from beartype.typing import Tuple, List
 from math import ceil
 
 from cantools.database.can.database import Database as CanDatabase
