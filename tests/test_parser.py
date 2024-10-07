@@ -70,7 +70,7 @@ def test_parsing_errors(test_name: str) -> None:
 
     ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 
-    # Remove full path (user dependednt) from message and keep only the error and file
+    # Remove full path (user dependant) from message and keep only the error and file
     error = ansi_escape.sub("", str(fcp.err())).split("/")
     error = error[0] + error[-1]  # type: ignore
 
@@ -91,6 +91,8 @@ def test_verifier_no_error() -> None:
         "001_duplicate_types.fcp",
         "002_duplicate_impls.fcp",
         "003_duplicate_signals.fcp",
+        "004_duplicate_enumeration_names.fcp",
+        "005_duplicate_enumeration_values.fcp",
     ],
 )  # type: ignore
 def test_verifier_errors(test_name: str) -> None:

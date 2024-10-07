@@ -7,6 +7,7 @@ from .specs.v2 import FcpV2
 from .specs.impl import Impl
 from .specs.signal import Signal
 from .specs.struct import Struct
+from .specs.enum import Enum
 
 
 class Verifier:
@@ -102,5 +103,29 @@ def make_general_verifier() -> GeneralVerifier:
             return Err(FcpError("Struct has no signal", node=struct))
         else:
             return Ok(())
+
+    @register(general_verifier, "enum")  # type: ignore
+    def check_enum_duplicate_enumerations_names(
+        self: Any, fcp: FcpV2, enum: Enum
+    ) -> Result[Nil, FcpError]:
+
+        enumeration_names = [enumeration.name for enumeration in enum.enumeration]
+        for enumeration in enum.enumeration:
+            if enumeration_names.count(enumeration.name) > 1:
+                return Err(FcpError("Duplicated enumration name", node=enumeration))
+
+        return Ok(())
+
+    @register(general_verifier, "enum")  # type: ignore
+    def check_enum_duplicate_enumerations_values(
+        self: Any, fcp: FcpV2, enum: Enum
+    ) -> Result[Nil, FcpError]:
+
+        enumeration_names = [enumeration.value for enumeration in enum.enumeration]
+        for enumeration in enum.enumeration:
+            if enumeration_names.count(enumeration.value) > 1:
+                return Err(FcpError("Duplicated enumration name", node=enumeration))
+
+        return Ok(())
 
     return general_verifier
