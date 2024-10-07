@@ -29,7 +29,7 @@ def make_signals(encoding: List[EncodeablePiece]) -> Tuple[List[Signal], int]:
 
     for piece in encoding:
         mux_count = piece.extended_data.get("mux_count")
-        mux_ids = list(range(0, mux_count)) if mux_count is not None else []
+        mux_ids = list(range(0, mux_count)) if mux_count is not None else None
 
         signals.append(
             CanSignal(
