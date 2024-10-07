@@ -46,6 +46,8 @@ Directory structure
     │   ├── field.py         - Field object
     │   ├── __init__.py
     │   ├── metadata.py      - Metadata object
+    │   ├── rpc.py           - Rpc object
+    │   ├── service.py       - Service object
     │   ├── signal_block.py  - Signal block object
     │   ├── signal.py        - Signal object
     │   ├── struct.py        - Struct object

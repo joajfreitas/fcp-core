@@ -22,7 +22,7 @@ from .error_logger import ErrorLogger
 
 fcp_parser = Lark(
     """
-    start: preamble (struct | enum | mod_expr | impl)*
+    start: preamble (struct | enum | mod_expr | impl | service)*
 
     preamble: "version" ":" string
 
@@ -37,6 +37,9 @@ fcp_parser = Lark(
     impl: "impl" identifier "for" identifier "{" (extension_field | signal_block)+ "}"
     signal_block: "signal" identifier "{" extension_field+ "}" ","
     extension_field: identifier ":" value ","
+
+    service: "service" identifier "{" rpc* "}"
+    rpc: "rpc" identifier "(" identifier ")"  "returns" identifier
 
     mod_expr: "mod" identifier ";"
 
@@ -284,6 +287,17 @@ class FcpV2Transformer(Transformer):  # type: ignore
             name=name, fields=fields, meta=get_meta(tree, self)
         )  # type: ignore
 
+    @v_args(tree=True)  # type: ignore
+    def service(self, tree: ParseTree) -> Nil:
+        name, *rpcs = tree.children
+        print("service", name, rpcs)
+
+    @v_args(tree=True)  # type: ignore
+    def rpc(self, tree: ParseTree) -> str:
+        name, input, output = tree.children
+        print("rpc", name, input, output)
+        return str(name)
+
     def signal_field(self, args: List[Any]) -> Tuple[str, Any]:
         name, value = args
         return (name, value)
@@ -317,6 +331,7 @@ def get_fcp(fcp_filename: str) -> Result[Tuple[v2.FcpV2, Dict[str, str]], str]:
         try:
             fcp_ast = fcp_parser.parse(source)
         except UnexpectedCharacters as e:
+
             return Err(error_logger.log_lark_unexpected_characters(fcp_filename, e))
 
     parser_context = ParserContext()

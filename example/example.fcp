@@ -13,3 +13,16 @@ struct SensorInformation {
     temperature @ 0: Temperature,
     sensor_state @ 1: SensorState,
 }
+
+enum SensorId {
+    Left = 0,
+    Right = 1,
+}
+
+struct SensorReq {
+    sensor_id @0 : SensorId,
+}
+
+service SensorService {
+    rpc RequestState(SensorReq) returns SensorInformation
+}

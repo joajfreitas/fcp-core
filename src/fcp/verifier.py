@@ -27,7 +27,6 @@ class Verifier:
     def run_checks(self, category: str, fcp: FcpV2) -> Result[Nil, FcpError]:
         for check in self.checks.get(category) or []:
             for node in fcp.get(category).attempt():
-                print("node", type(node))
                 check(fcp, fcp, node).attempt()
 
         return Ok(())
