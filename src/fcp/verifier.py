@@ -94,5 +94,13 @@ def make_general_verifier() -> GeneralVerifier:
         else:
             return Ok(())
 
+    @register(general_verifier, "struct")  # type: ignore
+    def check_struct_contains_signals(
+        self: Any, fcp: FcpV2, struct: Struct
+    ) -> Result[Nil, FcpError]:
+        if len(struct.signals) == 0:
+            return Err(FcpError("Struct has no signal", node=struct))
+        else:
+            return Ok(())
 
     return general_verifier
