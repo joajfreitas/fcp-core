@@ -4,6 +4,7 @@ from math import ceil
 from cantools.database.can.database import Database as CanDatabase
 from cantools.database.can.message import Message as CanMessage
 from cantools.database.can.signal import Signal as CanSignal
+from cantools.database.can.node import Node as CanNode
 
 from fcp.specs import Signal
 from fcp import FcpV2
@@ -84,6 +85,6 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
         if device is not None and device not in nodes:
             nodes.append(device)
 
-    db = CanDatabase(messages=messages, nodes=nodes)
+    db = CanDatabase(messages=messages, nodes=[CanNode(name=node) for node in nodes])
 
     return Ok(str(db.as_dbc_string(sort_signals="default")))
