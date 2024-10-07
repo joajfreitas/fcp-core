@@ -12,6 +12,8 @@ from .specs import struct
 from .specs import enum
 from .specs import impl
 from .specs import signal_block
+from .specs import service
+from .specs import rpc
 from .specs.comment import Comment
 from .specs import v2
 from .result import Result, Ok, Err
@@ -290,13 +292,12 @@ class FcpV2Transformer(Transformer):  # type: ignore
     @v_args(tree=True)  # type: ignore
     def service(self, tree: ParseTree) -> Nil:
         name, *rpcs = tree.children
-        print("service", name, rpcs)
+        self.fcp.services.append(service.Service(name, rpcs))  # type: ignore
 
     @v_args(tree=True)  # type: ignore
     def rpc(self, tree: ParseTree) -> str:
         name, input, output = tree.children
-        print("rpc", name, input, output)
-        return str(name)
+        return rpc.Rpc(name, input, output)  # type: ignore
 
     def signal_field(self, args: List[Any]) -> Tuple[str, Any]:
         name, value = args

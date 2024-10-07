@@ -7,6 +7,7 @@ from .enum import Enum
 from .signal import Signal
 from .struct import Struct
 from .impl import Impl
+from .service import Service
 from .type import Type
 
 
@@ -27,6 +28,7 @@ class FcpV2:
     structs: List[Struct] = field(default_factory=list)
     enums: List[Enum] = field(default_factory=list)
     impls: List[Impl] = field(default_factory=list)
+    services: List[Service] = field(default_factory=list)
     version: str = "3.0"
 
     def merge(self, fcp: "FcpV2") -> None:

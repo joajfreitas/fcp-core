@@ -32,5 +32,6 @@
       "comment": "the enum baz"
     }
   ],
+  "services": [],
   "version": "3.0"
 }
