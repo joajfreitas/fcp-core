@@ -76,11 +76,11 @@ def make_general_verifier() -> GeneralVerifier:
         self: Any, fcp: FcpV2, left: Impl
     ) -> Result[Nil, FcpError]:
 
-        for right in fcp.impls:
-            if left.name == right.name and left.protocol == right.protocol:
-                return Err(FcpError("Duplicate impls", node=left))
-
-        return Ok(())
+        impls = [(impl.name, impl.protocol) for impl in fcp.impls]
+        if impls.count((left.name, left.protocol)) > 1:
+            return Err(FcpError("Duplicate impls", node=left))
+        else:
+            return Ok(())
 
     @register(general_verifier, "signal")  # type: ignore
     def check_duplicate_signals(
@@ -88,10 +88,11 @@ def make_general_verifier() -> GeneralVerifier:
     ) -> Result[Nil, FcpError]:
 
         struct, left_signal = left
-        for right in struct.signals:
-            if left_signal.name == right.name:
-                return Err(FcpError("Duplicate signals", node=left_signal))
+        signal_names = [signal.name for signal in struct.signals]
+        if signal_names.count(left_signal.name) > 1:
+            return Err(FcpError("Duplicate signals", node=left_signal))
+        else:
+            return Ok(())
 
-        return Ok(())
 
     return general_verifier

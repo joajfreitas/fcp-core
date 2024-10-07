@@ -1,0 +1,10 @@
+version: "3"
+
+struct A {
+    field1 @0: u8,
+    field2 @1: u16,
+}
+
+impl protocol1 for A {
+    id: 10,
+}

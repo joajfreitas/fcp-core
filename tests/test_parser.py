@@ -77,6 +77,14 @@ def test_parsing_errors(test_name: str) -> None:
     assert error == result  # type: ignore
 
 
+def test_verifier_no_error() -> None:
+    fcp_v2, _ = get_fcp(Path("tests/schemas/verifier/000_no_error.fcp")).unwrap()
+
+    verifier = make_general_verifier()
+    result = verifier.verify(fcp_v2)
+    assert result.is_ok()
+
+
 @pytest.mark.parametrize(
     "test_name",
     [
