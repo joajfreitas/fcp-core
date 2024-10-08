@@ -292,12 +292,12 @@ class FcpV2Transformer(Transformer):  # type: ignore
     @v_args(tree=True)  # type: ignore
     def service(self, tree: ParseTree) -> Nil:
         name, *rpcs = tree.children
-        self.fcp.services.append(service.Service(name, rpcs))  # type: ignore
+        self.fcp.services.append(service.Service(name, rpcs, meta=get_meta(tree, self)))  # type: ignore
 
     @v_args(tree=True)  # type: ignore
     def rpc(self, tree: ParseTree) -> str:
         name, input, output = tree.children
-        return rpc.Rpc(name, input, output)  # type: ignore
+        return rpc.Rpc(name, input, output, meta=get_meta(tree, self))  # type: ignore
 
     def signal_field(self, args: List[Any]) -> Tuple[str, Any]:
         name, value = args

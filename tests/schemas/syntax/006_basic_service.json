@@ -1,0 +1,39 @@
+{
+  "impls":[],
+  "structs": [
+    {
+      "name": "A",
+      "signals": [
+        {
+          "name": "field1",
+          "field_id": 0,
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "B",
+      "signals": [
+        {
+          "name": "field1",
+          "field_id": 0,
+          "type": "u16"
+        }
+      ]
+    }
+  ],
+  "enums": [],
+  "services": [
+      {
+          "name": "Service",
+          "rpcs": [
+              {
+                  "name": "Foo",
+                  "input": "A",
+                  "output": "B"
+              }
+          ]
+      }
+  ],
+  "version": "3.0"
+}

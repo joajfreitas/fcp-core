@@ -11,9 +11,9 @@ from fcp.verifier import make_general_verifier
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def get_fcp_config(scope: str, name: str) -> str:
+def get_fcp_config(scope: str, name: str) -> Path:
     config_dir = os.path.join(THIS_DIR, "schemas", scope)
-    return os.path.join(config_dir, name + ".fcp")
+    return Path(os.path.join(config_dir, name + ".fcp"))
 
 
 def get_result_json(scope: str, name: str) -> FcpV2:
@@ -40,14 +40,13 @@ def get_result_txt(scope: str, name: str) -> str:
         "003_comments",
         "004_struct_composition",
         "005_extends",
+        "006_basic_service",
     ],
 )  # type: ignore
 def test_parser(test_name: str) -> None:
     fcp_v2, _ = get_fcp(Path(get_fcp_config("syntax", test_name))).unwrap()
     fcp_json_dict = fcp_v2.to_dict()
-
     expected_result_dict = get_result_json("syntax", test_name)
-
     assert fcp_json_dict == expected_result_dict
 
 
@@ -78,7 +77,7 @@ def test_parsing_errors(test_name: str) -> None:
 
 
 def test_verifier_no_error() -> None:
-    fcp_v2, _ = get_fcp(Path("tests/schemas/verifier/000_no_error.fcp")).unwrap()
+    fcp_v2, _ = get_fcp(get_fcp_config("verifier", "000_no_error")).unwrap()
 
     verifier = make_general_verifier()
     result = verifier.verify(fcp_v2)
@@ -88,15 +87,15 @@ def test_verifier_no_error() -> None:
 @pytest.mark.parametrize(
     "test_name",
     [
-        "001_duplicate_types.fcp",
-        "002_duplicate_impls.fcp",
-        "003_duplicate_signals.fcp",
-        "004_duplicate_enumeration_names.fcp",
-        "005_duplicate_enumeration_values.fcp",
+        "001_duplicate_types",
+        "002_duplicate_impls",
+        "003_duplicate_signals",
+        "004_duplicate_enumeration_names",
+        "005_duplicate_enumeration_values",
     ],
 )  # type: ignore
 def test_verifier_errors(test_name: str) -> None:
-    fcp_v2, _ = get_fcp(Path("tests/schemas/verifier") / test_name).unwrap()
+    fcp_v2, _ = get_fcp(get_fcp_config("verifier", test_name)).unwrap()
 
     verifier = make_general_verifier()
     assert verifier.verify(fcp_v2).is_err()

@@ -1,0 +1,13 @@
+version: "3"
+
+struct A {
+    field1 @0: u8,
+}
+
+struct B {
+    field1 @0: u16,
+}
+
+service Service {
+    rpc Foo(A) returns B
+}
