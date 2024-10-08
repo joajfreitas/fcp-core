@@ -43,14 +43,14 @@ struct SensorInformation {
         "structs": [
             {
                 "name": "Temperature",
-                "signals": [
+                "fields": [
                     {"name": "temperature", "field_id": 0, "type": "u32", "unit": "C"},
                     {"name": "timestamp", "field_id": 1, "type": "u32", "unit": "s"},
                 ],
             },
             {
                 "name": "SensorInformation",
-                "signals": [
+                "fields": [
                     {"name": "temperature", "field_id": 0, "type": "Temperature"},
                     {"name": "sensor_state", "field_id": 1, "type": "SensorState"},
                 ],

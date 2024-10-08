@@ -5,7 +5,7 @@ from fcp.encoding import PackedEncoder, Value
 
 from fcp.specs.struct import Struct
 from fcp.specs.impl import Impl
-from fcp.specs.signal import Signal
+from fcp.specs.struct_field import StructField
 from fcp.specs.metadata import MetaData
 from fcp.specs.v2 import FcpV2
 
@@ -14,13 +14,13 @@ from fcp.specs.v2 import FcpV2
 def example_struct() -> Struct:
     return Struct(
         name="A",
-        signals=[
-            Signal(
+        fields=[
+            StructField(
                 name="s1",
                 field_id=0,
                 type="u32",
             ),
-            Signal(
+            StructField(
                 name="s2",
                 field_id=1,
                 type="u16",
@@ -54,9 +54,9 @@ def test_packed_encoding(example_struct: Struct) -> NoReturn:
 def test_struct(example_struct: Struct) -> NoReturn:
     b_struct = Struct(
         name="B",
-        signals=[
-            Signal(name="s1", field_id=0, type="A"),
-            Signal(name="s2", field_id=1, type="u8"),
+        fields=[
+            StructField(name="s1", field_id=0, type="A"),
+            StructField(name="s2", field_id=1, type="u8"),
         ],
     )
     example_extension = make_example_extension("B")

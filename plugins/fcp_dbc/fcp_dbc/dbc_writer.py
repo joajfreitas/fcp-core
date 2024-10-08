@@ -6,7 +6,6 @@ from cantools.database.can.message import Message as CanMessage
 from cantools.database.can.signal import Signal as CanSignal
 from cantools.database.can.node import Node as CanNode
 
-from fcp.specs import Signal
 from fcp import FcpV2
 
 from fcp.result import Result, Ok, Err
@@ -18,7 +17,7 @@ def is_signed(value: Value) -> bool:
     return bool(value.type[0] == "i")
 
 
-def make_signals(encoding: List[EncodeablePiece]) -> Tuple[List[Signal], int]:
+def make_signals(encoding: List[EncodeablePiece]) -> Tuple[List[CanSignal], int]:
     signals = []
     dlc = 0
 

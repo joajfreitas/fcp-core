@@ -3,7 +3,7 @@ from math import log2, ceil
 
 from .specs.struct import Struct
 from .specs.enum import Enum
-from .specs.signal import Signal
+from .specs.struct_field import StructField
 from .specs.type import Type
 from .specs.v2 import FcpV2
 from .specs.impl import Impl
@@ -57,11 +57,11 @@ class PackedEncoder:
     def generate_struct(
         self, struct: Struct, extension: Impl, prefix: str = ""
     ) -> NoReturn:
-        for signal in sorted(struct.signals, key=lambda signal: signal.field_id):
-            self.generate_signal(signal, extension, prefix)
+        for field in sorted(struct.fields, key=lambda field: field.field_id):
+            self.generate_signal(field, extension, prefix)
 
     def generate_signal(
-        self, signal: Signal, extension: Impl, prefix: str = ""
+        self, signal: StructField, extension: Impl, prefix: str = ""
     ) -> NoReturn:
 
         fields: Dict[str, Any] = (
@@ -108,11 +108,11 @@ class PackedEncoder:
         self.bitstart += type_length
 
     def _generate(
-        self, type: Union[Struct, Enum, Signal], extension: Impl, prefix: str = ""
+        self, type: Union[Struct, Enum, StructField], extension: Impl, prefix: str = ""
     ) -> NoReturn:
         if isinstance(type, Struct):
             self.generate_struct(type, extension, prefix)
-        elif isinstance(type, Signal):
+        elif isinstance(type, StructField):
             self.generate_signal(type, extension, prefix)
         elif isinstance(type, Enum):
             self.generate_enum(type, extension, prefix)

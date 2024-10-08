@@ -7,7 +7,7 @@ from lark import Lark, Transformer, v_args, UnexpectedCharacters, ParseTree
 
 from .types import Nil, Never
 
-from .specs import signal
+from .specs import struct_field
 from .specs import struct
 from .specs import enum
 from .specs import impl
@@ -163,7 +163,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         return args[0]
 
     @v_args(tree=True)  # type: ignore
-    def field(self, tree: ParseTree) -> signal.Signal:
+    def field(self, tree: ParseTree) -> struct_field.StructField:
         if isinstance(tree.children[0], Comment):
             comment, name, field_id, *values = tree.children
             comment = Comment(comment.value)  # type: ignore
@@ -177,7 +177,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         params = convert_params(params)  # type: ignore
 
         meta = get_meta(tree, self)  # type: ignore
-        return signal.Signal(
+        return struct_field.StructField(
             name=name,  # type: ignore
             field_id=field_id,  # type: ignore
             type=type,
@@ -199,7 +199,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         self.fcp.structs.append(
             struct.Struct(
                 name=name,
-                signals=fields,
+                fields=fields,
                 meta=meta,
                 comment=comment,  # type: ignore
             )

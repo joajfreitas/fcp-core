@@ -10,9 +10,9 @@ class SignalValueError(Exception):
 
 
 @serde(type_check=strict)
-class Signal:
+class StructField:
     """
-    Signal node. Represents a CAN signal, similar to a DBC signal.
+    StructField node.
 
     :param name: Name of the Signal.
     :param start: Start bit

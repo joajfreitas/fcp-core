@@ -21,7 +21,7 @@
   "structs": [
     {
       "name": "A",
-      "signals": [
+      "fields": [
         {
           "name": "field1",
           "field_id": 0,

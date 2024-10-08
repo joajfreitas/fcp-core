@@ -1,21 +1,21 @@
 from beartype.typing import Optional, List, Tuple
-from serde import serde, strict, field, to_dict
+import serde
 
-from .signal import Signal
+from .struct_field import StructField
 from .metadata import MetaData
 from .comment import Comment, comment_serializer, comment_deserializer
 
 
-@serde(type_check=strict)
+@serde.serde(type_check=serde.strict)
 class Struct:
     """Struct object"""
 
     name: str
-    signals: List[Signal]
-    comment: Optional[Comment] = field(
+    fields: List[StructField]
+    comment: Optional[Comment] = serde.field(
         default=None, serializer=comment_serializer, deserializer=comment_deserializer
     )
-    meta: Optional[MetaData] = field(default=None, skip=True)
+    meta: Optional[MetaData] = serde.field(default=None, skip=True)
 
     def get_name(self) -> str:
         return self.name
@@ -23,10 +23,10 @@ class Struct:
     def get_type(self) -> str:
         return "struct"
 
-    def get_signal(self, name: str) -> Optional[Signal]:
-        for signal in self.signals:
-            if signal.name == name:
-                return signal
+    def get_field(self, name: str) -> Optional[StructField]:
+        for field in self.fields:
+            if field.name == name:
+                return field
 
         return None
 
@@ -36,9 +36,9 @@ class Struct:
             "struct",
             comment
             + f"struct {self.name} {{\n"
-            + ";\n".join(map(lambda signal: signal.to_fcp(), self.signals))
+            + ";\n".join(map(lambda field: field.to_fcp(), self.fields))
             + ";\n};",
         )
 
     def __repr__(self) -> str:
-        return str(to_dict(self))
+        return str(serde.to_dict(self))

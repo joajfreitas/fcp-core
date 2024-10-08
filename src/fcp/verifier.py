@@ -5,7 +5,7 @@ from .error import FcpError
 from .types import Nil
 from .specs.v2 import FcpV2
 from .specs.impl import Impl
-from .specs.signal import Signal
+from .specs.struct_field import StructField
 from .specs.struct import Struct
 from .specs.enum import Enum
 
@@ -34,7 +34,7 @@ class Verifier:
     @catch
     def verify(self, fcp: FcpV2) -> Result[Nil, FcpError]:
         self.run_checks("struct", fcp).attempt()
-        self.run_checks("signal", fcp).attempt()
+        self.run_checks("field", fcp).attempt()
         self.run_checks("enum", fcp).attempt()
         self.run_checks("impl", fcp).attempt()
         self.run_checks("signal_block", fcp).attempt()
@@ -82,23 +82,26 @@ def make_general_verifier() -> GeneralVerifier:
         else:
             return Ok(())
 
-    @register(general_verifier, "signal")  # type: ignore
-    def check_duplicate_signals(
-        self: Any, fcp: FcpV2, left: Tuple[Struct, Signal]
+    @register(general_verifier, "field")  # type: ignore
+    def check_duplicate_struct_fields(
+        self: Any, fcp: FcpV2, left: Tuple[Struct, StructField]
     ) -> Result[Nil, FcpError]:
 
+        print(left)
         struct, left_signal = left
-        signal_names = [signal.name for signal in struct.signals]
+
+        signal_names = [field.name for field in struct.fields]
+        print(left_signal)
         if signal_names.count(left_signal.name) > 1:
-            return Err(FcpError("Duplicate signals", node=left_signal))
+            return Err(FcpError("Duplicate fields", node=left_signal))
         else:
             return Ok(())
 
     @register(general_verifier, "struct")  # type: ignore
-    def check_struct_contains_signals(
+    def check_struct_contains_struct_fields(
         self: Any, fcp: FcpV2, struct: Struct
     ) -> Result[Nil, FcpError]:
-        if len(struct.signals) == 0:
+        if len(struct.fields) == 0:
             return Err(FcpError("Struct has no signal", node=struct))
         else:
             return Ok(())

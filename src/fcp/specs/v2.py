@@ -1,10 +1,10 @@
 from beartype.typing import Any, Callable, Union, List, Dict, Generator
-from serde import serde, strict, to_dict, field
+import serde
 import struct
 
 from ..maybe import Maybe, Some, Nothing
 from .enum import Enum
-from .signal import Signal
+from .struct_field import StructField
 from .struct import Struct
 from .impl import Impl
 from .service import Service
@@ -19,16 +19,16 @@ def flatten(xss: List[List[Any]]) -> List[Any]:
     return [x for xs in xss for x in xs]
 
 
-@serde(type_check=strict)
+@serde.serde(type_check=serde.strict)
 class FcpV2:
     """FCP root node. Holds all Signals, Configs,
     Commands and Arguments.
     """
 
-    structs: List[Struct] = field(default_factory=list)
-    enums: List[Enum] = field(default_factory=list)
-    impls: List[Impl] = field(default_factory=list)
-    services: List[Service] = field(default_factory=list)
+    structs: List[Struct] = serde.field(default_factory=list)
+    enums: List[Enum] = serde.field(default_factory=list)
+    impls: List[Impl] = serde.field(default_factory=list)
+    services: List[Service] = serde.field(default_factory=list)
     version: str = "3.0"
 
     def merge(self, fcp: "FcpV2") -> None:
@@ -56,11 +56,11 @@ class FcpV2:
             return Some(self.enums)
         elif category == "impl":
             return Some(self.impls)
-        elif category == "signal":
+        elif category == "field":
             return Some(
                 flatten(
                     [
-                        [(struct, signal) for signal in struct.signals]
+                        [(struct, field) for field in struct.fields]
                         for struct in self.structs
                     ]
                 )
@@ -117,10 +117,10 @@ class FcpV2:
         remove_none_fields = filter_tree(lambda k, v: v is not None)
         remove_meta = filter_tree(lambda k, v: k != "meta")
 
-        return remove_meta(remove_none_fields(to_dict(self)))
+        return remove_meta(remove_none_fields(serde.to_dict(self)))
 
     def __repr__(self) -> str:
-        return str(to_dict(self))
+        return str(serde.to_dict(self))
 
 
 def default_serialization(fcp: FcpV2, typename: str, data: Dict[str, Any]) -> bytearray:
@@ -153,7 +153,9 @@ def default_serialization(fcp: FcpV2, typename: str, data: Dict[str, Any]) -> by
 
     structs = {struct.name: struct for struct in fcp.structs}
 
-    def serialize_signal(signal: Signal, value: Union[Dict["str", Any], Any]) -> Any:
+    def serialize_signal(
+        field: StructField, value: Union[Dict["str", Any], Any]
+    ) -> Any:
         conversions: Dict[str, Callable[[Any], bytearray]] = {
             "u8": lambda x: x.to_bytes(1, signed=False, byteorder="little"),
             "u16": lambda x: x.to_bytes(2, signed=False, byteorder="little"),
@@ -167,16 +169,16 @@ def default_serialization(fcp: FcpV2, typename: str, data: Dict[str, Any]) -> by
             "f64": lambda x: bytearray(struct.pack("d", x)),
         }
 
-        if signal.type in conversions.keys():
-            return conversions[signal.type](value)
-        elif signal.type is not None:
-            return serialize_struct(structs[signal.type], value)
+        if field.type in conversions.keys():
+            return conversions[field.type](value)
+        elif field.type is not None:
+            return serialize_struct(structs[field.type], value)
         else:
             raise ValueError()
 
     def serialize_struct(struct: Struct, data: Dict["str", Any]) -> bytearray:
         buffer = bytearray()
-        for signal in struct.signals:
+        for signal in struct.fields:
             buffer += serialize_signal(signal, data[signal.name])
 
         return buffer

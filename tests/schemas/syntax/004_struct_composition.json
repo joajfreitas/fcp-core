@@ -3,7 +3,7 @@
   "structs": [
     {
       "name": "foo",
-      "signals": [
+      "fields": [
         {
           "name": "var1",
           "field_id": 0,
@@ -18,7 +18,7 @@
     },
     {
       "name": "baz",
-      "signals": [
+      "fields": [
         {
           "name": "var",
           "field_id": 0,
