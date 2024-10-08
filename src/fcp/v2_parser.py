@@ -28,8 +28,9 @@ fcp_parser = Lark(
 
     preamble: "version" ":" string
 
-    struct: comment* "struct" identifier "{" field+ "}"
-    field: comment* identifier "@" number ":" param+ ","
+    struct: comment* "struct" identifier "{" struct_field+ "}"
+    struct_field: comment* identifier "@" number ":" type param* ","
+    type: identifier "|"?
     param: identifier "("? param_argument* ")"? "|"?
     param_argument: value ","?
 
@@ -153,6 +154,9 @@ class FcpV2Transformer(Transformer):  # type: ignore
         identifier = "".join([arg for arg in args])
         return identifier
 
+    def type(self, args: List[str]) -> str:
+        return str(args[0])
+
     def param(self, args: List[str]) -> Tuple[str, ...]:
         return tuple(args)
 
@@ -163,17 +167,15 @@ class FcpV2Transformer(Transformer):  # type: ignore
         return args[0]
 
     @v_args(tree=True)  # type: ignore
-    def field(self, tree: ParseTree) -> struct_field.StructField:
+    def struct_field(self, tree: ParseTree) -> struct_field.StructField:
         if isinstance(tree.children[0], Comment):
-            comment, name, field_id, *values = tree.children
+            comment, name, field_id, type, *values = tree.children
             comment = Comment(comment.value)  # type: ignore
         else:
-            name, field_id, *values = tree.children
+            name, field_id, type, *values = tree.children
             comment = None  # type: ignore
 
-        type = values[0][0]  # type: ignore
-
-        params = {name: value for name, *value in values[1:]}  # type: ignore
+        params = {name: value for name, *value in values}  # type: ignore
         params = convert_params(params)  # type: ignore
 
         meta = get_meta(tree, self)  # type: ignore
