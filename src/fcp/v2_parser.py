@@ -14,6 +14,7 @@ from .specs import impl
 from .specs import signal_block
 from .specs import service
 from .specs import rpc
+from .specs import type
 from .specs.comment import Comment
 from .specs import v2
 from .result import Result, Ok, Err
@@ -30,7 +31,11 @@ fcp_parser = Lark(
 
     struct: comment* "struct" identifier "{" struct_field+ "}"
     struct_field: comment* identifier "@" number ":" type param* ","
-    type: identifier "|"?
+    type: (base_type | array_type | compound_type) "|"?
+    base_type: /u\d\d|u\d|i\d\d|i\d|f32|f64/
+    array_type: "[" identifier "," number "]"
+    compound_type: identifier
+
     param: identifier "("? param_argument* ")"? "|"?
     param_argument: value ","?
 
@@ -156,6 +161,15 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
     def type(self, args: List[str]) -> str:
         return str(args[0])
+
+    def base_type(self, args: List[str]) -> str:
+        return type.DefaultType(args[0])
+
+    def array_type(self, args: List[str]) -> str:
+        return type.ArrayType(args[0], int(args[1]))
+
+    def compound_type(self, args: List[str]) -> str:
+        return type.CompoundType(args[0])
 
     def param(self, args: List[str]) -> Tuple[str, ...]:
         return tuple(args)

@@ -1,0 +1,16 @@
+{
+    "enums": [],
+    "impls": [],
+    "services": [],
+    "structs": [
+        {
+            "name": "A",
+            "fields": [{
+                "name": "field1",
+                "field_id": 0,
+                "type": "u7"
+            }]
+        }
+    ],
+    "version": "3.0"
+}

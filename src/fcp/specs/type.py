@@ -27,3 +27,12 @@ class DefaultType(Type):
 
     def get_length(self) -> int:
         return self.length
+
+class ArrayType(Type):
+    def __init__(self, name: str, size: int) -> None:
+        self.name = name
+        self.size = size
+
+class CompoundType(Type):
+    def __init__(self, name: str) -> None:
+        self.name = name

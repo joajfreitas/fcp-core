@@ -1,0 +1,5 @@
+version: "3"
+
+struct A {
+    field1 @0: [u8, 4],
+}
