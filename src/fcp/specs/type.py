@@ -1,5 +1,6 @@
 from serde import serde, strict
-from beartype.typing import Union, Self
+from beartype.typing import Union
+from typing_extensions import Self
 
 
 @serde(type_check=strict)
