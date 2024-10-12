@@ -49,6 +49,7 @@ def get_bo(dbc: str) -> str:
         "007_muxed_signals",
         "008_simple_array",
         "009_compounded_type_array",
+        "010_multiple_bus",
     ],
 )  # type: ignore
 def test_dbc_generator(test_name: str) -> None:

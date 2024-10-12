@@ -1,0 +1,16 @@
+version: "3"
+
+struct Foo {
+    s1 @0: u16 | unit("m/s"),
+    s2 @1: u16 | unit("m/s^2"),
+}
+
+impl can for Foo {
+    id: 10,
+    bus: "bus1",
+}
+
+impl can for Foo {
+    id: 10,
+    bus: "bus2",
+}

@@ -23,6 +23,11 @@ class Impl:
 
         return Nothing()
 
+    def get_field(self, key: str, default: Any = None) -> Maybe[Any]:
+        value = self.fields.get(key, default)
+
+        return Some(value) if value is not None else Nothing()
+
     @catch
     def get_signal_fields(self, name: str) -> Maybe[Dict[str, Any]]:
         signal = self.get_signal(name)

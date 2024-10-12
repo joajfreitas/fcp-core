@@ -1,5 +1,6 @@
 from beartype.typing import Tuple, List
 from math import ceil
+from collections import defaultdict
 
 from cantools.database.can.database import Database as CanDatabase
 from cantools.database.can.message import Message as CanMessage
@@ -59,12 +60,14 @@ def make_signals(
 
 @catch  # type: ignore
 def write_dbc(fcp: FcpV2) -> Result[str, str]:
-    messages = []
     nodes = []
+    buses = defaultdict(lambda: {"messages": list(), "nodes": list()})
 
     encoder = make_encoder("packed", fcp)
 
     for extension in fcp.get_matching_impls("can"):
+        bus = extension.get_field("bus", "default")
+
         encoding = encoder.generate(extension)
 
         signals, dlc = make_signals(encoding, extension.type)
@@ -73,7 +76,7 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
         if id is None:
             return Err("No id field found in extension")
 
-        messages.append(
+        buses[bus]["messages"].append(
             CanMessage(
                 frame_id=id,
                 name=extension.name,
@@ -84,8 +87,14 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
         )
         device = extension.fields.get("device")
         if device is not None and device not in nodes:
-            nodes.append(device)
+            buses[bus]["nodes"].append(device)
 
-    db = CanDatabase(messages=messages, nodes=[CanNode(name=node) for node in nodes])
+    dbs = [
+        CanDatabase(
+            messages=buses[bus]["messages"],
+            nodes=[CanNode(name=node) for node in buses[bus]["nodes"]],
+        )
+        for bus in buses
+    ]
 
-    return Ok(str(db.as_dbc_string(sort_signals="default")))
+    return Ok([str(db.as_dbc_string(sort_signals="default")) for db in dbs])
