@@ -8,7 +8,7 @@
           "name": "field1",
           "field_id": 0,
           "type": {
-              "DefaultType": {
+              "BuiltinType": {
                   "name": "u8"
               }
           }
@@ -21,7 +21,7 @@
         {
           "name": "field1",
           "field_id": 0,
-          "type": {"DefaultType": {"name": "u16"}}
+          "type": {"BuiltinType": {"name": "u16"}}
         }
       ]
     }

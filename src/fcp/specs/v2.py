@@ -8,7 +8,7 @@ from .struct_field import StructField
 from .struct import Struct
 from .impl import Impl
 from .service import Service
-from .type import Type, DefaultType
+from .type import Type, BuiltinType
 
 
 def handle_key_not_found(d: Dict[str, Any], key: str) -> List[Any]:
@@ -41,7 +41,7 @@ class FcpV2:
             if type.name == type_.name:
                 return Some(type_)
 
-        if isinstance(type, DefaultType):
+        if isinstance(type, BuiltinType):
             return Some(type)
 
         return Nothing()
@@ -169,7 +169,7 @@ def default_serialization(fcp: FcpV2, typename: str, data: Dict[str, Any]) -> by
             "f64": lambda x: bytearray(struct.pack("d", x)),
         }
 
-        if isinstance(field.type, DefaultType):
+        if isinstance(field.type, BuiltinType):
             return conversions[field.type.name](value)
         elif field.type is not None:
             return serialize_struct(structs[field.type.name], value)

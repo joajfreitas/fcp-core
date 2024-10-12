@@ -5,7 +5,7 @@ from copy import copy
 from .specs.struct import Struct
 from .specs.enum import Enum
 from .specs.struct_field import StructField
-from .specs.type import Type, CompoundType, DefaultType, ArrayType
+from .specs.type import Type, CompoundType, BuiltinType, ArrayType
 from .specs.v2 import FcpV2
 from .specs.impl import Impl
 from .maybe import Some
@@ -113,7 +113,7 @@ class PackedEncoder:
         self.encoding.append(
             Value(
                 prefix[:-2],
-                DefaultType("u" + str(type_length)),  # type: ignore
+                BuiltinType("u" + str(type_length)),  # type: ignore
                 self.bitstart,
                 type_length,
             )

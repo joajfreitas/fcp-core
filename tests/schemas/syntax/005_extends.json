@@ -25,7 +25,7 @@
         {
           "name": "field1",
           "field_id": 0,
-          "type": {"DefaultType": {"name": "u8"}}
+          "type": {"BuiltinType": {"name": "u8"}}
         }
       ]
     }

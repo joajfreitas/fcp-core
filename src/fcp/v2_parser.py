@@ -14,7 +14,7 @@ from .specs import impl
 from .specs import signal_block
 from .specs import service
 from .specs import rpc
-from .specs.type import DefaultType, ArrayType, CompoundType, Type
+from .specs.type import BuiltinType, ArrayType, CompoundType, Type
 from .specs.comment import Comment
 from .specs import v2
 from .result import Result, Ok, Err
@@ -162,8 +162,8 @@ class FcpV2Transformer(Transformer):  # type: ignore
     def type(self, args: List[str]) -> Type:
         return args[0]
 
-    def base_type(self, args: List[str]) -> DefaultType:
-        return DefaultType(str(args[0]))  # type: ignore
+    def base_type(self, args: List[str]) -> BuiltinType:
+        return BuiltinType(str(args[0]))  # type: ignore
 
     def array_type(self, args: List[str]) -> ArrayType:
         return ArrayType(args[0], int(args[1]))  # type: ignore
