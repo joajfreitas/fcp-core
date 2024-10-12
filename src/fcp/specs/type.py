@@ -1,5 +1,5 @@
 from serde import serde, strict
-from beartype.typing import Union
+from beartype.typing import Union, Self
 
 
 @serde(type_check=strict)
@@ -14,14 +14,14 @@ class DefaultType:
 
 
 @serde(type_check=strict)
-class ArrayType:
+class CompoundType:
     name: str
-    size: int
 
 
 @serde(type_check=strict)
-class CompoundType:
-    name: str
+class ArrayType:
+    type: Union[DefaultType, CompoundType, Self]
+    size: int
 
 
 Type = Union[DefaultType, ArrayType, CompoundType]

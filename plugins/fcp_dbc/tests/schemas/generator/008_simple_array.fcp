@@ -7,3 +7,11 @@ struct Foo {
 impl can for Foo {
     id: 10,
 }
+
+struct Bar {
+    s1 @0: [u16, 2],
+}
+
+impl can for Bar {
+    id: 11,
+}

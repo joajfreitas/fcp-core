@@ -33,7 +33,7 @@ fcp_parser = Lark(
     struct_field: comment* identifier "@" number ":" type param* ","
     type: (base_type | array_type | compound_type) "|"?
     base_type: /u\d\d|u\d|i\d\d|i\d|f32|f64/
-    array_type: "[" identifier "," number "]"
+    array_type: "[" type "," number "]"
     compound_type: identifier
 
     param: identifier "("? param_argument* ")"? "|"?

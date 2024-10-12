@@ -12,7 +12,7 @@ from .maybe import Some
 
 
 def derive_scalar_from_array(type: ArrayType) -> Type:
-    return DefaultType("u8")  # type: ignore
+    return type.type
 
 
 class Value:
@@ -137,11 +137,9 @@ class PackedEncoder:
         self, type: ArrayType, field: StructField, extension: Impl, prefix: str = ""
     ) -> NoReturn:
         for i in range(type.size):
-            new_type = derive_scalar_from_array(type)
-
             derived_field = copy(field)
 
-            derived_field.type = new_type
+            derived_field.type = type.type
             derived_field.name = field.name + "_" + str(i)
             self.generate_signal(derived_field, extension, prefix)
 

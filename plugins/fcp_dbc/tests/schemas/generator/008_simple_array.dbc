@@ -3,3 +3,6 @@ BO_ 10 Foo: 4 Vector__XXX
  SG_ s1_2 : 16|8@1+ (1,0) [0|0] "" Vector__XXX
  SG_ s1_1 : 8|8@1+ (1,0) [0|0] "" Vector__XXX
  SG_ s1_0 : 0|8@1+ (1,0) [0|0] "" Vector__XXX
+BO_ 11 Bar: 4 Vector__XXX
+ SG_ s1_1 : 16|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ s1_0 : 0|16@1+ (1,0) [0|0] "" Vector__XXX

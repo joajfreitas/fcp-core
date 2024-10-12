@@ -1,0 +1,15 @@
+version: "3"
+
+struct Foo {
+    s1 @0: u8,
+    s2 @1: u16,
+}
+
+
+struct Bar {
+    s1 @0: [Foo, 2],
+}
+
+impl can for Bar {
+    id: 10,
+}
