@@ -1,13 +1,18 @@
 from beartype.typing import Union, NoReturn, List, Dict, Any, Optional
 from math import log2, ceil
+from copy import copy
 
 from .specs.struct import Struct
 from .specs.enum import Enum
 from .specs.struct_field import StructField
-from .specs.type import Type, CompoundType, DefaultType
+from .specs.type import Type, CompoundType, DefaultType, ArrayType
 from .specs.v2 import FcpV2
 from .specs.impl import Impl
 from .maybe import Some
+
+
+def derive_scalar_from_array(type: ArrayType) -> Type:
+    return DefaultType("u8")  # type: ignore
 
 
 class Value:
@@ -70,12 +75,15 @@ class PackedEncoder:
             .unwrap_or({})
         )
 
-        if not isinstance(field.type, DefaultType):
+        if isinstance(field.type, CompoundType):
             self._generate(
-                self.fcp.get_type(field.type).unwrap(),
+                field.type,
                 extension,
                 prefix=prefix + field.name + "::",
             )
+            return
+        elif isinstance(field.type, ArrayType):
+            self.generate_array_type(field.type, field, extension, prefix)
             return
 
         type_length = field.type.get_length()
@@ -112,9 +120,10 @@ class PackedEncoder:
         )
         self.bitstart += type_length
 
-    def _generate(
-        self, type: Union[Struct, Enum, StructField], extension: Impl, prefix: str = ""
+    def generate_compound_type(
+        self, type: CompoundType, extension: Impl, prefix: str = ""
     ) -> NoReturn:
+        type = self.fcp.get_type(type).unwrap()
         if isinstance(type, Struct):
             self.generate_struct(type, extension, prefix)
         elif isinstance(type, StructField):
@@ -124,12 +133,27 @@ class PackedEncoder:
         else:
             raise KeyError(f"Invalid type {type}")
 
+    def generate_array_type(
+        self, type: ArrayType, field: StructField, extension: Impl, prefix: str = ""
+    ) -> NoReturn:
+        for i in range(type.size):
+            new_type = derive_scalar_from_array(type)
+
+            derived_field = copy(field)
+
+            derived_field.type = new_type
+            derived_field.name = field.name + "_" + str(i)
+            self.generate_signal(derived_field, extension, prefix)
+
+    def _generate(self, type: Type, extension: Impl, prefix: str = "") -> NoReturn:
+        self.generate_compound_type(type, extension, prefix)
+
     def generate(self, extension: Impl) -> List[EncodeablePiece]:
         self.encoding = []
         self.bitstart = 0
 
         self._generate(
-            self.fcp.get_type(CompoundType(extension.type)).unwrap(),  # type: ignore
+            CompoundType(extension.type),  # type: ignore
             extension,
         )
         return self.encoding

@@ -1,0 +1,9 @@
+version: "3"
+
+struct Foo {
+    s1 @0: [u8, 4],
+}
+
+impl can for Foo {
+    id: 10,
+}
