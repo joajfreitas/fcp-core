@@ -10,11 +10,7 @@ from fcp import FcpV2
 
 from fcp.result import Result, Ok, Err
 from fcp.maybe import catch
-from fcp.encoding import make_encoder, EncodeablePiece, Value
-
-
-def is_signed(value: Value) -> bool:
-    return bool(value.type[0] == "i")
+from fcp.encoding import make_encoder, EncodeablePiece
 
 
 def make_signals(encoding: List[EncodeablePiece]) -> Tuple[List[CanSignal], int]:
@@ -39,7 +35,7 @@ def make_signals(encoding: List[EncodeablePiece]) -> Tuple[List[CanSignal], int]
                 byte_order=(
                     "big_endian" if piece.endianess == "big" else "little_endian"
                 ),
-                is_signed=is_signed(piece),
+                is_signed=piece.type.is_signed(),
                 minimum=0,
                 maximum=0,
                 unit=piece.unit,

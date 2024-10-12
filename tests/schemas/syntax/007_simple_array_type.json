@@ -8,7 +8,8 @@
             "fields": [{
                 "name": "field1",
                 "field_id": 0,
-                "type": "u7"
+                "type": {"ArrayType": {"name": "u8", "size": 4}
+                }
             }]
         }
     ],

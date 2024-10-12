@@ -4,7 +4,7 @@ from math import log2, ceil
 from .specs.struct import Struct
 from .specs.enum import Enum
 from .specs.struct_field import StructField
-from .specs.type import Type
+from .specs.type import Type, CompoundType, DefaultType
 from .specs.v2 import FcpV2
 from .specs.impl import Impl
 from .maybe import Some
@@ -14,7 +14,7 @@ class Value:
     def __init__(
         self,
         name: str,
-        type: str,
+        type: Type,
         bitstart: int,
         bitlength: int,
         endianess: str = "little",
@@ -61,34 +61,34 @@ class PackedEncoder:
             self.generate_signal(field, extension, prefix)
 
     def generate_signal(
-        self, signal: StructField, extension: Impl, prefix: str = ""
+        self, field: StructField, extension: Impl, prefix: str = ""
     ) -> NoReturn:
 
         fields: Dict[str, Any] = (
-            extension.get_signal(signal.name)
+            extension.get_signal(field.name)
             .and_then(lambda signal_block: Some(signal_block.fields))
             .unwrap_or({})
         )
 
-        if signal.type not in Type.get_default_types():
+        if not isinstance(field.type, DefaultType):
             self._generate(
-                self.fcp.get_type(signal.type).unwrap(),
+                self.fcp.get_type(field.type).unwrap(),
                 extension,
-                prefix=prefix + signal.name + "::",
+                prefix=prefix + field.name + "::",
             )
             return
 
-        type_length = Type.make_type(signal.type).get_length()
+        type_length = field.type.get_length()
 
         self.encoding.append(
             Value(
-                prefix + signal.name,
-                signal.type,
+                prefix + field.name,
+                field.type,
                 self.bitstart,
                 type_length,
                 endianess=fields.get("endianess") or "little",
                 extended_data=fields,
-                unit=signal.unit,
+                unit=field.unit,
             )
         )
 
@@ -103,7 +103,12 @@ class PackedEncoder:
             raise ValueError(f"Way too large an enum, computed size: {type_length}")
 
         self.encoding.append(
-            Value(prefix[:-2], "u" + str(type_length), self.bitstart, type_length)
+            Value(
+                prefix[:-2],
+                DefaultType("u" + str(type_length)),  # type: ignore
+                self.bitstart,
+                type_length,
+            )
         )
         self.bitstart += type_length
 
@@ -123,7 +128,10 @@ class PackedEncoder:
         self.encoding = []
         self.bitstart = 0
 
-        self._generate(self.fcp.get_type(extension.type).unwrap(), extension)
+        self._generate(
+            self.fcp.get_type(CompoundType(extension.type)).unwrap(),  # type: ignore
+            extension,
+        )
         return self.encoding
 
 

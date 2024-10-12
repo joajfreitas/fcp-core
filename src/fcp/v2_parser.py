@@ -14,7 +14,7 @@ from .specs import impl
 from .specs import signal_block
 from .specs import service
 from .specs import rpc
-from .specs import type
+from .specs.type import DefaultType, ArrayType, CompoundType, Type
 from .specs.comment import Comment
 from .specs import v2
 from .result import Result, Ok, Err
@@ -152,24 +152,24 @@ class FcpV2Transformer(Transformer):  # type: ignore
     def underscore(self, args: List[str]) -> str:
         return "_"
 
-    def identifier(self, args: List[Any]) -> Any:
-        return args[0].value
+    def identifier(self, args: List[Any]) -> str:
+        return str(args[0].value)
 
     def import_identifier(self, args: List[str]) -> str:
         identifier = "".join([arg for arg in args])
         return identifier
 
-    def type(self, args: List[str]) -> str:
-        return str(args[0])
+    def type(self, args: List[str]) -> Type:
+        return args[0]
 
-    def base_type(self, args: List[str]) -> str:
-        return type.DefaultType(args[0])
+    def base_type(self, args: List[str]) -> DefaultType:
+        return DefaultType(str(args[0]))  # type: ignore
 
-    def array_type(self, args: List[str]) -> str:
-        return type.ArrayType(args[0], int(args[1]))
+    def array_type(self, args: List[str]) -> ArrayType:
+        return ArrayType(args[0], int(args[1]))  # type: ignore
 
-    def compound_type(self, args: List[str]) -> str:
-        return type.CompoundType(args[0])
+    def compound_type(self, args: List[str]) -> CompoundType:
+        return CompoundType(args[0])  # type: ignore
 
     def param(self, args: List[str]) -> Tuple[str, ...]:
         return tuple(args)

@@ -8,7 +8,7 @@
           "name": "bar",
           "field_id": 0,
           "comment": "the bar field",
-          "type": "u8"
+          "type": {"DefaultType": {"name": "u8"}}
         }
       ],
       "comment": "the foo struct"

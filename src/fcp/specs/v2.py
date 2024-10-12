@@ -8,7 +8,7 @@ from .struct_field import StructField
 from .struct import Struct
 from .impl import Impl
 from .service import Service
-from .type import Type
+from .type import Type, DefaultType
 
 
 def handle_key_not_found(d: Dict[str, Any], key: str) -> List[Any]:
@@ -36,13 +36,13 @@ class FcpV2:
         self.enums += fcp.enums
         self.impls += fcp.impls
 
-    def get_type(self, name: str) -> Maybe[Union[Enum, Struct]]:
-        for type in self.structs + self.enums:
-            if name == type.name:
-                return Some(type)
+    def get_type(self, type: Type) -> Maybe[Union[Enum, Struct]]:
+        for type_ in self.structs + self.enums:
+            if type.name == type_.name:
+                return Some(type_)
 
-        if name in Type.get_default_types():
-            return Some(Type.make_type(name))
+        if isinstance(type, DefaultType):
+            return Some(type)
 
         return Nothing()
 
@@ -169,10 +169,10 @@ def default_serialization(fcp: FcpV2, typename: str, data: Dict[str, Any]) -> by
             "f64": lambda x: bytearray(struct.pack("d", x)),
         }
 
-        if field.type in conversions.keys():
-            return conversions[field.type](value)
+        if isinstance(field.type, DefaultType):
+            return conversions[field.type.name](value)
         elif field.type is not None:
-            return serialize_struct(structs[field.type], value)
+            return serialize_struct(structs[field.type.name], value)
         else:
             raise ValueError()
 

@@ -1,6 +1,7 @@
 from beartype.typing import Any, Optional, Union
 from serde import serde, strict, field
 
+from .type import Type
 from .metadata import MetaData
 from .comment import Comment, comment_serializer, comment_deserializer
 
@@ -30,7 +31,7 @@ class StructField:
 
     name: str
     field_id: int
-    type: str
+    type: Type
     unit: Optional[str] = None
     comment: Optional[Comment] = field(
         default=None, serializer=comment_serializer, deserializer=comment_deserializer
