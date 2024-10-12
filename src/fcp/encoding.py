@@ -5,7 +5,7 @@ from copy import copy
 from .specs.struct import Struct
 from .specs.enum import Enum
 from .specs.struct_field import StructField
-from .specs.type import Type, CompoundType, BuiltinType, ArrayType
+from .specs.type import Type, ComposedType, BuiltinType, ArrayType
 from .specs.v2 import FcpV2
 from .specs.impl import Impl
 from .maybe import Some
@@ -75,7 +75,7 @@ class PackedEncoder:
             .unwrap_or({})
         )
 
-        if isinstance(field.type, CompoundType):
+        if isinstance(field.type, ComposedType):
             self._generate(
                 field.type,
                 extension,
@@ -121,7 +121,7 @@ class PackedEncoder:
         self.bitstart += type_length
 
     def generate_compound_type(
-        self, type: CompoundType, extension: Impl, prefix: str = ""
+        self, type: ComposedType, extension: Impl, prefix: str = ""
     ) -> NoReturn:
         type = self.fcp.get_type(type).unwrap()
         if isinstance(type, Struct):
@@ -151,7 +151,7 @@ class PackedEncoder:
         self.bitstart = 0
 
         self._generate(
-            CompoundType(extension.type),  # type: ignore
+            ComposedType(extension.type),  # type: ignore
             extension,
         )
         return self.encoding

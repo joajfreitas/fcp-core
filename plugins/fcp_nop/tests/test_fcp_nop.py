@@ -64,12 +64,12 @@ struct SensorInformation {
                     {
                         "name": "temperature",
                         "field_id": 0,
-                        "type": {"CompoundType": {"name": "Temperature"}},
+                        "type": {"ComposedType": {"name": "Temperature"}},
                     },
                     {
                         "name": "sensor_state",
                         "field_id": 1,
-                        "type": {"CompoundType": {"name": "SensorState"}},
+                        "type": {"ComposedType": {"name": "SensorState"}},
                     },
                 ],
             },

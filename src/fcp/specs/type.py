@@ -14,14 +14,14 @@ class BuiltinType:
 
 
 @serde(type_check=strict)
-class CompoundType:
+class ComposedType:
     name: str
 
 
 @serde(type_check=strict)
 class ArrayType:
-    type: Union[BuiltinType, CompoundType, Self]
+    type: Union[BuiltinType, ComposedType, Self]
     size: int
 
 
-Type = Union[BuiltinType, ArrayType, CompoundType]
+Type = Union[BuiltinType, ArrayType, ComposedType]

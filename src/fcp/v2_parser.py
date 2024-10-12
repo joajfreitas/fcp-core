@@ -14,7 +14,7 @@ from .specs import impl
 from .specs import signal_block
 from .specs import service
 from .specs import rpc
-from .specs.type import BuiltinType, ArrayType, CompoundType, Type
+from .specs.type import BuiltinType, ArrayType, ComposedType, Type
 from .specs.comment import Comment
 from .specs import v2
 from .result import Result, Ok, Err
@@ -168,8 +168,8 @@ class FcpV2Transformer(Transformer):  # type: ignore
     def array_type(self, args: List[str]) -> ArrayType:
         return ArrayType(args[0], int(args[1]))  # type: ignore
 
-    def compound_type(self, args: List[str]) -> CompoundType:
-        return CompoundType(args[0])  # type: ignore
+    def compound_type(self, args: List[str]) -> ComposedType:
+        return ComposedType(args[0])  # type: ignore
 
     def param(self, args: List[str]) -> Tuple[str, ...]:
         return tuple(args)
