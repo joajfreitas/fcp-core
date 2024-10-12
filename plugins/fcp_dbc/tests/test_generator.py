@@ -1,6 +1,7 @@
 import os
 import pytest
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 
 from fcp_dbc import Generator
 from fcp.v2_parser import get_fcp
@@ -88,3 +89,28 @@ def test_verifier(test_name: str) -> None:
     generator.register_checks(verifier)
 
     assert verifier.verify(fcp_v2).is_err()
+
+
+def test_encoding_message_to_big() -> None:
+    tmp = NamedTemporaryFile()
+    with open(tmp.name, "w") as fp:
+        fp.write(
+            """
+version: "3"
+
+struct Foo {
+    s1 @0: u32,
+    s2 @1: u32,
+    s3 @2: u8,
+}
+
+impl can for Foo {
+    id: 10,
+}"""
+        )
+
+    fcp_v2, _ = get_fcp(tmp.name).unwrap()
+    generator = Generator()
+
+    with pytest.raises(ValueError):
+        generator.generate(fcp_v2, {"output": "output.dbc"})

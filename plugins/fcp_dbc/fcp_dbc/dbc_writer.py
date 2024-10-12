@@ -13,7 +13,9 @@ from fcp.maybe import catch
 from fcp.encoding import make_encoder, EncodeablePiece
 
 
-def make_signals(encoding: List[EncodeablePiece]) -> Tuple[List[CanSignal], int]:
+def make_signals(
+    encoding: List[EncodeablePiece], type: str
+) -> Tuple[List[CanSignal], int]:
     signals = []
     dlc = 0
 
@@ -22,6 +24,10 @@ def make_signals(encoding: List[EncodeablePiece]) -> Tuple[List[CanSignal], int]
         for piece in encoding
         if piece.extended_data.get("mux_signal") is not None
     ]
+
+    msg_bitlength = encoding[-1].bitstart + encoding[-1].bitlength
+    if msg_bitlength > 64:
+        raise ValueError(f"Message {type} too big. Current length: {msg_bitlength}")
 
     for piece in encoding:
         mux_count = piece.extended_data.get("mux_count")
@@ -61,7 +67,7 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
     for extension in fcp.get_matching_impls("can"):
         encoding = encoder.generate(extension)
 
-        signals, dlc = make_signals(encoding)
+        signals, dlc = make_signals(encoding, extension.type)
 
         id = extension.fields.get("id")
         if id is None:
