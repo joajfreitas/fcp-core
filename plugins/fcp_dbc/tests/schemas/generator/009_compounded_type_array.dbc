@@ -1,5 +1,5 @@
 BO_ 10 Bar: 6 Vector__XXX
- SG_ s1_1_s2 : 32|16@1+ (1,0) [0|0] "" Vector__XXX
- SG_ s1_1_s1 : 24|8@1+ (1,0) [0|0] "" Vector__XXX
- SG_ s1_0_s2 : 8|16@1+ (1,0) [0|0] "" Vector__XXX
- SG_ s1_0_s1 : 0|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ s1_1_s2 : 32|16@1+ (1,0) [0|0] "kg" Vector__XXX
+ SG_ s1_1_s1 : 24|8@1+ (1,0) [0|0] "m/s" Vector__XXX
+ SG_ s1_0_s2 : 8|16@1+ (1,0) [0|0] "kg" Vector__XXX
+ SG_ s1_0_s1 : 0|8@1+ (1,0) [0|0] "m/s" Vector__XXX

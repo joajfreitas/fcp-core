@@ -1,7 +1,7 @@
 version: "3"
 
 struct Foo {
-    s1 @0: [u8, 4],
+    s1 @0: [u8, 4] | unit("m/s^2"),
 }
 
 impl can for Foo {

@@ -1,8 +1,8 @@
 version: "3"
 
 struct Foo {
-    s1 @ 0: u8,
-    s2 @ 1: u8,
+    s1 @ 0: u8 | unit("m/s"),
+    s2 @ 1: u8 | unit("C"),
 }
 
 impl can for Foo {
