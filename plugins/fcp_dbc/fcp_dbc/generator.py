@@ -20,9 +20,11 @@ class Generator(CodeGenerator):
         return [
             {
                 "type": "file",
-                "path": Path(ctx.get("output")),
-                "contents": write_dbc(fcp).unwrap(),
+                "path": Path(ctx.get("output")) / (bus + ".fcp"),
+                "contents": content,
+                "bus": bus,
             }
+            for bus, content in write_dbc(fcp).unwrap()
         ]
 
     def register_checks(self, verifier: Verifier) -> NoReturn:

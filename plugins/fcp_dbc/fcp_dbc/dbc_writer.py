@@ -66,7 +66,7 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
     encoder = make_encoder("packed", fcp)
 
     for extension in fcp.get_matching_impls("can"):
-        bus = extension.get_field("bus", "default")
+        bus = extension.get_field("bus", "default").unwrap()
 
         encoding = encoder.generate(extension)
 
@@ -90,11 +90,11 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
             buses[bus]["nodes"].append(device)
 
     dbs = [
-        CanDatabase(
+        (bus, CanDatabase(
             messages=buses[bus]["messages"],
             nodes=[CanNode(name=node) for node in buses[bus]["nodes"]],
-        )
+        ))
         for bus in buses
     ]
 
-    return Ok([str(db.as_dbc_string(sort_signals="default")) for db in dbs])
+    return Ok([(bus, str(db.as_dbc_string(sort_signals="default"))) for bus, db in dbs])

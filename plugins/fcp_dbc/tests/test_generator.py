@@ -54,16 +54,19 @@ def get_bo(dbc: str) -> str:
 )  # type: ignore
 def test_dbc_generator(test_name: str) -> None:
     fcp_v2, _ = get_fcp(Path(get_fcp_config("generator", test_name))).unwrap()
-    dbc = get_result_dbc("generator", test_name)
     generator = Generator()
 
     results = generator.generate(
         fcp_v2,
-        {"output": "output.dbc"},
+        {"output": "output"},
     )
-    result = get_bo(results[0].get("contents"))
+   
+    
+    for result in results:
+        contents = get_bo(result.get("contents"))
+        dbc = get_result_dbc("generator", test_name + "_" + result.get("bus"))
 
-    assert result == dbc
+        assert contents == dbc
 
 
 def test_verifier_no_error() -> None:

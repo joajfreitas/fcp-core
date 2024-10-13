@@ -21,6 +21,8 @@ from .verifier import Verifier
 def handle_file(result: Dict[str, Union[str, Path]]) -> NoReturn:
     path: Path = Path(result.get("path"))  # type: ignore
     logging.info(f"Generating {path}")
+
+    path.parent.mkdir(exist_ok=True)
     path.write_text(str(result.get("contents")))
 
 
