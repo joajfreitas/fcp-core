@@ -1,4 +1,4 @@
-from beartype.typing import Any, Union, Dict, NoReturn
+from beartype.typing import Any, Union, NoReturn, Dict
 from pathlib import Path
 
 from fcp.codegen import CodeGenerator
@@ -8,7 +8,7 @@ from fcp import FcpV2
 from fcp.error import FcpError
 from fcp.types import Nil
 
-from .can_c_writer import write_can_c
+from .can_c_writer import CanCWritter
 
 
 class Generator(CodeGenerator):
@@ -16,11 +16,13 @@ class Generator(CodeGenerator):
         pass
 
     def generate(self, fcp: FcpV2, ctx: Any) -> Dict[str, Union[str, Path]]:
+        writer = CanCWritter(fcp, ctx.get("output"))
+
         return [
             {
                 "type": "file",
                 "path": Path(ctx.get("output")),
-                "contents": write_can_c(fcp).unwrap(),
+                # "contents": write_can_c(fcp).unwrap(),
             }
         ]
 
