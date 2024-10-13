@@ -60,8 +60,7 @@ def test_dbc_generator(test_name: str) -> None:
         fcp_v2,
         {"output": "output"},
     )
-   
-    
+
     for result in results:
         contents = get_bo(result.get("contents"))
         dbc = get_result_dbc("generator", test_name + "_" + result.get("bus"))

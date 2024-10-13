@@ -1,4 +1,4 @@
-from beartype.typing import Tuple, List
+from beartype.typing import Tuple, List, Dict, Any
 from math import ceil
 from collections import defaultdict
 
@@ -60,8 +60,7 @@ def make_signals(
 
 @catch  # type: ignore
 def write_dbc(fcp: FcpV2) -> Result[str, str]:
-    nodes = []
-    buses = defaultdict(lambda: {"messages": list(), "nodes": list()})
+    buses: Dict[str, Any] = defaultdict(lambda: {"messages": list(), "nodes": list()})
 
     encoder = make_encoder("packed", fcp)
 
@@ -86,14 +85,17 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
             )
         )
         device = extension.fields.get("device")
-        if device is not None and device not in nodes:
+        if device is not None and device not in buses[bus]["nodes"]:
             buses[bus]["nodes"].append(device)
 
     dbs = [
-        (bus, CanDatabase(
-            messages=buses[bus]["messages"],
-            nodes=[CanNode(name=node) for node in buses[bus]["nodes"]],
-        ))
+        (
+            bus,
+            CanDatabase(
+                messages=buses[bus]["messages"],
+                nodes=[CanNode(name=node) for node in buses[bus]["nodes"]],
+            ),
+        )
         for bus in buses
     ]
 
