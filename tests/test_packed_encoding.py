@@ -1,3 +1,5 @@
+# ruff: noqa: D103
+
 from beartype.typing import NoReturn
 import pytest
 
