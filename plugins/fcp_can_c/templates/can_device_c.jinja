@@ -1,10 +1,21 @@
-#include "{{ dev_name_sc }}.h"
+#include "{{ device_name_snake }}_can.h"
 
-/* Decode Signals */
-{%- for msg in messages %}
-// {{ msg.name }}
-{%- for sig in msg.signals %}
-#define decode_{{ msg.name_sc }}_{{ sig.name }}(msg) \
-    decode_signal_{{ sig.type }}_as_{{ sig.type }}((msg), {{ sig.start }}, {{ sig.length }}, {{ sig.scale }}, {{ sig.offset }})
+/*-------------------- Decode Signals ---------------------*/
+{%- for message in messages %}
+// {{ message.name_pascal }}
+{%- for signal in message.signals %}
+#define decode_{{ message.name_snake }}_{{ signal.name }}(msg) \
+    decode_signal_as_{{ signal.data_type }}((msg), {{ signal.start_bit }}, {{ signal.bit_length }}, {{ signal.scale }}, {{ signal.offset }})
 {%- endfor %}
 {%- endfor %}
+/*---------------------------------------------------------*/
+
+/*-------------------- Encode Signals ---------------------*/
+{%- for message in messages %}
+// {{ message.name_pascal }}
+{%- for signal in message.signals %}
+#define encode_{{message.name_snake}}_{{signal.name}}(signal) \
+    encode_signal_from_{{signal.data_type}}((signal), {{signal.start_bit}}, {{signal.bit_length}}, {{signal.scale}}, {{signal.offset}});
+{%- endfor %}
+{%- endfor %}
+/*---------------------------------------------------------*/

@@ -10,7 +10,7 @@ from fcp import FcpV2
 from fcp.error import FcpError
 from fcp.types import Nil
 
-from .can_c_writer import CanCWritter
+from .can_c_writer import CanCWriter
 
 
 class Generator(CodeGenerator):
@@ -21,7 +21,7 @@ class Generator(CodeGenerator):
         def to_dict(s1: str, s2: str, s3: str) -> Dict[str, str]:
             return {"type": s1, "path": s2, "contents": s3}
 
-        writer = CanCWritter(fcp)
+        writer = CanCWriter(fcp)
         base_dir = str(ctx.get("output"))
         files = []
 
@@ -32,11 +32,14 @@ class Generator(CodeGenerator):
             for file in os.listdir(base_dir):
                 os.remove(os.path.join(base_dir, file))
 
-        for filename, contents in writer.gen_static_files():
+        for filename, contents in writer.generate_static_files():
             files.append(to_dict("file", f"{base_dir}/{filename}", contents))
 
-        for dev_name, contents in writer.gen_device_headers():
-            files.append(to_dict("file", f"{base_dir}/{dev_name}_can.h", contents))
+        for filename, contents in writer.generate_device_headers():
+            files.append(to_dict("file", f"{base_dir}/{filename}_can.h", contents))
+
+        for filename, contents in writer.generate_device_sources():
+            files.append(to_dict("file", f"{base_dir}/{filename}_can.c", contents))
 
         return files
 
