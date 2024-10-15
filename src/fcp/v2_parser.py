@@ -51,7 +51,6 @@ fcp_parser = Lark(
 
     mod_expr: "mod" identifier ";"
 
-    import_identifier: (UNDERSCORE|LETTER|DOT) (UNDERSCORE|LETTER|DIGIT|DOT)*
     identifier: CNAME
     string: ESCAPED_STRING
     number: SIGNED_NUMBER
