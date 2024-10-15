@@ -9,7 +9,7 @@ impl can for Pedals {
     id: 10,
     device: "ecu",
 
-    signal field2 {
+    signal brake_pos {
         bitstart: 16,
     },
 }
