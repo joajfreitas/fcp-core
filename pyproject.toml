@@ -25,6 +25,7 @@ fcp = "fcp.__main__:main"
 addopts = ["--import-mode=importlib"]
 
 [tool.ruff.lint]
+select = ["D"]
 ignore = ["F402"]
 
 [tool.mypy]
