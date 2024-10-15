@@ -194,7 +194,8 @@ class CanCWritter:
                 dev_name,
                 self.templates["device_can_h"].render(
                     {
-                        "dev_name": dev_name,
+                        "dev_name": snake_to_pascal(dev_name),
+                        "dev_name_sc": dev_name,
                         "messages": msgs,
                     }
                 ),
