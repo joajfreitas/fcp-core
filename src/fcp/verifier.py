@@ -45,6 +45,29 @@ class Verifier:
 
 
 def register(verifier: Verifier, category: Optional[str] = None) -> Callable:
+    """
+    Decorator that registers a verification.
+
+    :param Verifier verifier: The verifier object where the verification will be registered.
+    :param Optional[str] category: Verification category. Determines which object type is given to the decorated function.
+
+    Categories can be:
+        * struct
+        * field
+        * enum
+        * impl
+        * signal_block
+        * type
+
+    Each category correspondes to a fcp node type. Exception for 'type' which is an union of 'struct' and 'enum' categories.
+
+    .. code-block:: python
+        @register(verfier, 'struct')
+        def verify_struct_name(self: Verifier, fcp: FcpV2, struct: Struct):
+            return struct.name == "mandatory_name"
+
+    """
+
     def decorator(f: Callable) -> Callable:
         verifier.register(f, category)
         return f
@@ -52,13 +75,9 @@ def register(verifier: Verifier, category: Optional[str] = None) -> Callable:
     return decorator
 
 
-class GeneralVerifier(Verifier):
-    def __init__(self) -> None:
-        super().__init__()
-
-
-def make_general_verifier() -> GeneralVerifier:
-    general_verifier = GeneralVerifier()
+def make_general_verifier() -> Verifier:
+    """Create verifier that applies verification rules valid for any fcp schema."""
+    general_verifier = Verifier()
 
     @register(general_verifier, "type")  # type: ignore
     def check_duplicate_typenames(
