@@ -1,12 +1,14 @@
-#ifndef {{ dev_name | upper }}_CAN_H
-#define {{ dev_name | upper }}_CAN_H
+#ifndef {{ dev_name_sc | upper }}_CAN_H
+#define {{ dev_name_sc | upper }}_CAN_H
 
 #include <stdint.h>
 
 #include "can_signal_parser.h"
 #include "can_frame.h"
 
-// {{ dev_name }} message IDs
+
+
+/* {{ dev_name_sc }} message IDs */
 {%- for msg in messages %}
 #define MSG_{{ msg.name_sc | upper }}_ID {{ msg.frame_id }}
 {%- endfor %}
@@ -20,22 +22,19 @@ typedef struct {
     {%- endif %}
     {{ sig.type }} {{ sig.name }};
     {%- endfor %}
-} Msg{{ msg.name }};
+} CanMsg{{ msg.name }};
 
 {%- endfor %}
 
-/* Decode Signals */
-{%- for msg in messages %}
-/* {{ msg.name_sc }} */
-{%- for sig in msg.signals %}
-#define decode_{{ msg.name_sc }}_{{ sig.name }}(msg) \
-    decode_signal_{{ sig.type }}_as_{{ sig.type }}((msg), {{ sig.start }}, {{ sig.length }}, {{ sig.scale }}, {{ sig.offset }})
-{%- endfor %}
-{%- endfor %}
+typedef struct {
+    {%- for msg in messages %}
+    CanMsg{{ msg.name }} {{ msg.name_sc }};
+    {%- endfor %}
+} CanDev{{ dev_name }};
 
 /* Decode messages */
 {%- for msg in messages %}
-Msg{{ msg.name }} decode_{{ msg.name }}(CanFrame msg);
+CanMsg{{ msg.name }} decode_{{ msg.name_sc }}(CanFrame msg);
 {%- endfor %}
 
-#endif // {{ dev_name | upper }}_CAN_H
+#endif // {{ dev_name_sc | upper }}_CAN_H
