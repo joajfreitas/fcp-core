@@ -1,40 +1,37 @@
-#ifndef {{ dev_name_sc | upper }}_CAN_H
-#define {{ dev_name_sc | upper }}_CAN_H
+#ifndef {{ device_name_snake | upper }}_CAN_H
+#define {{ device_name_snake | upper }}_CAN_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "can_signal_parser.h"
 #include "can_frame.h"
 
-
-
-/* {{ dev_name_sc }} message IDs */
-{%- for msg in messages %}
-#define MSG_{{ msg.name_sc | upper }}_ID {{ msg.frame_id }}
+/* {{ device_name_pascal }} Message IDs */
+{%- for message in messages %}
+#define MSG_{{ message.name_snake | upper }}_ID {{ message.frame_id }}
 {%- endfor %}
-
-{%- for msg in messages %}
-
+{% for message in messages %}
 typedef struct {
-    {%- for sig in msg.signals %}
-    {%- if sig.comment %}
-    // {{ sig.unit }}
-    {%- endif %}
-    {{ sig.type }} {{ sig.name }};
+    {%- for signal in message.signals %}
+    {{ signal.data_type }} {{ signal.name }};
     {%- endfor %}
-} CanMsg{{ msg.name }};
+} CanMsg{{ message.name_pascal }};
+{% endfor %}
 
-{%- endfor %}
-
+/* {{ device_name_pascal }} device struct. Contains  one instance of each device message */
 typedef struct {
-    {%- for msg in messages %}
-    CanMsg{{ msg.name }} {{ msg.name_sc }};
+    {%- for message in messages %}
+    CanMsg{{ message.name_pascal }} {{ message.name_snake }};
     {%- endfor %}
-} CanDev{{ dev_name }};
+} CanDevice{{ device_name_pascal }};
 
-/* Decode messages */
-{%- for msg in messages %}
-CanMsg{{ msg.name }} decode_{{ msg.name_sc }}(CanFrame msg);
+/* Functions to decode CanFrame into CanMsg<name> objects */
+{%- for message in messages %}
+CanMsg{{ message.name_pascal }} can_decode_msg_{{ message.name_snake }}(const CanFrame *frame);
 {%- endfor %}
 
-#endif // {{ dev_name_sc | upper }}_CAN_H
+/* Check if a CanFrame comes from {{ device_name_pascal }} */
+bool can_is_{{ device_name_snake }}_msg(const CanFrame *frame);
+
+#endif // {{ device_name_snake | upper }}_CAN_H
