@@ -1,0 +1,41 @@
+#ifndef {{ dev_name | upper }}_CAN_H
+#define {{ dev_name | upper }}_CAN_H
+
+#include <stdint.h>
+
+#include "can_signal_parser.h"
+#include "can_frame.h"
+
+// {{ dev_name }} message IDs
+{%- for msg in messages %}
+#define MSG_{{ msg.name_sc | upper }}_ID {{ msg.frame_id }}
+{%- endfor %}
+
+{%- for msg in messages %}
+
+typedef struct {
+    {%- for sig in msg.signals %}
+    {%- if sig.comment %}
+    // {{ sig.unit }}
+    {%- endif %}
+    {{ sig.type }} {{ sig.name }};
+    {%- endfor %}
+} Msg{{ msg.name }};
+
+{%- endfor %}
+
+/* Decode Signals */
+{%- for msg in messages %}
+/* {{ msg.name_sc }} */
+{%- for sig in msg.signals %}
+#define decode_{{ msg.name_sc }}_{{ sig.name }}(msg) \
+    decode_signal_{{ sig.type }}_as_{{ sig.type }}((msg), {{ sig.start }}, {{ sig.length }}, {{ sig.scale }}, {{ sig.offset }})
+{%- endfor %}
+{%- endfor %}
+
+/* Decode messages */
+{%- for msg in messages %}
+Msg{{ msg.name }} decode_{{ msg.name }}(CanFrame msg);
+{%- endfor %}
+
+#endif // {{ dev_name | upper }}_CAN_H

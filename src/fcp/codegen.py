@@ -8,7 +8,7 @@ import pkgutil
 import sys
 from pathlib import Path
 
-from beartype.typing import Any, Dict, Union, NoReturn
+from beartype.typing import Any, Dict, Union, NoReturn, List
 from types import ModuleType
 
 from .types import Nil, Never
@@ -18,17 +18,17 @@ from . import FcpV2
 from .verifier import Verifier
 
 
-def handle_file(result: Dict[str, Union[str, Path]]) -> NoReturn:
+def handle_file(result: Dict[str, Union[str, Path]]) -> None:
     path: Path = Path(result.get("path"))  # type: ignore
     logging.info(f"Generating {path}")
     path.write_text(str(result.get("contents")))
 
 
-def handle_print(result: Dict[str, Union[str, Path]]) -> NoReturn:
+def handle_print(result: Dict[str, Union[str, Path]]) -> None:
     print(result.get("contents"))
 
 
-def handle_result(result: Dict[str, Union[str, Path]]) -> NoReturn:
+def handle_result(result: Dict[str, Union[str, Path]]) -> None:
     if result.get("type") == "file":
         handle_file(result)
     elif result.get("type") == "print":
@@ -62,11 +62,11 @@ class CodeGenerator:
 
         return verifier.verify(fcp)
 
-    def generate(self, fcp: FcpV2, ctx: Any) -> Dict[str, Union[str, Path]]:
+    def generate(self, fcp: FcpV2, ctx: Any) -> List[Dict[str, Union[str, Path]]]:
         """Function to override from generator. Implements actual code generation."""
-        return {}  # type: ignore
+        raise NotImplementedError
 
-    def register_checks(self, verifier: Verifier) -> Never:  # type: ignore
+    def register_checks(self, verifier: Verifier) -> None:  # type: ignore
         pass
 
 
