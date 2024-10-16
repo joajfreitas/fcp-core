@@ -26,7 +26,7 @@ addopts = ["--import-mode=importlib"]
 
 [tool.ruff.lint]
 select = ["D"]
-ignore = ["F402"]
+ignore = ["F402", "D105", "D107", "D401", "D404"]
 
 [tool.mypy]
 disable_error_code = ["no-redef"]
