@@ -55,7 +55,7 @@ def show(fcp):
 
     if fcp_result.is_ok():
         fcp, sources = fcp_result.unwrap()
-        pprint(fcp)
+        pprint(fcp.to_dict())
     else:
         print(fcp_result)
 
