@@ -7,6 +7,8 @@ from .comment import Comment, comment_serializer, comment_deserializer
 
 @serde(type_check=strict)
 class Enumeration:
+    """Enum member AST node."""
+
     name: str
     value: int
     comment: Optional[Comment] = field(
@@ -17,8 +19,9 @@ class Enumeration:
 
 @serde(type_check=strict)
 class Enum:
-    """Fcp Enum. C lookalike for FCP type definitions with name-value
-    associations.
+    """Enum AST node.
+
+    Somewhat similar to a C enum.
     """
 
     name: str
@@ -27,20 +30,6 @@ class Enum:
         default=None, serializer=comment_serializer, deserializer=comment_deserializer
     )
     meta: Optional[MetaData] = field(default=None, skip=True)
-
-    def get_name(self) -> str:
-        return self.name
-
-    def get_type(self) -> str:
-        return "enum"
-
-    def to_fcp(self) -> Tuple[str, str]:
-        return (
-            "enum",
-            f"enum {self.name} {{\n\t"
-            + "\n\t".join([f"{enum.name}: {enum.value};" for enum in self.enumeration])
-            + "\n};",
-        )
 
     def __repr__(self) -> str:
         return "Enum name: {}".format(self.name)
