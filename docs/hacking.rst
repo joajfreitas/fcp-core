@@ -17,7 +17,9 @@ Directory structure
     │   │   └── tests        - Unit tests for fcp_can_c
     │   │       ├── 001_basic_struct    - Basic struct test for CAN C
     │   │       ├── 002_nested_enum     - Nested enum test for CAN C
-    │   │       ├── 002_nested_struct   - Nested struct test for CAN C
+    │   │       └── 002_nested_struct   - Nested struct test for CAN C
+    │   ├── fcp_cpp          - Example plugin
+    │   │   └── fcp_cpp      - Source for fcp_dbc
     │   ├── fcp_dbc          - CAN DBC generator
     │   │   ├── example      - Example fcp schemas for CAN bus
     │   │   ├── fcp_dbc      - Source for fcp_dbc

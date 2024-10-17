@@ -1,11 +1,11 @@
-# FCP DBC generator
+# FCP Cpp CAN generator
 
-fcp plugin to generate CAN bus [dbc](https://www.csselectronics.com/pages/can-dbc-file-database-intro) schemas.
+fcp plugin to generate cpp.
 
 ## Usage
 
 ```
-$ fcp generate dbc <fcp source> <output directory>
+$ fcp generate cpp_can <fcp source> <output file>
 ```
 
 ## Supported schema fields
@@ -14,7 +14,6 @@ $ fcp generate dbc <fcp source> <output directory>
 
  * **id**: CAN bus frame identifier
  * **device**: Sender name
- * **bus**: Name of the CAN bus line.
 
 ### SignalBlock
 
