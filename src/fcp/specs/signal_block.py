@@ -6,6 +6,8 @@ from .metadata import MetaData
 
 @serde(type_check=strict)
 class SignalBlock:
+    """SignalBlock AST node."""
+
     name: str
     fields: Dict[str, Any]
     meta: MetaData
