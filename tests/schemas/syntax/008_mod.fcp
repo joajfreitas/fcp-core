@@ -1,0 +1,7 @@
+version: "3"
+
+mod import_mod;
+
+struct A {
+    field1 @0: B,
+}

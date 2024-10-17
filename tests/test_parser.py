@@ -42,6 +42,7 @@ def get_result_txt(scope: str, name: str) -> str:
         "005_extends",
         "006_basic_service",
         "007_simple_array_type",
+        "008_mod",
     ],
 )  # type: ignore
 def test_parser(test_name: str) -> None:

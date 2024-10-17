@@ -1,0 +1,25 @@
+{
+    "enums": [],
+    "impls": [],
+    "services": [],
+    "structs": [
+        {
+            "name": "B",
+            "fields": [{
+                "name": "field1",
+                "field_id": 0,
+                "type": {"BuiltinType": {"name":"u32"}}
+            }]
+        },
+        {
+            "name": "A",
+            "fields": [{
+                "name": "field1",
+                "field_id": 0,
+                "type": {"ComposedType": {"name":"B"}}
+            }]
+        }
+
+    ],
+    "version": "3.0"
+}

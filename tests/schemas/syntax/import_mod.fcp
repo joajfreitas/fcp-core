@@ -1,0 +1,5 @@
+version: "3"
+
+struct B {
+    field1 @0: u32,
+}
