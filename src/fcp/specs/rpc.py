@@ -5,6 +5,8 @@ from .metadata import MetaData
 
 @serde(type_check=strict)
 class Rpc:
+    """Rpc AST node."""
+
     name: str
     input: str
     output: str
