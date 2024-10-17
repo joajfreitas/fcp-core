@@ -1,3 +1,5 @@
+# ruff: noqa: D103
+
 from beartype.typing import List
 import marko
 from marko.block import FencedCode

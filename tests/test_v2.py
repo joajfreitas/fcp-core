@@ -1,3 +1,5 @@
+# ruff: noqa: D103
+
 import serde
 import serde.json
 import pytest

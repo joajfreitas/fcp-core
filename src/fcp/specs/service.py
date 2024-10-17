@@ -7,6 +7,8 @@ from .metadata import MetaData
 
 @serde(type_check=strict)
 class Service:
+    """Service AST node."""
+
     name: str
     rpcs: List[Rpc]
     meta: MetaData = field(skip=True)
