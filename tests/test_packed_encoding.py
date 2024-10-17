@@ -13,6 +13,18 @@ from fcp.specs.type import BuiltinType, ComposedType
 from fcp.specs.v2 import FcpV2
 
 
+def _create_default_metadata() -> "MetaData":
+    return MetaData(
+        line=1,
+        end_line=1,
+        column=1,
+        end_column=1,
+        start_pos=1,
+        end_pos=1,
+        filename="default.fcp",
+    )  # type: ignore
+
+
 @pytest.fixture  # type: ignore
 def example_struct() -> Struct:
     return Struct(
@@ -39,7 +51,7 @@ def make_example_extension(type: str) -> Impl:
         type=type,
         fields={},
         signals=[],
-        meta=MetaData.default_metadata(),
+        meta=_create_default_metadata(),
     )
 
 
