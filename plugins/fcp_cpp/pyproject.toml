@@ -1,14 +1,14 @@
 [project]
-name = "fcp_dbc"
+name = "fcp_cpp"
 version = "0.1.0"
-description = "fcp can bus dbc schema generator"
+description = "fcp can cpp code generator"
 license = { file = "LICENSE" }
 readme = "README.md"
 url = "https://github.com/joajfreitas/fcp-core"
 requires-python = ">=3.9"
 dependencies = [
     "fcp>=1.0.0",
-    "jinja>=3.1.0",
+    "jinja2>=3.1.0"
 ]
 
 [build-system]

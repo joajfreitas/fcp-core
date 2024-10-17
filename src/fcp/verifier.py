@@ -148,7 +148,6 @@ def make_general_verifier() -> Verifier:
     ) -> Result[Nil, FcpError]:
         struct, left_signal = left
         signal_names = [field.name for field in struct.fields]
-
         if signal_names.count(left_signal.name) > 1:
             return Err(FcpError("Duplicate fields", node=left_signal))
         else:
