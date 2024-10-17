@@ -76,16 +76,7 @@ fcp_parser = Lark(
 )
 
 
-class Module:
-    def __init__(self, filename: str, children: str, source: str, imports: str) -> None:
-        self.filename = filename
-        self.source = source
-
-    def __repr__(self) -> str:
-        return f"Module {self.filename}"
-
-
-def get_meta(tree: ParseTree, parser: Lark) -> MetaData:
+def _get_meta(tree: ParseTree, parser: Lark) -> MetaData:
     return MetaData(
         line=tree.meta.line,
         end_line=tree.meta.end_line,
@@ -97,13 +88,10 @@ def get_meta(tree: ParseTree, parser: Lark) -> MetaData:
     )
 
 
-def convert_params(params: Dict[str, Callable]) -> Dict[str, Any]:
+def _convert_params(params: Dict[str, Callable]) -> Dict[str, Any]:
     conversion_table = {
         "range": lambda x: {"min_value": x[0], "max_value": x[1]},
-        "scale": lambda x: {"scale": x[0], "offset": x[1]},
-        "mux": lambda x: {"mux": x[0], "mux_count": x[1]},
         "unit": lambda x: {"unit": x[0]},
-        "endianness": lambda x: {"byte_order": x[0]},
     }
 
     values: Dict[str, Callable] = {}
@@ -114,17 +102,23 @@ def convert_params(params: Dict[str, Callable]) -> Dict[str, Any]:
 
 
 class ParserContext:
+    """Retains context during parsing."""
+
     def __init__(self) -> None:
         self.modules: Dict[str, str] = {}
 
     def set_module(self, name: str, module: str) -> None:
+        """Set the source code module being parsed."""
         self.modules[name] = module
 
     def get_sources(self) -> Dict[str, str]:
+        """Get all the parsed source code modules."""
         return {name: source for name, source in self.modules.items()}
 
 
 class FcpV2Transformer(Transformer):  # type: ignore
+    """Transformer for the Lark AST into the FCP AST."""
+
     def __init__(
         self, filename: Union[str, pathlib.Path], parser_context: ParserContext
     ) -> None:
@@ -140,76 +134,62 @@ class FcpV2Transformer(Transformer):  # type: ignore
         self.error_logger = ErrorLogger({self.filename.name: self.source})
 
     def preamble(self, args: List[str]) -> Result[None, str]:
+        """Parse an preamble node of the fcp AST."""
         if args[0] == "3":
             return Ok(None)
         else:
             return Err("Expected IDL version 3")
 
     def dot(self, args: List[str]) -> str:
+        """Parse an dot node of the fcp AST."""
         return "."
 
     def underscore(self, args: List[str]) -> str:
+        """Parse an underscore node of the fcp AST."""
         return "_"
 
     def identifier(self, args: List[Any]) -> str:
+        """Parse an identifier node of the fcp AST."""
         return str(args[0].value)
 
-    def import_identifier(self, args: List[str]) -> str:
-        identifier = "".join([arg for arg in args])
-        return identifier
-
     def type(self, args: List[str]) -> Type:
+        """Parse a type node of the fcp AST."""
         return args[0]
 
     def base_type(self, args: List[str]) -> BuiltinType:
+        """Parse a base_type node of the fcp AST."""
         return BuiltinType(str(args[0]))  # type: ignore
 
     def array_type(self, args: List[str]) -> ArrayType:
+        """Parse an array_type node of the fcp AST."""
         return ArrayType(args[0], int(args[1]))  # type: ignore
 
     def compound_type(self, args: List[str]) -> ComposedType:
+        """Parse a compound_type node of the fcp AST."""
         return ComposedType(args[0])  # type: ignore
 
     def param(self, args: List[str]) -> Tuple[str, ...]:
+        """Parse a param node of the fcp AST."""
         return tuple(args)
 
     def param_argument(self, args: List[str]) -> Any:
+        """Parse a param_argument node of the fcp AST."""
         return args[0]
 
     def field_id(self, args: List[str]) -> Any:
+        """Parse a field_id node of the fcp AST."""
         return args[0]
 
     @v_args(tree=True)  # type: ignore
-    def struct_field(self, tree: ParseTree) -> struct_field.StructField:
-        if isinstance(tree.children[0], Comment):
-            comment, name, field_id, type, *values = tree.children
-            comment = Comment(comment.value)  # type: ignore
-        else:
-            name, field_id, type, *values = tree.children
-            comment = None  # type: ignore
-
-        params = {name: value for name, *value in values}  # type: ignore
-        params = convert_params(params)  # type: ignore
-
-        meta = get_meta(tree, self)  # type: ignore
-        return struct_field.StructField(
-            name=name,  # type: ignore
-            field_id=field_id,  # type: ignore
-            type=type,
-            meta=meta,
-            comment=comment,  # type: ignore
-            **params,
-        )
-
-    @v_args(tree=True)  # type: ignore
     def struct(self, tree: ParseTree) -> Never:
+        """Parse a struct node of the fcp AST."""
         if isinstance(tree.children[0], Comment):
             comment, name, *fields = tree.children
         else:
             name, *fields = tree.children
             comment = None  # type: ignore
 
-        meta = get_meta(tree, self)  # type: ignore
+        meta = _get_meta(tree, self)  # type: ignore
 
         self.fcp.structs.append(
             struct.Struct(
@@ -221,19 +201,44 @@ class FcpV2Transformer(Transformer):  # type: ignore
         )
 
     @v_args(tree=True)  # type: ignore
+    def struct_field(self, tree: ParseTree) -> struct_field.StructField:
+        """Parse a struct_field node of the fcp AST."""
+        if isinstance(tree.children[0], Comment):
+            comment, name, field_id, type, *values = tree.children
+            comment = Comment(comment.value)  # type: ignore
+        else:
+            name, field_id, type, *values = tree.children
+            comment = None  # type: ignore
+
+        params = {name: value for name, *value in values}  # type: ignore
+        params = _convert_params(params)  # type: ignore
+
+        meta = _get_meta(tree, self)  # type: ignore
+        return struct_field.StructField(
+            name=name,  # type: ignore
+            field_id=field_id,  # type: ignore
+            type=type,
+            meta=meta,
+            comment=comment,  # type: ignore
+            **params,
+        )
+
+    @v_args(tree=True)  # type: ignore
     def enum_field(self, tree: ParseTree) -> enum.Enumeration:
+        """Parse an enum_field node of the fcp AST."""
         if isinstance(tree.children[0], Comment):
             comment, name, value = tree.children
         else:
             name, value = tree.children
             comment = None  # type: ignore
 
-        meta = get_meta(tree, self)  # type: ignore
+        meta = _get_meta(tree, self)  # type: ignore
 
         return enum.Enumeration(name=name, value=value, comment=comment, meta=meta)  # type: ignore
 
     @v_args(tree=True)  # type: ignore
     def enum(self, tree: ParseTree) -> Never:
+        """Parse an enum node of the fcp AST."""
         args = tree.children
 
         if isinstance(args[0], Comment):
@@ -242,13 +247,14 @@ class FcpV2Transformer(Transformer):  # type: ignore
             name, *fields = args
             comment = None  # type: ignore
 
-        meta = get_meta(tree, self)  # type: ignore
+        meta = _get_meta(tree, self)  # type: ignore
         self.fcp.enums.append(
             enum.Enum(name=name, enumeration=fields, meta=meta, comment=comment)  # type: ignore
         )
 
     @catch
     def mod_expr(self, args: List[str]) -> Result[Nil, str]:
+        """Parse a mod_expr node of the fcp AST."""
         filename = self.path / (args[0].replace(".", "/") + ".fcp")
 
         try:
@@ -271,6 +277,8 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
     @v_args(tree=True)  # type: ignore
     def impl(self, tree: ParseTree) -> Nil:
+        """Parse an impl node of the fcp AST."""
+
         def is_signal_block(x: Any) -> bool:
             return isinstance(x, signal_block.SignalBlock)
 
@@ -287,58 +295,72 @@ class FcpV2Transformer(Transformer):  # type: ignore
                 type=type,
                 fields=dict(fields),
                 signals=signal_blocks,
-                meta=get_meta(tree, self),
+                meta=_get_meta(tree, self),
             )  # type: ignore
         )
 
     def extension_field(self, args: List[Any]) -> Tuple[str, Any]:
+        """Parse an extension_field node of the fcp AST."""
         name, value = args
         return (name, value)
 
     @v_args(tree=True)  # type: ignore
     def signal_block(self, tree: ParseTree) -> signal_block.SignalBlock:
+        """Parse a signal_block node of the fcp AST."""
         name, *fields = tree.children
 
         fields: Dict[str, Any] = {field[0]: field[1] for field in fields}  # type: ignore[no-redef]
         return signal_block.SignalBlock(
-            name=name, fields=fields, meta=get_meta(tree, self)
+            name=name, fields=fields, meta=_get_meta(tree, self)
         )  # type: ignore
 
     @v_args(tree=True)  # type: ignore
     def service(self, tree: ParseTree) -> Nil:
+        """Parse a service node of the fcp AST."""
         name, *rpcs = tree.children
-        self.fcp.services.append(service.Service(name, rpcs, meta=get_meta(tree, self)))  # type: ignore
+        self.fcp.services.append(service.Service(name, rpcs, meta=_get_meta(tree, self)))  # type: ignore
 
     @v_args(tree=True)  # type: ignore
     def rpc(self, tree: ParseTree) -> str:
+        """Parse a rpc node of the fcp AST."""
         name, input, output = tree.children
-        return rpc.Rpc(name, input, output, meta=get_meta(tree, self))  # type: ignore
+        return rpc.Rpc(name, input, output, meta=_get_meta(tree, self))  # type: ignore
 
     def signal_field(self, args: List[Any]) -> Tuple[str, Any]:
+        """Parse a signal_field node of the fcp AST."""
         name, value = args
         return (name, value)
 
     def value(self, args: List[str]) -> Any:
+        """Parse a value node of the fcp AST."""
         return args[0]
 
     def number(self, args: List[str]) -> Union[int, float]:
+        """Parse a number node of the fcp AST."""
         try:
             return int(args[0].value)  # type: ignore
         except ValueError:
             return float(args[0].value)  # type: ignore
 
     def string(self, args: List[str]) -> str:
+        """Parse a string node of the fcp AST."""
         return args[0].value[1:-1]  # type: ignore
 
     def comment(self, args: List[str]) -> Comment:
+        """Parse a comment node of the fcp AST."""
         return Comment(args[0].value.replace("/*", "").replace("*/", ""))  # type: ignore
 
     def start(self, args: List[str]) -> Result[v2.FcpV2, str]:
+        """Parse the start node of the fcp AST."""
         return Ok(self.fcp)
 
 
 @catch
 def get_fcp(fcp_filename: str) -> Result[Tuple[v2.FcpV2, Dict[str, str]], str]:
+    """Build a fcp AST from the filename of an fcp schema.
+
+    Returns the Fcp AST and source code information for debugging.
+    """
     error_logger = ErrorLogger({})
 
     with open(fcp_filename) as f:
