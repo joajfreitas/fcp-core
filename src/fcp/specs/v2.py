@@ -1,3 +1,5 @@
+"""fcp version 2 AST."""
+
 from beartype.typing import Any, Callable, Union, List, Dict, Generator
 import serde
 import struct
@@ -11,19 +13,13 @@ from .service import Service
 from .type import Type, BuiltinType
 
 
-def handle_key_not_found(d: Dict[str, Any], key: str) -> List[Any]:
-    return d.get(key).items() if d.get(key) is not None else []  # type: ignore
-
-
-def flatten(xss: List[List[Any]]) -> List[Any]:
+def _flatten(xss: List[List[Any]]) -> List[Any]:
     return [x for xs in xss for x in xs]
 
 
 @serde.serde(type_check=serde.strict)
 class FcpV2:
-    """FCP root node. Holds all Signals, Configs,
-    Commands and Arguments.
-    """
+    """The fcp version 2 AST."""
 
     structs: List[Struct] = serde.field(default_factory=list)
     enums: List[Enum] = serde.field(default_factory=list)
@@ -32,11 +28,13 @@ class FcpV2:
     version: str = "3.0"
 
     def merge(self, fcp: "FcpV2") -> None:
+        """Merge two fcp ASTs."""
         self.structs += fcp.structs
         self.enums += fcp.enums
         self.impls += fcp.impls
 
     def get_type(self, type: Type) -> Maybe[Union[Enum, Struct]]:
+        """Get node corresponding to type."""
         for type_ in self.structs + self.enums:
             if type.name == type_.name:
                 return Some(type_)
@@ -47,9 +45,11 @@ class FcpV2:
         return Nothing()
 
     def get_types(self) -> List[Any]:
+        """Get fcp types. Fcp types are enums and structs."""
         return self.structs + self.enums
 
     def get(self, category: str) -> Maybe[List[Any]]:
+        """Get fcp node by category."""
         if category == "struct":
             return Some(self.structs)
         elif category == "enum":
@@ -58,7 +58,7 @@ class FcpV2:
             return Some(self.impls)
         elif category == "field":
             return Some(
-                flatten(
+                _flatten(
                     [
                         [(struct, field) for field in struct.fields]
                         for struct in self.structs
@@ -66,13 +66,14 @@ class FcpV2:
                 )
             )
         elif category == "signal_block":
-            return Some(flatten([extension.signals for extension in self.impls]))
+            return Some(_flatten([extension.signals for extension in self.impls]))
         elif category == "type":
             return Some(self.get_types())
         else:
             return Nothing()
 
     def get_matching_extension(self, struct: Struct, protocol: str) -> Maybe[Impl]:
+        """Get impl for corresponding struct with a specific protocol."""
         for extension in self.impls:
             if extension.type == struct.name and extension.protocol == protocol:
                 return Some(extension)
@@ -80,29 +81,22 @@ class FcpV2:
         return Nothing()
 
     def get_matching_impls(self, protocol: str) -> Generator[Impl, None, None]:
+        """Get impls by protocol name."""
         for extension in self.impls:
             if extension.protocol == protocol:
                 yield extension
 
     def get_struct(self, name: str) -> Maybe[Struct]:
+        """Get struct by name."""
         for struct in self.structs:
             if struct.name == name:
                 return Some(struct)
 
         return Nothing()
 
-    def to_fcp(self) -> Dict[str, List[Dict[str, Any]]]:
-        nodes = [node.to_fcp() for node in self.enums + self.structs]
-        fcp_structure: Dict[str, List[Any]] = {}
-
-        for node in nodes:
-            if node[0] not in fcp_structure.keys():
-                fcp_structure[node[0]] = []
-            fcp_structure[node[0]].append(node[1])
-
-        return fcp_structure
-
     def to_dict(self) -> Any:
+        """Get the fcp AST as a python dictionary."""
+
         def filter_tree(filter: Callable[[Any, Any], bool]) -> Callable[[Any], Any]:
             def closure(tree: Any) -> Any:
                 if isinstance(tree, dict):
@@ -124,33 +118,34 @@ class FcpV2:
 
 
 def default_serialization(fcp: FcpV2, typename: str, data: Dict[str, Any]) -> bytearray:
+    """Serialize data with an fcp schema.
+
+    ..code-block: fcp
+
+        struct foo {
+            var1: u8;
+            var2: u16;
+        };
+
+        struct bar {
+            var1: foo;
+            var2: f32;
+        };
+        ```
+
+        data:
+
+        {
+            "var1":
+                {
+                    "var1": 4,
+                    "var2": 257
+                },
+            "var2": 10.1
+        }
+
+        [4, 1, 1, 65, 33, 153, 154]
     """
-    ```fcp
-    struct foo {
-        var1: u8;
-        var2: u16;
-    };
-
-    struct bar {
-        var1: foo;
-        var2: f32;
-    };
-    ```
-
-    data:
-
-    {
-        "var1":
-            {
-                "var1": 4,
-                "var2": 257
-            },
-        "var2": 10.1
-    }
-
-    [4, 1, 1, 65, 33, 153, 154]
-    """
-
     structs = {struct.name: struct for struct in fcp.structs}
 
     def serialize_signal(
