@@ -1,0 +1,25 @@
+version: "3"
+
+struct A {
+    field1 @0: u8 | unit("m/s"),
+    field2 @1: u8 | unit("m^2/s"),
+}
+
+impl can for A {
+    id: 10,
+    device: "ecu1",
+
+    signal field2 {
+        bitstart: 16,
+    },
+}
+
+struct B {
+    field1 @0: u32,
+    field2 @1: A,
+}
+
+impl can for B {
+    id: 11,
+    device: "ecu1",
+}
