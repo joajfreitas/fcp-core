@@ -32,6 +32,7 @@ from fcp.codegen import CodeGenerator
 from fcp.verifier import Verifier
 from fcp import FcpV2
 from fcp.specs.type import BuiltinType
+from fcp.encoding import make_encoder, EncodeablePiece
 
 
 def to_cpp_type(input: Type) -> str:
@@ -66,8 +67,11 @@ class Generator(CodeGenerator):
 
     def _header(self) -> str:
         return """
-#ifndef __HEADER__
-#define __HEADER__
+#ifndef __FCP_H__ // TODO
+#define __FCP_H__
+
+#include <vector>
+#include <cstdint>
 
 {% for enum in fcp.enums -%}
 enum {{enum.name}} {
@@ -87,6 +91,35 @@ struct {{struct.name}} {
 
 {% endfor -%}
 
+std::vector<std::uint8_t> encode(uint8_t input) {
+    return {input};
+}
+
+std::vector<std::uint8_t> encode(uint16_t input) {
+    return {static_cast<uint8_t>((input >> 8) & 0xFF), static_cast<uint8_t>(input & 0xFF)};
+}
+
+std::vector<std::uint8_t> encode(uint32_t input) {
+    return {
+        static_cast<uint8_t>((input >> 24) & 0xFF),
+        static_cast<uint8_t>((input >> 16) & 0xFF),
+        static_cast<uint8_t>((input >>  8) & 0xFF),
+        static_cast<uint8_t>((input >>  0) & 0xFF)
+    };
+}
+
+{% for name, encoding in impls.items() %}
+std::vector<std::uint8_t> encode(const {{name}}& input) {
+    std::vector<std::uint8_t> result{};
+    std::vector<std::uint8_t> aux{};
+    {%- for encode_piece in encoding %}
+    aux = encode(input.{{encode_piece.name |  replace('::', '.')}});
+    result.insert(result.begin(), aux.rbegin(), aux.rend());
+    {%- endfor %}
+    return result;
+}
+{% endfor %}
+
 #endif
 """
 
@@ -97,7 +130,13 @@ struct {{struct.name}} {
         env = jinja2.Environment(autoescape=True, loader=loader)
         env.filters["to_cpp_type"] = to_cpp_type
 
-        print(env.get_template("header").render({"fcp": fcp}))
+        encoder = make_encoder("packed", fcp)
+        impls = {}
+
+        for impl in fcp.get_matching_impls("can"):
+            impls[impl.type] = encoder.generate(impl)
+
+        print(env.get_template("header").render({"fcp": fcp, "impls": impls}))
 
         return []
 
