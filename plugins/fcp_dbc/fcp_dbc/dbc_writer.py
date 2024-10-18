@@ -88,27 +88,27 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
 
     encoder = make_encoder("packed", fcp)
 
-    for extension in fcp.get_matching_impls("can"):
-        bus = extension.get_field("bus", "default").unwrap()
+    for impl in fcp.get_matching_impls("can"):
+        bus = impl.get_field("bus", "default").unwrap()
 
-        encoding = encoder.generate(extension)
+        encoding = encoder.generate(impl)
 
-        signals, dlc = _make_signals(encoding, extension.type)
+        signals, dlc = _make_signals(encoding, impl.type)
 
-        id = extension.fields.get("id")
+        id = impl.fields.get("id")
         if id is None:
             return Err("No id field found in extension")
 
         buses[bus]["messages"].append(
             CanMessage(
                 frame_id=id,
-                name=extension.name,
+                name=impl.name,
                 length=dlc,
                 signals=signals,
                 senders=[],
             )
         )
-        device = extension.fields.get("device")
+        device = impl.fields.get("device")
         if device is not None and device not in buses[bus]["nodes"]:
             buses[bus]["nodes"].append(device)
 
