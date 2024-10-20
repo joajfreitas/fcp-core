@@ -1,11 +1,12 @@
 #include "{{ device_name_snake }}_can.h"
+#include "can_signal_parser.h"
 
 /*-------------------- Decode Signals ---------------------*/
 {%- for message in messages %}
 // {{ message.name_pascal }}
 {%- for signal in message.signals %}
-#define decode_{{ message.name_snake }}_{{ signal.name }}(msg) \
-    decode_signal_as_{{ signal.data_type }}((msg), {{ signal.start_bit }}, {{ signal.bit_length }}, {{ signal.scale }}, {{ signal.offset }})
+#define can_decode_{{ message.name_snake }}_{{ signal.name }}(msg) \
+    can_decode_signal_as_{{ signal.data_type }}((msg), {{ signal.start_bit }}, {{ signal.bit_length }}, {{ signal.scale }}, {{ signal.offset }})
 {%- endfor %}
 {%- endfor %}
 /*---------------------------------------------------------*/
@@ -14,8 +15,40 @@
 {%- for message in messages %}
 // {{ message.name_pascal }}
 {%- for signal in message.signals %}
-#define encode_{{message.name_snake}}_{{signal.name}}(signal) \
-    encode_signal_from_{{signal.data_type}}((signal), {{signal.start_bit}}, {{signal.bit_length}}, {{signal.scale}}, {{signal.offset}});
+#define can_encode_{{message.name_snake}}_{{signal.name}}(signal) \
+    can_encode_signal_from_{{signal.data_type}}((signal), {{ signal.start_bit }}, {{ signal.bit_length }}, {{ signal.scale }}, {{ signal.offset }});
 {%- endfor %}
 {%- endfor %}
 /*---------------------------------------------------------*/
+
+// asdhjdioaj
+{% for message in messages %}
+CanMsg{{ message.name_pascal }} decode_{{ message.name_snake }}(CanFrame *msg) {
+	CanMsg{{message.name_pascal}} msg_struct = {0} ;
+
+	{%- for signal in message.signals %}
+	{%- if signal.multiplexer_count <= 1 %}
+	msg_struct.{{ signal.name }} = can_decode_{{ message.name_snake }}_{{ signal.name }}(msg);
+	{%- endif %}
+	{%- endfor %}
+
+	{%- for signal in message.signals %}
+	{%- if signal.multiplexer_count > 1 %}
+	msg_struct.{{ signal.name }}[msg_struct.{{ signal.multiplexer_signal }}] = can_decode_{{ message.name_snake }}_{{ signal.name }}(msg);
+	{%- endif %}
+	{%- endfor %}
+
+	return msg_struct;
+}
+{% endfor %}
+
+bool can_is_{{ device_name_snake }}_msg(const CanFrame *frame) {
+    return
+    {%- for message in messages %}
+        {% if not loop.last -%}
+            frame->id == MSG_ID_{{ message.name_snake | upper }} ||
+        {%- else -%}
+            frame->id == MSG_ID_{{ message.name_snake | upper }}
+        {%- endif -%}
+    {%- endfor %};
+}
