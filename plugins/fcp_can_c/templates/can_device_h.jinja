@@ -4,22 +4,20 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "can_signal_parser.h"
 #include "can_frame.h"
 
 /* {{ device_name_pascal }} Message IDs */
 {%- for message in messages %}
-#define MSG_{{ message.name_snake | upper }}_ID {{ message.frame_id }}
+#define MSG_ID_{{ message.name_snake | upper }} {{ message.frame_id }}
 {%- endfor %}
 {% for message in messages %}
 typedef struct {
     {%- for signal in message.signals %}
-    {{ signal.data_type }} {{ signal.name }};
+    {{ signal.data_type }} {{ signal.name }}{% if signal.is_multiplexer %}[{{ signal.multiplexer_count }}]{% endif %};
     {%- endfor %}
 } CanMsg{{ message.name_pascal }};
 {% endfor %}
-
-/* {{ device_name_pascal }} device struct. Contains  one instance of each device message */
+/* {{ device_name_pascal }} device struct. Contains one instance of each device message */
 typedef struct {
     {%- for message in messages %}
     CanMsg{{ message.name_pascal }} {{ message.name_snake }};

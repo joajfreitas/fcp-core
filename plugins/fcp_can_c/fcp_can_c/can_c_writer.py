@@ -54,6 +54,9 @@ class CanSignal:
             "f64": "double",
         }
         self.data_type = type_map.get(self.data_type, self.data_type)
+        self.multiplexer_count = (
+            len(self.multiplexer_ids) if self.multiplexer_ids else 0
+        )
 
 
 @dataclass
