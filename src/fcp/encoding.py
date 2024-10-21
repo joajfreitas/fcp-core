@@ -173,14 +173,14 @@ class PackedEncoder:
     def _generate(self, type: Type, extension: Impl, prefix: str = "") -> NoReturn:
         self._generate_compound_type(type, extension, prefix)
 
-    def generate(self, extension: Impl) -> List[EncodeablePiece]:
+    def generate(self, impl: Impl) -> List[EncodeablePiece]:
         """Generate encoding."""
         self.encoding = []
         self.bitstart = 0
 
         self._generate(
-            ComposedType(extension.type),  # type: ignore
-            extension,
+            ComposedType(impl.type),  # type: ignore
+            impl,
         )
         return self.encoding
 
