@@ -1,7 +1,7 @@
 version: "3"
 
 struct A {
-    field1 @0: u8 | unit("m/s"),
+    field1 @0: u2 | unit("m/s"),
     field2 @1: u8 | unit("m^2/s"),
 }
 
