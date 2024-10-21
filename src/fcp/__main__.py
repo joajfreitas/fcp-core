@@ -1,4 +1,4 @@
-"""Main"""
+"""Main."""
 
 import sys
 import logging
@@ -15,6 +15,7 @@ from .error_logger import ErrorLogger
 
 
 def setup_logging() -> None:
+    """Setup logger."""
     logging.getLogger().setLevel(logging.DEBUG)
     coloredlogs.install(
         fmt="%(asctime)s %(module)s:%(lineno)d %(levelname)s - %(message)s"
@@ -34,6 +35,7 @@ def generate_cmd(
     templates: str,
     skel: str,
 ) -> None:
+    """Run generator."""
     fcp_v2, sources = get_fcp(fcp).unwrap()
     generator_manager = GeneratorManager(make_general_verifier())
     result = generator_manager.generate(
@@ -48,6 +50,7 @@ def generate_cmd(
 @click.command()
 @click.argument("fcp")  # type: ignore
 def show(fcp):
+    """Show fcp schema as dictionary."""
     fcp_result = get_fcp(fcp)
 
     if fcp_result.is_ok():
@@ -61,7 +64,6 @@ def show(fcp):
 @click.option("--version", is_flag=True, default=False)  # type: ignore
 def main(version: str) -> None:
     """CLI utility for management of FCP JSON files."""
-
     if len(sys.argv) == 1:
         print("fcp cli util.\nVersion:", VERSION, "\nFor usage see fcp --help")
     if version:
