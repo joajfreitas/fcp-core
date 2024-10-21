@@ -1,3 +1,5 @@
+# ruff: noqa: D103 D100
+
 import os
 import pytest
 from pathlib import Path

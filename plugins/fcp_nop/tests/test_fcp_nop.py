@@ -1,3 +1,5 @@
+# ruff: noqa: D103 D100
+
 import tempfile
 import json
 from pathlib import Path

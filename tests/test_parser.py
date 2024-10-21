@@ -1,4 +1,4 @@
-# ruff: noqa: D103
+# ruff: noqa: D103 D100
 
 
 import pytest
