@@ -62,7 +62,7 @@ class CanSignal:
 @dataclass
 class CanMessage:
     frame_id: int
-    length: int
+    dlc: int
     signals: List[Signal]
     senders: List[str]
     name_pascal: str
@@ -70,6 +70,11 @@ class CanMessage:
 
     def __post_init__(self):
         self.name_snake = pascal_to_snake(self.name_pascal)
+
+        for signal in self.signals:
+            if signal.is_multiplexer:
+                self.multiplexer_signal = pascal_to_snake(signal.multiplexer_signal)
+                self.is_multiplexer = True
 
 
 def is_signed(value: Value) -> bool:
@@ -135,7 +140,7 @@ def initialize_can_data(fcp: FcpV2) -> Tuple[List[CanMessage], List[CanNode]]:
             CanMessage(
                 frame_id=frame_id,
                 name_pascal=extension.name,
-                length=dlc,
+                dlc=dlc,
                 signals=signals,
                 senders=[device_name],
             )
