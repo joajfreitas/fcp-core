@@ -1,3 +1,24 @@
+"""Copyright (c) 2024 the fcp AUTHORS.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
 from beartype.typing import Tuple, List, Dict, Any
 from math import ceil
 from collections import defaultdict
@@ -14,7 +35,7 @@ from fcp.maybe import catch
 from fcp.encoding import make_encoder, EncodeablePiece
 
 
-def make_signals(
+def _make_signals(
     encoding: List[EncodeablePiece], type: str
 ) -> Tuple[List[CanSignal], int]:
     signals = []
@@ -60,6 +81,7 @@ def make_signals(
 
 @catch  # type: ignore
 def write_dbc(fcp: FcpV2) -> Result[str, str]:
+    """Write dbc."""
     buses: Dict[str, Any] = defaultdict(lambda: {"messages": list(), "nodes": list()})
 
     encoder = make_encoder("packed", fcp)
@@ -69,7 +91,7 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
 
         encoding = encoder.generate(extension)
 
-        signals, dlc = make_signals(encoding, extension.type)
+        signals, dlc = _make_signals(encoding, extension.type)
 
         id = extension.fields.get("id")
         if id is None:
