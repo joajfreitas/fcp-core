@@ -1,3 +1,5 @@
+# ruff: noqa: D103 D100
+
 import pytest
 from fcp.v2_parser import get_fcp
 
