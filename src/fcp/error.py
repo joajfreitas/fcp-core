@@ -3,6 +3,8 @@ from enum import Enum
 
 
 class Level(Enum):
+    """Log level."""
+
     Debug = 0
     Info = 1
     Warn = 2
@@ -10,6 +12,8 @@ class Level(Enum):
 
 
 class FcpError:
+    """Fcp error."""
+
     def __init__(self, msg: str, node: Any, level: Level = Level.Error):
         self.msg = msg
         self.level = level
