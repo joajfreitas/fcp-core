@@ -155,7 +155,7 @@ class ErrorLogger:
     ) -> str:
         """Log a lark unexpected characters exception."""
         return (
-            ErrorLog()
+            ErrorLogBuilder()
             .with_line(Color.boldwhite(f"Unexpected character '{exception.char}'"))
             .with_line(" -> ")
             .with_location(filename, exception.line, exception.column)
@@ -174,7 +174,7 @@ class ErrorLogger:
         """Log a fcp error."""
         meta = fcp_error.node.meta
         return (
-            ErrorLog()
+            ErrorLogBuilder()
             .with_log_level(fcp_error.level)
             .with_line(fcp_error.msg)
             .with_newline()
