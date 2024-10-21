@@ -11,11 +11,9 @@ from .specs.impl import Impl
 from .maybe import Some
 
 
-def derive_scalar_from_array(type: ArrayType) -> Type:
-    return type.type
-
-
 class Value:
+    """Encodable piece value."""
+
     def __init__(
         self,
         name: str,
@@ -54,18 +52,20 @@ EncodeablePiece = Union[Value]
 
 
 class PackedEncoder:
+    """Packed encoder. Packs all bits really tight."""
+
     def __init__(self, fcp: FcpV2):
         self.fcp = fcp
         self.encoding: List[Value] = []
         self.bitstart = 0
 
-    def generate_struct(
+    def _generate_struct(
         self, struct: Struct, extension: Impl, prefix: str = ""
     ) -> NoReturn:
         for field in sorted(struct.fields, key=lambda field: field.field_id):
-            self.generate_signal(field, extension, prefix)
+            self._generate_signal(field, extension, prefix)
 
-    def generate_signal(
+    def _generate_signal(
         self, field: StructField, extension: Impl, prefix: str = ""
     ) -> NoReturn:
 
@@ -83,7 +83,7 @@ class PackedEncoder:
             )
             return
         elif isinstance(field.type, ArrayType):
-            self.generate_array_type(field.type, field, extension, prefix)
+            self._generate_array_type(field.type, field, extension, prefix)
             return
 
         type_length = field.type.get_length()
@@ -102,7 +102,7 @@ class PackedEncoder:
 
         self.bitstart += type_length
 
-    def generate_enum(self, enum: Enum, extension: Impl, prefix: str) -> NoReturn:
+    def _generate_enum(self, enum: Enum, extension: Impl, prefix: str) -> NoReturn:
         type_length = ceil(
             log2(max([enumeration.value for enumeration in enum.enumeration]) + 1)
         )
@@ -120,20 +120,20 @@ class PackedEncoder:
         )
         self.bitstart += type_length
 
-    def generate_compound_type(
+    def _generate_compound_type(
         self, type: ComposedType, extension: Impl, prefix: str = ""
     ) -> NoReturn:
         type = self.fcp.get_type(type).unwrap()
         if isinstance(type, Struct):
-            self.generate_struct(type, extension, prefix)
+            self._generate_struct(type, extension, prefix)
         elif isinstance(type, StructField):
-            self.generate_signal(type, extension, prefix)
+            self._generate_signal(type, extension, prefix)
         elif isinstance(type, Enum):
-            self.generate_enum(type, extension, prefix)
+            self._generate_enum(type, extension, prefix)
         else:
             raise KeyError(f"Invalid type {type}")
 
-    def generate_array_type(
+    def _generate_array_type(
         self, type: ArrayType, field: StructField, extension: Impl, prefix: str = ""
     ) -> NoReturn:
         for i in range(type.size):
@@ -141,12 +141,13 @@ class PackedEncoder:
 
             derived_field.type = type.type
             derived_field.name = field.name + "_" + str(i)
-            self.generate_signal(derived_field, extension, prefix)
+            self._generate_signal(derived_field, extension, prefix)
 
     def _generate(self, type: Type, extension: Impl, prefix: str = "") -> NoReturn:
-        self.generate_compound_type(type, extension, prefix)
+        self._generate_compound_type(type, extension, prefix)
 
     def generate(self, extension: Impl) -> List[EncodeablePiece]:
+        """Generate encoding."""
         self.encoding = []
         self.bitstart = 0
 
@@ -158,6 +159,7 @@ class PackedEncoder:
 
 
 def make_encoder(name: str, fcp: FcpV2) -> Union[PackedEncoder]:
+    """Create encoder from encoder name."""
     if name == "packed":
         return PackedEncoder(fcp)
 
