@@ -18,7 +18,7 @@ from . import FcpV2
 from .verifier import Verifier
 
 
-def handle_file(result: Dict[str, Union[str, Path]]) -> NoReturn:
+def _handle_file(result: Dict[str, Union[str, Path]]) -> NoReturn:
     path: Path = Path(result.get("path"))  # type: ignore
     logging.info(f"Generating {path}")
 
@@ -26,15 +26,16 @@ def handle_file(result: Dict[str, Union[str, Path]]) -> NoReturn:
     path.write_text(str(result.get("contents")))
 
 
-def handle_print(result: Dict[str, Union[str, Path]]) -> NoReturn:
+def _handle_print(result: Dict[str, Union[str, Path]]) -> NoReturn:
     print(result.get("contents"))
 
 
 def handle_result(result: Dict[str, Union[str, Path]]) -> NoReturn:
+    """Handle results from plugins."""
     if result.get("type") == "file":
-        handle_file(result)
+        _handle_file(result)
     elif result.get("type") == "print":
-        handle_print(result)
+        _handle_print(result)
     else:
         logging.error(f"Cannot handle result of type: {result.get('type')}")
 
@@ -47,7 +48,6 @@ class CodeGenerator:
 
     def gen(self, fcp: FcpV2, templates: Any, skels: Any, output_path: str) -> None:
         """Function called from fcp to trigger generator. Do not override."""
-
         self.output_path = pathlib.Path(output_path)
 
         ctx = {
@@ -59,34 +59,28 @@ class CodeGenerator:
         for result in self.generate(fcp, ctx):
             handle_result(result)
 
-    def verify(self, fcp: Any, verifier: Verifier) -> Result[Nil, str]:
-        self.register_checks(verifier)
-
-        return verifier.verify(fcp)
-
     def generate(self, fcp: FcpV2, ctx: Any) -> Dict[str, Union[str, Path]]:
         """Function to override from generator. Implements actual code generation."""
         return {}  # type: ignore
 
     def register_checks(self, verifier: Verifier) -> Never:  # type: ignore
+        """Register checks in verifier."""
         pass
 
 
 class GeneratorManager:
-    """Manager for generators"""
+    """Manager for generators."""
 
     def __init__(self, verifier: Verifier) -> None:
         self.verifier = verifier
 
-    def list_generators(self) -> Any:
-        """Find installed generators"""
+    def _list_generators(self) -> Any:
         return [
             name for _, name, _ in pkgutil.iter_modules() if name.startswith("fcp_")
         ]
 
-    def get_generator(self, generator_name: str) -> ModuleType:
-        """Get generator by name."""
-        generators = self.list_generators()
+    def _get_generator(self, generator_name: str) -> ModuleType:
+        generators = self._list_generators()
         if "fcp_" + generator_name not in generators:
             available_generators = [name[4:] for name in generators]
             logging.error("Code generator %s not available", generator_name)
@@ -97,7 +91,7 @@ class GeneratorManager:
 
         return importlib.import_module("fcp_" + generator_name)
 
-    def get_templates(self, template_dir: str) -> Any:
+    def _get_templates(self, template_dir: str) -> Any:
         if template_dir is None:
             return {}
 
@@ -111,7 +105,7 @@ class GeneratorManager:
 
         return templates
 
-    def get_skels(self, skel_dir: str) -> Any:
+    def _get_skels(self, skel_dir: str) -> Any:
         if skel_dir is None:
             return {}
 
@@ -135,14 +129,13 @@ class GeneratorManager:
         sources: Any,
         output_path: str,
     ) -> Result[Nil, str]:
-        """Generate code"""
-
-        generator = self.get_generator(generator_name).Generator()
+        """Generate code."""
+        generator = self._get_generator(generator_name).Generator()
         generator.register_checks(self.verifier)
         self.verifier.verify(fcp).attempt()
 
-        templates = self.get_templates(template_dir)
-        skels = self.get_skels(skel_dir)
+        templates = self._get_templates(template_dir)
+        skels = self._get_skels(skel_dir)
 
         generator.gen(fcp, templates, skels, output_path)
 
