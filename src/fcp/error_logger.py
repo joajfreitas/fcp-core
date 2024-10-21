@@ -7,7 +7,8 @@ from .colors import Color
 from .error import FcpError, Level
 
 
-def highlight(source: str, prefix_with_line: str, prefix_without_line: str) -> str:
+def _highlight(source: str, prefix_with_line: str, prefix_without_line: str) -> str:
+    """Highligh source code."""
     ss = ""
     for i, line in enumerate(source.split("\n")):
         prefix = prefix_with_line if i == 0 else prefix_without_line
@@ -18,30 +19,37 @@ def highlight(source: str, prefix_with_line: str, prefix_without_line: str) -> s
     return ss
 
 
-class ErrorLog:
+class ErrorLogBuilder:
+    """Builder for error logs."""
+
     def __init__(self) -> None:
         self.buffer = Color.boldred("Error: ")
 
     def with_newline(self, amount: int = 1) -> Self:
+        """Add a new line."""
         self.buffer += amount * "\n"
         return self
 
     def with_list(
         self, list: List[str], transform: Callable[[str], str] = lambda x: x
     ) -> Self:
+        """Add a list."""
         self.buffer += "\n".join(["\t" + transform(x) for x in list])
         return self
 
     def with_line(self, line: str) -> Self:
+        """Add a line."""
         self.buffer += line
         return self
 
     def with_location(self, filename: str, line: int, column: int) -> Self:
+        """Add code location."""
         self.buffer += f"{filename}:{line}:{column}"
 
         return self
 
     def with_surrounding(self, source: str, line: int, column: int) -> Self:
+        """Add source code context."""
         lines = source.split("\n")
         starting_line = line - 2 if line > 0 else 0
         ending_line = line + 1 if line < len(lines) else len(lines)
@@ -51,13 +59,14 @@ class ErrorLog:
 
         source = "\n".join(lines[starting_line:ending_line])
 
-        ss = highlight(source, prefix_with_line, prefix_without_line)
+        ss = _highlight(source, prefix_with_line, prefix_without_line)
 
         self.buffer += ss
 
         return self
 
     def with_log_level(self, level: Level) -> Self:
+        """Add a log level marker."""
         if level == Level.Error:
             self.buffer += Color.red("Error: ")
         elif level == Level.Warn:
@@ -68,17 +77,21 @@ class ErrorLog:
         return self
 
     def error(self) -> str:
+        """Build error."""
         return self.buffer
 
 
 class ErrorLogger:
+    """Logger for errors."""
+
     def __init__(self, sources: Dict[str, str]) -> None:
         self.sources = sources
 
     def add_source(self, name: str, source: str) -> None:
+        """Register source files."""
         self.sources[name] = source
 
-    def highlight(
+    def _highlight(
         self, source: str, prefix_with_line: str, prefix_without_line: str
     ) -> str:
         ss = ""
@@ -93,6 +106,7 @@ class ErrorLogger:
     def log_location(
         self, error: str, filename: str, line: int, column: int, source: str
     ) -> str:
+        """Log source code location."""
         line_len = len(str(line))
 
         prefix_with_line = Color.boldblue(f"{line} | ")
@@ -111,11 +125,12 @@ class ErrorLogger:
         )
         ss += prefix_without_line + "\n"
 
-        ss += self.highlight(source, prefix_with_line, prefix_without_line)
+        ss += self._highlight(source, prefix_with_line, prefix_without_line)
 
         return ss
 
     def log_node(self, node: Any, error: str = "") -> str:
+        """Log fcp node."""
         source = self.sources[node.meta.filename]
         return self.log_location(
             error,
@@ -126,6 +141,7 @@ class ErrorLogger:
         )
 
     def log_duplicates(self, error: str, duplicates: List[Any]) -> str:
+        """Log duplicated values error."""
         return (
             Color.boldblue("error: ")
             + Color.boldwhite(error)
@@ -136,8 +152,9 @@ class ErrorLogger:
     def log_lark_unexpected_characters(
         self, filename: str, exception: UnexpectedCharacters
     ) -> str:
+        """Log a lark unexpected characters exception."""
         return (
-            ErrorLog()
+            ErrorLogBuilder()
             .with_line(Color.boldwhite(f"Unexpected character '{exception.char}'"))
             .with_line(" -> ")
             .with_location(filename, exception.line, exception.column)
@@ -153,9 +170,10 @@ class ErrorLogger:
         )
 
     def log_fcp_error(self, fcp_error: FcpError) -> str:
+        """Log a fcp error."""
         meta = fcp_error.node.meta
         return (
-            ErrorLog()
+            ErrorLogBuilder()
             .with_log_level(fcp_error.level)
             .with_line(fcp_error.msg)
             .with_newline()
@@ -168,4 +186,5 @@ class ErrorLogger:
         )
 
     def error(self, error: str) -> str:
+        """Log an error."""
         return Color.boldred("Error: ") + Color.boldwhite(error)
