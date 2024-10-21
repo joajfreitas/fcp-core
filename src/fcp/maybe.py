@@ -53,9 +53,7 @@ TBE = TypeVar("TBE", bound=BaseException)
 
 
 class Some(Generic[T]):
-    """
-    An object that indicates some inner value is present
-    """
+    """An object that indicates some inner value is present."""
 
     __match_args__ = ("some_value",)
     __slots__ = ("_value",)
@@ -76,93 +74,66 @@ class Some(Generic[T]):
         return hash((True, self._value))
 
     def is_some(self) -> Literal[True]:
+        """Returns `true` if the maybe is an `Some` value."""
         return True
 
     def is_nothing(self) -> Literal[False]:
+        """Returns `true` if the maybe is an `Nothing` value."""
         return False
 
     def some(self) -> T:
-        """
-        Return the value.
-        """
+        """Return the value."""
         return self._value
 
     @property
     def some_value(self) -> T:
-        """
-        Return the inner value.
-        """
+        """Return the inner value."""
         return self._value
 
     def expect(self, _message: str) -> T:
-        """
-        Return the value.
-        """
+        """Return the value."""
         return self._value
 
     def unwrap(self) -> T:
-        """
-        Return the value.
-        """
+        """Return the value."""
         return self._value
 
     def unwrap_or(self, _default: U) -> T:  # pyright: ignore[reportInvalidTypeVarUse]
-        """
-        Return the value.
-        """
+        """Return the value."""
         return self._value
 
     def unwrap_or_else(self, op: object) -> T:
-        """
-        Return the value.
-        """
+        """Return the value."""
         return self._value
 
     def unwrap_or_raise(self, e: object) -> T:
-        """
-        Return the value.
-        """
+        """Return the value."""
         return self._value
 
     def map(self, op: Callable[[T], U]) -> Some[U]:
-        """
-        There is a contained value, so return `Some` with original value mapped
-        to a new value using the passed in function.
-        """
+        """There is a contained value, so return `Some` with original value mapped to a new value using the passed in function."""
         return Some(op(self._value))
 
     def map_or(self, _default: object, op: Callable[[T], U]) -> U:
-        """
-        There is a contained value, so return the original value mapped to a
-        new value using the passed in function.
-        """
+        """There is a contained value, so return the original value mapped to a new value using the passed in function."""
         return op(self._value)
 
     def map_or_else(self, _default_op: object, op: Callable[[T], U]) -> U:
-        """
-        There is a contained value, so return original value mapped to a new
-        value using the passed in `op` function.
-        """
+        """There is a contained value, so return original value mapped to a new value using the passed in `op` function."""
         return op(self._value)
 
     def and_then(self, op: Callable[[T], Maybe[U]]) -> Maybe[U]:
-        """
-        There is a contained value, so return the maybe of `op` with the
-        original value passed in
-        """
+        """There is a contained value, so return the maybe of `op` with the original value passed in."""
         return op(self._value)
 
     def or_else(self, _op: object) -> Some[T]:
-        """
-        There is a contained value, so return `Some` with the original value
-        """
+        """There is a contained value, so return `Some` with the original value."""
         return self
 
     def ok_or(
         self, _error: E
     ) -> result.Ok[T]:  # pyright: ignore[reportInvalidTypeVarUse]
-        """
-        Return a `result.Ok` with the inner value.
+        """Return a `result.Ok` with the inner value.
 
         **NOTE**: This method is available only if the `result` package is
         installed.
@@ -170,8 +141,7 @@ class Some(Generic[T]):
         return result.Ok(self._value)
 
     def ok_or_else(self, _op: Callable[[], E]) -> result.Ok[T]:
-        """
-        Return a `result.Ok` with the inner value.
+        """Return a `result.Ok` with the inner value.
 
         **NOTE**: This method is available only if the `result` package is
         installed.
@@ -179,16 +149,12 @@ class Some(Generic[T]):
         return result.Ok(self._value)
 
     def attempt(self) -> T:
-        """
-        Return the value or early exists the caller with error.
-        """
+        """Return the value or early exists the caller with error."""
         return self._value
 
 
 class Nothing:
-    """
-    An object that indicates no inner value is present
-    """
+    """An object that indicates no inner value is present."""
 
     __match_args__ = ("nothing_value",)
     __slots__ = ()
@@ -211,21 +177,19 @@ class Nothing:
         return hash((False, 982006445019657274590041599673))
 
     def is_some(self) -> Literal[False]:
+        """Returns `true` if the maybe is an `Some` value."""
         return False
 
     def is_nothing(self) -> Literal[True]:
+        """Returns `true` if the maybe is an `Nothing` value."""
         return True
 
     def some(self) -> None:
-        """
-        Return `None`.
-        """
+        """Return `None`."""
         return None
 
     def expect(self, message: str) -> NoReturn:
-        """
-        Raises an `UnwrapError`.
-        """
+        """Raises an `UnwrapError`."""
         exc = UnwrapError(
             self,
             f"{message}",
@@ -233,9 +197,7 @@ class Nothing:
         raise exc
 
     def unwrap(self) -> NoReturn:
-        """
-        Raises an `UnwrapError`.
-        """
+        """Raises an `UnwrapError`."""
         exc = UnwrapError(
             self,
             "Called `Maybe.unwrap()` on a `Nothing` value",
@@ -243,77 +205,53 @@ class Nothing:
         raise exc
 
     def unwrap_or(self, default: U) -> U:
-        """
-        Return `default`.
-        """
+        """Return `default`."""
         return default
 
     def unwrap_or_else(self, op: Callable[[], T]) -> T:
-        """
-        There is no contained value, so return a new value by calling `op`.
-        """
+        """There is no contained value, so return a new value by calling `op`."""
         return op()
 
     def unwrap_or_raise(self, e: Type[TBE]) -> NoReturn:
-        """
-        There is no contained value, so raise the exception with the value.
-        """
+        """There is no contained value, so raise the exception with the value."""
         raise e()
 
     def map(self, _op: object) -> Nothing:
-        """
-        Return `Nothing`
-        """
+        """Return `Nothing`."""
         return self
 
     def map_or(self, default: U, _op: object) -> U:
-        """
-        Return the default value
-        """
+        """Return the default value."""
         return default
 
     def map_or_else(self, default_op: Callable[[], U], op: object) -> U:
-        """
-        Return the result of the `default_op` function
-        """
+        """Return the result of the `default_op` function."""
         return default_op()
 
     def and_then(self, _op: object) -> Nothing:
-        """
-        There is no contained value, so return `Nothing`
-        """
+        """There is no contained value, so return `Nothing`."""
         return self
 
     def or_else(self, op: Callable[[], Maybe[T]]) -> Maybe[T]:
-        """
-        There is no contained value, so return the result of `op`
-        """
+        """There is no contained value, so return the result of `op`."""
         return op()
 
     def ok_or(self, error: E) -> result.Err[E]:
-        """
-        There is no contained value, so return a `result.Err` with the given
-        error value.
+        """There is no contained value, so return a `result.Err` with the given error value.
 
-        **NOTE**: This method is available only if the `result` package is
-        installed.
+        **NOTE**: This method is available only if the `result` package is installed.
         """
         return result.Err(error)
 
     def ok_or_else(self, op: Callable[[], E]) -> result.Err[E]:
-        """
-        There is no contained value, so return a `result.Err` with the
-        result of `op`.
+        """There is no contained value, so return a `result.Err` with the result of `op`.
 
-        **NOTE**: This method is available only if the `result` package is
-        installed.
+        **NOTE**: This method is available only if the `result` package is installed.
         """
         return result.Err(op())
 
     def attempt(self) -> NoReturn:
-        """
-        Return the value or early exists the caller with error.
-        """
+        """Return the value or early exists the caller with error."""
         exc = MaybeAttemptError(
             self,
             "Called `Maybe.unwrap()` on a `Nothing` value",
@@ -337,12 +275,13 @@ also just write `isinstance(res, (Some, Nothing))
 
 
 class MaybeAttemptError(Exception):
+    """Exception returned from attempting to unpack a Maybe."""
+
     pass
 
 
 class UnwrapError(Exception):
-    """
-    Exception raised from ``.unwrap_<...>`` and ``.expect_<...>`` calls.
+    """Exception raised from ``.unwrap_<...>`` and ``.expect_<...>`` calls.
 
     The original ``Maybe`` can be accessed via the ``.maybe`` attribute, but
     this is not intended for regular use, as type information is lost:
@@ -358,9 +297,7 @@ class UnwrapError(Exception):
 
     @property
     def maybe(self) -> Maybe[Any]:
-        """
-        Returns the original maybe.
-        """
+        """Returns the original maybe."""
         return self._maybe
 
 
@@ -397,6 +334,7 @@ def is_nothing(maybe: Maybe[T]) -> TypeGuard[Nothing]:
 
 
 def maybe(value: Any) -> Maybe:
+    """Create a maybe value from any value."""
     if value is None:
         return Nothing()
     else:
@@ -404,6 +342,8 @@ def maybe(value: Any) -> Maybe:
 
 
 def catch(f: Any) -> Any:
+    """Enables a function to propagate returned errors."""
+
     @functools.wraps(f)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         try:
