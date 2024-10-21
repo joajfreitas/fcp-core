@@ -7,7 +7,7 @@ from .colors import Color
 from .error import FcpError, Level
 
 
-def highlight(source: str, prefix_with_line: str, prefix_without_line: str) -> str:
+def _highlight(source: str, prefix_with_line: str, prefix_without_line: str) -> str:
     """Highligh source code."""
     ss = ""
     for i, line in enumerate(source.split("\n")):
@@ -59,7 +59,7 @@ class ErrorLogBuilder:
 
         source = "\n".join(lines[starting_line:ending_line])
 
-        ss = highlight(source, prefix_with_line, prefix_without_line)
+        ss = _highlight(source, prefix_with_line, prefix_without_line)
 
         self.buffer += ss
 
@@ -91,10 +91,9 @@ class ErrorLogger:
         """Register source files."""
         self.sources[name] = source
 
-    def highlight(
+    def _highlight(
         self, source: str, prefix_with_line: str, prefix_without_line: str
     ) -> str:
-        """Log highlighted lines."""
         ss = ""
         for i, line in enumerate(source.split("\n")):
             prefix = prefix_with_line if i == 0 else prefix_without_line
@@ -126,7 +125,7 @@ class ErrorLogger:
         )
         ss += prefix_without_line + "\n"
 
-        ss += self.highlight(source, prefix_with_line, prefix_without_line)
+        ss += self._highlight(source, prefix_with_line, prefix_without_line)
 
         return ss
 
