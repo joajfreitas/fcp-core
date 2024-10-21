@@ -1,3 +1,6 @@
+# ruff: noqa: D103 D100
+
+
 import pytest
 import os
 import json

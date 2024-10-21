@@ -15,3 +15,4 @@ Contents
    syntax
    fcp_dbc
    hacking
+   api
