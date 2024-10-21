@@ -1,3 +1,5 @@
+"""Dbc writer."""
+
 """Copyright (c) 2024 the fcp AUTHORS.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

@@ -1,6 +1,6 @@
-=================
-FCP DBC Generator
-=================
+=======
+fcp_dbc
+=======
 
 fcp plugin to generate CAN bus `dbc <https://www.csselectronics.com/pages/can-dbc-file-database-intro>` schemas.
 
@@ -66,3 +66,12 @@ Example
             mux_signal: "sensor_id",
         },
     }
+
+API
+===
+
+.. automodule:: fcp_dbc.generator
+   :members:
+
+.. automodule:: fcp_dbc.dbc_writer
+   :members:
