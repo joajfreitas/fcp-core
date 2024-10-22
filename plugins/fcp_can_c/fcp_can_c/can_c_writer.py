@@ -24,12 +24,28 @@ def pascal_to_snake(pascal_str: str) -> str:
     )
 
 
+def ceil_to_power_of_2(x: int) -> int:
+    if x <= 8:
+        return 8
+
+    x -= 1
+    x |= x >> 1
+    x |= x >> 2
+    x |= x >> 4
+    x |= x >> 8
+    x |= x >> 16
+    x |= x >> 32
+
+    return x + 1
+
+
 @dataclass
 class CanSignal:
     name: str
     start_bit: int
     bit_length: int
-    data_type: str
+    data_type: str  # user defined data type
+    scalar_type: str  # (u8, i12...)
     signed: bool
     byte_order: str
     scale: float = 1.0
@@ -55,7 +71,9 @@ class CanSignal:
             "f32": "float",
             "f64": "double",
         }
-        self.data_type = type_map.get(self.data_type, self.data_type)
+        self.scalar_type = type_map[
+            "i" if self.signed else "u" + str(ceil_to_power_of_2(self.bit_length))
+        ]
         self.multiplexer_count = (
             len(self.multiplexer_ids) if self.multiplexer_ids else 0
         )
@@ -103,6 +121,7 @@ def create_can_signals(encoding: List[EncodeablePiece]) -> Tuple[List[Signal], i
                 name=piece.name.replace("::", "_"),
                 start_bit=piece.bitstart,
                 data_type=type,
+                scalar_type=piece.type,
                 bit_length=piece.bitlength,
                 byte_order="big_endian"
                 if piece.endianess == "big"
