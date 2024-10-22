@@ -1,3 +1,5 @@
+import os
+
 from pathlib import Path
 from beartype.typing import Generator, Tuple, List, Dict, Any, Optional
 from math import ceil
@@ -131,7 +133,7 @@ def initialize_can_data(fcp: FcpV2) -> Tuple[List[CanMessage], List[CanNode]]:
         if frame_id is None:
             return Err("No id field found in extension").unwrap()
 
-        device_name = extension.fields.get("device", "Global")
+        device_name = extension.fields.get("device", "global")
 
         if not any(node.name == device_name for node in devices):
             devices.append(CanNode(device_name))
@@ -151,8 +153,12 @@ def initialize_can_data(fcp: FcpV2) -> Tuple[List[CanMessage], List[CanNode]]:
 
 class CanCWriter:
     def __init__(self, fcp: FcpV2) -> None:
+        # Get the path to the templates directory
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        self.templates_dir = os.path.join(script_dir, "../templates")
+
         self.messages, self.devices = initialize_can_data(fcp)
-        self.env = Environment(loader=FileSystemLoader("plugins/fcp_can_c/templates"))
+        self.env = Environment(loader=FileSystemLoader(self.templates_dir))
 
         self.templates = {
             "device_can_h": self.env.get_template("can_device_h.jinja"),
@@ -165,7 +171,7 @@ class CanCWriter:
         static_files = ["can_frame.h", "can_signal_parser.h", "can_signal_parser.c"]
 
         for file in static_files:
-            with open(f"plugins/fcp_can_c/templates/{file}", "r") as f:
+            with open(f"{self.templates_dir}/{file}", "r") as f:
                 yield file, f.read()
 
     def generate_device_headers(self) -> Generator[Tuple[str, str], None, None]:
@@ -184,7 +190,7 @@ class CanCWriter:
         """Generate C source file for the device."""
         for device_name, messages in self.device_messages.items():
             yield (
-                device_name,
+                pascal_to_snake(device_name),
                 self.templates["device_can_c"].render(
                     device_name_pascal=snake_to_pascal(device_name),
                     device_name_snake=pascal_to_snake(device_name),
