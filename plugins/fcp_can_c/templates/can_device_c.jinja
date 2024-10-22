@@ -21,7 +21,16 @@
 {%- endfor %}
 /*---------------------------------------------------------*/
 
-// asdhjdioaj
+bool can_is_{{ device_name_snake }}_msg(const CanFrame *frame) {
+    return
+    {%- for message in messages %}
+        {% if not loop.last -%}
+            frame->id == MSG_ID_{{ message.name_snake | upper }} ||
+        {%- else -%}
+            frame->id == MSG_ID_{{ message.name_snake | upper }}
+        {%- endif -%}
+    {%- endfor %};
+}
 {% for message in messages %}
 CanMsg{{ message.name_pascal }} decode_{{ message.name_snake }}(CanFrame *msg) {
 	CanMsg{{message.name_pascal}} msg_struct = {0};
@@ -40,22 +49,11 @@ CanMsg{{ message.name_pascal }} decode_{{ message.name_snake }}(CanFrame *msg) {
 
 	return msg_struct;
 }
-{% endfor %}
+{% endfor -%}
 
-bool can_is_{{ device_name_snake }}_msg(const CanFrame *frame) {
-    return
-    {%- for message in messages %}
-        {% if not loop.last -%}
-            frame->id == MSG_ID_{{ message.name_snake | upper }} ||
-        {%- else -%}
-            frame->id == MSG_ID_{{ message.name_snake | upper }}
-        {%- endif -%}
-    {%- endfor %};
-}
-
-{% for message in messages%}
-{% if message.is_multiplexer %}
-CanFrame encode_{{message.name_snake}}(CanMsg{{ message.name_pascal }} *msg, uint32_t {{message.multiplexer_signal}}) {
+{%- for message in messages %}
+{%- if message.is_multiplexer %}
+CanFrame can_encode_{{message.name_snake}}(CanMsg{{ message.name_pascal }} *msg, uint32_t {{message.multiplexer_signal}}) {
     CanFrame message = {.id = {{message.frame_id}}, .dlc = {{message.dlc}}};
     uint64_t word = 0;
     uint64_t *ptr = (uint64_t *) &message.data;
@@ -71,8 +69,8 @@ CanFrame encode_{{message.name_snake}}(CanMsg{{ message.name_pascal }} *msg, uin
     *ptr = word;
     return message;
 }
-{% else %}
-CanFrame encode_{{message.name_snake}}(CanMsg{{ message.name_pascal }} *msg) {
+{%- else %}
+CanFrame can_encode_{{message.name_snake}}(CanMsg{{ message.name_pascal }} *msg) {
 	CanFrame message = {.id = {{message.frame_id}}, .dlc = {{message.dlc}}};
 	uint64_t word = 0;
 	uint64_t *ptr = (uint64_t *) &message.data;
@@ -87,5 +85,5 @@ CanFrame encode_{{message.name_snake}}(CanMsg{{ message.name_pascal }} *msg) {
 	*ptr = word;
 	return message;
 }
-{% endif %}
+{%- endif %}
 {% endfor %}

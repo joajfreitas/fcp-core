@@ -24,12 +24,21 @@ typedef struct {
     {%- endfor %}
 } CanDevice{{ device_name_pascal }};
 
+/* Check if a CanFrame comes from {{ device_name_pascal }} */
+bool can_is_{{ device_name_snake }}_msg(const CanFrame *frame);
+
 /* Functions to decode CanFrame into CanMsg<name> objects */
 {%- for message in messages %}
 CanMsg{{ message.name_pascal }} can_decode_msg_{{ message.name_snake }}(const CanFrame *frame);
 {%- endfor %}
 
-/* Check if a CanFrame comes from {{ device_name_pascal }} */
-bool can_is_{{ device_name_snake }}_msg(const CanFrame *frame);
+/* Functions to encode CanMsg<name> object into CanFrame */
+{%- for message in messages %}
+{%- if message.is_multiplexer %}
+CanFrame can_encode_{{message.name_snake}}(CanMsg{{ message.name_pascal }} *msg, uint32_t {{message.multiplexer_signal}});
+{%- else %}
+CanFrame can_encode_{{message.name_snake}}(CanMsg{{ message.name_pascal }} *msg);
+{%- endif %}
+{%- endfor %}
 
 #endif // {{ device_name_snake | upper }}_CAN_H
