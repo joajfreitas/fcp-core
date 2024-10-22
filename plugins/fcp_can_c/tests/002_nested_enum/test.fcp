@@ -1,0 +1,18 @@
+version: "3"
+
+enum MyEnum {
+    S0 = 0,
+    S1 = 1,
+    S2 = 2,
+}
+
+struct Foo {
+    s1 @ 0: u8,
+    s2 @ 1: u16,
+    s3 @ 2: MyEnum,
+}
+
+impl can for Foo {
+    id: 10,
+    device: "ecu",
+}

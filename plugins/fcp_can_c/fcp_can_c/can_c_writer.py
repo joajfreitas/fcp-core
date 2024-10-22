@@ -71,6 +71,8 @@ class CanSignal:
             "f32": "float",
             "f64": "double",
         }
+
+        self.data_type = type_map.get(self.data_type, self.data_type)
         self.scalar_type = type_map[
             "i" if self.signed else "u" + str(ceil_to_power_of_2(self.bit_length))
         ]

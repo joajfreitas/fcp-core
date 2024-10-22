@@ -30,7 +30,8 @@ class Generator(CodeGenerator):
         else:
             # Clear the directory
             for file in os.listdir(base_dir):
-                os.remove(os.path.join(base_dir, file))
+                if file.endswith(".h") or file.endswith(".c"):
+                    os.remove(os.path.join(base_dir, file))
 
         for filename, contents in writer.generate_static_files():
             files.append(to_dict("file", f"{base_dir}/{filename}", contents))

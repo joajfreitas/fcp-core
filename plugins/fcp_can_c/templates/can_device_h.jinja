@@ -16,14 +16,13 @@
 {%- for message in messages %}
 #define MSG_ID_{{ message.name_snake | upper }} {{ message.frame_id }}
 {%- endfor %}
-
-{%- for enum in enums -%}
+{% for enum in enums %}
 typedef enum {
     {%- for name, value in enum.values.items() %}
     {{ name | upper }} = {{ value }},
     {%- endfor %}
 } {{ enum.name }};
-{% endfor -%}
+{%- endfor -%}
 
 {% for message in messages %}
 typedef struct {

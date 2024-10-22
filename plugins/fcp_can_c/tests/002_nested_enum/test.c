@@ -24,14 +24,15 @@ bool all_tests_passed = true;
 
 CanFrame expected_frame = {
     .id = 10,
-    .dlc = 2,
-    .data = {123, 234},
+    .dlc = 3,
+    .data = {123, 234, 0, S2},
 };
 
 void test_encode_msg() {
     CanMsgFoo msg = {
         .s1 = 123,
         .s2 = 234,
+        .s3 = S2,
     };
 
     CanFrame frame = can_encode_msg_foo(&msg);
@@ -40,30 +41,26 @@ void test_encode_msg() {
 
 void test_is_dev_msg() { VERIFY_TEST(can_is_ecu_msg(&expected_frame)); }
 
-void test_dlc(CanFrame *frame) { VERIFY_TEST(frame->dlc == 2); }
+void test_dlc() { VERIFY_TEST(expected_frame.dlc == 3); }
 
 void test_decode_msg() {
     CanMsgFoo expected_msg = {
         .s1 = 123,
         .s2 = 234,
+        .s3 = S2,
     };
 
     CanMsgFoo msg = can_decode_msg_foo(&expected_frame);
 
-    bool signals_match = msg.s1 == expected_msg.s1 && msg.s2 == expected_msg.s2;
+    bool signals_match = msg.s1 == expected_msg.s1 &&
+                         msg.s2 == expected_msg.s2 && msg.s3 == expected_msg.s3;
     VERIFY_TEST(signals_match);
 }
 
 int main() {
-    CanMsgFoo msg = {
-        .s1 = 123,
-        .s2 = 234,
-    };
-    CanFrame frame = can_encode_msg_foo(&msg);
-
     test_encode_msg();
     test_is_dev_msg();
-    test_dlc(&frame);
+    test_dlc();
     test_decode_msg();
 
     ASSERT_TESTS();
