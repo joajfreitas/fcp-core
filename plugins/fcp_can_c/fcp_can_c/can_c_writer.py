@@ -79,6 +79,12 @@ class CanMessage:
                 self.is_multiplexer = True
 
 
+@dataclass
+class Enum:
+    name: str
+    values: Dict[str, int]
+
+
 def is_signed(value: Value) -> bool:
     return value.type.startswith("i")
 
@@ -90,12 +96,13 @@ def create_can_signals(encoding: List[EncodeablePiece]) -> Tuple[List[Signal], i
     for piece in encoding:
         multiplexer_signal = piece.extended_data.get("mux_signal")
         multiplexer_ids = list(range(piece.extended_data.get("mux_count", 0)))
+        type = piece.type if piece.composite_type is None else piece.composite_type
 
         signals.append(
             CanSignal(
                 name=piece.name.replace("::", "_"),
                 start_bit=piece.bitstart,
-                data_type=piece.type,
+                data_type=type,
                 bit_length=piece.bitlength,
                 byte_order="big_endian"
                 if piece.endianess == "big"
@@ -120,10 +127,20 @@ def map_messages_to_devices(messages: List[CanMessage]) -> Dict[str, List[CanMes
     return device_messages
 
 
-def initialize_can_data(fcp: FcpV2) -> Tuple[List[CanMessage], List[CanNode]]:
+def initialize_can_data(
+    fcp: FcpV2,
+) -> Tuple[List[Enum], List[CanMessage], List[CanNode]]:
+    enums = []
     messages = []
     devices = []
     encoder = make_encoder("packed", fcp)
+
+    for enum in fcp.enums:
+        values = {v.name: v.value for v in enum.enumeration}
+        enums.append(Enum(name=enum.name, values=values))
+
+        # Enums are not tied to a specific device so they live on the global device
+        devices.append(CanNode("global"))
 
     for extension in fcp.get_matching_extensions("can"):
         encoding = encoder.generate(extension)
@@ -148,7 +165,7 @@ def initialize_can_data(fcp: FcpV2) -> Tuple[List[CanMessage], List[CanNode]]:
             )
         )
 
-    return messages, devices
+    return enums, messages, devices
 
 
 class CanCWriter:
@@ -157,7 +174,7 @@ class CanCWriter:
         script_dir = os.path.dirname(os.path.realpath(__file__))
         self.templates_dir = os.path.join(script_dir, "../templates")
 
-        self.messages, self.devices = initialize_can_data(fcp)
+        self.enums, self.messages, self.devices = initialize_can_data(fcp)
         self.env = Environment(loader=FileSystemLoader(self.templates_dir))
 
         self.templates = {
@@ -176,13 +193,21 @@ class CanCWriter:
 
     def generate_device_headers(self) -> Generator[Tuple[str, str], None, None]:
         """Generate C header files for devices."""
-        for device_name, messages in self.device_messages.items():
+
+        # Check if the global device is present in the list of devices
+        global_device_exists = any(device.name == "global" for device in self.devices)
+        for device in self.devices:
+            device_name = device.name
+            messages = self.device_messages.get(device_name, [])
+
             yield (
                 device_name,
                 self.templates["device_can_h"].render(
                     device_name_pascal=snake_to_pascal(device_name),
                     device_name_snake=pascal_to_snake(device_name),
                     messages=messages,
+                    include_global=device_name != "global" and global_device_exists,
+                    enums=self.enums if device_name == "global" else [],
                 ),
             )
 

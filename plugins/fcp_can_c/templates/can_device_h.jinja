@@ -5,11 +5,25 @@
 #include <stdbool.h>
 
 #include "can_frame.h"
+{%- if include_global %}
+#include "global_can.h"
+{%- endif %}
 
-/* {{ device_name_pascal }} Message IDs */
+{% if messages | length > 0 -%}
+  /* {{ device_name_pascal }} Message IDs */
+{%- endif %}
+
 {%- for message in messages %}
 #define MSG_ID_{{ message.name_snake | upper }} {{ message.frame_id }}
 {%- endfor %}
+{% for enum in enums -%}
+typedef enum {
+    {%- for name, value in enum.values.items() %}
+    {{ name | upper }} = {{ value }},
+    {%- endfor %}
+} {{ enum.name }};
+{% endfor -%}
+
 {% for message in messages %}
 typedef struct {
     {%- for signal in message.signals %}

@@ -1,5 +1,6 @@
 #include "generated_code/can_frame.h"
 #include "generated_code/ecu_can.h"
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
