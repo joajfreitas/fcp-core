@@ -35,9 +35,9 @@ CanMsg{{ message.name_pascal }} can_decode_msg_{{ message.name_snake }}(const Ca
 /* Functions to encode CanMsg<name> object into CanFrame */
 {%- for message in messages %}
 {%- if message.is_multiplexer %}
-CanFrame can_encode_{{message.name_snake}}(CanMsg{{ message.name_pascal }} *msg, uint32_t {{message.multiplexer_signal}});
+CanFrame can_encode_msg_{{message.name_snake}}(const CanMsg{{ message.name_pascal }} *msg, uint32_t {{message.multiplexer_signal}});
 {%- else %}
-CanFrame can_encode_{{message.name_snake}}(CanMsg{{ message.name_pascal }} *msg);
+CanFrame can_encode_msg_{{message.name_snake}}(const CanMsg{{ message.name_pascal }} *msg);
 {%- endif %}
 {%- endfor %}
 
