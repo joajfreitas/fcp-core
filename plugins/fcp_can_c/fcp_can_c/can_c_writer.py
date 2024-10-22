@@ -196,6 +196,7 @@ class CanCWriter:
 
         # Check if the global device is present in the list of devices
         global_device_exists = any(device.name == "global" for device in self.devices)
+
         for device in self.devices:
             device_name = device.name
             messages = self.device_messages.get(device_name, [])
