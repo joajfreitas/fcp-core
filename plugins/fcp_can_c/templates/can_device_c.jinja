@@ -5,7 +5,7 @@
 {%- for message in messages %}
 // {{ message.name_pascal }}
 {%- for signal in message.signals %}
-#define can_decode_{{ message.name_snake }}_{{ signal.name }}(msg) \
+#define can_decode_signal_{{ message.name_snake }}_{{ signal.name }}(msg) \
     can_decode_signal_as_{{ signal.data_type }}((msg), {{ signal.start_bit }}, {{ signal.bit_length }}, {{ signal.scale }}, {{ signal.offset }})
 {%- endfor %}
 {%- endfor %}
@@ -15,7 +15,7 @@
 {%- for message in messages %}
 // {{ message.name_pascal }}
 {%- for signal in message.signals %}
-#define can_encode_{{message.name_snake}}_{{signal.name}}(signal) \
+#define can_encode_signal_{{message.name_snake}}_{{signal.name}}(signal) \
     can_encode_signal_from_{{signal.data_type}}((signal), {{ signal.start_bit }}, {{ signal.bit_length }}, {{ signal.scale }}, {{ signal.offset }});
 {%- endfor %}
 {%- endfor %}
@@ -32,12 +32,12 @@ bool can_is_{{ device_name_snake }}_msg(const CanFrame *frame) {
     {%- endfor %};
 }
 {% for message in messages %}
-CanMsg{{ message.name_pascal }} decode_{{ message.name_snake }}(CanFrame *msg) {
+CanMsg{{ message.name_pascal }} can_decode_msg_{{ message.name_snake }}(const CanFrame *msg) {
 	CanMsg{{message.name_pascal}} msg_struct = {0};
 
 	{%- for signal in message.signals %}
 	{%- if signal.multiplexer_count <= 1 %}
-	msg_struct.{{ signal.name }} = can_decode_{{ message.name_snake }}_{{ signal.name }}(msg);
+	msg_struct.{{ signal.name }} = can_decode_signal_{{ message.name_snake }}_{{ signal.name }}(msg);
 	{%- endif %}
 	{%- endfor %}
 
@@ -53,7 +53,7 @@ CanMsg{{ message.name_pascal }} decode_{{ message.name_snake }}(CanFrame *msg) {
 
 {%- for message in messages %}
 {%- if message.is_multiplexer %}
-CanFrame can_encode_{{message.name_snake}}(CanMsg{{ message.name_pascal }} *msg, uint32_t {{message.multiplexer_signal}}) {
+CanFrame can_encode_msg_{{message.name_snake}}(const CanMsg{{ message.name_pascal }} *msg, uint32_t {{message.multiplexer_signal}}) {
     CanFrame message = {.id = {{message.frame_id}}, .dlc = {{message.dlc}}};
     uint64_t word = 0;
     uint64_t *ptr = (uint64_t *) &message.data;
@@ -61,25 +61,25 @@ CanFrame can_encode_{{message.name_snake}}(CanMsg{{ message.name_pascal }} *msg,
     {%- if signal.multiplexer_count > 1 -%}
     word |= can_encode_{{message.name_snake}}_{{signal.name}}(msg->{{signal.name}}[{{message.multiplexer_signal}}]);
     {%- elif signal.name == message.multiplexer_signal %}
-    word |= can_encode_{{message.name_snake}}_{{signal.name}}({{message.multiplexer_signal}});
+    word |= can_encode_signal_{{message.name_snake}}_{{signal.name}}({{message.multiplexer_signal}});
     {%- else -%}
-    word |= can_encode_{{message.name_snake}}_{{signal.name}}(msg->{{signal.name}});
+    word |= can_encode_signal_{{message.name_snake}}_{{signal.name}}(msg->{{signal.name}});
     {%- endif %}
     {% endfor %}
     *ptr = word;
     return message;
 }
 {%- else %}
-CanFrame can_encode_{{message.name_snake}}(CanMsg{{ message.name_pascal }} *msg) {
+CanFrame can_encode_msg_{{message.name_snake}}(const CanMsg{{ message.name_pascal }} *msg) {
 	CanFrame message = {.id = {{message.frame_id}}, .dlc = {{message.dlc}}};
 	uint64_t word = 0;
 	uint64_t *ptr = (uint64_t *) &message.data;
 
 	{% for signal in message.signals %}
 	{%- if signal.multiplexer_count > 1 -%}
-	word |= can_encode_{{message.name_snake}}_{{signal.name}}(msg->{{signal.name}}[msg->{{signal.multiplexer_signal}}]);
+	word |= can_encode_signal_{{message.name_snake}}_{{signal.name}}(msg->{{signal.name}}[msg->{{signal.multiplexer_signal}}]);
 	{%- else -%}
-	word |= can_encode_{{message.name_snake}}_{{signal.name}}(msg->{{signal.name}});
+	word |= can_encode_signal_{{message.name_snake}}_{{signal.name}}(msg->{{signal.name}});
 	{%- endif %}
 	{% endfor %}
 	*ptr = word;
