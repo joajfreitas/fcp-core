@@ -6,7 +6,7 @@ from math import ceil
 from cantools.database import conversion
 from jinja2 import Environment, FileSystemLoader
 from cantools.database.can.node import Node as CanNode
-from fcp.specs import Signal
+from fcp.specs import StructField
 from fcp import FcpV2
 from dataclasses import dataclass
 from fcp.result import Result, Ok, Err
@@ -85,7 +85,7 @@ class CanSignal:
 class CanMessage:
     frame_id: int
     dlc: int
-    signals: List[Signal]
+    signals: List[StructField]
     senders: List[str]
     name_pascal: str
     name_snake: str = ""
@@ -106,28 +106,36 @@ class Enum:
 
 
 def is_signed(value: Value) -> bool:
-    return value.type.startswith("i")
+    return value.type.name.startswith("i")
 
 
-def create_can_signals(encoding: List[EncodeablePiece]) -> Tuple[List[Signal], int]:
+def create_can_signals(
+    encoding: List[EncodeablePiece],
+) -> Tuple[List[StructField], int]:
     signals = []
     max_dlc = 0
 
     for piece in encoding:
-        multiplexer_signal = piece.extended_data.get("mux_signal")
-        multiplexer_ids = list(range(piece.extended_data.get("mux_count", 0)))
-        type = piece.type if piece.composite_type is None else piece.composite_type
+        # Dirty fix for enums
+        try:
+            multiplexer_signal = piece.extended_data.get("mux_signal")
+            multiplexer_ids = list(range(piece.extended_data.get("mux_count", 0)))
+        except AttributeError:
+            multiplexer_signal = None
+            multiplexer_ids = None
+
+        type = piece.type.name if piece.composite_type is None else piece.composite_type
 
         signals.append(
             CanSignal(
                 name=piece.name.replace("::", "_"),
                 start_bit=piece.bitstart,
                 data_type=type,
-                scalar_type=piece.type,
+                scalar_type=piece.type.name,
                 bit_length=piece.bitlength,
-                byte_order="big_endian"
-                if piece.endianess == "big"
-                else "little_endian",
+                byte_order=(
+                    "big_endian" if piece.endianess == "big" else "little_endian"
+                ),
                 signed=is_signed(piece),
                 is_multiplexer=bool(multiplexer_signal),
                 multiplexer_ids=multiplexer_ids if multiplexer_signal else None,

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 """Encoding."""
 
 # Copyright (c) 2024 the fcp AUTHORS.
@@ -23,9 +22,6 @@
 
 
 from beartype.typing import Union, NoReturn, List, Dict, Any, Optional
-=======
-from beartype.typing import Optional, Union, NoReturn, List, Dict, Any
->>>>>>> 156e3ae (Enum support for CAN C gen)
 from math import log2, ceil
 from copy import copy
 
@@ -44,11 +40,7 @@ class Value:
     def __init__(
         self,
         name: str,
-<<<<<<< HEAD
-        type: Type,
-=======
-        type: str,  # scalar type (e.g. u8, i12, etc.)
->>>>>>> 156e3ae (Enum support for CAN C gen)
+        type: BuiltinType,  # scalar type (e.g. u8, i12, etc.)
         bitstart: int,
         bitlength: int,
         endianess: str = "little",
@@ -64,11 +56,8 @@ class Value:
         self.bitlength = bitlength
         self.endianess = endianess
         self.extended_data = extended_data
-<<<<<<< HEAD
         self.unit = unit
-=======
         self.composite_type = composite_type
->>>>>>> 156e3ae (Enum support for CAN C gen)
 
     def __repr__(self) -> str:
         return f"Value name={self.name} type={self.type} bitstart={self.bitstart} bitlength={self.bitlength} endianess={self.endianess}"
@@ -150,16 +139,13 @@ class PackedEncoder:
         self.encoding.append(
             Value(
                 prefix[:-2],
-<<<<<<< HEAD
                 BuiltinType("u" + str(type_length)),  # type: ignore
                 self.bitstart,
                 type_length,
-=======
                 "u" + str(type_length),
                 self.bitstart,
                 type_length,
                 composite_type=enum.name,
->>>>>>> 156e3ae (Enum support for CAN C gen)
             )
         )
         self.bitstart += type_length
