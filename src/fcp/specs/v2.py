@@ -100,6 +100,10 @@ class FcpV2:
 
         return Nothing()
 
+    def get_matching_extensions(self, protocol: str) -> List[Impl]:
+        """Get impl for corresponding struct with a specific protocol."""
+        return [extension for extension in self.impls]
+
     def get_matching_impls(self, protocol: str) -> Generator[Impl, None, None]:
         """Get impls by protocol name."""
         for extension in self.impls:

@@ -38,11 +38,7 @@ from . import FcpV2
 from .verifier import Verifier
 
 
-<<<<<<< HEAD
 def _handle_file(result: Dict[str, Union[str, Path]]) -> NoReturn:
-=======
-def handle_file(result: Dict[str, Union[str, Path]]) -> None:
->>>>>>> fa5111d (C structs and decode macros being generated)
     path: Path = Path(result.get("path"))  # type: ignore
     logging.info(f"Generating {path}")
 
@@ -50,20 +46,12 @@ def handle_file(result: Dict[str, Union[str, Path]]) -> None:
     path.write_text(str(result.get("contents")))
 
 
-<<<<<<< HEAD
 def _handle_print(result: Dict[str, Union[str, Path]]) -> NoReturn:
     print(result.get("contents"))
 
 
 def handle_result(result: Dict[str, Union[str, Path]]) -> NoReturn:
     """Handle results from plugins."""
-=======
-def handle_print(result: Dict[str, Union[str, Path]]) -> None:
-    print(result.get("contents"))
-
-
-def handle_result(result: Dict[str, Union[str, Path]]) -> None:
->>>>>>> fa5111d (C structs and decode macros being generated)
     if result.get("type") == "file":
         _handle_file(result)
     elif result.get("type") == "print":
@@ -91,25 +79,12 @@ class CodeGenerator:
         for result in self.generate(fcp, ctx):
             handle_result(result)
 
-<<<<<<< HEAD
     def generate(self, fcp: FcpV2, ctx: Any) -> Dict[str, Union[str, Path]]:
-=======
-    def verify(self, fcp: Any, verifier: Verifier) -> Result[Nil, str]:
-        self.register_checks(verifier)
-
-        return verifier.verify(fcp)
-
-    def generate(self, fcp: FcpV2, ctx: Any) -> List[Dict[str, Union[str, Path]]]:
->>>>>>> fa5111d (C structs and decode macros being generated)
         """Function to override from generator. Implements actual code generation."""
         raise NotImplementedError
 
-<<<<<<< HEAD
     def register_checks(self, verifier: Verifier) -> Never:  # type: ignore
         """Register checks in verifier."""
-=======
-    def register_checks(self, verifier: Verifier) -> None:  # type: ignore
->>>>>>> fa5111d (C structs and decode macros being generated)
         pass
 
 
