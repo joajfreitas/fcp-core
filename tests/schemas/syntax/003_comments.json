@@ -7,11 +7,9 @@
         {
           "name": "bar",
           "field_id": 0,
-          "comment": "the bar field",
           "type": {"BuiltinType": {"name": "u8"}}
         }
-      ],
-      "comment": "the foo struct"
+      ]
     }
   ],
   "enums": [
@@ -20,16 +18,13 @@
       "enumeration": [
         {
           "name": "Var1",
-          "value": 0,
-          "comment": "the variant var1"
+          "value": 0
         },
         {
           "name": "Var2",
-          "value": 1,
-          "comment": "the variant var2"
+          "value": 1
         }
-      ],
-      "comment": "the enum baz"
+      ]
     }
   ],
   "services": [],

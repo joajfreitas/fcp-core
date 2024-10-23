@@ -84,7 +84,6 @@ struct SensorInformation {
                     {"name": "On", "value": 1},
                     {"name": "Error", "value": 2},
                 ],
-                "comment": "this is a comment",
             }
         ],
         "impls": [],
