@@ -10,14 +10,22 @@ Directory structure
     ├── docs                 - Documentation
     ├── example              - Example fcp schemas
     ├── plugins              - Fcp plugins
+    │   ├── fcp_can_c        - CAN C code generator plugin
+    │   │   ├── example      - Example fcp schemas for CAN C
+    │   │   ├── fcp_can_c    - Source for fcp_can_c
+    │   │   ├── templates    - Jinja templates used for code generation
+    │   │   └── tests        - Unit tests for fcp_can_c
+    │   │       ├── 001_basic_struct    - Basic struct test for CAN C
+    │   │       ├── 002_nested_enum     - Nested enum test for CAN C
+    │   │       ├── 002_nested_struct   - Nested struct test for CAN C
     │   ├── fcp_dbc          - CAN DBC generator
     │   │   ├── example      - Example fcp schemas for CAN bus
     │   │   ├── fcp_dbc      - Source for fcp_dbc
     │   │   └── tests        - Unit tests for fcp_dbc
     │   │       ├── schemas  - Schemas used in fcp_dbc unit tests
-    │   └── fcp_nop          - Example plugin
-    │       ├── fcp_nop      - Source code of fcp_nop
-    │       └── tests        - Tests for fcp_nop
+    │   ├── fcp_nop          - Example plugin
+    │   │   ├── fcp_nop      - Source code of fcp_nop
+    │   │   └── tests        - Tests for fcp_nop
     ├── src
     │   └── fcp              - Fcp source code
     │       └── specs        - Fcp object tree
