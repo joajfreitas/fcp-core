@@ -218,8 +218,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
                 name=name,
                 fields=fields,
                 meta=meta,
-                comment=comment,  # type: ignore
-            )
+            )  # type:ignore
         )
 
     @v_args(tree=True)  # type: ignore
@@ -241,7 +240,6 @@ class FcpV2Transformer(Transformer):  # type: ignore
             field_id=field_id,  # type: ignore
             type=type,
             meta=meta,
-            comment=comment,  # type: ignore
             **params,
         )
 
@@ -256,7 +254,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
         meta = _get_meta(tree, self)  # type: ignore
 
-        return enum.Enumeration(name=name, value=value, comment=comment, meta=meta)  # type: ignore
+        return enum.Enumeration(name=name, value=value, meta=meta)  # type: ignore
 
     @v_args(tree=True)  # type: ignore
     def enum(self, tree: ParseTree) -> Never:
@@ -271,7 +269,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
         meta = _get_meta(tree, self)  # type: ignore
         self.fcp.enums.append(
-            enum.Enum(name=name, enumeration=fields, meta=meta, comment=comment)  # type: ignore
+            enum.Enum(name=name, enumeration=fields, meta=meta)  # type: ignore
         )
 
     @catch
