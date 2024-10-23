@@ -1,3 +1,5 @@
+""""CAN C writer module."""
+
 import os
 
 from pathlib import Path
@@ -15,16 +17,43 @@ from fcp.encoding import make_encoder, EncodeablePiece, Value
 
 
 def snake_to_pascal(snake_str: str) -> str:
+    """Convert a snake_case string to PascalCase.
+
+    Args:
+        snake_str: The snake_case string to convert.
+
+    Returns:
+        The PascalCase string.
+
+    """
     return "".join(x.capitalize() for x in snake_str.split("_"))
 
 
 def pascal_to_snake(pascal_str: str) -> str:
+    """Convert a PascalCase string to snake_case.
+
+    Args:
+        pascal_str: The PascalCase string to convert.
+
+    Returns:
+        The snake_case string.
+
+    """
     return "".join(["_" + c.lower() if c.isupper() else c for c in pascal_str]).lstrip(
         "_"
     )
 
 
 def ceil_to_power_of_2(x: int) -> int:
+    """Ceil a number to the next power of 2.
+
+    Args:
+        x: The number to ceil.
+
+    Returns:
+        The next power of 2 starting from 8.
+
+    """
     if x <= 8:
         return 8
 
@@ -41,6 +70,8 @@ def ceil_to_power_of_2(x: int) -> int:
 
 @dataclass
 class CanSignal:
+    """A signal in a CAN message (data)."""
+
     name: str
     start_bit: int
     bit_length: int
@@ -58,7 +89,8 @@ class CanSignal:
     multiplexer_ids: Optional[List[int]] = None
     multiplexer_signal: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
+        """Post init method to set the scalar type and multiplexer count."""
         type_map = {
             "i8": "int8_t",
             "i16": "int16_t",
@@ -83,6 +115,8 @@ class CanSignal:
 
 @dataclass
 class CanMessage:
+    """Class to represent a CAN message."""
+
     frame_id: int
     dlc: int
     signals: List[StructField]
@@ -90,7 +124,7 @@ class CanMessage:
     name_pascal: str
     name_snake: str = ""
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.name_snake = pascal_to_snake(self.name_pascal)
 
         for signal in self.signals:
@@ -101,28 +135,43 @@ class CanMessage:
 
 @dataclass
 class Enum:
+    """Class to represent an enum."""
+
     name: str
     values: Dict[str, int]
 
 
 def is_signed(value: Value) -> bool:
-    return value.type.name.startswith("i")
+    """Check if a value is signed.
+
+    Args:
+        value (Value): Value to check
+
+    Returns:
+        bool: True if the value is signed, False otherwise
+
+    """
+    return bool(value.type.name.startswith("i"))
 
 
 def create_can_signals(
     encoding: List[EncodeablePiece],
 ) -> Tuple[List[StructField], int]:
+    """Create a list of CAN signals from a list of EncodeablePieces.
+
+    Args:
+        encoding: List of EncodeablePieces to create signals from.
+
+    Returns:
+        Tuple containing a list of CAN signals and the maximum DLC.
+
+    """
     signals = []
     max_dlc = 0
 
     for piece in encoding:
-        # Dirty fix for enums
-        try:
-            multiplexer_signal = piece.extended_data.get("mux_signal")
-            multiplexer_ids = list(range(piece.extended_data.get("mux_count", 0)))
-        except AttributeError:
-            multiplexer_signal = None
-            multiplexer_ids = None
+        multiplexer_signal = piece.extended_data.get("mux_signal")
+        multiplexer_ids = list(range(piece.extended_data.get("mux_count", 0)))
 
         type = piece.type.name if piece.composite_type is None else piece.composite_type
 
@@ -149,7 +198,16 @@ def create_can_signals(
 
 
 def map_messages_to_devices(messages: List[CanMessage]) -> Dict[str, List[CanMessage]]:
-    device_messages = {}
+    """Map messages to devices based on the senders.
+
+    Args:
+        messages: List of messages to map.
+
+    Returns:
+        Dict: Mapping of devices to messages.
+
+    """
+    device_messages = {}  # type: ignore
     for msg in messages:
         for sender in msg.senders:
             device_messages.setdefault(sender, []).append(msg)
@@ -159,6 +217,15 @@ def map_messages_to_devices(messages: List[CanMessage]) -> Dict[str, List[CanMes
 def initialize_can_data(
     fcp: FcpV2,
 ) -> Tuple[List[Enum], List[CanMessage], List[CanNode]]:
+    """Initialize CAN data from an FCP.
+
+    Args:
+        fcp: FcpV2 object.
+
+    Returns:
+        Tuple containing a list of enums, messages and devices.
+
+    """
     enums = []
     messages = []
     devices = []
@@ -198,7 +265,15 @@ def initialize_can_data(
 
 
 class CanCWriter:
+    """Class to generate C files for CAN devices."""
+
     def __init__(self, fcp: FcpV2) -> None:
+        """Initialize the CanCWriter.
+
+        Args:
+            fcp: FcpV2 object.
+
+        """
         # Get the path to the templates directory
         script_dir = os.path.dirname(os.path.realpath(__file__))
         self.templates_dir = os.path.join(script_dir, "../templates")
@@ -213,7 +288,12 @@ class CanCWriter:
         self.device_messages = map_messages_to_devices(self.messages)
 
     def generate_static_files(self) -> Generator[Tuple[str, str], None, None]:
-        """Generate static C files required for CAN."""
+        """Generate all static C files.
+
+        Returns:
+            Generator: Tuple containing the file name and the file content.
+
+        """
         static_files = ["can_frame.h", "can_signal_parser.h", "can_signal_parser.c"]
 
         for file in static_files:
@@ -221,8 +301,12 @@ class CanCWriter:
                 yield file, f.read()
 
     def generate_device_headers(self) -> Generator[Tuple[str, str], None, None]:
-        """Generate C header files for devices."""
+        """Generate C header files for devices.
 
+        Returns:
+            Generator: Tuple containing the device name and the file content.
+
+        """
         # Check if the global device is present in the list of devices
         global_device_exists = any(device.name == "global" for device in self.devices)
 
@@ -242,7 +326,12 @@ class CanCWriter:
             )
 
     def generate_device_sources(self) -> Generator[Tuple[str, str], None, None]:
-        """Generate C source file for the device."""
+        """Generate C source files for devices.
+
+        Returns:
+            Generator: Tuple containing the device name and the file content.
+
+        """
         for device_name, messages in self.device_messages.items():
             yield (
                 pascal_to_snake(device_name),
