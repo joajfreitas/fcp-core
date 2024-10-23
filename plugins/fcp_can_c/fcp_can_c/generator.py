@@ -1,3 +1,5 @@
+"""C code generator for FCP to CAN."""
+
 import os
 
 from beartype.typing import Any, Union, NoReturn, Dict
@@ -14,11 +16,26 @@ from .can_c_writer import CanCWriter
 
 
 class Generator(CodeGenerator):
+    """Class for C code from FCP to CAN."""
+
     def __init__(self) -> None:
+        """None."""
         pass
 
     def generate(self, fcp: FcpV2, ctx: Any) -> list[Dict[str, Union[str, Path]]]:
+        """Generate C code from FCP.
+
+        Args:
+            fcp: FcpV2 object
+            ctx: Context object
+
+        Returns:
+            List of dictionaries with file information
+
+        """
+
         def to_dict(s1: str, s2: str, s3: str) -> Dict[str, str]:
+            """Type, path, contents to a generator dictionary."""
             return {"type": s1, "path": s2, "contents": s3}
 
         writer = CanCWriter(fcp)
@@ -45,10 +62,18 @@ class Generator(CodeGenerator):
         return files
 
     def register_checks(self, verifier: Verifier) -> None:
+        """Register checks in verifier.
+
+        Args:
+            verifier: Verifier object
+
+        """
+
         @register(verifier, "extension")  # type: ignore
         def check_extension_valid_type(
             self: Any, fcp: FcpV2, extension: Any
         ) -> Result[Nil, FcpError]:
+            """Check if extension has a valid type."""
             struct = fcp.get_struct(extension.type)
             if struct.is_nothing():
                 return Err(

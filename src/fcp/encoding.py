@@ -142,9 +142,6 @@ class PackedEncoder:
                 BuiltinType("u" + str(type_length)),  # type: ignore
                 self.bitstart,
                 type_length,
-                "u" + str(type_length),
-                self.bitstart,
-                type_length,
                 composite_type=enum.name,
             )
         )
