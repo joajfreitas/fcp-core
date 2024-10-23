@@ -37,7 +37,6 @@ from .specs import signal_block
 from .specs import service
 from .specs import rpc
 from .specs.type import BuiltinType, ArrayType, ComposedType, Type
-from .specs.comment import Comment
 from .specs import v2
 from .result import Result, Ok, Err
 from .maybe import catch
@@ -51,8 +50,8 @@ fcp_parser = Lark(
 
     preamble: "version" ":" string
 
-    struct: comment* "struct" identifier "{" struct_field+ "}"
-    struct_field: comment* identifier "@" number ":" type param* ","
+    struct: "struct" identifier "{" struct_field+ "}"
+    struct_field: identifier "@" number ":" type param* ","
     type: (base_type | array_type | compound_type) "|"?
     base_type: /u\d\d|u\d|i\d\d|i\d|f32|f64/
     array_type: "[" type "," number "]"
@@ -61,8 +60,8 @@ fcp_parser = Lark(
     param: identifier "("? param_argument* ")"? "|"?
     param_argument: value ","?
 
-    enum: comment* "enum" identifier "{" enum_field* "}"
-    enum_field : comment* identifier "=" value ","
+    enum: "enum" identifier "{" enum_field* "}"
+    enum_field : identifier "=" value ","
 
     impl: "impl" identifier "for" identifier "{" (extension_field | signal_block)+ "}"
     signal_block: "signal" identifier "{" extension_field+ "}" ","
@@ -78,7 +77,7 @@ fcp_parser = Lark(
     number: SIGNED_NUMBER
     value : identifier | number | string
 
-    comment : C_COMMENT
+    COMMENT: C_COMMENT | CPP_COMMENT
 
     UNDERSCORE : "_"
     DOT : "."
@@ -90,9 +89,11 @@ fcp_parser = Lark(
     %import common.SIGNED_NUMBER   // imports from terminal library
     %import common.ESCAPED_STRING   // imports from terminal library
     %import common.C_COMMENT // imports from terminal library
+    %import common.CPP_COMMENT // imports from terminal library
     %ignore " "           // Disregard spaces in text
     %ignore "\\n"
     %ignore "\\t"
+    %ignore COMMENT
     """,
     propagate_positions=True,
 )
@@ -205,11 +206,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
     @v_args(tree=True)  # type: ignore
     def struct(self, tree: ParseTree) -> Never:
         """Parse a struct node of the fcp AST."""
-        if isinstance(tree.children[0], Comment):
-            comment, name, *fields = tree.children
-        else:
-            name, *fields = tree.children
-            comment = None  # type: ignore
+        name, *fields = tree.children
 
         meta = _get_meta(tree, self)  # type: ignore
 
@@ -224,12 +221,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
     @v_args(tree=True)  # type: ignore
     def struct_field(self, tree: ParseTree) -> struct_field.StructField:
         """Parse a struct_field node of the fcp AST."""
-        if isinstance(tree.children[0], Comment):
-            comment, name, field_id, type, *values = tree.children
-            comment = Comment(comment.value)  # type: ignore
-        else:
-            name, field_id, type, *values = tree.children
-            comment = None  # type: ignore
+        name, field_id, type, *values = tree.children
 
         params = {name: value for name, *value in values}  # type: ignore
         params = _convert_params(params)  # type: ignore
@@ -246,11 +238,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
     @v_args(tree=True)  # type: ignore
     def enum_field(self, tree: ParseTree) -> enum.Enumeration:
         """Parse an enum_field node of the fcp AST."""
-        if isinstance(tree.children[0], Comment):
-            comment, name, value = tree.children
-        else:
-            name, value = tree.children
-            comment = None  # type: ignore
+        name, value = tree.children
 
         meta = _get_meta(tree, self)  # type: ignore
 
@@ -259,13 +247,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
     @v_args(tree=True)  # type: ignore
     def enum(self, tree: ParseTree) -> Never:
         """Parse an enum node of the fcp AST."""
-        args = tree.children
-
-        if isinstance(args[0], Comment):
-            comment, name, *fields = args
-        else:
-            name, *fields = args
-            comment = None  # type: ignore
+        name, *fields = tree.children
 
         meta = _get_meta(tree, self)  # type: ignore
         self.fcp.enums.append(
@@ -365,10 +347,6 @@ class FcpV2Transformer(Transformer):  # type: ignore
     def string(self, args: List[str]) -> str:
         """Parse a string node of the fcp AST."""
         return args[0].value[1:-1]  # type: ignore
-
-    def comment(self, args: List[str]) -> Comment:
-        """Parse a comment node of the fcp AST."""
-        return Comment(args[0].value.replace("/*", "").replace("*/", ""))  # type: ignore
 
     def start(self, args: List[str]) -> Result[v2.FcpV2, str]:
         """Parse the start node of the fcp AST."""
