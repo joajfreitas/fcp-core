@@ -41,7 +41,7 @@ help:
 
 docs:
 	@printf "\033[1;34m==> Building docs...\033[0m\n"
-	@$(RUN_UNDER) --from 'sphinx<7.0.0' --with sphinx_rtd_theme --with . --with plugins/fcp_dbc --with plugins/fcp_nop sphinx-build -M html docs docs/build
+	@$(RUN_UNDER) --from 'sphinx<7.0.0' --with sphinx_rtd_theme --with . --with plugins/fcp_dbc --with plugins/fcp_nop --with plugins/fcp_can_c sphinx-build -M html docs docs/build
 
 docs-publish: docs
 	@printf "\033[1;34m==> Building published docs...\033[0m\n"
