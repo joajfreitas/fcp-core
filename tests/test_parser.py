@@ -1,6 +1,5 @@
 # ruff: noqa: D103 D100
 
-
 import pytest
 import os
 import json
@@ -10,6 +9,7 @@ from pathlib import Path
 from fcp.v2_parser import get_fcp
 from fcp import FcpV2, default_serialization
 from fcp.verifier import make_general_verifier
+from fcp.types import NoReturn
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -47,7 +47,7 @@ def get_result_txt(scope: str, name: str) -> str:
         "007_simple_array_type",
     ],
 )  # type: ignore
-def test_parser(test_name: str) -> None:
+def test_parser(test_name: str) -> NoReturn:
     fcp_v2, _ = get_fcp(Path(get_fcp_config("syntax", test_name))).unwrap()
     fcp_json_dict = fcp_v2.to_dict()
     expected_result_dict = get_result_json("syntax", test_name)
@@ -60,7 +60,7 @@ def test_parser(test_name: str) -> None:
         "001_missing_version",
     ],
 )  # type: ignore
-def test_parsing_errors(test_name: str) -> None:
+def test_parsing_errors(test_name: str) -> NoReturn:
     fcp_config = Path(get_fcp_config("error", test_name))
     fcp = get_fcp(fcp_config)
     result = (
@@ -80,7 +80,7 @@ def test_parsing_errors(test_name: str) -> None:
     assert error == result  # type: ignore
 
 
-def test_verifier_no_error() -> None:
+def test_verifier_no_error() -> NoReturn:
     fcp_v2, _ = get_fcp(get_fcp_config("verifier", "000_no_error")).unwrap()
 
     verifier = make_general_verifier()
@@ -98,14 +98,14 @@ def test_verifier_no_error() -> None:
         "005_duplicate_enumeration_values",
     ],
 )  # type: ignore
-def test_verifier_errors(test_name: str) -> None:
+def test_verifier_errors(test_name: str) -> NoReturn:
     fcp_v2, _ = get_fcp(get_fcp_config("verifier", test_name)).unwrap()
 
     verifier = make_general_verifier()
     assert verifier.verify(fcp_v2).is_err()
 
 
-def test_default_serialization() -> None:
+def test_default_serialization() -> NoReturn:
     fcp_v2, _ = get_fcp(
         Path(get_fcp_config("syntax", "004_struct_composition"))
     ).unwrap()
