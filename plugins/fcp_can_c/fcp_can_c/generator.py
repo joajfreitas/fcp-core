@@ -34,9 +34,9 @@ class Generator(CodeGenerator):
 
         """
 
-        def to_dict(s1: str, s2: str, s3: str) -> Dict[str, str]:
+        def to_dict(type: str, path: str, contents: str) -> Dict[str, str]:
             """Type, path, contents to a generator dictionary."""
-            return {"type": s1, "path": s2, "contents": s3}
+            return {"type": type, "path": path, "contents": contents}
 
         writer = CanCWriter(fcp)
         base_dir = str(ctx.get("output"))
