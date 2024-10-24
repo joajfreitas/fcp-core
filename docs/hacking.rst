@@ -10,6 +10,8 @@ Directory structure
     ├── docs                 - Documentation
     ├── example              - Example fcp schemas
     ├── plugins              - Fcp plugins
+    │   ├── fcp_cpp_can      - Example plugin
+    │   │   └── fcp_cpp_can  - Source for fcp_dbc
     │   ├── fcp_dbc          - CAN DBC generator
     │   │   ├── example      - Example fcp schemas for CAN bus
     │   │   ├── fcp_dbc      - Source for fcp_dbc
