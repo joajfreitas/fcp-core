@@ -37,16 +37,16 @@ class CanEncoding:
     def __init__(self, impl, encoding):
         self.impl = impl
         self.encoding = encoding
-        self.id = impl.fields.get('id')
+        self.id = impl.fields.get("id")
         self.dlc = math.ceil((encoding[-1].bitstart + encoding[-1].bitlength) / 8)
+
 
 class Generator(CodeGenerator):
     def __init__(self) -> None:
         pass
 
     def fcp_header(self):
-        return """
-#ifndef __FCP_H__
+        return """#ifndef __FCP_H__
 #define __FCP_H__
 
 #include <vector>
@@ -70,7 +70,7 @@ enum {{enum.name}} {
 struct {{struct.name}} {
     {% for signal in struct.fields -%}
     {{signal.type | to_cpp_type}} {{signal.name}};
-    {% endfor %}
+    {% endfor -%}
 
     {% if impl is not none %}
     std::map<std::string, std::tuple<std::any, std::string>> to_dict() {
@@ -78,21 +78,20 @@ struct {{struct.name}} {
 
         {%- for piece in impl.encoding %}
         results["{{piece.name}}"] = std::make_tuple({{piece.name}}, "{{piece.type | to_cpp_type }}");
-        {%- endfor %}
+        {%- endfor -%}
         return results;
     }
-    {% endif %}
+    {% endif -%}
 
     {% if impl is not none %}
     static {{struct.name}} from_dict(std::map<std::string, std::tuple<std::any, std::string>> dict) {
         {{struct.name}} result{};
         {%- for piece in impl.encoding %}
         result.{{piece.name}} = std::any_cast<{{piece.type | to_cpp_type}}>(std::get<0>(dict["piece.name"]));
-        {%- endfor %}
+        {%- endfor -%}
         return result;
     }
     {% endif %}
-
 };
 
 {% endfor -%}
@@ -127,8 +126,8 @@ std::vector<std::uint8_t> encode(const {{name}}& input) {
 {% endfor %}
 
 uint8_t get_bit(const std::vector<uint8_t>& input, uint8_t bit) {
-    auto byte_address = bit >> 2;
-    auto intra_byte_bit_address = bit & 0b11;
+    auto byte_address = bit >> 3;
+    auto intra_byte_bit_address = bit & 0b111;
 
     return (input[byte_address] >> intra_byte_bit_address) & 0b1;
 }
@@ -165,17 +164,16 @@ template<>
     {{name}} result{};
     {% for encode_piece in can_encoding.encoding %}
     result.{{encode_piece.name}} = _decode<{{encode_piece.type | to_cpp_type()}}>(input, {{encode_piece.bitstart}}, {{encode_piece.bitlength}});
-    {% endfor %}
+    {%- endfor %}
 
     return result;
 }
-{% endfor %}
+{% endfor -%}
 
 } // namespace fcp
 
 
-#endif // __FCP_CAN_H__
-"""
+#endif // __FCP_CAN_H__"""
 
     def can_header(self):
         return """#ifndef __FCP_CAN_H__
