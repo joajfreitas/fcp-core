@@ -40,12 +40,15 @@ class Value:
     def __init__(
         self,
         name: str,
-        type: Type,
+        type: BuiltinType,  # scalar type (e.g. u8, i12, etc.)
         bitstart: int,
         bitlength: int,
         endianess: str = "little",
         unit: Optional[str] = None,
         extended_data: Dict[str, Any] = dict(),
+        composite_type: Optional[
+            str
+        ] = None,  # name of composit type (used for enums, structs...)
     ) -> None:
         self.name = name
         self.type = type
@@ -54,6 +57,7 @@ class Value:
         self.endianess = endianess
         self.extended_data = extended_data
         self.unit = unit
+        self.composite_type = composite_type
 
     def __repr__(self) -> str:
         return f"Value name={self.name} type={self.type} bitstart={self.bitstart} bitlength={self.bitlength} endianess={self.endianess}"
@@ -91,7 +95,6 @@ class PackedEncoder:
     def _generate_signal(
         self, field: StructField, extension: Impl, prefix: str = ""
     ) -> NoReturn:
-
         fields: Dict[str, Any] = (
             extension.get_signal(field.name)
             .and_then(lambda signal_block: Some(signal_block.fields))
@@ -139,6 +142,7 @@ class PackedEncoder:
                 BuiltinType("u" + str(type_length)),  # type: ignore
                 self.bitstart,
                 type_length,
+                composite_type=enum.name,
             )
         )
         self.bitstart += type_length

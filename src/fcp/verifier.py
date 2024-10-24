@@ -136,7 +136,6 @@ def make_general_verifier() -> Verifier:
     def check_duplicate_impl(
         self: Any, fcp: FcpV2, left: Impl
     ) -> Result[Nil, FcpError]:
-
         impls = [(impl.name, impl.protocol) for impl in fcp.impls]
         if impls.count((left.name, left.protocol)) > 1:
             return Err(FcpError("Duplicate impls", node=left))
@@ -147,12 +146,9 @@ def make_general_verifier() -> Verifier:
     def check_duplicate_struct_fields(
         self: Any, fcp: FcpV2, left: Tuple[Struct, StructField]
     ) -> Result[Nil, FcpError]:
-
-        print(left)
         struct, left_signal = left
-
         signal_names = [field.name for field in struct.fields]
-        print(left_signal)
+
         if signal_names.count(left_signal.name) > 1:
             return Err(FcpError("Duplicate fields", node=left_signal))
         else:
@@ -171,7 +167,6 @@ def make_general_verifier() -> Verifier:
     def check_enum_duplicate_enumerations_names(
         self: Any, fcp: FcpV2, enum: Enum
     ) -> Result[Nil, FcpError]:
-
         enumeration_names = [enumeration.name for enumeration in enum.enumeration]
         for enumeration in enum.enumeration:
             if enumeration_names.count(enumeration.name) > 1:
@@ -183,7 +178,6 @@ def make_general_verifier() -> Verifier:
     def check_enum_duplicate_enumerations_values(
         self: Any, fcp: FcpV2, enum: Enum
     ) -> Result[Nil, FcpError]:
-
         enumeration_names = [enumeration.value for enumeration in enum.enumeration]
         for enumeration in enum.enumeration:
             if enumeration_names.count(enumeration.value) > 1:

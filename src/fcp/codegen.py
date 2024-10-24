@@ -28,7 +28,7 @@ import pkgutil
 import sys
 from pathlib import Path
 
-from beartype.typing import Any, Dict, Union, NoReturn
+from beartype.typing import Any, Dict, Union, NoReturn, List
 from types import ModuleType
 
 from .types import Nil, Never
@@ -81,7 +81,7 @@ class CodeGenerator:
 
     def generate(self, fcp: FcpV2, ctx: Any) -> Dict[str, Union[str, Path]]:
         """Function to override from generator. Implements actual code generation."""
-        return {}  # type: ignore
+        raise NotImplementedError
 
     def register_checks(self, verifier: Verifier) -> Never:  # type: ignore
         """Register checks in verifier."""

@@ -27,7 +27,6 @@ def get_markdown_fcp_code_blocks(filename: str) -> List[str]:
 
 
 def get_rst_code_blocks(filename: str, language: Optional[str] = None) -> List[str]:
-
     with open(filename, encoding="utf-8") as file:
         doctree = publish_doctree(file.read())
 
@@ -99,7 +98,7 @@ def test_dir_tree_structure() -> None:
 
     for _, dirs, _ in itertools.chain(os.walk("src"), os.walk("plugins")):
         for dir in dirs:
-            if dir == "__pycache__" or dir.startswith("."):
+            if dir.startswith(".") or dir in ["__pycache__", "generated_code", "cache"]:
                 continue
 
             assert dir in code_blocks[0]
