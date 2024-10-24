@@ -21,13 +21,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from beartype.typing import Any, Dict, Union
+from beartype.typing import Any, Dict, Union, List
 from typing_extensions import NoReturn
 from pathlib import Path
 import jinja2
 import math
 
 from fcp.specs.type import Type
+from fcp.specs.impl import Impl
 from fcp.codegen import CodeGenerator
 from fcp.verifier import Verifier
 from fcp import FcpV2
@@ -59,6 +60,16 @@ def to_cpp_type(input: Type) -> str:
         return str(input.name)
 
 
+class CanEncoding:
+    """Can encoding representation used in templates."""
+
+    def __init__(self, impl: Impl, encoding: List[EncodeablePiece]) -> None:
+        self.impl = impl
+        self.encoding = encoding
+        self.id = impl.fields.get("id")
+        self.dlc = math.ceil((encoding[-1].bitstart + encoding[-1].bitlength) / 8)
+
+
 class Generator(CodeGenerator):
     """Cpp code generator."""
 
@@ -66,8 +77,7 @@ class Generator(CodeGenerator):
         pass
 
     def _fcp_header(self) -> str:
-        return """
-#ifndef __FCP_H__
+        return """#ifndef __FCP_H__
 #define __FCP_H__
 
 #include <vector>
@@ -91,19 +101,28 @@ enum {{enum.name}} {
 struct {{struct.name}} {
     {% for signal in struct.fields -%}
     {{signal.type | to_cpp_type}} {{signal.name}};
-    {% endfor %}
+    {% endfor -%}
 
     {% if impl is not none %}
-    std::map<std::string, std::any> to_dict() {
-        std::map<std::string, std::any> results{};
+    std::map<std::string, std::tuple<std::any, std::string>> to_dict() {
+        std::map<std::string, std::tuple<std::any, std::string>> results{};
 
-        {%- for piece in impl[1] %}
-        results["{{piece.name}}"] = {{piece.name}};
-        {%- endfor %}
+        {%- for piece in impl.encoding %}
+        results["{{piece.name}}"] = std::make_tuple({{piece.name}}, "{{piece.type | to_cpp_type }}");
+        {%- endfor -%}
         return results;
     }
-    {% endif %}
+    {% endif -%}
 
+    {% if impl is not none %}
+    static {{struct.name}} from_dict(std::map<std::string, std::tuple<std::any, std::string>> dict) {
+        {{struct.name}} result{};
+        {%- for piece in impl.encoding %}
+        result.{{piece.name}} = std::any_cast<{{piece.type | to_cpp_type}}>(std::get<0>(dict["piece.name"]));
+        {%- endfor -%}
+        return result;
+    }
+    {% endif %}
 };
 
 {% endfor -%}
@@ -125,7 +144,7 @@ std::vector<std::uint8_t> encode(uint32_t input) {
     };
 }
 
-{% for name, encoding in impls.items() %}
+{% for name, encoding in can_encodings.items() %}
 std::vector<std::uint8_t> encode(const {{name}}& input) {
     std::vector<std::uint8_t> result{};
     std::vector<std::uint8_t> aux{};
@@ -138,8 +157,8 @@ std::vector<std::uint8_t> encode(const {{name}}& input) {
 {% endfor %}
 
 uint8_t get_bit(const std::vector<uint8_t>& input, uint8_t bit) {
-    auto byte_address = bit / 8;
-    auto intra_byte_bit_address = bit % 8;
+    auto byte_address = bit >> 3;
+    auto intra_byte_bit_address = bit & 0b111;
 
     return (input[byte_address] >> intra_byte_bit_address) & 0b1;
 }
@@ -170,24 +189,22 @@ uint32_t _decode(const std::vector<uint8_t>& input, uint8_t bitstart, uint8_t bi
 template<typename T>
 T decode(const std::vector<uint8_t>&);
 
-{% for name, encoding in impls.items() %}
+{% for name, can_encoding in can_encodings.items() %}
 template<>
 {{name}} decode(const std::vector<uint8_t>& input) {
     {{name}} result{};
-
-    {% for encode_piece in encoding[1] %}
+    {% for encode_piece in can_encoding.encoding %}
     result.{{encode_piece.name}} = _decode<{{encode_piece.type | to_cpp_type()}}>(input, {{encode_piece.bitstart}}, {{encode_piece.bitlength}});
-    {% endfor %}
+    {%- endfor %}
 
     return result;
 }
-{% endfor %}
+{% endfor -%}
 
 } // namespace fcp
 
 
-#endif // __FCP_CAN_H__
-"""
+#endif // __FCP_CAN_H__"""
 
     def _can_header(self) -> str:
         return """#ifndef __FCP_CAN_H__
@@ -195,41 +212,104 @@ template<>
 
 #include <map>
 #include <any>
+#include <cstdint>
+#include <string>
+#include <optional>
+#include <cstring>
+
+#include "fcp.h"
 
 namespace fcp {
 namespace can {
 
 struct can_frame {
-    uint16_t sid;
-    uint8_t dlc;
-    uint8_t data[8];
+    std::uint16_t sid;
+    std::uint8_t dlc;
+    std::uint8_t data[8];
 };
 
 class Fcp {
 public:
     struct DecodedMsg {
         std::string msg_name;
-        std::map<std::string, std::any> signals;
+        std::map<std::string, std::tuple<std::any, std::string>> signals;
+
+        template<typename T>
+        T _get(std::string name) {
+            return std::any_cast<T>(std::get<0>(signals.at(name)));
+        }
+
 
         template<typename T>
         T get(std::string name) {
-            return std::any_cast<T>(signals.at(name));
+            auto type = std::get<1>(signals.at(name));
+
+            if (type == "uint8_t") {
+                return static_cast<T>(_get<uint8_t>(name));
+            }
+            else if (type == "uint16_t") {
+                return static_cast<T>(_get<uint16_t>(name));
+            }
+            else if (type == "uint32_t") {
+                return static_cast<T>(_get<uint32_t>(name));
+            }
+            else if (type == "uint64_t") {
+                return static_cast<T>(_get<uint64_t>(name));
+            }
+            else if (type == "int8_t") {
+                return static_cast<T>(_get<int8_t>(name));
+            }
+            else if (type == "int16_t") {
+                return static_cast<T>(_get<int16_t>(name));
+            }
+            else if (type == "int32_t") {
+                return static_cast<T>(_get<int32_t>(name));
+            }
+            else if (type == "int64_t") {
+                return static_cast<T>(_get<int64_t>(name));
+            }
+            else if (type == "float") {
+                return static_cast<T>(_get<float>(name));
+            }
+            else if (type == "double") {
+                return static_cast<T>(_get<double>(name));
+            }
+            else {
+                return T{};
+            }
         }
     };
 
-    DecodedMsg decode_msg(const can_frame& frame) {
+    std::optional<DecodedMsg> decode_msg(const can_frame& frame) {
 
         switch (frame.sid) {
-        {% for impl in impls.values() %}
-        case {{impl[0].fields.get('id')}}:
-        return {"todo", decode<{{impl[0].type}}>(std::vector<std::uint8_t>{frame.data, frame.data + sizeof(frame.data)/sizeof(frame.data[0])}).to_dict()};
+        {% for can_encoding in can_encodings.values() %}
+        case {{can_encoding.impl.fields.get('id')}}:
+        return DecodedMsg{"{{can_encoding.impl.name}}", decode<{{can_encoding.impl.type}}>(std::vector<std::uint8_t>{frame.data, frame.data + sizeof(frame.data)/sizeof(frame.data[0])}).to_dict()};
             break;
         {% endfor %}
         }
 
+        return std::nullopt;
+
     }
 
-    can_frame encode_msg(std::string dev_id, std::string msg_id, std::map<std::string, double> signals_list);
+    std::optional<can_frame> encode_msg(std::string msg_name, std::map<std::string, std::tuple<std::any, std::string>> signals) {
+
+        can_frame frame{};
+        {% for can_encoding in can_encodings.values() %}
+        if (msg_name == "{{can_encoding.impl.name}}") {
+            auto encoded = encode({{can_encoding.impl.name}}::from_dict(signals));
+            frame.sid = {{can_encoding.id}};
+            frame.dlc = {{can_encoding.dlc}};
+
+            std::memcpy(frame.data, encoded.data(), {{can_encoding.dlc}});
+            return frame;
+        }
+        {% endfor %}
+
+        return std::nullopt;
+    }
 };
 
 } // namesapce can
@@ -255,30 +335,30 @@ public:
         env.filters["to_cpp_type"] = to_cpp_type
 
         encoder = make_encoder("packed", fcp)
-        impls = {}
+        can_encodings = {}
 
         for impl in fcp.get_matching_impls("can"):
             encoding = encoder.generate(impl)
             for encode_piece in encoding:
                 encode_piece.name = encode_piece.name.replace("::", ".")
 
-            impls[impl.type] = (impl, encoding)
+            can_encodings[impl.type] = CanEncoding(impl, encoding)
 
-        structs = [(struct, impls.get(struct.name)) for struct in fcp.structs]
+        structs = [(struct, can_encodings.get(struct.name)) for struct in fcp.structs]
 
         return [
             {
                 "type": "file",
                 "path": Path(ctx.get("output")) / "fcp.h",
                 "contents": env.get_template("fcp_header").render(
-                    {"fcp": fcp, "impls": impls, "structs": structs}
+                    {"fcp": fcp, "can_encodings": can_encodings, "structs": structs}
                 ),
             },
             {
                 "type": "file",
                 "path": Path(ctx.get("output")) / "fcp_can.h",
                 "contents": env.get_template("can_header").render(
-                    {"fcp": fcp, "impls": impls, "structs": structs}
+                    {"fcp": fcp, "can_encodings": can_encodings, "structs": structs}
                 ),
             },
         ]
