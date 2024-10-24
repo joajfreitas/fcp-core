@@ -1,6 +1,6 @@
 # FCP CAN C generator
 
-fcp plugin to generate CAN bus C librtaries
+fcp plugin to generate CAN bus C libraries
 
 ## Usage
 
