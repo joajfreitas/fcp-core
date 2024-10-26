@@ -14,6 +14,7 @@ $ fcp generate dbc <fcp source> <output file>
 
  * **id**: CAN bus frame identifier
  * **device**: Sender name
+ * **bus**: Name of the CAN bus line.
 
 ### SignalBlock
 

@@ -92,17 +92,13 @@ class FcpV2:
         else:
             return Nothing()
 
-    def get_matching_extension(self, struct: Struct, protocol: str) -> Maybe[Impl]:
+    def get_matching_impl(self, struct: Struct, protocol: str) -> Maybe[Impl]:
         """Get impl for corresponding struct with a specific protocol."""
         for extension in self.impls:
             if extension.type == struct.name and extension.protocol == protocol:
                 return Some(extension)
 
         return Nothing()
-
-    def get_matching_extensions(self, protocol: str) -> List[Impl]:
-        """Get impl for corresponding struct with a specific protocol."""
-        return [extension for extension in self.impls]
 
     def get_matching_impls(self, protocol: str) -> Generator[Impl, None, None]:
         """Get impls by protocol name."""

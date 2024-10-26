@@ -105,9 +105,15 @@ class CanSignal:
         }
 
         self.data_type = type_map.get(self.data_type, self.data_type)
-        self.scalar_type = type_map[
-            "i" if self.signed else "u" + str(ceil_to_power_of_2(self.bit_length))
-        ]
+
+        if self.data_type not in ["f32", "f64"]:
+            self.scalar_type = "float"
+            self.scalar_type = type_map[
+                "i" if self.signed else "u" + str(ceil_to_power_of_2(self.bit_length))
+            ]
+        else:
+            self.scalar_type = self.data_type
+
         self.multiplexer_count = (
             len(self.multiplexer_ids) if self.multiplexer_ids else 0
         )
@@ -238,7 +244,7 @@ def initialize_can_data(
         # Enums are not tied to a specific device so they live on the global device
         devices.append(CanNode("global"))
 
-    for extension in fcp.get_matching_extensions("can"):
+    for extension in fcp.get_matching_impls("can"):
         encoding = encoder.generate(extension)
         signals, dlc = create_can_signals(encoding)
 
