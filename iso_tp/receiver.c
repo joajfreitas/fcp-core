@@ -129,31 +129,5 @@ int main(int argc, char *argv[]) {
 
     printf("\n");
 
-    //send_first_frame(s, data, len, &index);
-
-    //seq += 1;
-
-	//int nbytes = read(s, &frame, sizeof(struct can_frame));
-
-    //if (frame.can_id != 2) {
-    //    printf("Expected id 2");
-    //    return 1;
-    //}
-    //else if (frame.data[0] != 3 << 4){
-    //    printf("Expected control byte to be 3");
-    //    return 1;
-    //}
-
-
-    //while (index < len) {
-    //    send_consequent_frame(s, data, len, &index, &seq);
-    //}
-
-    //printf("index: %d", index);
-    //if (close(s) < 0) {
-	//	perror("Close");
-	//	return 1;
-	//}
-
     return 0;
 }

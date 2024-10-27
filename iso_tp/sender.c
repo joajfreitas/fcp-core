@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <time.h>
 
 #include <net/if.h>
 #include <sys/ioctl.h>
@@ -27,6 +28,7 @@ typedef enum {
     InProgress,
     Waiting,
     Finished,
+    Interrupted,
 } Status;
 
 typedef struct {
@@ -35,6 +37,7 @@ typedef struct {
     uint8_t seq;
     uint16_t index;
     Status status;
+    uint16_t time;
 } IsoTpSender;
 
 IsoTpSender init_sender_buffer(uint8_t* data, uint16_t len) {
@@ -44,6 +47,7 @@ IsoTpSender init_sender_buffer(uint8_t* data, uint16_t len) {
         .seq = 0,
         .index = 0,
         .status = Started,
+        .time = 300,
     };
 }
 
@@ -65,7 +69,7 @@ Status send_data(IsoTpSender* buffer, int socket) {
         }
         else {
             frame.can_dlc = 8;
-            buffer->status = InProgress;
+            buffer->status = Waiting;
         }
 
         for (int i = 0; i<6 && i < buffer->len; i++) {
@@ -95,48 +99,19 @@ Status send_data(IsoTpSender* buffer, int socket) {
     return buffer->status;
 }
 
+int receive_msg(IsoTpSender* buffer, struct can_frame frame) {
+    if (frame.can_id != 2) {
+        return 1;
+    }
+    else if (frame.data[0] != 3 << 4) {
+        return 1;
+    }
+        
+    if (buffer->status == Waiting){
+        buffer->status = InProgress;
+    }
+}
 
-//int send_first_frame(int socket, uint8_t* data, uint16_t len, uint16_t* index) {
-//	struct can_frame frame;
-//
-//    frame.can_id = 0x1;
-//	frame.can_dlc = 8;
-//
-//    frame.data[0] = (1 << 4) | (len >> 8);
-//    frame.data[1] = len & 0xff;
-//    frame.data[2] = data[0];
-//    frame.data[3] = data[1];
-//    frame.data[4] = data[2];
-//    frame.data[5] = data[3];
-//    frame.data[6] = data[4];
-//    frame.data[7] = data[5];
-//
-//    send_frame(socket, &frame);
-//
-//    *index += 6;
-//}
-//
-//int send_consequent_frame(int socket, uint8_t* data, uint16_t len, uint16_t* index, uint8_t* seq) {
-//	struct can_frame frame;
-//
-//    frame.can_id = 0x1;
-//
-//    frame.data[0] = (2 << 4) | *seq;
-//
-//    printf("index: %d\n", *index);
-//    int i=0;
-//    for (; i<7 && *index + i < len; i++) {
-//        frame.data[i+1] = data[*index+i];
-//
-//    }
-//
-//	frame.can_dlc = i+1;
-//
-//    *seq = (*seq + 1) & 0xF;
-//    *index += i;
-//
-//    send_frame(socket, &frame);
-//}
 
 int main(int argc, char* argv[]) {
 	int s;
@@ -182,7 +157,20 @@ int main(int argc, char* argv[]) {
 
     IsoTpSender sender_buffer = init_sender_buffer(data, len);
     
+    clock_t previous_timestamp = clock();
     while(true) {
+        clock_t next_timestamp = clock();
+
+        uint16_t delta = (next_timestamp - previous_timestamp)/1000;
+
+        if (sender_buffer.time < delta) {
+            sender_buffer.time = 0;
+            sender_buffer.status = Interrupted;
+            printf("Interrupted\n");
+            break;
+        }
+
+        sender_buffer.time -= delta;
 	    int nbytes = read(s, &frame, sizeof(struct can_frame));
 
         if (nbytes != 0) {
@@ -193,29 +181,6 @@ int main(int argc, char* argv[]) {
             break;
         }
     }
-
-
-	//int nbytes = read(s, &frame, sizeof(struct can_frame));
-
-    //if (frame.can_id != 2) {
-    //    printf("Expected id 2");
-    //    return 1;
-    //}
-    //else if (frame.data[0] != 3 << 4){
-    //    printf("Expected control byte to be 3");
-    //    return 1;
-    //}
-
-
-    //while (index < len) {
-    //    send_consequent_frame(s, data, len, &index, &seq);
-    //}
-
-    //printf("index: %d", index);
-    //if (close(s) < 0) {
-	//	perror("Close");
-	//	return 1;
-	//}
 
     return 0;
 }
