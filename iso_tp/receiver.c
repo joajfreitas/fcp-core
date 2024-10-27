@@ -73,7 +73,7 @@ int send_flow_control_frame(int socket) {
     return send_frame(socket, &frame);
 }
 
-int main() {
+int main(int argc, char *argv[]) {
 	int s;
     struct sockaddr_can addr;
 	struct ifreq ifr;
@@ -84,7 +84,7 @@ int main() {
 		return 1;
 	}
 
-    strcpy(ifr.ifr_name, "vcan0" );
+    strcpy(ifr.ifr_name, argv[1]);
 	ioctl(s, SIOCGIFINDEX, &ifr);
 
     memset(&addr, 0, sizeof(addr));
