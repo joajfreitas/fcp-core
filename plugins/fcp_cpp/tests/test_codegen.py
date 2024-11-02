@@ -78,10 +78,14 @@ def test_codegen(test_name: str) -> None:
             Path(tempdirname) / f"{test_name}.cpp",
         )
 
+        shutil.copyfile(
+            Path(THIS_DIR) / "utest.h",
+            Path(tempdirname) / "utest.h",
+        )
+
         out = subprocess.run(
             [
                 "/usr/bin/g++",
-                "-lgtest",
                 f"{test_name}.cpp",
                 "-o",
                 test_name,
