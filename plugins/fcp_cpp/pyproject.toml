@@ -1,7 +1,7 @@
 [project]
 name = "fcp_cpp"
 version = "0.1.0"
-description = "fcp can cpp code generator"
+description = "fcp cpp code generator"
 license = { file = "LICENSE" }
 readme = "README.md"
 url = "https://github.com/joajfreitas/fcp-core"
