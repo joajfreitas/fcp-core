@@ -40,6 +40,13 @@ See [readthedocs.io](https://fcp-core.readthedocs.io/en/latest/)
 
 ### Can bus
 
+|      | Frame id | Device designation | Bus designation | Big endian | Muxes |
+|------|----------|--------------------|-----------------|------------|-------|
+| core |     ✅   |          ✅        |        ✅       |      ✅    |   ✅  |
+| dbc  |     ✅   |          ✅        |        ✅       |      ✅    |   ✅  |
+| c    |          |                    |                 |            |       |
+| cpp  |     ✅   |          ✅        |        ❌       |      ❌    |   ❌  |
+
  * Frame id
  * Device designation
  * Bus designation
