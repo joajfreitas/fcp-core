@@ -31,7 +31,7 @@ from .specs.struct_field import StructField
 from .specs.type import Type, ComposedType, BuiltinType, ArrayType
 from .specs.v2 import FcpV2
 from .specs.impl import Impl
-from .maybe import Some
+from .maybe import Some, Nothing
 
 
 class Value:
@@ -48,7 +48,7 @@ class Value:
         extended_data: Dict[str, Any] = dict(),
         composite_type: Optional[
             str
-        ] = None,  # name of composit type (used for enums, structs...)
+        ] = Nothing(),  # name of composit type (used for enums, structs...)
     ) -> None:
         self.name = name
         self.type = type
@@ -142,7 +142,7 @@ class PackedEncoder:
                 BuiltinType("u" + str(type_length)),  # type: ignore
                 self.bitstart,
                 type_length,
-                composite_type=enum.name,
+                composite_type=Some(enum.name),
             )
         )
         self.bitstart += type_length
