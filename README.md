@@ -22,6 +22,13 @@ See [readthedocs.io](https://fcp-core.readthedocs.io/en/latest/)
 
 ## Supported features
 
+|      | Flat struct | Composite struct | Enum | Array | 1-64 bit signed integers | 1-64 bit unsigned integers | 32/64 bit float |
+|------|-------------|------------------|------|-------|--------------------------|----------------------------|-----------------|
+| core |      ✅     |         ✅       |   ✅ |   ✅  |             ✅           |              ✅            |        ✅       |
+| dbc  |      ✅     |         ✅       |   ✅ |   ✅  |             ✅           |              ✅            |        ✅       |
+| c    |             |                  |      |       |                          |                            |                 |
+| cpp  |      ✅     |         ❌       |   ✅ |       |             ❌           |              ❌            |        ❌       |
+
  * Flat struct
  * Composite struct
  * Enums
