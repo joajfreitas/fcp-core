@@ -29,15 +29,6 @@ See [readthedocs.io](https://fcp-core.readthedocs.io/en/latest/)
 | c    |             |                  |      |       |                          |                            |                 |
 | cpp  |      ✅     |         ❌       |   ✅ |       |             ❌           |              ❌            |        ❌       |
 
- * Flat struct
- * Composite struct
- * Enums
- * Arrays of base types and composed types
- * Suppport for any signed integer between 1 and 64 bits
- * Support for any unsigned integer between 1 and 64 bits
- * Support for 32 and 64 bit floats
-
-
 ### Can bus
 
 |      | Frame id | Device designation | Bus designation | Big endian | Muxes |
@@ -46,9 +37,3 @@ See [readthedocs.io](https://fcp-core.readthedocs.io/en/latest/)
 | dbc  |     ✅   |          ✅        |        ✅       |      ✅    |   ✅  |
 | c    |          |                    |                 |            |       |
 | cpp  |     ✅   |          ✅        |        ❌       |      ❌    |   ❌  |
-
- * Frame id
- * Device designation
- * Bus designation
- * Big endian encoding
- * Muxes
