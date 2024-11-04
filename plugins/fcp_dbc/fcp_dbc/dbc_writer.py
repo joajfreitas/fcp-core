@@ -34,7 +34,7 @@ from fcp import FcpV2
 
 from fcp.result import Result, Ok, Err
 from fcp.maybe import catch
-from fcp.encoding import make_encoder, EncodeablePiece
+from fcp.encoding import make_encoder, EncodeablePiece, PackedEncoderContext
 
 
 def _make_signals(
@@ -86,7 +86,9 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
     """Write dbc."""
     buses: Dict[str, Any] = defaultdict(lambda: {"messages": list(), "nodes": list()})
 
-    encoder = make_encoder("packed", fcp)
+    encoder = make_encoder(
+        "packed", fcp, PackedEncoderContext().with_unroll_arrays(True)
+    )
 
     for impl in fcp.get_matching_impls("can"):
         bus = impl.get_field("bus", "default").unwrap()

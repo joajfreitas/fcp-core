@@ -1,4 +1,22 @@
-"""Encoding."""
+"""Produce encodable instructions from an Fcp v2 AST.
+
+Available encoders:
+    * PackedEncoder - encoder for static length packed data
+
+The generate function in the encoder returns a list of encodeable pieces.
+Availble encodeable pieces:
+    * Value - Value containing data in the payload
+
+Usage example:
+
+.. code-block: python
+
+    encoder = make_encoder("packed", fcp, PackedEncoderContext())
+    for impl in fcp.get_matching_impls("can"):
+        for encodeable_piece in encoder.generate(impl):
+            # encode it somehow
+            ...
+"""
 
 # Copyright (c) 2024 the fcp AUTHORS.
 #
@@ -21,7 +39,7 @@
 # SOFTWARE.
 
 
-from beartype.typing import Union, NoReturn, List, Dict, Any, Optional
+from beartype.typing import Union, NoReturn, List, Dict, Any, Optional, Self, TypeAlias
 from math import log2, ceil
 from copy import copy
 
@@ -40,7 +58,7 @@ class Value:
     def __init__(
         self,
         name: str,
-        type: BuiltinType,  # scalar type (e.g. u8, i12, etc.)
+        type: Type,
         bitstart: int,
         bitlength: int,
         endianess: str = "little",
@@ -75,14 +93,31 @@ class Value:
         )
 
 
-EncodeablePiece = Union[Value]
+EncodeablePiece: TypeAlias = Union[Value]
+
+
+class PackedEncoderContext:
+    """Configuration options for the packed encoder."""
+
+    def __init__(self, unroll_arrays: bool = False):
+        self.unroll_arrays = unroll_arrays
+
+    def with_unroll_arrays(self, unroll_arrays: bool) -> Self:
+        """Unroll arrays into N scalar values."""
+        this = copy(self)
+        this.unroll_arrays = unroll_arrays
+        return this
+
+
+EncoderContext: TypeAlias = Union[PackedEncoderContext]
 
 
 class PackedEncoder:
     """Packed encoder. Packs all bits really tight."""
 
-    def __init__(self, fcp: FcpV2):
+    def __init__(self, fcp: FcpV2, ctx: PackedEncoderContext):
         self.fcp = fcp
+        self.ctx = ctx
         self.encoding: List[Value] = []
         self.bitstart = 0
 
@@ -108,7 +143,7 @@ class PackedEncoder:
                 prefix=prefix + field.name + "::",
             )
             return
-        elif isinstance(field.type, ArrayType):
+        elif isinstance(field.type, ArrayType) and self.ctx.unroll_arrays:
             self._generate_array_type(field.type, field, extension, prefix)
             return
 
@@ -185,9 +220,12 @@ class PackedEncoder:
         return self.encoding
 
 
-def make_encoder(name: str, fcp: FcpV2) -> Union[PackedEncoder]:
+Encoder: TypeAlias = Union[PackedEncoder]
+
+
+def make_encoder(name: str, fcp: FcpV2, ctx: EncoderContext) -> Encoder:
     """Create encoder from encoder name."""
     if name == "packed":
-        return PackedEncoder(fcp)
+        return PackedEncoder(fcp, ctx)
 
     raise KeyError(f"Invalid encoding name {name}")

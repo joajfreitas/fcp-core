@@ -3,7 +3,7 @@
 from beartype.typing import NoReturn
 import pytest
 
-from fcp.encoding import PackedEncoder, Value
+from fcp.encoding import PackedEncoder, PackedEncoderContext, Value
 
 from fcp.specs.struct import Struct
 from fcp.specs.impl import Impl
@@ -59,7 +59,7 @@ def test_packed_encoding(example_struct: Struct) -> NoReturn:
     example_extension = make_example_extension("A")
     fcp = FcpV2(structs=[example_struct], impls=[example_extension])
 
-    packed_encoding = PackedEncoder(fcp)
+    packed_encoding = PackedEncoder(fcp, PackedEncoderContext())
     assert packed_encoding.generate(example_extension) == [
         Value("s1", BuiltinType("u32"), bitstart=0, bitlength=32),
         Value("s2", BuiltinType("u16"), bitstart=32, bitlength=16),
@@ -77,7 +77,7 @@ def test_struct(example_struct: Struct) -> NoReturn:
     example_extension = make_example_extension("B")
     fcp = FcpV2(structs=[example_struct, b_struct], impls=[example_extension])
 
-    packed_encoding = PackedEncoder(fcp)
+    packed_encoding = PackedEncoder(fcp, PackedEncoderContext)
 
     assert packed_encoding.generate(example_extension) == [
         Value("s1::s1", BuiltinType("u32"), bitstart=0, bitlength=32),
