@@ -32,7 +32,7 @@ class BuiltinType:
     name: str
 
     def get_length(self) -> int:
-        """Check type length in bits."""
+        """Type length in bits."""
         return int(self.name[1:])
 
     def is_signed(self) -> bool:
@@ -53,6 +53,10 @@ class ArrayType:
 
     type: Union[BuiltinType, ComposedType, Self]
     size: int
+
+    def get_length(self) -> int:
+        """Type length in bits."""
+        return int(self.type.get_length() * self.size)
 
 
 Type = Union[BuiltinType, ArrayType, ComposedType]
