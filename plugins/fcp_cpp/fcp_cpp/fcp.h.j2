@@ -6,8 +6,83 @@
 #include <iostream>
 #include <map>
 #include <any>
+#include <array>
 
 namespace fcp {
+
+namespace {
+
+template<typename Iterator>
+uint8_t get_bit(Iterator input, uint8_t bit) {
+    auto byte_address = bit >> 3;
+    auto intra_byte_bit_address = bit & 0b111;
+
+    return (*(input+byte_address) >> intra_byte_bit_address) & 0b1;
+}
+
+template<typename Iterator>
+void _decode(uint8_t* output, Iterator input, uint8_t bitstart, uint8_t bitlength) {
+    uint8_t result = 0;
+
+    for (int i=0; i<bitlength; i++) {
+        result |= (get_bit<Iterator>(input, bitstart + i)) << i;
+    }
+
+    *output = result;
+}
+
+template<typename Iterator>
+void _decode(uint32_t* output, Iterator input, uint8_t bitstart, uint8_t bitlength) {
+    uint32_t result = 0;
+
+    for (int i=0; i<bitlength; i++) {
+        result |= (get_bit<Iterator>(input, bitstart + i)) << i;
+    }
+
+    *output = result;
+}
+
+template<typename Iterator, typename T, std::size_t N>
+std::array<T, N> _decode_array(Iterator input, uint8_t bitstart, uint8_t elem_bitlength) {
+    std::array<T, N> tmp{};
+
+    for (std::uint64_t i=0; i<N; i++) {
+        _decode<Iterator>(&tmp[i], input, bitstart + i*elem_bitlength, elem_bitlength);
+    }
+
+    return tmp;
+}
+
+
+std::vector<std::uint8_t> _encode(uint8_t input) {
+    return {input};
+}
+
+std::vector<std::uint8_t> _encode(uint16_t input) {
+    return {static_cast<uint8_t>((input >> 8) & 0xFF), static_cast<uint8_t>(input & 0xFF)};
+}
+
+std::vector<std::uint8_t> _encode(uint32_t input) {
+    return {
+        static_cast<uint8_t>((input >> 24) & 0xFF),
+        static_cast<uint8_t>((input >> 16) & 0xFF),
+        static_cast<uint8_t>((input >>  8) & 0xFF),
+        static_cast<uint8_t>((input >>  0) & 0xFF)
+    };
+}
+
+template<typename T, std::size_t N>
+std::vector<std::uint8_t> encode_array(const std::array<T, N>& array) {
+    std::vector<std::uint8_t> tmp{};
+    for (const auto& elem: array) {
+        auto encoded = _encode(elem);
+        tmp.insert(tmp.begin(), encoded.begin(), encoded.end());
+    }
+
+    return tmp;
+}
+
+}
 
 {% for enum in fcp.enums -%}
 enum {{enum.name}} {
@@ -46,6 +121,42 @@ struct {{struct.name}} {
         return result;
     }
     {% endif %}
+
+    {% if impl is not none %}
+    template<typename Iterator>
+    static {{struct.name}} decode(Iterator input) {
+        {{struct.name}} result{};
+        {% for piece in impl.encoding %}
+        {% if piece.type | is_enum %}
+        _decode<Iterator>(({{piece | enum_underlying_type}} *) &result.{{piece.name}}, input, {{piece.bitstart}}, {{piece.bitlength}});
+        {%- elif piece.type | is_builtin -%}
+        _decode<Iterator>(&result.{{piece.name}}, input, {{piece.bitstart}}, {{piece.bitlength}});
+        {% elif piece.type | is_array -%}
+        result.{{piece.name}} = _decode_array<std::vector<uint8_t>::iterator, {{piece.type.type | to_cpp_type}}, {{piece.type.size}}>(input, {{piece.bitstart}}, {{(piece.bitlength / piece.type.size) | int}});
+        {% endif -%}{% endfor %}
+
+        return result;
+    }
+    {% endif %}
+
+    {% if impl is not none %}
+    std::vector<std::uint8_t> encode() {
+        std::vector<std::uint8_t> result{};
+        std::vector<std::uint8_t> aux{};
+
+        {% for piece in impl.encoding | reverse %}
+        {% if piece.type | is_enum %}
+        aux = _encode(static_cast<{{piece | enum_underlying_type}}>({{piece.name}}));
+        {%- elif piece.type | is_builtin -%}
+        aux = _encode({{piece.name}});
+        {% elif piece.type | is_array -%}
+        aux = encode_array<{{piece.type.type | to_cpp_type}}, {{piece.type.size}}>({{piece.name}});
+        {% endif -%}
+        result.insert(result.begin(), aux.rbegin(), aux.rend());
+        {% endfor %}
+        return result;
+    }
+    {% endif %}
 };
 
 inline bool operator==(const {{struct.name}}& lhs, const {{struct.name}}& rhs)
@@ -54,87 +165,6 @@ inline bool operator==(const {{struct.name}}& lhs, const {{struct.name}}& rhs)
 }
 
 {% endfor -%}
-
-std::vector<std::uint8_t> encode(uint8_t input) {
-    return {input};
-}
-
-std::vector<std::uint8_t> encode(uint16_t input) {
-    return {static_cast<uint8_t>((input >> 8) & 0xFF), static_cast<uint8_t>(input & 0xFF)};
-}
-
-std::vector<std::uint8_t> encode(uint32_t input) {
-    return {
-        static_cast<uint8_t>((input >> 24) & 0xFF),
-        static_cast<uint8_t>((input >> 16) & 0xFF),
-        static_cast<uint8_t>((input >>  8) & 0xFF),
-        static_cast<uint8_t>((input >>  0) & 0xFF)
-    };
-}
-
-{% for name, encoding in can_encodings.items() %}
-std::vector<std::uint8_t> encode(const {{name}}& input) {
-    std::vector<std::uint8_t> result{};
-    std::vector<std::uint8_t> aux{};
-    {%- for encode_piece in encoding.encoding | reverse %}
-    {% set is_enum = encode_piece.composite_type.is_some() %}
-    aux = encode({% if is_enum %}static_cast<{{encode_piece.type | to_cpp_type}}>({% endif %}input.{{encode_piece.name}}{% if is_enum %}){% endif %});
-    result.insert(result.begin(), aux.rbegin(), aux.rend());
-    {%- endfor %}
-    return result;
-}
-{% endfor %}
-
-uint8_t get_bit(const std::vector<uint8_t>& input, uint8_t bit) {
-    auto byte_address = bit >> 3;
-    auto intra_byte_bit_address = bit & 0b111;
-
-    return (input[byte_address] >> intra_byte_bit_address) & 0b1;
-}
-
-template<typename T>
-T _decode(const std::vector<uint8_t>&, uint8_t bitstart, uint8_t bitlength);
-
-template<>
-uint8_t _decode(const std::vector<uint8_t>& input, uint8_t bitstart, uint8_t bitlength) {
-    uint8_t result = 0;
-
-    for (int i=0; i<bitlength; i++) {
-        result |= (get_bit(input, bitstart + i)) << i;
-    }
-    return result;
-}
-
-template<>
-uint32_t _decode(const std::vector<uint8_t>& input, uint8_t bitstart, uint8_t bitlength) {
-    uint32_t result = 0;
-
-    for (int i=0; i<bitlength; i++) {
-        result |= (get_bit(input, bitstart + i)) << i;
-    }
-    return result;
-}
-
-template<typename T>
-T decode(const std::vector<uint8_t>&);
-
-{% for name, can_encoding in can_encodings.items() %}
-template<>
-{{name}} decode(const std::vector<uint8_t>& input) {
-    {{name}} result{};
-
-    {%- for encode_piece in can_encoding.encoding -%}
-    {% set is_enum = encode_piece.composite_type.is_some() %}
-    result.{{encode_piece.name}} = 
-    {%- if is_enum -%}
-    static_cast<{{encode_piece.composite_type.unwrap()}}>(
-    {%- endif -%} _decode<{{encode_piece.type | to_cpp_type()}}>(input, {{encode_piece.bitstart}}, {{encode_piece.bitlength}}){%- if is_enum -%}){%- endif -%};
-    {%- endfor %}
-
-    return result;
-}
-{% endfor -%}
-
 } // namespace fcp
 
 #endif // __FCP_CAN_H__

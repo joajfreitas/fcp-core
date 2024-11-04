@@ -7,7 +7,7 @@ UTEST_MAIN()
 
 UTEST(BasicStruct, Decode) {
     auto foo = fcp::Foo{1,2};
-    auto encoded = encode(foo);
+    auto encoded = foo.encode();
 
     std::vector<uint8_t> bytes{1,2};
     EXPECT_TRUE(encoded==bytes);
@@ -16,7 +16,7 @@ UTEST(BasicStruct, Decode) {
 UTEST(BasicStruct, Encode) {
     std::vector<uint8_t> bytes{1,2};
 
-    auto foo = fcp::decode<fcp::Foo>(bytes);
+    auto foo = fcp::Foo::decode(bytes.begin());
     auto expected = fcp::Foo{1,2};
     EXPECT_TRUE(foo==expected);
 }

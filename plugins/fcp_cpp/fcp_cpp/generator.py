@@ -33,8 +33,8 @@ from fcp.specs.impl import Impl
 from fcp.codegen import CodeGenerator
 from fcp.verifier import Verifier
 from fcp import FcpV2
-from fcp.specs.type import BuiltinType
-from fcp.encoding import make_encoder, EncodeablePiece
+from fcp.specs.type import BuiltinType, ArrayType, ComposedTypeCategory, ComposedType
+from fcp.encoding import make_encoder, EncodeablePiece, EncoderContext, Value
 
 
 def to_cpp_type(input: Type) -> str:
@@ -57,8 +57,46 @@ def to_cpp_type(input: Type) -> str:
             return "double"
         else:
             raise ValueError(f"Not a valid builtin type: {input}")
+    elif isinstance(input, ArrayType):
+        underlying_type = to_cpp_type(input.type)
+        return f"std::array<{underlying_type}, {input.size}>"
     else:
         return str(input.name)
+
+
+def enum_underlying_type(value: Value) -> str:
+    """Get the underlying type of an enum from an encodable value."""
+    if not (
+        isinstance(value.type, ComposedType)
+        and value.type.category == ComposedTypeCategory.Enum
+    ):
+        raise ValueError(
+            "Cannot call `enum_underlying_type` with something that is not an enum"
+        )
+
+    return "uint" + str(max(int(2 ** math.ceil(math.log2(value.bitlength))), 8)) + "_t"
+
+
+def is_array(type: Type) -> bool:
+    """Jinja filter to check if type is an array."""
+    return isinstance(type, ArrayType)
+
+
+def is_builtin(type: Type) -> bool:
+    """Jinja filter to check if type is a builtin type."""
+    return isinstance(type, BuiltinType)
+
+
+def is_enum(type: Type) -> bool:
+    """Jinja filter to check if type is a composed enum type."""
+    return isinstance(type, ComposedType) and type.category == ComposedTypeCategory.Enum
+
+
+def is_struct(type: Type) -> bool:
+    """Jinja filter to check if type is a composed struct type."""
+    return (
+        isinstance(type, ComposedType) and type.category == ComposedTypeCategory.Struct
+    )
 
 
 class CanEncoding:
@@ -102,10 +140,15 @@ class Generator(CodeGenerator):
             }
         )
 
-        env = jinja2.Environment(autoescape=True, loader=loader)
+        env = jinja2.Environment(loader=loader)
         env.filters["to_cpp_type"] = to_cpp_type
+        env.filters["is_array"] = is_array
+        env.filters["is_builtin"] = is_builtin
+        env.filters["is_enum"] = is_enum
+        env.filters["is_struct"] = is_struct
+        env.filters["enum_underlying_type"] = enum_underlying_type
 
-        encoder = make_encoder("packed", fcp)
+        encoder = make_encoder("packed", fcp, EncoderContext())
         can_encodings = {}
 
         for impl in fcp.get_matching_impls("can"):
