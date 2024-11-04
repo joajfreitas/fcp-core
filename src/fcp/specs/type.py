@@ -23,6 +23,7 @@
 from serde import serde, strict
 from beartype.typing import Union
 from typing_extensions import Self
+from enum import Enum
 
 
 @serde(type_check=strict)
@@ -40,11 +41,19 @@ class BuiltinType:
         return self.name[0] == "i"
 
 
+class ComposedTypeCategory(Enum):
+    """Category of composed types."""
+
+    Enum = "Enum"
+    Struct = "Struct"
+
+
 @serde(type_check=strict)
 class ComposedType:
     """fcp type for user defined types such as structs and enums."""
 
     name: str
+    category: ComposedTypeCategory
 
 
 @serde(type_check=strict)

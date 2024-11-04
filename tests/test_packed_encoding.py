@@ -9,7 +9,7 @@ from fcp.specs.struct import Struct
 from fcp.specs.impl import Impl
 from fcp.specs.struct_field import StructField
 from fcp.specs.metadata import MetaData
-from fcp.specs.type import BuiltinType, ComposedType
+from fcp.specs.type import BuiltinType, ComposedType, ComposedTypeCategory
 from fcp.specs.v2 import FcpV2
 
 
@@ -70,7 +70,11 @@ def test_struct(example_struct: Struct) -> NoReturn:
     b_struct = Struct(
         name="B",
         fields=[
-            StructField(name="s1", field_id=0, type=ComposedType("A")),
+            StructField(
+                name="s1",
+                field_id=0,
+                type=ComposedType("A", ComposedTypeCategory.Struct),
+            ),
             StructField(name="s2", field_id=1, type=BuiltinType("u8")),
         ],
     )

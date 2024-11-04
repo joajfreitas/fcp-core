@@ -22,7 +22,7 @@
         {
           "name": "var",
           "field_id": 0,
-          "type": {"ComposedType": {"name": "foo"}}
+          "type": {"ComposedType": {"name": "foo", "category": "Struct"}}
         }
       ]
     }

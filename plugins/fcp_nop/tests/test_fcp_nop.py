@@ -66,12 +66,19 @@ struct SensorInformation {
                     {
                         "name": "temperature",
                         "field_id": 0,
-                        "type": {"ComposedType": {"name": "Temperature"}},
+                        "type": {
+                            "ComposedType": {
+                                "name": "Temperature",
+                                "category": "Struct",
+                            }
+                        },
                     },
                     {
                         "name": "sensor_state",
                         "field_id": 1,
-                        "type": {"ComposedType": {"name": "SensorState"}},
+                        "type": {
+                            "ComposedType": {"name": "SensorState", "category": "Enum"}
+                        },
                     },
                 ],
             },

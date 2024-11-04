@@ -46,7 +46,7 @@ from copy import copy
 from .specs.struct import Struct
 from .specs.enum import Enum
 from .specs.struct_field import StructField
-from .specs.type import Type, ComposedType, BuiltinType, ArrayType
+from .specs.type import Type, ComposedTypeCategory, ComposedType, BuiltinType, ArrayType
 from .specs.v2 import FcpV2
 from .specs.impl import Impl
 from .maybe import Some, Nothing
@@ -214,7 +214,7 @@ class PackedEncoder:
         self.bitstart = 0
 
         self._generate(
-            ComposedType(impl.type),  # type: ignore
+            ComposedType(impl.type, ComposedTypeCategory.Struct),  # type: ignore
             impl,
         )
         return self.encoding

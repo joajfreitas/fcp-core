@@ -114,6 +114,14 @@ class FcpV2:
 
         return Nothing()
 
+    def get_enum(self, name: str) -> Maybe[Enum]:
+        """Get enum by name."""
+        for enum in self.enums:
+            if enum.name == name:
+                return Some(enum)
+
+        return Nothing()
+
     def to_dict(self) -> Any:
         """Get the fcp AST as a python dictionary."""
 

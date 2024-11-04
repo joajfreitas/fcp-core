@@ -36,7 +36,7 @@ from .specs import impl
 from .specs import signal_block
 from .specs import service
 from .specs import rpc
-from .specs.type import BuiltinType, ArrayType, ComposedType, Type
+from .specs.type import BuiltinType, ArrayType, ComposedTypeCategory, ComposedType, Type
 from .specs import v2
 from .result import Result, Ok, Err
 from .maybe import catch
@@ -189,7 +189,16 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
     def compound_type(self, args: List[str]) -> ComposedType:
         """Parse a compound_type node of the fcp AST."""
-        return ComposedType(args[0])  # type: ignore
+        typename = args[0]
+
+        if self.fcp.get_struct(typename).is_some():
+            type_category = ComposedTypeCategory.Struct
+        elif self.fcp.get_enum(typename).is_some():
+            type_category = ComposedTypeCategory.Enum
+        else:
+            raise ValueError(f"Type '{typename}' cannot be found.")
+
+        return ComposedType(typename, type_category)  # type: ignore
 
     def param(self, args: List[str]) -> Tuple[str, ...]:
         """Parse a param node of the fcp AST."""
