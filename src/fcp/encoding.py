@@ -163,7 +163,9 @@ class PackedEncoder:
 
         self.bitstart += type_length
 
-    def _generate_enum(self, enum: Enum, extension: Impl, prefix: str) -> NoReturn:
+    def _generate_enum(
+        self, type: ComposedType, enum: Enum, extension: Impl, prefix: str
+    ) -> NoReturn:
         type_length = ceil(
             log2(max([enumeration.value for enumeration in enum.enumeration]) + 1)
         )
@@ -174,7 +176,7 @@ class PackedEncoder:
         self.encoding.append(
             Value(
                 prefix[:-2],
-                BuiltinType("u" + str(type_length)),  # type: ignore
+                type,
                 self.bitstart,
                 type_length,
                 composite_type=Some(enum.name),
@@ -185,13 +187,13 @@ class PackedEncoder:
     def _generate_compound_type(
         self, type: ComposedType, extension: Impl, prefix: str = ""
     ) -> NoReturn:
-        type = self.fcp.get_type(type).unwrap()
-        if isinstance(type, Struct):
-            self._generate_struct(type, extension, prefix)
-        elif isinstance(type, StructField):
-            self._generate_signal(type, extension, prefix)
-        elif isinstance(type, Enum):
-            self._generate_enum(type, extension, prefix)
+        concrete_type = self.fcp.get_type(type).unwrap()
+        if isinstance(concrete_type, Struct):
+            self._generate_struct(concrete_type, extension, prefix)
+        elif isinstance(concrete_type, StructField):
+            self._generate_signal(concrete_type, extension, prefix)
+        elif isinstance(concrete_type, Enum):
+            self._generate_enum(type, concrete_type, extension, prefix)
         else:
             raise KeyError(f"Invalid type {type}")
 

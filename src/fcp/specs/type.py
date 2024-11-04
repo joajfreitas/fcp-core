@@ -55,6 +55,13 @@ class ComposedType:
     name: str
     category: ComposedTypeCategory
 
+    def is_signed(self) -> bool:
+        """Check that type is signed."""
+        if self.category == ComposedTypeCategory.Enum:
+            return False
+        else:
+            raise ValueError("Signess of struct is meaningless")
+
 
 @serde(type_check=strict)
 class ArrayType:
