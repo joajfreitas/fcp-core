@@ -53,7 +53,7 @@ from .maybe import Some, Nothing
 
 
 class Value:
-    """Encodable piece value."""
+    """Encodable piece data value."""
 
     def __init__(
         self,
@@ -113,7 +113,7 @@ EncoderContext: TypeAlias = Union[PackedEncoderContext]
 
 
 class PackedEncoder:
-    """Packed encoder. Packs all bits really tight."""
+    """Packed encoder. Packs all bits really tight. Only handles static length data."""
 
     def __init__(self, fcp: FcpV2, ctx: PackedEncoderContext):
         self.fcp = fcp
@@ -209,7 +209,7 @@ class PackedEncoder:
         self._generate_compound_type(type, extension, prefix)
 
     def generate(self, impl: Impl) -> List[EncodeablePiece]:
-        """Generate encoding."""
+        """Generate encoding instructions."""
         self.encoding = []
         self.bitstart = 0
 
