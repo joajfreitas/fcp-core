@@ -8,9 +8,9 @@
 #include <array>
 #include <variant>
 #include <memory>
-#include <string>  
-#include <iostream> 
-#include <sstream>   
+#include <string>
+#include <iostream>
+#include <sstream>
 
 namespace fcp {
 
@@ -40,7 +40,7 @@ public:
 
         return result;
     }
-    
+
     template<typename T, std::size_t Size>
     void push_word(T word, std::size_t bitstart) {
         for (int i=0; i<Size; i++) {
@@ -124,7 +124,7 @@ public:
     }
 
     static constexpr std::size_t GetSize() {
-        return 2; 
+        return 2;
     }
 
     UnderlyingType GetData() const {
@@ -159,7 +159,7 @@ private:
 template<typename T, std::size_t N>
 class Array {
     public:
-    
+
     Array(): data_{} {}
     Array(std::array<T, N> value): data_{value} {}
 
@@ -211,7 +211,7 @@ struct Foo {
 
     Foo(): s1_{}, s2_{} , s3_{} {}
     Foo(S1Type s1, S2Type s2, S3Type s3): s1_{s1}, s2_{s2} , s3_{s3} {}
-    
+
     Foo(Buffer& buffer, std::size_t bitstart = 0) {
         s1_ = S1Type(buffer, bitstart);
         bitstart += S1Type::GetSize();
@@ -277,11 +277,11 @@ private:
 
 
 struct Bar {
-    using S1Type = Foo; 
+    using S1Type = Foo;
     using S2Type = Array<Array<Uint8<8>, 2>, 2>;
 
     Bar(S1Type s1, S2Type s2): s1_{s1}, s2_{s2} {}
-    
+
     Bar(Buffer& buffer, std::size_t bitstart = 0) {
         s1_ = S1Type(buffer, bitstart);
         bitstart += S1Type::GetSize();
@@ -334,10 +334,6 @@ private:
     S2Type s2_;
 };
 
-//inline bool operator==(const Foo& lhs, const Foo& rhs)
-//{
-//    return lhs.s1 == rhs.s1 && lhs.s2 == rhs.s2 && lhs.s3 == rhs.s3;
-//}
 
 } // namespace fcp
 

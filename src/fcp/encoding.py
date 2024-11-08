@@ -121,6 +121,37 @@ class PackedEncoder:
         self.encoding: List[Value] = []
         self.bitstart = 0
 
+    def get_type_length(self, fcp: FcpV2, type: Type) -> int:
+        if isinstance(type, BuiltinType):
+            return type.get_length()
+        elif isinstance(type, ArrayType):
+            return type.size * self.get_type_length(fcp, type.type)
+        elif (
+            isinstance(type, ComposedType)
+            and type.category == ComposedTypeCategory.Enum
+        ):
+            return int(
+                2
+                ** ceil(
+                    log2(
+                        ceil(
+                            log2(
+                                max(
+                                    [
+                                        x.value
+                                        for x in fcp.get_enum(type.name)
+                                        .unwrap()
+                                        .enumeration
+                                    ]
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        else:
+            raise ValueError("Error computing type length")
+
     def _generate_struct(
         self, struct: Struct, extension: Impl, prefix: str = ""
     ) -> NoReturn:
@@ -147,7 +178,7 @@ class PackedEncoder:
             self._generate_array_type(field.type, field, extension, prefix)
             return
 
-        type_length = field.type.get_length()
+        type_length = self.get_type_length(self.fcp, field.type)
 
         self.encoding.append(
             Value(

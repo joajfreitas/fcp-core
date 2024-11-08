@@ -52,10 +52,10 @@ fcp_parser = Lark(
 
     struct: "struct" identifier "{" struct_field+ "}"
     struct_field: identifier "@" number ":" type param* ","
-    type: (base_type | array_type | compound_type) "|"?
+    type: (base_type | array_type | composed_type) "|"?
     base_type: /u\d\d|u\d|i\d\d|i\d|f32|f64/
     array_type: "[" type "," number "]"
-    compound_type: identifier
+    composed_type: identifier
 
     param: identifier "("? param_argument* ")"? "|"?
     param_argument: value ","?
@@ -187,7 +187,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         """Parse an array_type node of the fcp AST."""
         return ArrayType(args[0], int(args[1]))  # type: ignore
 
-    def compound_type(self, args: List[str]) -> ComposedType:
+    def composed_type(self, args: List[str]) -> ComposedType:
         """Parse a compound_type node of the fcp AST."""
         typename = args[0]
 
