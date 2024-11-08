@@ -113,7 +113,7 @@ def read_dbc_cmd(dbc: str, json_file: str, device_config: str):
     }```
     """
     logger = setup_logging()
-    read_dbc(dbc, json_file, device_config, logger)
+    read_dbc(dbc, json_file, device_config)
 
 
 @click.command(name="write-dbc")

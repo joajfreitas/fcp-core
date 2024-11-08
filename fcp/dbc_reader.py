@@ -210,10 +210,11 @@ def read_dbc(dbc, json_file, device_config):
             #print(
                 #signal.multiplexer_signal, signal.is_multiplexer, signal.multiplexer_ids
             #)
+            endianess = signal.byte_order or "little_endian"
             sig = Signal(
                 parent = msg,
                 name=signal.name,
-                start=signal.start,
+                start=signal.start if endianess == "little_endian" else signal.start - (signal.length - 1),
                 length=signal.length,
                 scale=signal.scale or 1,
                 offset=signal.offset or 0,
@@ -221,7 +222,7 @@ def read_dbc(dbc, json_file, device_config):
                 comment=signal.comment or "",
                 min_value=signal.minimum or 0,
                 max_value=signal.maximum or 0,
-                byte_order=signal.byte_order or "little_endian",
+                byte_order= endianess,
                 type=t or "unsigned",
                 mux=signal.multiplexer_signal or "",
                 mux_count=1,
