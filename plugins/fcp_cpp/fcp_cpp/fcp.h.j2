@@ -66,31 +66,31 @@ private:
 };
 }
 
-template<std::size_t Size>
-class Uint8 {
+template<typename UnderlyingType, std::size_t Size>
+class Unsigned {
 public:
-    Uint8(){}
-    Uint8(std::uint8_t value): data_{value} {}
+    Unsigned(){}
+    Unsigned(UnderlyingType value): data_{value} {}
 
-    Uint8(Buffer& buffer, std::size_t bitstart) {
+    Unsigned(Buffer& buffer, std::size_t bitstart) {
         auto word = buffer.get_word(bitstart, Size);
-        data_ = static_cast<std::uint8_t>(word);
+        data_ = static_cast<UnderlyingType>(word);
     }
 
     void _encode(Buffer& buffer, std::size_t bitstart) {
-        buffer.push_word<uint8_t, Size>(data_, bitstart) ;
+        buffer.push_word<UnderlyingType, Size>(data_, bitstart) ;
     }
 
     static std::size_t GetSize() {
         return Size;
     }
 
-    inline bool operator==(const Uint8& rhs) const
+    inline bool operator==(const Unsigned& rhs) const
     {
         return true;
     }
 
-    uint8_t GetData() const {
+    UnderlyingType GetData() const {
         return data_;
     }
 
@@ -101,7 +101,7 @@ public:
     }
 
 private:
-    std::uint8_t data_;
+    UnderlyingType data_;
 };
 
 template<typename T, std::size_t N>
@@ -202,89 +202,65 @@ private:
 }
 {% endfor %}
 
-//{% for struct, impl in structs %}
-//struct {{struct.name}} {
-//    {% for signal in struct.fields %}
-//    using {{signal.name}}Type = 
-//    {% endfor %}
-//}
-//{% endfor %}
 
-///////////////////////////////////////////////////////////////////////////////
-
-
-{% for struct, impl in structs -%}
+{% for struct, impl in structs %}
 struct {{struct.name}} {
-    {% for signal in struct.fields -%}
-    {{signal.type | to_cpp_type}} {{signal.name}};
-    {% endfor -%}
+    {% for signal in struct.fields %}
+    using {{signal.name | capitalize}}Type = {{signal.type | to_wrapper_cpp_type}};
+    {% endfor %}
 
-    {% if impl is not none %}
-    std::map<std::string, std::tuple<std::any, std::string>> to_dict() {
-        std::map<std::string, std::tuple<std::any, std::string>> results{};
-
-        {%- for piece in impl.encoding %}
-        results["{{piece.name}}"] = std::make_tuple({{piece.name}}, "{{piece.type | to_cpp_type }}");
-        {%- endfor -%}
-        return results;
+    {{struct.name}}({% for signal in struct.fields%}{{signal.name | capitalize}}Type {{signal.name}}{%if not loop.last%},{%endif%}{%endfor%}): {% for signal in struct.fields %}{{signal.name}}_{ {{signal.name}} }{% if not loop.last %},{% endif %}{% endfor %} {}
+    {{struct.name}}(Buffer& buffer, std::size_t bitstart=0) {
+    {%for signal in struct.fields%}
+        {{signal.name}}_ = {{signal.name | capitalize}}Type(buffer, bitstart);
+        bitstart += {{signal.name | capitalize}}Type::GetSize();
+    {%endfor%}
     }
-    {% endif -%}
 
-    {% if impl is not none %}
-    static {{struct.name}} from_dict(std::map<std::string, std::tuple<std::any, std::string>> dict) {
-        {{struct.name}} result{};
-        {%- for piece in impl.encoding -%}
-
-        {% set is_enum = piece.composite_type.is_some() %}
-        result.{{piece.name}} = {%- if is_enum -%}static_cast<{{piece.composite_type.unwrap()}}>({%- endif -%}std::any_cast<{{piece.type | to_cpp_type}}>(std::get<0>(dict["piece.name"])){%- if is_enum -%}){%- endif -%};
-        {%- endfor %}
-        return result;
+    void _encode(Buffer& buffer, std::size_t bitstart) {
+    {% for signal in struct.fields %}
+        {{signal.name}}_._encode(buffer, bitstart);
+        bitstart += {{signal.name | capitalize}}Type::GetSize();
+    {% endfor %}
     }
-    {% endif %}
 
-    {% if impl is not none %}
-    template<typename Iterator>
-    static {{struct.name}} decode(Iterator input) {
-        {{struct.name}} result{};
-        {% for piece in impl.encoding %}
-        {% if piece.type | is_enum %}
-        _decode<Iterator>(({{piece | enum_underlying_type}} *) &result.{{piece.name}}, input, {{piece.bitstart}}, {{piece.bitlength}});
-        {%- elif piece.type | is_builtin -%}
-        _decode<Iterator>(&result.{{piece.name}}, input, {{piece.bitstart}}, {{piece.bitlength}});
-        {% elif piece.type | is_array -%}
-        result.{{piece.name}} = _decode_array<std::vector<uint8_t>::iterator, {{piece.type.type | to_cpp_type}}, {{piece.type.size}}>(input, {{piece.bitstart}}, {{(piece.bitlength / piece.type.size) | int}});
-        {% endif -%}{% endfor %}
-
-        return result;
+    Buffer encode() {
+        Buffer buffer{GetSize()};
+        _encode(buffer, 0);
+        return buffer;
     }
-    {% endif %}
 
-    {% if impl is not none %}
-    std::vector<std::uint8_t> encode() {
-        std::vector<std::uint8_t> result{};
-        std::vector<std::uint8_t> aux{};
+    {% for signal in struct.fields %}
+    {{signal.name | capitalize}}Type Get{{signal.name | capitalize}}() const {
+        return {{signal.name}}_;
+    }
+    {% endfor %}
 
-        {% for piece in impl.encoding | reverse %}
-        {% if piece.type | is_enum %}
-        aux = _encode(static_cast<{{piece | enum_underlying_type}}>({{piece.name}}));
-        {%- elif piece.type | is_builtin -%}
-        aux = _encode({{piece.name}});
-        {% elif piece.type | is_array -%}
-        aux = encode_array<{{piece.type.type | to_cpp_type}}, {{piece.type.size}}>({{piece.name}});
-        {% endif -%}
-        result.insert(result.begin(), aux.rbegin(), aux.rend());
+    static std::size_t GetSize() {
+        return {% for signal in struct.fields %}{{signal.name | capitalize}}Type::GetSize(){% if not loop.last %}+{% endif %}{% endfor %};
+    }
+
+    inline bool operator=(const {{struct.name}}& rhs) const {
+        return  {% for signal in struct.fields %}{{signal.name}}_ == rhs.Get{{signal.name | capitalize}}(){% if not loop.last %}&&{% endif %}{% endfor %};
+    }
+
+    std::string to_string(std::string prefix = "") const {
+        std::stringstream ss{};
+        auto p = prefix + "\t";
+        ss << "{{struct.name}} {" << std::endl;
+        {% for signal in struct.fields %}
+        ss << p << "{{signal.name}}: " << {{signal.name}}_.to_string(p) << std::endl;
         {% endfor %}
-        return result;
+        ss << prefix << "}" << std::endl;
+        return ss.str();
     }
-    {% endif %}
+private:
+    {% for signal in struct.fields %}
+    {{signal.name | capitalize}}Type {{signal.name}}_;
+    {% endfor %}
 };
+{% endfor %}
 
-inline bool operator==(const {{struct.name}}& lhs, const {{struct.name}}& rhs)
-{
-    return{% for signal in struct.fields %} lhs.{{signal.name}} == rhs.{{signal.name}} &&{% endfor %} true;
-}
-
-{% endfor -%}
 } // namespace fcp
 
 #endif // __FCP_CAN_H__

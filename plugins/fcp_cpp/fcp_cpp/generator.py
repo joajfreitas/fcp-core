@@ -37,11 +37,12 @@ from fcp.specs.type import BuiltinType, ArrayType, ComposedTypeCategory, Compose
 from fcp.encoding import make_encoder, EncodeablePiece, EncoderContext, Value
 
 
+def _to_highest_power_of_two(n: int) -> int:
+    return int(max(2 ** math.ceil(math.log2(n)), 8))
+
+
 def to_cpp_type(input: Type) -> str:
     """Convert fcp type to cpp type."""
-
-    def _to_highest_power_of_two(n: int) -> int:
-        return int(max(2 ** math.ceil(math.log2(n)), 8))
 
     if isinstance(input, BuiltinType):
         prefix = input.name[0]
@@ -62,6 +63,21 @@ def to_cpp_type(input: Type) -> str:
         return f"std::array<{underlying_type}, {input.size}>"
     else:
         return str(input.name)
+
+
+def to_wrapper_cpp_type(input: Type) -> str:
+    if isinstance(input, BuiltinType):
+        size = input.get_length()
+        cpp_size = _to_highest_power_of_two(size)
+        if input.is_unsigned():
+            return f"Unsigned<std::uint{cpp_size}_t, {size}>"
+        else:
+            raise ValueError("Unimplemented")
+    elif isinstance(input, ArrayType):
+        underlying_type = to_wrapper_cpp_type(input.type)
+        return f"Array<{underlying_type}, {input.size}>"
+    elif isinstance(input, ComposedType):
+        return input.name
 
 
 def enum_underlying_type(value: Value) -> str:
@@ -147,6 +163,7 @@ class Generator(CodeGenerator):
         env.filters["is_enum"] = is_enum
         env.filters["is_struct"] = is_struct
         env.filters["enum_underlying_type"] = enum_underlying_type
+        env.filters["to_wrapper_cpp_type"] = to_wrapper_cpp_type
 
         encoder = make_encoder("packed", fcp, EncoderContext())
         can_encodings = {}
