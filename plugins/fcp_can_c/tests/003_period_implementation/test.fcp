@@ -1,0 +1,16 @@
+version: "4"
+
+struct Pedals {
+    acc_pos @0: u8 | unit("%"),
+    brake_pos @1: u8 | unit("%"),
+}
+
+impl can for Pedals {
+    id: 10,
+    device: "ecu",
+    period: 15, /* Period in milliseconds*/
+
+    signal brake_pos {
+        bitstart: 16,
+    },
+}
