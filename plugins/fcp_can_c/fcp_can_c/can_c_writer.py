@@ -128,6 +128,7 @@ class CanMessage:
     signals: List[StructField]
     senders: List[str]
     name_pascal: str
+    period: int
     name_snake: str = ""
 
     def __post_init__(self) -> None:
@@ -253,6 +254,7 @@ def initialize_can_data(
             return Err("No id field found in extension").unwrap()
 
         device_name = extension.fields.get("device", "global")
+        period = extension.fields.get("period", 0)
 
         if not any(node.name == device_name for node in devices):
             devices.append(CanNode(device_name))
@@ -264,6 +266,7 @@ def initialize_can_data(
                 dlc=dlc,
                 signals=signals,
                 senders=[device_name],
+                period=period,
             )
         )
 
