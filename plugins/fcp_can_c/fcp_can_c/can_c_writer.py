@@ -12,7 +12,7 @@ from fcp.specs import StructField
 from fcp import FcpV2
 from dataclasses import dataclass
 from fcp.result import Result, Ok, Err
-from fcp.maybe import catch
+from fcp.maybe import catch, Nothing
 from fcp.encoding import make_encoder, EncodeablePiece, Value
 
 
@@ -179,7 +179,7 @@ def create_can_signals(
         multiplexer_signal = piece.extended_data.get("mux_signal")
         multiplexer_ids = list(range(piece.extended_data.get("mux_count", 0)))
 
-        type = piece.type.name if piece.composite_type is None else piece.composite_type
+        type = piece.composite_type.unwrap_or(piece.type.name)
 
         signals.append(
             CanSignal(
