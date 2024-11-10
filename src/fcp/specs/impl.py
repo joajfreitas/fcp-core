@@ -39,7 +39,9 @@ class Impl:
     type: str
     fields: Dict[str, Any]
     signals: List[SignalBlock]
-    meta: MetaData = field(skip=True)
+    meta: MetaData = field(
+        skip=True, default_factory=lambda: MetaData(0, 0, 0, 0, 0, 0, "")
+    )
 
     def get_signal(self, name: str) -> Maybe[SignalBlock]:
         """Get impl signal."""
