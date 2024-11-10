@@ -39,7 +39,8 @@ Usage example:
 # SOFTWARE.
 
 
-from beartype.typing import Union, NoReturn, List, Dict, Any, Optional, Self, TypeAlias
+from beartype.typing import Union, NoReturn, List, Dict, Any, Optional
+from typing_extensions import Self, TypeAlias
 from math import log2, ceil
 from copy import copy
 
