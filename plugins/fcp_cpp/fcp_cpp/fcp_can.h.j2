@@ -13,105 +13,57 @@
 namespace fcp {
 namespace can {
 
-struct can_frame {
+struct frame_t {
     std::uint16_t sid;
     std::uint8_t dlc;
-    std::uint8_t data[8];
+    std::array<std::uint8_t, 8> data;
 };
 
-class Fcp {
-public:
-    struct DecodedMsg {
-        std::string msg_name;
-        std::map<std::string, std::tuple<std::any, std::string>> signals;
+template<typename T>
+static std::optional<T> decode_msg(const frame_t& frame) {
+    switch(frame.sid) {
+    {% for struct, impl in structs %}
+    {% if impl %}
+    case {{impl.id}}:
+    return T(frame.data.begin(), frame.data.end());
+    {% endif %}
+    {% endfor %}
+    }
+    return std::nullopt;
+}
 
-        template<typename T>
-        T _get(std::string name) {
-            return std::any_cast<T>(std::get<0>(signals.at(name)));
-        }
+template<typename T>
+static std::optional<frame_t> encode_msg(const T& obj) {
+    static std::map<std::string, std::uint16_t> can_sid_mapping { {% for struct, impl in structs %}{"{{impl.impl.name}}", {{impl.id}} }{% if not loop.last %},{% endif %}{% endfor %} };
 
-
-        template<typename T>
-        T get(std::string name) {
-            auto type = std::get<1>(signals.at(name));
-
-            if (type == "uint8_t") {
-                return static_cast<T>(_get<uint8_t>(name));
-            }
-            else if (type == "uint16_t") {
-                return static_cast<T>(_get<uint16_t>(name));
-            }
-            else if (type == "uint32_t") {
-                return static_cast<T>(_get<uint32_t>(name));
-            }
-            else if (type == "uint64_t") {
-                return static_cast<T>(_get<uint64_t>(name));
-            }
-            else if (type == "int8_t") {
-                return static_cast<T>(_get<int8_t>(name));
-            }
-            else if (type == "int16_t") {
-                return static_cast<T>(_get<int16_t>(name));
-            }
-            else if (type == "int32_t") {
-                return static_cast<T>(_get<int32_t>(name));
-            }
-            else if (type == "int64_t") {
-                return static_cast<T>(_get<int64_t>(name));
-            }
-            else if (type == "float") {
-                return static_cast<T>(_get<float>(name));
-            }
-            else if (type == "double") {
-                return static_cast<T>(_get<double>(name));
-            }
-            else {
-                return T{};
-            }
-        }
-    };
-
-    std::optional<DecodedMsg> decode_msg(const can_frame& frame) {
-        std::vector<std::uint8_t> tmp{
-            frame.data,
-            frame.data + sizeof(frame.data)/sizeof(frame.data[0])};
-
-        switch (frame.sid) {
-            {% for can_encoding in can_encodings.values() %}case {{can_encoding.impl.fields.get('id')}}:
-            return DecodedMsg{"{{can_encoding.impl.name}}",
-                {{can_encoding.impl.type}}::decode<std::vector<uint8_t>::iterator>(tmp.begin()).to_dict()};
-            break;
-        {% endfor %}
-        }
+    unsigned sid = 0;
+    if (auto search = can_sid_mapping.find(T::GetName()); search != can_sid_mapping.end()) {
+        sid = search->second;
+    }
+    else {
         return std::nullopt;
     }
 
-    std::optional<can_frame> encode_msg(std::string msg_name, std::map<std::string, std::tuple<std::any, std::string>> signals) {
-        can_frame frame{};
-        {% for can_encoding in can_encodings.values() %}if (msg_name == "{{can_encoding.impl.name}}") {
-            auto encoded = {{can_encoding.impl.name}}::from_dict(signals).encode();
-            frame.sid = {{can_encoding.id}};
-            frame.dlc = {{can_encoding.dlc}};
+    auto encoded = obj.encode().GetData();
 
-            std::memcpy(frame.data, encoded.data(), {{can_encoding.dlc}});
-            return frame;
-        }
-        {% endfor %}
+    std::array<std::uint8_t, 8> data{};
 
+    for (int i=0; i<T::GetSize(); i++) {
+        data[i] = encoded[i];
+    }
+
+    return frame_t{static_cast<std::uint16_t>(sid), static_cast<std::uint8_t>(T::GetSize()), data};
+}
+
+static std::optional<std::string> get_device_name(uint16_t can_sid) {
+    std::map<uint16_t, std::string> can_sid_mapping { {%- for can_encoding in can_encodings.values() -%} { {{can_encoding.id}}, "{{can_encoding.device_name}}"}, {%- endfor -%} };
+    if (auto search = can_sid_mapping.find(can_sid); search != can_sid_mapping.end()) {
+        return std::optional{search->second};
+    }
+    else {
         return std::nullopt;
     }
-
-    static std::optional<std::string> get_device_name(uint16_t can_sid) {
-        std::map<uint16_t, std::string> can_sid_mapping { {%- for can_encoding in can_encodings.values() -%} { {{can_encoding.id}}, "{{can_encoding.device_name}}"}, {%- endfor -%} };
-        if (auto search = can_sid_mapping.find(can_sid); search != can_sid_mapping.end()) {
-            return std::optional{search->second};
-        }
-        else {
-            return std::nullopt;
-        }
-
-    }
-};
+}
 
 } // namesapce can
 } // namespace fcp

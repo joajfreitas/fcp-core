@@ -42,8 +42,7 @@ def _to_highest_power_of_two(n: int) -> int:
 
 
 def to_cpp_type(input: Type) -> str:
-    """Convert fcp type to cpp type."""
-
+    """Convert fcp type to C++ type."""
     if isinstance(input, BuiltinType):
         prefix = input.name[0]
         bits = int(input.name[1:])
@@ -66,6 +65,7 @@ def to_cpp_type(input: Type) -> str:
 
 
 def to_wrapper_cpp_type(input: Type) -> str:
+    """Convert fcp type to wrapper C++ type."""
     if isinstance(input, BuiltinType):
         size = input.get_length()
         cpp_size = _to_highest_power_of_two(size)
@@ -77,7 +77,12 @@ def to_wrapper_cpp_type(input: Type) -> str:
         underlying_type = to_wrapper_cpp_type(input.type)
         return f"Array<{underlying_type}, {input.size}>"
     elif isinstance(input, ComposedType):
-        return input.name
+        if input.category == ComposedTypeCategory.Struct:
+            return str(input.name)
+        elif input.category == ComposedTypeCategory.Enum:
+            return str(input.name)
+
+    raise ValueError("Cannot convert type to C++ type")
 
 
 def enum_underlying_type(value: Value) -> str:

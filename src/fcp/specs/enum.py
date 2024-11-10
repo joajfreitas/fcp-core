@@ -23,6 +23,7 @@
 
 from serde import serde, strict, field
 from beartype.typing import Optional, List, Tuple
+import math
 
 from .metadata import MetaData
 
@@ -46,6 +47,10 @@ class Enum:
     name: str
     enumeration: List[Enumeration]
     meta: Optional[MetaData] = field(default=None, skip=True)
+
+    def get_packed_size(self) -> int:
+        """Get packed enum size."""
+        return math.ceil(math.log2(max([x.value for x in self.enumeration])) + 1)
 
     def __repr__(self) -> str:
         return "Enum name: {}".format(self.name)

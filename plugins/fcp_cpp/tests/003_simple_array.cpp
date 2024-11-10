@@ -5,18 +5,18 @@
 
 UTEST_MAIN()
 
-UTEST(BasicStruct, Decode) {
-    auto foo = fcp::Foo{1,2,fcp::E::S1};
+UTEST(SimpleArray, Decode) {
+    auto foo = fcp::Foo{{1,2,3,4}, 5,6};
     auto encoded = foo.encode().GetData();
 
-    std::vector<uint8_t> bytes{1,2,1};
+    std::vector<uint8_t> bytes{1,2,3,4,5,6};
     EXPECT_TRUE(encoded == bytes);
 }
 
-UTEST(BasicStruct, Encode) {
-    std::vector<uint8_t> bytes{1,2,1};
+UTEST(SimpleArray, Encode) {
+    std::vector<uint8_t> bytes{1,2,3,4,5,6};
 
     auto foo = fcp::Foo(bytes.begin(), bytes.end());
-    auto expected = fcp::Foo{1,2, fcp::E::S1};
+    auto expected = fcp::Foo{{1,2,3,4}, 5, 6};
     EXPECT_TRUE(foo == expected);
 }

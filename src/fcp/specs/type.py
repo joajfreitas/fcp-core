@@ -41,12 +41,15 @@ class BuiltinType:
         return self.name[0] == "i"
 
     def is_unsigned(self) -> bool:
+        """Check that type is unsigned."""
         return self.name[0] == "u"
 
     def is_float(self) -> bool:
+        """Check that type is float."""
         return self.name[0] == "f"
 
     def is_double(self) -> bool:
+        """Check that type is double."""
         return self.name[0] == "d"
 
 

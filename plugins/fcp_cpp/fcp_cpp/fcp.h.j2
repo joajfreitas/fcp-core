@@ -11,6 +11,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 namespace fcp {
 
@@ -32,7 +33,7 @@ public:
     Buffer(Iterator first, Iterator last): buffer_{first, last} {}
 
 
-    uint64_t get_word(std::size_t bitstart, std::size_t bitlength) {
+    uint64_t get_word(std::size_t bitstart, std::size_t bitlength) const {
         uint64_t result = 0;
         for (int i=0; i<bitlength; i++) {
             result |= get_bit(buffer_.begin(), bitstart + i) << i;
@@ -72,7 +73,7 @@ public:
     Unsigned(){}
     Unsigned(UnderlyingType value): data_{value} {}
 
-    Unsigned(Buffer& buffer, std::size_t bitstart) {
+    Unsigned(const Buffer& buffer, std::size_t bitstart) {
         auto word = buffer.get_word(bitstart, Size);
         data_ = static_cast<UnderlyingType>(word);
     }
@@ -111,7 +112,11 @@ class Array {
     Array(): data_{} {}
     Array(std::array<T, N> value): data_{value} {}
 
-    Array(Buffer& buffer, std::size_t bitstart=0) {
+    Array(std::initializer_list<T> ls) {
+    std::transform(ls.begin(), ls.end(), data_.begin(), [](const T& x){return x;});
+    }
+
+    Array(const Buffer& buffer, std::size_t bitstart=0) {
         for (int i=0; i<N; i++) {
             data_[i] = T(buffer, bitstart);
             bitstart += T::GetSize();
@@ -154,9 +159,9 @@ private:
 
 
 {% for enum in fcp.enums %}
-template<typename Underlying>
-class {enum.name} {
+class {{enum.name}} {
 public:
+    using UnderlyingType = std::uint8_t;
     {% for enumeration in enum.enumeration %}
     static constexpr UnderlyingType {{enumeration.name}} = {{enumeration.value}};
     {% endfor %}
@@ -164,16 +169,16 @@ public:
     {{enum.name}}(): data_{} {}
     {{enum.name}}(UnderlyingType value): data_{value} {}
 
-    {{enum.name}}(Buffer& buffer, std::size_t bitstart=0) {
+    {{enum.name}}(const Buffer& buffer, std::size_t bitstart=0) {
         data_ = buffer.get_word(bitstart, GetSize());
     }
 
     void _encode(Buffer& buffer, std::size_t bitstart) {
-        buffer.push_word<UnderlyingType, GetSize()>(data_, bitstart);
+        buffer.push_word<UnderlyingType, {{enum.get_packed_size()}}>(data_, bitstart);
     }
 
-    static constexpr std::size_t GetSize() {
-        return 2;
+    static std::size_t GetSize() {
+        return {{enum.get_packed_size()}};
     }
 
     UnderlyingType GetData() const {
@@ -199,7 +204,7 @@ public:
 
 private:
     UnderlyingType data_;
-}
+};
 {% endfor %}
 
 
@@ -210,12 +215,15 @@ struct {{struct.name}} {
     {% endfor %}
 
     {{struct.name}}({% for signal in struct.fields%}{{signal.name | capitalize}}Type {{signal.name}}{%if not loop.last%},{%endif%}{%endfor%}): {% for signal in struct.fields %}{{signal.name}}_{ {{signal.name}} }{% if not loop.last %},{% endif %}{% endfor %} {}
-    {{struct.name}}(Buffer& buffer, std::size_t bitstart=0) {
+    {{struct.name}}(const Buffer& buffer, std::size_t bitstart=0) {
     {%for signal in struct.fields%}
         {{signal.name}}_ = {{signal.name | capitalize}}Type(buffer, bitstart);
         bitstart += {{signal.name | capitalize}}Type::GetSize();
     {%endfor%}
     }
+
+    template<typename Iterator>
+    {{struct.name}}(Iterator begin, Iterator end): {{struct.name}}(Buffer(begin, end)) {}
 
     void _encode(Buffer& buffer, std::size_t bitstart) {
     {% for signal in struct.fields %}
@@ -240,7 +248,7 @@ struct {{struct.name}} {
         return {% for signal in struct.fields %}{{signal.name | capitalize}}Type::GetSize(){% if not loop.last %}+{% endif %}{% endfor %};
     }
 
-    inline bool operator=(const {{struct.name}}& rhs) const {
+    inline bool operator==(const {{struct.name}}& rhs) const {
         return  {% for signal in struct.fields %}{{signal.name}}_ == rhs.Get{{signal.name | capitalize}}(){% if not loop.last %}&&{% endif %}{% endfor %};
     }
 

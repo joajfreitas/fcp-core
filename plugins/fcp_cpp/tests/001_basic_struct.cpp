@@ -7,7 +7,7 @@ UTEST_MAIN()
 
 UTEST(BasicStruct, Decode) {
     auto foo = fcp::Foo{1,2};
-    auto encoded = foo.encode();
+    auto encoded = foo.encode().GetData();
 
     std::vector<uint8_t> bytes{1,2};
     EXPECT_TRUE(encoded==bytes);
@@ -16,11 +16,11 @@ UTEST(BasicStruct, Decode) {
 UTEST(BasicStruct, Encode) {
     std::vector<uint8_t> bytes{1,2};
 
-    auto foo = fcp::Foo::decode(bytes.begin());
+    auto foo = fcp::Foo(bytes.begin(), bytes.end());
     auto expected = fcp::Foo{1,2};
     EXPECT_TRUE(foo==expected);
 }
 
 UTEST(BasicStruct, GetDeviceName) {
-    EXPECT_TRUE(fcp::can::Fcp::get_device_name(10) == "ecu1");
+    EXPECT_TRUE(fcp::can::get_device_name(10) == "ecu1");
 }

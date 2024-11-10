@@ -1,0 +1,17 @@
+version: "3"
+
+enum State {
+    S0 = 0,
+    S1 = 1,
+    S2 = 2,
+}
+
+struct Foo {
+    s1 @ 0: [State, 4],
+    s2 @ 1: u8,
+    s3 @ 2: u8,
+}
+
+impl can for Foo {
+    id: 10,
+}
