@@ -31,6 +31,24 @@ bool can_is_{{ device_name_snake }}_msg(const CanFrame *frame) {
         {%- endif -%}
     {%- endfor %};
 }
+
+void can_send_{{ device_name_snake }}_msgs_scheduled(const CanDevice{{ device_name_pascal }} *dev, uint32_t time, void (*send_can_func)(const CanFrame *)) {
+    static uint32_t last_call_t = 0;
+    static uint32_t last_send_t[{{ messages | length }}] = {0};
+
+    if (last_call_t == time) return;
+    last_call_t = time;
+
+    {% for message in messages -%}
+    // Check if enough time has passed for {{ message.name_pascal }}
+    if ({{ message.period }} != -1 && (time - last_send_t[{{ loop.index0 }}] >= {{ message.period }})) {
+        CanFrame frame = can_encode_msg_{{ message.name_snake }}(&dev->{{ message.name_snake }});
+        send_can_func(&frame);
+        last_send_t[{{ loop.index0 }}] = time;
+    }
+    {% endfor %}
+}
+
 {% for message in messages %}
 CanMsg{{ message.name_pascal }} can_decode_msg_{{ message.name_snake }}(const CanFrame *msg) {
 	CanMsg{{message.name_pascal}} msg_struct = {0};
