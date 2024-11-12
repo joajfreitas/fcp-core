@@ -9,8 +9,14 @@ impl can for Pedals {
     id: 10,
     device: "ecu",
     period: 15, /* Period in milliseconds*/
+}
 
-    signal brake_pos {
-        bitstart: 16,
-    },
+struct Shutdown {
+    error @0: u8,
+}
+
+impl can for Shutdown {
+    id: 11,
+    device: "ecu",
+    period: 30,
 }
