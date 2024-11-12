@@ -71,6 +71,8 @@ def to_wrapper_cpp_type(input: Type) -> str:
         cpp_size = _to_highest_power_of_two(size)
         if input.is_unsigned():
             return f"Unsigned<std::uint{cpp_size}_t, {size}>"
+        elif input.is_signed():
+            return f"Signed<std::int{cpp_size}_t, {size}>"
         else:
             raise ValueError("Unimplemented")
     elif isinstance(input, ArrayType):

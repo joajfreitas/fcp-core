@@ -105,6 +105,45 @@ private:
     UnderlyingType data_;
 };
 
+
+template<typename UnderlyingType, std::size_t Size>
+class Signed {
+public:
+    Signed(){}
+    Signed(UnderlyingType value): data_{value} {}
+
+    Signed(const Buffer& buffer, std::size_t bitstart) {
+        auto word = buffer.get_word(bitstart, Size);
+        data_ = static_cast<UnderlyingType>(word);
+    }
+
+    void _encode(Buffer& buffer, std::size_t bitstart) {
+        buffer.push_word<UnderlyingType, Size>(data_, bitstart) ;
+    }
+
+    static std::size_t GetSize() {
+        return Size;
+    }
+
+    inline bool operator==(const Signed& rhs) const
+    {
+        return true;
+    }
+
+    UnderlyingType GetData() const {
+        return data_;
+    }
+
+    std::string to_string(std::string prefix = "") const {
+        std::stringstream ss{};
+        ss << (int) data_;
+        return ss.str();
+    }
+
+private:
+    UnderlyingType data_;
+};
+
 template<typename T, std::size_t N>
 class Array {
     public:
@@ -215,15 +254,20 @@ struct {{struct.name}} {
     {% endfor %}
 
     {{struct.name}}({% for signal in struct.fields%}{{signal.name | capitalize}}Type {{signal.name}}{%if not loop.last%},{%endif%}{%endfor%}): {% for signal in struct.fields %}{{signal.name}}_{ {{signal.name}} }{% if not loop.last %},{% endif %}{% endfor %} {}
-    {{struct.name}}(const Buffer& buffer, std::size_t bitstart=0) {
+
+    static {{struct.name}} Encode(const Buffer& buffer, std::size_t bitstart=0) {
     {%for signal in struct.fields%}
-        {{signal.name}}_ = {{signal.name | capitalize}}Type(buffer, bitstart);
+        auto {{signal.name}} = {{signal.name | capitalize}}Type(buffer, bitstart);
         bitstart += {{signal.name | capitalize}}Type::GetSize();
     {%endfor%}
+
+        return {{struct.name}}({% for signal in struct.fields %}{{signal.name}}{% if not loop.last %},{% endif %}{% endfor %});
     }
 
     template<typename Iterator>
-    {{struct.name}}(Iterator begin, Iterator end): {{struct.name}}(Buffer(begin, end)) {}
+    static {{struct.name}} Encode(Iterator begin, Iterator end) {
+        return {{struct.name}}::Encode(Buffer{begin, end});
+    }
 
     void _encode(Buffer& buffer, std::size_t bitstart) {
     {% for signal in struct.fields %}

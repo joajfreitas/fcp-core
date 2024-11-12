@@ -16,7 +16,7 @@ UTEST(SimpleArray, Decode) {
 UTEST(SimpleArray, Encode) {
     std::vector<uint8_t> bytes{1,2,3,4,5,6};
 
-    auto foo = fcp::Foo(bytes.begin(), bytes.end());
+    auto foo = fcp::Foo::Encode(bytes.begin(), bytes.end());
     auto expected = fcp::Foo{{1,2,3,4}, 5, 6};
     EXPECT_TRUE(foo == expected);
 }
