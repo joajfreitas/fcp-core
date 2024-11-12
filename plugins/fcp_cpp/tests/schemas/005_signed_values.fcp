@@ -1,0 +1,19 @@
+version: "3"
+
+struct S1 {
+    s1 @ 0: u8 | unit("m/s"),
+    s2 @ 1: i8 | unit("C"),
+    s3 @ 2: u16 | unit("m/s"),
+    s4 @ 3: i16 | unit("C"),
+    s5 @ 4: u24 | unit("m/s"),
+    s6 @ 5: i24 | unit("C"),
+    s7 @ 6: u32 | unit("m/s"),
+    s8 @ 7: i32| unit("C"),
+    s9 @ 8: u64 | unit("m/s"),
+    s10 @ 9: i64| unit("C"),
+}
+
+impl can for S2 {
+    id: 11,
+    device: "ecu1",
+}
