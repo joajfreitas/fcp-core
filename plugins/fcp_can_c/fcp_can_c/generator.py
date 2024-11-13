@@ -2,7 +2,7 @@
 
 import os
 
-from beartype.typing import Any, Union, NoReturn, Dict
+from beartype.typing import Any, Union, NoReturn, Dict, List
 from pathlib import Path
 
 from fcp.codegen import CodeGenerator
@@ -22,7 +22,7 @@ class Generator(CodeGenerator):
         """None."""
         pass
 
-    def generate(self, fcp: FcpV2, ctx: Any) -> list[Dict[str, Union[str, Path]]]:
+    def generate(self, fcp: FcpV2, ctx: Any) -> List[Dict[str, Union[str, Path]]]:
         """Generate C code from FCP.
 
         Args:
