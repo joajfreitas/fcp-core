@@ -37,13 +37,13 @@ void can_send_ecu_msgs_scheduled(const CanDeviceEcu *dev, uint32_t time, void (*
     last_call_t = time;
 
     // Check if enough time has passed for Pedals
-    if (15 != -1 && (time - last_send_t[0] >= 15)) {
+    if (MSG_PERIOD_PEDALS != -1 && (time - last_send_t[0] >= MSG_PERIOD_PEDALS)) {
         CanFrame frame = can_encode_msg_pedals(&dev->pedals);
         send_can_func(&frame);
         last_send_t[0] = time;
     }
     // Check if enough time has passed for Shutdown
-    if (30 != -1 && (time - last_send_t[1] >= 30)) {
+    if (MSG_PERIOD_SHUTDOWN != -1 && (time - last_send_t[1] >= MSG_PERIOD_SHUTDOWN)) {
         CanFrame frame = can_encode_msg_shutdown(&dev->shutdown);
         send_can_func(&frame);
         last_send_t[1] = time;
