@@ -31,10 +31,11 @@
 
 bool can_is_ecu_msg(const CanFrame *frame) {
     return
-        frame->id == MSG_ID_PEDALS ||
-        frame->id == MSG_ID_SHUTDOWN ||
-        frame->id == MSG_ID_BUTTON;
+        frame->id == CAN_MSG_ID_PEDALS ||
+        frame->id == CAN_MSG_ID_SHUTDOWN ||
+        frame->id == CAN_MSG_ID_BUTTON;
 }
+
 
 void can_send_ecu_msgs_scheduled(const CanDeviceEcu *dev, uint32_t time, void (*send_can_func)(const CanFrame *)) {
     static uint32_t last_call_t = 0;
@@ -44,25 +45,26 @@ void can_send_ecu_msgs_scheduled(const CanDeviceEcu *dev, uint32_t time, void (*
     last_call_t = time;
 
     // Check if enough time has passed for Pedals
-    if (MSG_PERIOD_PEDALS != -1 && (time - last_send_t[0] >= MSG_PERIOD_PEDALS)) {
+    if (CAN_MSG_PERIOD_PEDALS != -1 && (time - last_send_t[0] >= CAN_MSG_PERIOD_PEDALS)) {
         CanFrame frame = can_encode_msg_pedals(&dev->pedals);
         send_can_func(&frame);
         last_send_t[0] = time;
     }
     // Check if enough time has passed for Shutdown
-    if (MSG_PERIOD_SHUTDOWN != -1 && (time - last_send_t[1] >= MSG_PERIOD_SHUTDOWN)) {
+    if (CAN_MSG_PERIOD_SHUTDOWN != -1 && (time - last_send_t[1] >= CAN_MSG_PERIOD_SHUTDOWN)) {
         CanFrame frame = can_encode_msg_shutdown(&dev->shutdown);
         send_can_func(&frame);
         last_send_t[1] = time;
     }
     // Check if enough time has passed for Button
-    if (MSG_PERIOD_BUTTON != -1 && (time - last_send_t[2] >= MSG_PERIOD_BUTTON)) {
+    if (CAN_MSG_PERIOD_BUTTON != -1 && (time - last_send_t[2] >= CAN_MSG_PERIOD_BUTTON)) {
         CanFrame frame = can_encode_msg_button(&dev->button);
         send_can_func(&frame);
         last_send_t[2] = time;
     }
     
 }
+
 
 
 CanMsgPedals can_decode_msg_pedals(const CanFrame *msg) {

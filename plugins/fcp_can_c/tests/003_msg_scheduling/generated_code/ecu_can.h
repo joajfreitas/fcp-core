@@ -7,14 +7,14 @@
 #include "can_frame.h"
 
 /* Ecu Message IDs */
-#define MSG_ID_PEDALS 10
-#define MSG_ID_SHUTDOWN 11
-#define MSG_ID_BUTTON 12
+#define CAN_MSG_ID_PEDALS 11
+#define CAN_MSG_ID_SHUTDOWN 12
+#define CAN_MSG_ID_BUTTON 13
 
 /* Ecu Message Periods */
-#define MSG_PERIOD_PEDALS 15
-#define MSG_PERIOD_SHUTDOWN 20
-#define MSG_PERIOD_BUTTON -1
+#define CAN_MSG_PERIOD_PEDALS 15
+#define CAN_MSG_PERIOD_SHUTDOWN 20
+#define CAN_MSG_PERIOD_BUTTON -1
 
 typedef struct {
     uint8_t acc_pos;
@@ -40,8 +40,10 @@ typedef struct {
 /* Check if a CanFrame comes from Ecu */
 bool can_is_ecu_msg(const CanFrame *frame);
 
+
 /* Send Ecu messages according to period */
 void can_send_ecu_msgs_scheduled(const CanDeviceEcu *dev, uint32_t time, void (*send_can_func)(const CanFrame *));
+
 
 /* Functions to decode CanFrame into CanMsg<name> objects */
 CanMsgPedals can_decode_msg_pedals(const CanFrame *frame);
