@@ -330,6 +330,7 @@ class CanCWriter:
                     device_name_snake=pascal_to_snake(device_name),
                     messages=messages,
                     include_global=device_name != "global" and global_device_exists,
+                    is_global_device=device_name == "global",
                     enums=self.enums if device_name == "global" else [],
                 ),
             )
