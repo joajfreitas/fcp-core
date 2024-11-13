@@ -6,7 +6,8 @@ from fcp_can_c import Generator
 from fcp.v2_parser import get_fcp
 
 
-base_dir = os.getcwd().split("/")[-1]
+base_dir = os.path.abspath(__file__).replace("/test_can_c_gen.py", "")
+cwd = os.getcwd().split("/")[-1]
 
 
 def get_fcp_config(test_dir: str, name: str) -> str:
@@ -15,12 +16,7 @@ def get_fcp_config(test_dir: str, name: str) -> str:
 
 
 def get_path(test_name: str) -> str:
-    if base_dir == "fcp_can_c":
-        return f"tests/{test_name}"
-    elif base_dir == "fcp-core":
-        return f"plugins/fcp_can_c/tests/{test_name}"
-    else:
-        raise ValueError(f"Invalid testsinvocation directory: {base_dir}")
+    return f"{base_dir}/{test_name}"
 
 
 @pytest.mark.parametrize(
