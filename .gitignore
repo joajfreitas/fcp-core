@@ -128,3 +128,6 @@ tags
 
 
 .fcp_gui.yaml
+
+**/generated_code/*
+**/generated_code/*
