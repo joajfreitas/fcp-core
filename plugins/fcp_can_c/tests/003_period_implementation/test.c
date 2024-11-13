@@ -22,8 +22,21 @@ bool all_tests_passed = true;
         exit(EXIT_FAILURE);                                                    \
     }
 
+int timer = 0;
+
+
 
 int main() {
+
+    CanDeviceEcu ecu_can = {
+        .pedals.acc_pos=30,
+        .pedals.brake_pos=0,
+        .shutdown.error=212,
+        .button.press=1
+    };
+
+    CanFrame expected_pedals_frame = can_encode_msg_pedals(&ecu_can.pedals);
+    CanFrame expected_shutdown_frame = can_encode_msg_shutdown(&ecu_can.shutdown);
 
     ASSERT_TESTS();
 
