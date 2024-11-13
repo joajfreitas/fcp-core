@@ -41,7 +41,7 @@ void can_send_{{ device_name_snake }}_msgs_scheduled(const CanDevice{{ device_na
 
     {% for message in messages -%}
     // Check if enough time has passed for {{ message.name_pascal }}
-    if ({{ message.period }} != -1 && (time - last_send_t[{{ loop.index0 }}] >= {{ message.period }})) {
+    if (MSG_PERIOD_{{ message.name_snake | upper }} != -1 && (time - last_send_t[{{ loop.index0 }}] >= MSG_PERIOD_{{ message.name_snake | upper }})) {
         CanFrame frame = can_encode_msg_{{ message.name_snake }}(&dev->{{ message.name_snake }});
         send_can_func(&frame);
         last_send_t[{{ loop.index0 }}] = time;
