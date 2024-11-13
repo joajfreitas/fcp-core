@@ -3,7 +3,7 @@
 import os
 
 from pathlib import Path
-from typing import Generator, List, Dict, Any, Optional, Tuple
+from beartype.typing import Generator, List, Dict, Any, Optional, Tuple
 from math import ceil
 from cantools.database import conversion
 from jinja2 import Environment, FileSystemLoader
