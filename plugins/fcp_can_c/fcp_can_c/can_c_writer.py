@@ -3,7 +3,7 @@
 import os
 
 from pathlib import Path
-from beartype.typing import Generator, Tuple, List, Dict, Any, Optional
+from typing import Generator, Tuple, List, Dict, Any, Optional
 from math import ceil
 from cantools.database import conversion
 from jinja2 import Environment, FileSystemLoader
@@ -253,7 +253,7 @@ def initialize_can_data(
 
         frame_id = extension.fields.get("id")
         if frame_id is None:
-            return Err("No id field found in extension").unwrap()
+            Err("No id field found in extension").unwrap()
 
         device_name = extension.fields.get("device", "global")
         period = extension.fields.get("period", 0)
@@ -272,7 +272,7 @@ def initialize_can_data(
             )
         )
 
-    return enums, messages, devices
+    return (enums, messages, devices)
 
 
 class CanCWriter:
