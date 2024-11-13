@@ -3,7 +3,7 @@
 import os
 
 from pathlib import Path
-from typing import Generator, Tuple, List, Dict, Any, Optional
+from beartype.typing import Generator, Tuple, List, Dict, Any, Optional
 from math import ceil
 from cantools.database import conversion
 from jinja2 import Environment, FileSystemLoader
@@ -223,7 +223,7 @@ def map_messages_to_devices(messages: List[CanMessage]) -> Dict[str, List[CanMes
 
 def initialize_can_data(
     fcp: FcpV2,
-) -> Tuple[List[Enum], List[CanMessage], List[CanNode]]:
+) -> Tuple[List[Enum], List[CanMessage], List[CanNode]]:  # type: ignore
     """Initialize CAN data from an FCP.
 
     Args:
