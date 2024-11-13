@@ -19,6 +19,7 @@ $(OUTPUT): $(OBJS)
 
 run_tests: all
 	./$(OUTPUT)
+	make clean
 
 clean:
 	rm -f $(OBJS) $(OUTPUT)

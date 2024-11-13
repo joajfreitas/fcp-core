@@ -1,3 +1,5 @@
+# ruff: noqa: D103 D100
+
 import pytest
 import os
 import subprocess
@@ -8,11 +10,6 @@ from fcp.v2_parser import get_fcp
 
 base_dir = os.path.abspath(__file__).replace("/test_can_c_gen.py", "")
 cwd = os.getcwd().split("/")[-1]
-
-
-def get_fcp_config(test_dir: str, name: str) -> str:
-    config_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), test_dir)
-    return os.path.join(config_dir, "test.fcp")
 
 
 def get_path(test_name: str) -> str:
@@ -26,8 +23,8 @@ def get_path(test_name: str) -> str:
         "002_nested_enum",
         "003_msg_scheduling",
     ],
-)
-def test_can_c_gen(test_name: str):
+)  # type: ignore
+def test_can_c_gen(test_name: str) -> None:
     fcp_v2, _ = get_fcp(Path(get_path(test_name) + "/test.fcp")).unwrap()
     generator = Generator()
 
