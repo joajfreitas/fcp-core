@@ -13,7 +13,7 @@ from fcp import FcpV2
 from dataclasses import dataclass
 from fcp.result import Result, Ok, Err
 from fcp.maybe import catch, Nothing
-from fcp.encoding import make_encoder, EncodeablePiece, Value
+from fcp.encoding import make_encoder, EncodeablePiece, Value, PackedEncoderContext
 
 
 def snake_to_pascal(snake_str: str) -> str:
@@ -236,7 +236,9 @@ def initialize_can_data(
     enums = []
     messages = []
     devices = []
-    encoder = make_encoder("packed", fcp)
+    encoder = make_encoder(
+        "packed", fcp, PackedEncoderContext().with_unroll_arrays(True)
+    )
 
     for enum in fcp.enums:
         values = {v.name: v.value for v in enum.enumeration}
