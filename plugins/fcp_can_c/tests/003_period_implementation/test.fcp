@@ -18,5 +18,15 @@ struct Shutdown {
 impl can for Shutdown {
     id: 11,
     device: "ecu",
-    period: 30,
+    period: 20,
+}
+
+struct Button {
+    press @0: u8,
+}
+
+impl can for Button {
+    id: 12,
+    device: "ecu",
+    period: -1,
 }
