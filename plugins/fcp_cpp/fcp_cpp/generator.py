@@ -41,29 +41,6 @@ def _to_highest_power_of_two(n: int) -> int:
     return int(max(2 ** math.ceil(math.log2(n)), 8))
 
 
-def to_cpp_type(input: Type) -> str:
-    """Convert fcp type to C++ type."""
-    if isinstance(input, BuiltinType):
-        prefix = input.name[0]
-        bits = int(input.name[1:])
-
-        bits = _to_highest_power_of_two(bits)
-
-        if prefix == "u" or prefix == "i":
-            return str(prefix + "int" + str(bits) + "_t")
-        elif prefix == "f" and bits == 32:
-            return "float"
-        elif prefix == "f" and bits == 64:
-            return "double"
-        else:
-            raise ValueError(f"Not a valid builtin type: {input}")
-    elif isinstance(input, ArrayType):
-        underlying_type = to_cpp_type(input.type)
-        return f"std::array<{underlying_type}, {input.size}>"
-    else:
-        return str(input.name)
-
-
 def to_wrapper_cpp_type(input: Type) -> str:
     """Convert fcp type to wrapper C++ type."""
     if isinstance(input, BuiltinType):
@@ -89,41 +66,6 @@ def to_wrapper_cpp_type(input: Type) -> str:
             return str(input.name)
 
     raise ValueError("Cannot convert type to C++ type")
-
-
-def enum_underlying_type(value: Value) -> str:
-    """Get the underlying type of an enum from an encodable value."""
-    if not (
-        isinstance(value.type, ComposedType)
-        and value.type.category == ComposedTypeCategory.Enum
-    ):
-        raise ValueError(
-            "Cannot call `enum_underlying_type` with something that is not an enum"
-        )
-
-    return "uint" + str(max(int(2 ** math.ceil(math.log2(value.bitlength))), 8)) + "_t"
-
-
-def is_array(type: Type) -> bool:
-    """Jinja filter to check if type is an array."""
-    return isinstance(type, ArrayType)
-
-
-def is_builtin(type: Type) -> bool:
-    """Jinja filter to check if type is a builtin type."""
-    return isinstance(type, BuiltinType)
-
-
-def is_enum(type: Type) -> bool:
-    """Jinja filter to check if type is a composed enum type."""
-    return isinstance(type, ComposedType) and type.category == ComposedTypeCategory.Enum
-
-
-def is_struct(type: Type) -> bool:
-    """Jinja filter to check if type is a composed struct type."""
-    return (
-        isinstance(type, ComposedType) and type.category == ComposedTypeCategory.Struct
-    )
 
 
 class CanEncoding:
@@ -168,13 +110,7 @@ class Generator(CodeGenerator):
         )
 
         env = jinja2.Environment(loader=loader)
-        env.filters["to_cpp_type"] = to_cpp_type
-        env.filters["is_array"] = is_array
-        env.filters["is_builtin"] = is_builtin
-        env.filters["is_enum"] = is_enum
-        env.filters["is_struct"] = is_struct
-        env.filters["enum_underlying_type"] = enum_underlying_type
-        env.filters["to_wrapper_cpp_type"] = to_wrapper_cpp_type
+        env.globals["to_wrapper_cpp_type"] = to_wrapper_cpp_type
 
         encoder = make_encoder("packed", fcp, EncoderContext())
         can_encodings = {}
