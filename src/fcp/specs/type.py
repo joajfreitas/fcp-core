@@ -46,11 +46,11 @@ class BuiltinType:
 
     def is_float(self) -> bool:
         """Check that type is float."""
-        return self.name[0] == "f"
+        return self.name[0] == "f" and int(self.name[1:]) == 32
 
     def is_double(self) -> bool:
         """Check that type is double."""
-        return self.name[0] == "d"
+        return self.name[0] == "f" and int(self.name[1:]) == 64
 
 
 class ComposedTypeCategory(Enum):

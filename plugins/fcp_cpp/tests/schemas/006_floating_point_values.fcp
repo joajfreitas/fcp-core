@@ -1,0 +1,11 @@
+version: "3"
+
+struct S1 {
+    s1 @ 0: f32 | unit("m/s"),
+    s2 @ 1: f64 | unit("C"),
+}
+
+impl can for S1 {
+    id: 10,
+    device: "ecu1",
+}

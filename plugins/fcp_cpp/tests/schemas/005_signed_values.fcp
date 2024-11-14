@@ -13,7 +13,7 @@ struct S1 {
     s10 @ 9: i64| unit("C"),
 }
 
-impl can for S2 {
+impl can for S1 {
     id: 11,
     device: "ecu1",
 }

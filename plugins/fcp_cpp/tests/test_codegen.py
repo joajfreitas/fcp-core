@@ -59,7 +59,17 @@ def get_fcp_config(name: str) -> str:
     return os.path.join(config_dir, name + ".fcp")
 
 
-@pytest.mark.parametrize("test_name", ["001_basic_struct", "002_nested_enum", "003_simple_array", "004_enum_array"])  # type: ignore
+@pytest.mark.parametrize(
+    "test_name",
+    [
+        "001_basic_struct",
+        "002_nested_enum",
+        "003_simple_array",
+        "004_enum_array",
+        "005_signed_values",
+        "006_floating_point_values",
+    ],
+)  # type: ignore
 def test_codegen(test_name: str) -> None:
     with tempfile.TemporaryDirectory() as tempdirname:
         print(tempdirname, type(tempdirname))

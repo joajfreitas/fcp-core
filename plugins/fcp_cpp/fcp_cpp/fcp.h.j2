@@ -9,9 +9,9 @@
 #include <variant>
 #include <memory>
 #include <string>
-#include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <cstring>
 
 namespace fcp {
 
@@ -35,8 +35,8 @@ public:
 
     uint64_t get_word(std::size_t bitstart, std::size_t bitlength) const {
         uint64_t result = 0;
-        for (int i=0; i<bitlength; i++) {
-            result |= get_bit(buffer_.begin(), bitstart + i) << i;
+        for (uint64_t i=0; i<bitlength; i++) {
+            result |= (uint64_t) (get_bit(buffer_.begin(), bitstart + i)) << i;
         }
 
         return result;
@@ -49,8 +49,18 @@ public:
         }
     }
 
-    std::vector<uint8_t> GetData() {
+    std::vector<uint8_t> GetData() const {
         return buffer_;
+    }
+
+    std::string to_string(std::string prefix = "") const {
+        std::stringstream ss{};
+        ss << std::hex << "{";
+        for (const auto& x: GetData()) {
+            ss << (int) x << ", " ;
+        }
+        ss << "}";
+        return ss.str();
     }
 
 private:
@@ -137,6 +147,91 @@ public:
     std::string to_string(std::string prefix = "") const {
         std::stringstream ss{};
         ss << (int) data_;
+        return ss.str();
+    }
+
+private:
+    UnderlyingType data_;
+};
+
+class Float {
+public:
+    using UnderlyingType = float;
+    static constexpr unsigned Size = 32;
+
+    Float(){}
+    Float(UnderlyingType value): data_{value} {}
+
+    Float(const Buffer& buffer, std::size_t bitstart) {
+        auto word = buffer.get_word(bitstart, Size);
+        std::memcpy(&data_, &word, 4);
+    }
+
+    void _encode(Buffer& buffer, std::size_t bitstart) {
+        std::uint32_t tmp = 0;
+        std::memcpy(&tmp, &data_, 4);
+        buffer.push_word<std::uint32_t, Size>(tmp, bitstart) ;
+    }
+
+    static std::size_t GetSize() {
+        return Size;
+    }
+
+    inline bool operator==(const Float& rhs) const
+    {
+        return data_ == rhs.GetData();
+    }
+
+    UnderlyingType GetData() const {
+        return data_;
+    }
+
+    std::string to_string(std::string prefix = "") const {
+        std::stringstream ss{};
+        ss << data_;
+        return ss.str();
+    }
+
+private:
+    UnderlyingType data_;
+};
+
+
+class Double {
+public:
+    using UnderlyingType = double;
+    static constexpr unsigned Size = 64;
+
+    Double(){}
+    Double(UnderlyingType value): data_{value} {}
+
+    Double(const Buffer& buffer, std::size_t bitstart) {
+        auto word = buffer.get_word(bitstart, Size);
+        std::memcpy(&data_, &word, 8);
+    }
+
+    void _encode(Buffer& buffer, std::size_t bitstart) {
+        std::uint64_t tmp = 0;
+        std::memcpy(&tmp, &data_, 8);
+        buffer.push_word<std::uint64_t, Size>(tmp, bitstart) ;
+    }
+
+    static std::size_t GetSize() {
+        return Size;
+    }
+
+    inline bool operator==(const Double& rhs) const
+    {
+        return data_ == rhs.GetData();
+    }
+
+    UnderlyingType GetData() const {
+        return data_;
+    }
+
+    std::string to_string(std::string prefix = "") const {
+        std::stringstream ss{};
+        ss << data_;
         return ss.str();
     }
 

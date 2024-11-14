@@ -73,6 +73,10 @@ def to_wrapper_cpp_type(input: Type) -> str:
             return f"Unsigned<std::uint{cpp_size}_t, {size}>"
         elif input.is_signed():
             return f"Signed<std::int{cpp_size}_t, {size}>"
+        elif input.is_float():
+            return "Float"
+        elif input.is_double():
+            return "Double"
         else:
             raise ValueError("Unimplemented")
     elif isinstance(input, ArrayType):
