@@ -91,4 +91,15 @@ class ArrayType:
         return int(self.type.get_length() * self.size)
 
 
-Type: TypeAlias = Union[BuiltinType, ArrayType, ComposedType]
+@serde(type_check=strict)
+class DynamicArrayType:
+    """fcp array type."""
+
+    type: Union[BuiltinType, ComposedType, ArrayType, Self]
+
+    def get_length(self) -> int:
+        """Type length in bits."""
+        raise ValueError("Cannot compute the size of a dynamic array")
+
+
+Type: TypeAlias = Union[BuiltinType, ArrayType, ComposedType, DynamicArrayType]

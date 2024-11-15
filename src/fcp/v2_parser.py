@@ -36,7 +36,14 @@ from .specs import impl
 from .specs import signal_block
 from .specs import service
 from .specs import rpc
-from .specs.type import BuiltinType, ArrayType, ComposedTypeCategory, ComposedType, Type
+from .specs.type import (
+    BuiltinType,
+    ArrayType,
+    ComposedTypeCategory,
+    ComposedType,
+    DynamicArrayType,
+    Type,
+)
 from .specs import v2
 from .result import Result, Ok, Err
 from .maybe import catch
@@ -52,9 +59,10 @@ fcp_parser = Lark(
 
     struct: "struct" identifier "{" struct_field+ "}"
     struct_field: identifier "@" number ":" type param* ","
-    type: (base_type | array_type | composed_type) "|"?
+    type: (base_type | array_type | composed_type | dynamic_array_type) "|"?
     base_type: /u\d\d|u\d|i\d\d|i\d|f32|f64|str/
     array_type: "[" type "," number "]"
+    dynamic_array_type: "[" type "]"
     composed_type: identifier
 
     param: identifier "("? param_argument* ")"? "|"?
@@ -199,6 +207,12 @@ class FcpV2Transformer(Transformer):  # type: ignore
             raise ValueError(f"Type '{typename}' cannot be found.")
 
         return ComposedType(typename, type_category)  # type: ignore
+
+    def dynamic_array_type(self, args: List[str]) -> DynamicArrayType:
+        """Parse a dynamic_array_type of the fcp AST."""
+        typename = args[0]
+
+        return DynamicArrayType(typename)  # type: ignore
 
     def param(self, args: List[str]) -> Tuple[str, ...]:
         """Parse a param node of the fcp AST."""

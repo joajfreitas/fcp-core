@@ -45,12 +45,14 @@ def get_result_txt(scope: str, name: str) -> str:
         "005_extends",
         "006_basic_service",
         "007_simple_array_type",
+        "008_dynamic_array",
     ],
 )  # type: ignore
 def test_parser(test_name: str) -> NoReturn:
     fcp_v2, _ = get_fcp(Path(get_fcp_config("syntax", test_name))).unwrap()
     fcp_json_dict = fcp_v2.to_dict()
     expected_result_dict = get_result_json("syntax", test_name)
+
     assert fcp_json_dict == expected_result_dict
 
 
