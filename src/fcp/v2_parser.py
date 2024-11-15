@@ -53,7 +53,7 @@ fcp_parser = Lark(
     struct: "struct" identifier "{" struct_field+ "}"
     struct_field: identifier "@" number ":" type param* ","
     type: (base_type | array_type | composed_type) "|"?
-    base_type: /u\d\d|u\d|i\d\d|i\d|f32|f64/
+    base_type: /u\d\d|u\d|i\d\d|i\d|f32|f64|str/
     array_type: "[" type "," number "]"
     composed_type: identifier
 

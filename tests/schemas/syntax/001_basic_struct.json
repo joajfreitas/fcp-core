@@ -2,12 +2,62 @@
   "impls": [],
   "structs": [
     {
-      "name": "foo",
+      "name": "S1",
       "fields": [
         {
-          "name": "bar",
+          "name": "s0",
           "field_id": 0,
           "type": {"BuiltinType": {"name": "u8"}}
+        },
+        {
+          "name": "s1",
+          "field_id": 1,
+          "type": {"BuiltinType": {"name": "i8"}}
+        },
+        {
+          "name": "s2",
+          "field_id": 2,
+          "type": {"BuiltinType": {"name": "u16"}}
+        },
+        {
+          "name": "s3",
+          "field_id": 3,
+          "type": {"BuiltinType": {"name": "i16"}}
+        },
+        {
+          "name": "s4",
+          "field_id": 4,
+          "type": {"BuiltinType": {"name": "u32"}}
+        },
+        {
+          "name": "s5",
+          "field_id": 5,
+          "type": {"BuiltinType": {"name": "i32"}}
+        },
+        {
+          "name": "s6",
+          "field_id": 6,
+          "type": {"BuiltinType": {"name": "u64"}}
+        },
+        {
+          "name": "s7",
+          "field_id": 7,
+          "type": {"BuiltinType": {"name": "i64"}}
+        },
+        {
+          "name": "s8",
+          "field_id": 8,
+          "type": {"BuiltinType": {"name": "f32"}}
+        },
+        {
+          "name": "s9",
+          "field_id": 9,
+          "type": {"BuiltinType": {"name": "f64"}}
+        },
+        {
+          "name": "s10",
+          "field_id": 10,
+          "type": {"BuiltinType": {"name": "str"}}
         }
       ]
     }

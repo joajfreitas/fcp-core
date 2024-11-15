@@ -22,7 +22,7 @@
 
 from serde import serde, strict
 from beartype.typing import Union
-from typing_extensions import Self
+from typing_extensions import Self, TypeAlias
 from enum import Enum
 
 
@@ -45,12 +45,16 @@ class BuiltinType:
         return self.name[0] == "u"
 
     def is_float(self) -> bool:
-        """Check that type is float."""
+        """Check that type is a float."""
         return self.name[0] == "f" and int(self.name[1:]) == 32
 
     def is_double(self) -> bool:
-        """Check that type is double."""
+        """Check that type is a double."""
         return self.name[0] == "f" and int(self.name[1:]) == 64
+
+    def is_str(self) -> bool:
+        """Check that type is a string."""
+        return self.name == "str"
 
 
 class ComposedTypeCategory(Enum):
@@ -87,4 +91,4 @@ class ArrayType:
         return int(self.type.get_length() * self.size)
 
 
-Type = Union[BuiltinType, ArrayType, ComposedType]
+Type: TypeAlias = Union[BuiltinType, ArrayType, ComposedType]
