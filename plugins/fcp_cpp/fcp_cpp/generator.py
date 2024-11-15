@@ -99,7 +99,6 @@ class Generator(CodeGenerator):
             .read()
         )
 
-    # TODO: generate to string
     def generate(self, fcp: FcpV2, ctx: Any) -> Dict[str, Union[str, Path]]:
         """Generate cpp files."""
         loader = jinja2.DictLoader(
