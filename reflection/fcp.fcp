@@ -1,0 +1,11 @@
+version: "3"
+
+struct Enumeration {
+    name @0: str,
+    value @1: i32,
+}
+
+struct Enum {
+    name @0: str,
+    enumeration @1: [Enumeration]
+}
