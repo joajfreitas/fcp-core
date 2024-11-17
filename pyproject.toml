@@ -48,4 +48,5 @@ test = [
     "marko",
     "docutils",
     "pygments",
+    "hypothesis"
 ]
