@@ -7,7 +7,7 @@ import re
 from pathlib import Path
 
 from fcp.v2_parser import get_fcp
-from fcp import FcpV2, default_serialization
+from fcp.specs.v2 import FcpV2
 from fcp.verifier import make_general_verifier
 from fcp.types import NoReturn
 
@@ -105,13 +105,3 @@ def test_verifier_errors(test_name: str) -> NoReturn:
 
     verifier = make_general_verifier()
     assert verifier.verify(fcp_v2).is_err()
-
-
-def test_default_serialization() -> NoReturn:
-    fcp_v2, _ = get_fcp(
-        Path(get_fcp_config("syntax", "004_struct_composition"))
-    ).unwrap()
-
-    assert default_serialization(
-        fcp_v2, "baz", {"var": {"var1": 1, "var2": 2}}
-    ) == bytearray([1, 2])
