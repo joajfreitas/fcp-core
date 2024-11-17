@@ -32,6 +32,9 @@ class BuiltinType:
 
     name: str
 
+    def __init__(self, name: str):
+        self.name = name
+
     def get_length(self) -> int:
         """Type length in bits."""
         if self.is_str():
