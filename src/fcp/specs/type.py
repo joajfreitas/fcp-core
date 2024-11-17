@@ -34,6 +34,8 @@ class BuiltinType:
 
     def get_length(self) -> int:
         """Type length in bits."""
+        if self.is_str():
+            raise ValueError("No length for dynamic strings")
         return int(self.name[1:])
 
     def is_signed(self) -> bool:
