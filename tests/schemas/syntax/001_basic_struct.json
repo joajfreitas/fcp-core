@@ -60,6 +60,33 @@
           "type": {"BuiltinType": {"name": "str"}}
         }
       ]
+    },
+    {
+        "name": "S2",
+        "fields": [
+            {"name": "s0", "field_id": 0, "type": {"BuiltinType": {"name": "u8"}}},
+            {"name": "s1", "field_id": 1, "type": {"BuiltinType": {"name": "i8"}}}
+        ]
+    },
+    {
+        "name": "S3",
+        "fields": [
+            {"name": "s0", "field_id": 0, "type": {"BuiltinType": {"name": "u64"}}},
+            {"name": "s1", "field_id": 1, "type": {"BuiltinType": {"name": "i64"}}}
+        ]
+    },
+    {
+        "name": "S4",
+        "fields": [
+            {"name": "s0", "field_id": 0, "type": {"BuiltinType": {"name": "f32"}}},
+            {"name": "s1", "field_id": 1, "type": {"BuiltinType": {"name": "f64"}}}
+        ]
+    },
+    {
+        "name": "S5",
+        "fields": [
+            {"name": "s0", "field_id": 0, "type": {"BuiltinType": {"name": "str"}}}
+        ]
     }
   ],
   "enums": [],

@@ -13,3 +13,23 @@ struct S1 {
     s9 @ 9: f64,
     s10 @ 10: str,
 }
+
+struct S2 {
+    s0 @ 0: u8,
+    s1 @ 1: i8,
+}
+
+
+struct S3 {
+    s0 @ 0: u64,
+    s1 @ 1: i64,
+}
+
+struct S4 {
+    s0 @ 0: f32,
+    s1 @ 1: f64,
+}
+
+struct S5 {
+    s0 @ 0: str,
+}
