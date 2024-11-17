@@ -8,8 +8,8 @@ from math import ceil
 from cantools.database import conversion
 from jinja2 import Environment, FileSystemLoader
 from cantools.database.can.node import Node as CanNode
-from fcp.specs import StructField
-from fcp import FcpV2
+from fcp.specs.struct_field import StructField
+from fcp.specs.v2 import FcpV2
 from dataclasses import dataclass
 from fcp.result import Result, Ok, Err
 from fcp.maybe import catch, Nothing

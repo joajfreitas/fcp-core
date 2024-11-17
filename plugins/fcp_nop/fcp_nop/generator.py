@@ -25,7 +25,7 @@ import json
 from beartype.typing import Any, Dict, Union
 from pathlib import Path
 from fcp.codegen import CodeGenerator
-from fcp import FcpV2
+from fcp.specs.v2 import FcpV2
 
 
 class Generator(CodeGenerator):

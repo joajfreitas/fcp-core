@@ -27,7 +27,7 @@ from pathlib import Path
 from fcp.codegen import CodeGenerator
 from fcp.verifier import register, Verifier
 from fcp.result import Result, Err, Ok
-from fcp import FcpV2
+from fcp.specs.v2 import FcpV2
 from fcp.error import FcpError
 from fcp.types import Nil
 from fcp.specs.impl import Impl

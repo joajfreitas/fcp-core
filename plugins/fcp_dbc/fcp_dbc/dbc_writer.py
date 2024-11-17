@@ -30,8 +30,7 @@ from cantools.database.can.message import Message as CanMessage
 from cantools.database.can.signal import Signal as CanSignal
 from cantools.database.can.node import Node as CanNode
 
-from fcp import FcpV2
-
+from fcp.specs.v2 import FcpV2
 from fcp.result import Result, Ok, Err
 from fcp.maybe import catch
 from fcp.encoding import make_encoder, EncodeablePiece, PackedEncoderContext

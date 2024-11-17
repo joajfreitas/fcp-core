@@ -24,7 +24,7 @@ SOFTWARE.
 import serde
 import serde.json
 import pytest
-from fcp import FcpV2
+from fcp.specs.v2 import FcpV2
 
 from beartype.typing import Dict, Any
 

@@ -32,7 +32,7 @@ from fcp.specs.type import Type
 from fcp.specs.impl import Impl
 from fcp.codegen import CodeGenerator
 from fcp.verifier import Verifier
-from fcp import FcpV2
+from fcp.specs.v2 import FcpV2
 from fcp.specs.type import BuiltinType, ArrayType, ComposedTypeCategory, ComposedType
 from fcp.encoding import make_encoder, EncodeablePiece, EncoderContext, Value
 
