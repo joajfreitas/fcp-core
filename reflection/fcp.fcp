@@ -37,11 +37,22 @@ struct Impl {
     type @3: str,
     fields @4: [DictField],
     signals @5: [SignalBlock],
+}
 
+struct Rpc {
+    name @0: str,
+    input @1: str,
+    output @2: str,
+}
+
+struct Service {
+    name @0: str,
+    rpcs @1: [Rpc],
 }
 
 struct Fcp {
     structs @0: [Struct],
     enums @1: [Enum],
-    impls @2: [Impl]
+    impls @2: [Impl],
+    services @3: [Service],
 }
