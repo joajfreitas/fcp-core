@@ -96,6 +96,7 @@ def test_codegen(test_name: str) -> None:
         out = subprocess.run(
             [
                 "/usr/bin/g++",
+                "--std=c++17",
                 f"{test_name}.cpp",
                 "-o",
                 test_name,
