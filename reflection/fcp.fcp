@@ -9,3 +9,14 @@ struct Enum {
     name @0: str,
     enumeration @1: [Enumeration]
 }
+
+struct StructField {
+    name @0: str,
+    field_id @1: u32,
+    type @2: Type,
+}
+
+struct Struct {
+    name @0: str,
+    fields @1: [StructField]
+}
