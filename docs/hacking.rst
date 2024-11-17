@@ -49,6 +49,7 @@ Directory structure
     ├── __main__.py
     ├── maybe.py             - Maybe monad
     ├── result.py            - Result monad
+    ├── serde.py             - python serialization/deserialization library
     ├── specs                - Fcp object tree
     │   ├── comment.py       - Comment object
     │   ├── enum.py          - Enum object
