@@ -1,5 +1,16 @@
 version: "3"
 
+struct StructField {
+    name @0: str,
+    field_id @1: u32,
+    type @2: str,
+}
+
+struct Struct {
+    name @0: str,
+    fields @1: [StructField],
+}
+
 struct Enumeration {
     name @0: str,
     value @1: i32,
@@ -7,16 +18,30 @@ struct Enumeration {
 
 struct Enum {
     name @0: str,
-    enumeration @1: [Enumeration]
+    enumeration @1: [Enumeration],
 }
 
-struct StructField {
+struct DictField {
     name @0: str,
-    field_id @1: u32,
-    type @2: Type,
+    value @1: str,
 }
 
-struct Struct {
+struct SignalBlock {
     name @0: str,
-    fields @1: [StructField]
+    fields @1: [DictField],
+}
+
+struct Impl {
+    name @0: str,
+    protocol @1: str,
+    type @3: str,
+    fields @4: [DictField],
+    signals @5: [SignalBlock],
+
+}
+
+struct Fcp {
+    structs @0: [Struct],
+    enums @1: [Enum],
+    impls @2: [Impl]
 }
