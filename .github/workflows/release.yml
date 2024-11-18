@@ -40,7 +40,7 @@ jobs:
       with:
         name: python-package-distributions
         path: dist/
-    - name: Publish distribution 📦 to PyPI
+    - name: Publish distribution to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
   github-release:
     name: Sign python distribution with Sigstore and upload them to GitHub Release
@@ -127,3 +127,4 @@ jobs:
       with:
         repository-url: https://test.pypi.org/legacy/
         verbose: true
+        packages-dir: test-dist
