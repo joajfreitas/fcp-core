@@ -206,7 +206,44 @@ Expect more information regarding fcp_v2 in future releases.
 
 * Non multiplexed signals belonging to messages with other signals that are multiplexed are no longer interpreted as multiplexed signals in the decoding process.
 
-## v1.0.0
+## v1.0.0.dev1
+
+Fcp has moved on to the next stage of its life. We've started development on
+the affectionately named "fcp v2".
+
+There's a couple main goals for the new fcp version:
+ * Develop an IDL (interface description language) to replace the old json configuration
+ * Allow fcp to generate code that works for protocols other than CAN bus.
+ * Extend the information that fcp is capable of encoding.
+
+IDL example:
+![fcp code showcase](https://raw.githubusercontent.com/joajfreitas/fcp-core/master/assets/code_showcase.png)
+
+
+### Changes
+
+  * [Configure github CI](https://github.com/joajfreitas/fcp-core/pull/15) @joajfreitas
+  * [Prepare fcp development](https://github.com/joajfreitas/fcp-core/pull/14). Including adding a pyproject.toml @joajfreitas
+    - [Remove legacy setup.py](https://github.com/joajfreitas/fcp-core/pull/16) @joajfreitas
+  * [Change license to MIT](https://github.com/joajfreitas/fcp-core/pull/19) @joajfreitas
+    - [Point copyright information to the AUTHORS file](https://github.com/joajfreitas/fcp-core/pull/22) @joajfreitas
+  * [Parser tests](https://github.com/joajfreitas/fcp-core/pull/26) @joajfreitas
+  * [Type annotation + Type checking](https://github.com/joajfreitas/fcp-core/pull/27) @ItsNotSoftware
+  * [Update readme](https://github.com/joajfreitas/fcp-core/pull/30) @joajfreitas
+  * [Serialization tests](https://github.com/joajfreitas/fcp-core/pull/31) @joajfreitas
+  * [config for pre commit hooks](https://github.com/joajfreitas/fcp-core/pull/32) @joajfreitas
+    - [More precommit](https://github.com/joajfreitas/fcp-core/pull/33) @joajfreitas
+  * [Type composition](https://github.com/joajfreitas/fcp-core/pull/35) @joajfreitas
+  * [Deleted fpi](https://github.com/joajfreitas/fcp-core/pull/36) @joajfreitas
+
+### Cleanups
+  * [fixed v2 tests](https://github.com/joajfreitas/fcp-core/pull/7) @ItsNotSoftware
+  * [Remove all related to v1](https://github.com/joajfreitas/fcp-core/pull/20) @ItsNotSoftware
+  * [Move changelog to single file](https://github.com/joajfreitas/fcp-core/pull/23) @joajfreitas
+  * [Cleanup](https://github.com/joajfreitas/fcp-core/pull/24) @joajfreitas
+  * [Cleanup](https://github.com/joajfreitas/fcp-core/pull/25) @joajfreitas
+  * [Enable colors in makefile](https://github.com/joajfreitas/fcp-core/pull/29) @joajfreitas
+
 
  * Remove fcp gui
  * Implement new fcp IDL

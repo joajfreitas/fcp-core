@@ -1,6 +1,6 @@
 [project]
 name = "fcp"
-version = "1.0.0"
+version = "1.0.0.dev1"
 description = "CAN bus manager"
 license = { file = "LICENSE" }
 readme = "README.md"
