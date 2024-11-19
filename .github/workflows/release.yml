@@ -84,6 +84,7 @@ jobs:
         --repo '${{ github.repository }}'
   test-build:
     name: Build distribution
+    if: ${{ !startsWith(github.ref, 'refs/tags/') }} # only publish to PyPI on tag pushes
     runs-on: ubuntu-latest
 
     steps:
@@ -105,6 +106,7 @@ jobs:
         path: test-dist/
   publish-to-testpypi:
     name: Publish fcp test PyPI
+    if: ${{ !startsWith(github.ref, 'refs/tags/') }} # only publish to PyPI on tag pushes
     needs:
       - test-build
     runs-on: ubuntu-latest
