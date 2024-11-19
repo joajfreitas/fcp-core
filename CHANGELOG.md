@@ -212,13 +212,46 @@ Fcp has moved on to the next stage of its life. We've started development on
 the affectionately named "fcp v2".
 
 There's a couple main goals for the new fcp version:
- * Develop an IDL (interface description language) to replace the old json configuration
+ * Develop an IDL (interface description language) to replace the old json configuration.
  * Allow fcp to generate code that works for protocols other than CAN bus.
  * Extend the information that fcp is capable of encoding.
 
 IDL example:
 ![fcp code showcase](https://raw.githubusercontent.com/joajfreitas/fcp-core/master/assets/code_showcase.png)
 
+Documentation can be found in: [https://fcp-core.readthedocs.io/en/latest/](https://fcp-core.readthedocs.io/en/latest/).
+
+### Closed issues
+ * [CI](https://github.com/joajfreitas/fcp-core/issues/8)
+ * [Create pyproject.toml](https://github.com/joajfreitas/fcp-core/issues/10)
+ * [Remove all related to fcp_v1](https://github.com/joajfreitas/fcp-core/issues/11)
+ * [Add type annotations](https://github.com/joajfreitas/fcp-core/issues/17)
+ * [Remove fpi](https://github.com/joajfreitas/fcp-core/issues/13)
+ * [Allow type composition](https://github.com/joajfreitas/fcp-core/issues/4)
+ * [Update README](https://github.com/joajfreitas/fcp-core/issues/21)
+ * [Remove the result type](https://github.com/joajfreitas/fcp-core/issues/9)
+ * [Implement code generator for cpp](https://github.com/joajfreitas/fcp-core/issues/5)
+ * [DBC generator](https://github.com/joajfreitas/fcp-core/issues/1)
+ * [Support types smaller than 1 byte](https://github.com/joajfreitas/fcp-core/issues/64)
+ * [Rethink `extends` syntax](https://github.com/joajfreitas/fcp-core/issues/65)
+ * [Add description of files and directory structure](https://github.com/joajfreitas/fcp-core/issues/73)
+ * [Readd default schema validation rules](https://github.com/joajfreitas/fcp-core/issues/75)
+ * [Add rpc mechanism](https://github.com/joajfreitas/fcp-core/issues/59)
+ * [Add arrays to IDL](https://github.com/joajfreitas/fcp-core/issues/3)
+ * [Support multiple buses in fcp](https://github.com/joajfreitas/fcp-core/issues/85)
+ * [Create treesitter grammar for syntax highlighting in editors](https://github.com/joajfreitas/fcp-core/issues/100)
+ * [Add API docs as python docstrings](https://github.com/joajfreitas/fcp-core/issues/92)
+ * [Properly support comments](https://github.com/joajfreitas/fcp-core/issues/112)
+ * [Implement cpp code gen](https://github.com/joajfreitas/fcp-core/issues/12)
+ * [Create CAN C generator](https://github.com/joajfreitas/fcp-core/issues/70)
+ * [Add support for arrays in fcp cpp](https://github.com/joajfreitas/fcp-core/issues/121)
+ * [Implement to string convertions for cpp code](https://github.com/joajfreitas/fcp-core/issues/127)
+ * [Support for enums in CAN C gen](https://github.com/joajfreitas/fcp-core/issues/103)
+ * [Support for period/frequency](https://github.com/joajfreitas/fcp-core/issues/104)
+ * [Test builtin types in cpp gen](https://github.com/joajfreitas/fcp-core/issues/132)
+ * [Add support for strings as a signal datatype](https://github.com/joajfreitas/fcp-core/issues/136)
+ * [Implement python decoding library](https://github.com/joajfreitas/fcp-core/issues/2)
+ * [Add support for dynamic arrays as signal datatypes](https://github.com/joajfreitas/fcp-core/issues/2)
 
 ### Changes
 
@@ -234,18 +267,57 @@ IDL example:
   * [config for pre commit hooks](https://github.com/joajfreitas/fcp-core/pull/32) @joajfreitas
     - [More precommit](https://github.com/joajfreitas/fcp-core/pull/33) @joajfreitas
   * [Type composition](https://github.com/joajfreitas/fcp-core/pull/35) @joajfreitas
-  * [Deleted fpi](https://github.com/joajfreitas/fcp-core/pull/36) @joajfreitas
+  * [Deleted fpi](https://github.com/joajfreitas/fcp-core/pull/36) @ItsNotSoftware
+  * [Dbc support](https://github.com/joajfreitas/fcp-core/pull/42) @joajfreitas
+  * [Struct extension](https://github.com/joajfreitas/fcp-core/pull/44) @joajfreitas
+  * [Remove semicolons](https://github.com/joajfreitas/fcp-core/pull/45) @joajfreitas
+  * [Prototype for sphinx docs](https://github.com/joajfreitas/fcp-core/pull/47) @joajfreitas
+  * [Redo imports](https://github.com/joajfreitas/fcp-core/pull/52) @joajfreitas
+  * [Test fcp parsing errors](https://github.com/joajfreitas/fcp-core/pull/54) @joajfreitas
+  * [Add Maybe type for error handling](https://github.com/joajfreitas/fcp-core/pull/55) @joajfreitas
+  * [Upgrade result type](https://github.com/joajfreitas/fcp-core/pull/56) @joajfreitas
+  * [Support python 3.8](https://github.com/joajfreitas/fcp-core/pull/57) @joajfreitas
+  * [Test for fcp_dbc_generator](https://github.com/joajfreitas/fcp-core/pull/60) @joajfreitas
+  * [Fcp dbc readme](https://github.com/joajfreitas/fcp-core/pull/61) @joajfreitas
+  * [Generate dbc with composed types](https://github.com/joajfreitas/fcp-core/pull/62) @joajfreitas
+  * [Add test for fcp nop](https://github.com/joajfreitas/fcp-core/pull/63) @joajfreitas
+  * [Support for small types](https://github.com/joajfreitas/fcp-core/pull/66) @joajfreitas
+  * [Check that code examples in markdown files are correct](https://github.com/joajfreitas/fcp-core/pull/68) @joajfreitas
+  * [Add packed encoder](https://github.com/joajfreitas/fcp-core/pull/69) @joajfreitas
+  * [Fix v2_parser](https://github.com/joajfreitas/fcp-core/pull/71) @ItsNotSoftware
+  * [Change the extension syntax](https://github.com/joajfreitas/fcp-core/pull/74) @joajfreitas
+  * [Document directory structure](https://github.com/joajfreitas/fcp-core/pull/76) @joajfreitas
+  * [Add test for example in fcp dbc](https://github.com/joajfreitas/fcp-core/pull/80) @joajfreitas
+  * [Fix/dbc generator](https://github.com/joajfreitas/fcp-core/pull/81) @joajfreitas
+  * [Poc for rpc service](https://github.com/joajfreitas/fcp-core/pull/82) @joajfreitas
+  * [Rename Signal to StructField](https://github.com/joajfreitas/fcp-core/pull/83) @joajfreitas
+  * [Support for arrays](https://github.com/joajfreitas/fcp-core/pull/84) @joajfreitas
+  * [Implement array support in fcp dbc](https://github.com/joajfreitas/fcp-core/pull/86) @joajfreitas
+  * [Throw exception if message is too big](https://github.com/joajfreitas/fcp-core/pull/87) @joajfreitas
+  * [Add units to tests](https://github.com/joajfreitas/fcp-core/pull/88) @joajfreitas
+  * [Support multiple buses in one config](https://github.com/joajfreitas/fcp-core/pull/89) @joajfreitas
+  * [Docstrings](https://github.com/joajfreitas/fcp-core/pull/101) @joajfreitas
+  * [Fcp cpp gen](https://github.com/joajfreitas/fcp-core/pull/102) @joajfreitas
+  * [CAN C generator](https://github.com/joajfreitas/fcp-core/pull/107) @ItsNotSoftware
+  * [Properly support comments](https://github.com/joajfreitas/fcp-core/pull/117) @joajfreitas
+  * [Supported features docs](https://github.com/joajfreitas/fcp-core/pull/126) @joajfreitas
+  * [Cpp arrays](https://github.com/joajfreitas/fcp-core/pull/128) @joajfreitas
+  * [First implementation of period (needs generated code checks)](https://github.com/joajfreitas/fcp-core/pull/129) @c4stelo
+  * [Add missing builtin types](https://github.com/joajfreitas/fcp-core/pull/133) @joajfreitas
+  * [Implement support for string builtin types](https://github.com/joajfreitas/fcp-core/pull/139) @joajfreitas
+  * [Implement support for dynamic array builtin types](https://github.com/joajfreitas/fcp-core/pull/140) @joajfreitas
+  * [Python decoding lib](https://github.com/joajfreitas/fcp-core/pull/143) @joajfreitas
+  * [Fcp schema schema](https://github.com/joajfreitas/fcp-core/pull/145) @joajfreitas
+  * [Setup release](https://github.com/joajfreitas/fcp-core/pull/148) @joajfreitas
 
-### Cleanups
+#### Cleanups
   * [fixed v2 tests](https://github.com/joajfreitas/fcp-core/pull/7) @ItsNotSoftware
   * [Remove all related to v1](https://github.com/joajfreitas/fcp-core/pull/20) @ItsNotSoftware
   * [Move changelog to single file](https://github.com/joajfreitas/fcp-core/pull/23) @joajfreitas
   * [Cleanup](https://github.com/joajfreitas/fcp-core/pull/24) @joajfreitas
   * [Cleanup](https://github.com/joajfreitas/fcp-core/pull/25) @joajfreitas
   * [Enable colors in makefile](https://github.com/joajfreitas/fcp-core/pull/29) @joajfreitas
-
-
- * Remove fcp gui
- * Implement new fcp IDL
- * Implement converter for old fcp json configuration to new IDL.
- * Implement generator for old json configuration
+  * [Cleanup](https://github.com/joajfreitas/fcp-core/pull/46) @joajfreitas
+  * [Fix example syntax](https://github.com/joajfreitas/fcp-core/pull/50) @joajfreitas
+  * [Better printing for fcp](https://github.com/joajfreitas/fcp-core/pull/51) @joajfreitas
+  * [Fix README example code](https://github.com/joajfreitas/fcp-core/pull/67) @joajfreitas
