@@ -37,3 +37,9 @@ See [readthedocs.io](https://fcp-core.readthedocs.io/en/latest/)
 | dbc  |     ✅   |          ✅        |        ✅       |      ✅    |   ✅  |
 | c    |     ✅   |          ✅        |        ❌       |      ❌    |   ❌  |
 | cpp  |     ✅   |          ✅        |        ❌       |      ❌    |   ❌  |
+
+## Plugins
+
+ * [dbc](https://github.com/joajfreitas/fcp-core/tree/master/plugins/fcp_dbc)
+ * [can_c](https://github.com/joajfreitas/fcp-core/tree/master/plugins/fcp_can_c)
+ * [cpp](https://github.com/joajfreitas/fcp-core/tree/master/plugins/fcp_cpp)
