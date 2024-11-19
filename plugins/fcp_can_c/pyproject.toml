@@ -6,7 +6,7 @@ license = { file = "LICENSE" }
 readme = "README.md"
 url = "https://github.com/joajfreitas/fcp-core"
 requires-python = ">=3.9"
-dependencies = ["fcp>=1.0.0", "cantools>=39.0.0"]
+dependencies = ["fcp>=0.56.0", "cantools>=39.0.0"]
 
 [build-system]
 requires = ["hatchling"]
