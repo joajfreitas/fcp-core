@@ -1,0 +1,71 @@
+version: "3"
+
+struct Pedals {
+    acc_pos @0: u16,
+}
+
+impl can for Pedals {
+    id: 10,
+    device: "ecu",
+    
+    signal acc_pos {
+        endianness: "big",
+    },
+}
+
+struct Temperatures {
+    t1 @0: u32,
+}
+
+impl can for Temperatures {
+    id: 11,
+    device: "ecu",
+    
+    signal t1 {
+        endianness: "big",
+    },
+
+    signal t2 {
+        endianness: "big",
+    },
+}
+
+struct Adc {
+    adc @0: u64,
+}
+
+impl can for Adc {
+    id: 12,
+    device: "ecu",
+    
+    signal adc {
+        endianness: "big",
+    },
+}
+
+
+struct Imu {
+    acc @0: f32,
+}
+
+impl can for Imu {
+    id: 13,
+    device: "ecu",
+    
+    signal acc {
+        endianness: "big",
+    },
+}
+
+struct Jarda {
+    jarda @0: f64,
+}
+
+impl can for Jarda {
+    id: 14,
+    device: "ecu",
+    
+    signal jarda {
+        endianness: "big",
+    },
+}

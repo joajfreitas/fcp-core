@@ -88,6 +88,7 @@ class CanSignal:
     is_multiplexer: bool = False
     multiplexer_ids: Optional[List[int]] = None
     multiplexer_signal: Optional[str] = None
+    is_big_endian_s: str = False
 
     def __post_init__(self) -> None:
         """Post init method to set the scalar type and multiplexer count."""
@@ -105,6 +106,7 @@ class CanSignal:
         }
 
         self.data_type = type_map.get(self.data_type, self.data_type)
+        self.is_big_endian_s = "true" if self.byte_order == "big_endian" else "false"
 
         if self.data_type not in ["f32", "f64"]:
             self.scalar_type = "float"
@@ -182,6 +184,7 @@ def create_can_signals(
 
         type = piece.composite_type.unwrap_or(piece.type.name)
 
+        breakpoint()
         signals.append(
             CanSignal(
                 name=piece.name.replace("::", "_"),
@@ -190,7 +193,7 @@ def create_can_signals(
                 scalar_type=piece.type.name,
                 bit_length=piece.bitlength,
                 byte_order=(
-                    "big_endian" if piece.endianess == "big" else "little_endian"
+                    "big_endian" if piece.extended_data.get("endianness", "little") == "big" else "little_endian"
                 ),
                 signed=is_signed(piece),
                 is_multiplexer=bool(multiplexer_signal),
@@ -256,7 +259,7 @@ def initialize_can_data(
             Err("No id field found in extension").unwrap()
 
         device_name = extension.fields.get("device", "global")
-        period = extension.fields.get("period", 0)
+        period = extension.fields.get("period", -1)
 
         if not any(node.name == device_name for node in devices):
             devices.append(CanNode(device_name))

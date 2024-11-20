@@ -6,7 +6,7 @@
 // {{ message.name_pascal }}
 {%- for signal in message.signals %}
 #define can_decode_signal_{{ message.name_snake }}_{{ signal.name }}(msg) \
-    can_decode_signal_as_{{ signal.scalar_type }}((msg), {{ signal.start_bit }}, {{ signal.bit_length }}, {{ signal.scale }}, {{ signal.offset }})
+    can_decode_signal_as_{{ signal.scalar_type }}((msg), {{ signal.start_bit }}, {{ signal.bit_length }}, {{ signal.scale }}, {{ signal.offset }}, {{ signal.is_big_endian_s }});
 {%- endfor %}
 {%- endfor %}
 /*---------------------------------------------------------*/
@@ -16,7 +16,7 @@
 // {{ message.name_pascal }}
 {%- for signal in message.signals %}
 #define can_encode_signal_{{message.name_snake}}_{{signal.name}}(signal) \
-    can_encode_signal_from_{{signal.scalar_type}}((signal), {{ signal.start_bit }}, {{ signal.bit_length }}, {{ signal.scale }}, {{ signal.offset }});
+    can_encode_signal_from_{{signal.scalar_type}}((signal), {{ signal.start_bit }}, {{ signal.bit_length }}, {{ signal.scale }}, {{ signal.offset }}, {{ signal.is_big_endian_s }});
 {%- endfor %}
 {%- endfor %}
 /*---------------------------------------------------------*/
