@@ -7,85 +7,118 @@
         {
           "name": "s0",
           "field_id": 0,
-          "type": {"BuiltinType": {"name": "u8"}}
+          "type": {
+              "name": "u8",
+              "type": "Builtin"
+          }
         },
         {
           "name": "s1",
           "field_id": 1,
-          "type": {"BuiltinType": {"name": "i8"}}
+          "type": {
+              "name": "i8",
+              "type": "Builtin"
+          }
         },
         {
           "name": "s2",
           "field_id": 2,
-          "type": {"BuiltinType": {"name": "u16"}}
+          "type": {
+              "name": "u16",
+              "type": "Builtin"
+          }
         },
         {
           "name": "s3",
           "field_id": 3,
-          "type": {"BuiltinType": {"name": "i16"}}
+          "type": {
+              "name": "i16",
+              "type": "Builtin"
+          }
         },
         {
           "name": "s4",
           "field_id": 4,
-          "type": {"BuiltinType": {"name": "u32"}}
+          "type": {
+              "name": "u32",
+              "type": "Builtin"
+          }
         },
         {
           "name": "s5",
           "field_id": 5,
-          "type": {"BuiltinType": {"name": "i32"}}
+          "type": {
+              "name": "i32",
+              "type": "Builtin"
+          }
         },
         {
           "name": "s6",
           "field_id": 6,
-          "type": {"BuiltinType": {"name": "u64"}}
+          "type": {
+              "name": "u64",
+              "type": "Builtin"
+          }
         },
         {
           "name": "s7",
           "field_id": 7,
-          "type": {"BuiltinType": {"name": "i64"}}
+          "type": {
+              "name": "i64",
+              "type": "Builtin"
+          }
         },
         {
           "name": "s8",
           "field_id": 8,
-          "type": {"BuiltinType": {"name": "f32"}}
+          "type": {
+              "name": "f32",
+              "type": "Builtin"
+          }
         },
         {
           "name": "s9",
           "field_id": 9,
-          "type": {"BuiltinType": {"name": "f64"}}
+          "type": {
+              "name": "f64",
+              "type": "Builtin"
+          }
         },
         {
           "name": "s10",
           "field_id": 10,
-          "type": {"BuiltinType": {"name": "str"}}
+          "type": {
+              "name": "str",
+              "type": "Builtin"
+          }
         }
       ]
     },
     {
         "name": "S2",
         "fields": [
-            {"name": "s0", "field_id": 0, "type": {"BuiltinType": {"name": "u8"}}},
-            {"name": "s1", "field_id": 1, "type": {"BuiltinType": {"name": "i8"}}}
+            {"name": "s0", "field_id": 0, "type": {"name": "u8", "type": "Builtin"}},
+            {"name": "s1", "field_id": 1, "type": {"name": "i8", "type": "Builtin"}}
         ]
     },
     {
         "name": "S3",
         "fields": [
-            {"name": "s0", "field_id": 0, "type": {"BuiltinType": {"name": "u64"}}},
-            {"name": "s1", "field_id": 1, "type": {"BuiltinType": {"name": "i64"}}}
+            {"name": "s0", "field_id": 0, "type": {"name": "u64", "type": "Builtin"}},
+            {"name": "s1", "field_id": 1, "type": {"name": "i64", "type": "Builtin"}}
         ]
     },
     {
         "name": "S4",
         "fields": [
-            {"name": "s0", "field_id": 0, "type": {"BuiltinType": {"name": "f32"}}},
-            {"name": "s1", "field_id": 1, "type": {"BuiltinType": {"name": "f64"}}}
+            {"name": "s0", "field_id": 0, "type": {"name": "f32", "type": "Builtin"}},
+            {"name": "s1", "field_id": 1, "type": {"name": "f64", "type": "Builtin"}}
         ]
     },
     {
         "name": "S5",
         "fields": [
-            {"name": "s0", "field_id": 0, "type": {"BuiltinType": {"name": "str"}}}
+            {"name": "s0", "field_id": 0, "type": {"name": "str", "type": "Builtin"}}
         ]
     }
   ],

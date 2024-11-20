@@ -8,7 +8,12 @@
             "fields": [{
                 "name": "field1",
                 "field_id": 0,
-                "type": {"DynamicArrayType": {"type": {"BuiltinType": {"name":"u8"}}}
+                "type": {
+                    "underlying_type": {
+                        "name":"u8",
+                        "type": "Builtin"
+                        },
+                    "type": "DynamicArray"
                 }
             }]
         },
@@ -17,7 +22,13 @@
             "fields": [{
                 "name": "field1",
                 "field_id": 0,
-                "type": {"DynamicArrayType": {"type": {"ComposedType": {"category": "Struct", "name":"S1"}}}
+                "type": {
+                    "type": "DynamicArray",
+                    "underlying_type":
+                    {
+                        "type": "Struct",
+                        "name":"S1"
+                    }
                 }
             }]
         }

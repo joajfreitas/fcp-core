@@ -104,7 +104,7 @@ def _encode_struct(
 
 def _encode_array(buffer: _Buffer, fcp: FcpV2, type: ArrayType, data: Any) -> None:
     for i in range(type.size):
-        _encode(buffer, fcp, type.type, data[i])
+        _encode(buffer, fcp, type.underlying_type, data[i])
 
 
 def _encode_dynamic_array(
@@ -113,7 +113,7 @@ def _encode_dynamic_array(
     _encode_builtin_unsigned(buffer, BuiltinType("u32"), len(data))
 
     for x in data:
-        _encode(buffer, fcp, type.type, x)
+        _encode(buffer, fcp, type.underlying_type, x)
 
 
 def _encode(
@@ -133,7 +133,7 @@ def _encode(
         else:
             raise ValueError(f"Unexpected field type {type}")
     elif isinstance(type, ComposedType):
-        if type.category == ComposedTypeCategory.Struct:
+        if type.type == ComposedTypeCategory.Struct:
             _encode_struct(buffer, fcp, type.name, data)
     elif isinstance(type, ArrayType):
         _encode_array(buffer, fcp, type, data)
@@ -180,7 +180,7 @@ def _decode_str(buffer: _Buffer, type: BuiltinType) -> str:
 def _decode_array(buffer: _Buffer, fcp: FcpV2, type: ArrayType) -> List[Any]:
     data = []
     for i in range(type.size):
-        data.append(_decode(buffer, fcp, type.type))
+        data.append(_decode(buffer, fcp, type.underlying_type))
 
     return data
 
@@ -191,7 +191,7 @@ def _decode_dynamic_array(
     len = _decode_builtin_unsigned(buffer, BuiltinType("u32"))
     data = []
     for i in range(len):
-        data.append(_decode(buffer, fcp, type.type))
+        data.append(_decode(buffer, fcp, type.underlying_type))
 
     return data
 
@@ -221,7 +221,7 @@ def _decode(buffer: _Buffer, fcp: FcpV2, type: Type) -> Dict[str, Any]:
         else:
             raise ValueError(f"Unexpected field type {type}")
     elif isinstance(type, ComposedType):
-        if type.category == ComposedTypeCategory.Struct:
+        if type.type == ComposedTypeCategory.Struct:
             return _decode_struct(buffer, fcp, type.name)
     elif isinstance(type, ArrayType):
         return _decode_array(buffer, fcp, type)

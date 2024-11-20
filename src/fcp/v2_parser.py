@@ -42,6 +42,7 @@ from .specs.type import (
     ComposedTypeCategory,
     ComposedType,
     DynamicArrayType,
+    OptionalType,
     Type,
 )
 from .specs import v2
@@ -59,11 +60,12 @@ fcp_parser = Lark(
 
     struct: "struct" identifier "{" struct_field+ "}"
     struct_field: identifier "@" number ":" type param* ","
-    type: (base_type | array_type | composed_type | dynamic_array_type) "|"?
+    type: (base_type | array_type | composed_type | dynamic_array_type | optional) "|"?
     base_type: /u\d\d|u\d|i\d\d|i\d|f32|f64|str/
     array_type: "[" type "," number "]"
     dynamic_array_type: "[" type "]"
     composed_type: identifier
+    optional: "Optional" "[" type "]"
 
     param: identifier "("? param_argument* ")"? "|"?
     param_argument: value ","?
@@ -185,7 +187,10 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
     def type(self, args: List[str]) -> Type:
         """Parse a type node of the fcp AST."""
-        return args[0]
+        if isinstance(args[0], Type):
+            return args[0]
+
+        raise ValueError("Expected type")
 
     def base_type(self, args: List[str]) -> BuiltinType:
         """Parse a base_type node of the fcp AST."""
@@ -208,10 +213,17 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
         return ComposedType(typename, type_category)  # type: ignore
 
+    def optional(self, args: List[str]) -> OptionalType:
+        """Parse a option node of the fcp AST."""
+        typename = args[0]
+
+        return OptionalType(typename)  # type: ignore
+
     def dynamic_array_type(self, args: List[str]) -> DynamicArrayType:
         """Parse a dynamic_array_type of the fcp AST."""
         typename = args[0]
 
+        print(typename)
         return DynamicArrayType(typename)  # type: ignore
 
     def param(self, args: List[str]) -> Tuple[str, ...]:

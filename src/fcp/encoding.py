@@ -126,11 +126,8 @@ class PackedEncoder:
         if isinstance(type, BuiltinType):
             return type.get_length()
         elif isinstance(type, ArrayType):
-            return int(type.size * self._get_type_length(fcp, type.type))
-        elif (
-            isinstance(type, ComposedType)
-            and type.category == ComposedTypeCategory.Enum
-        ):
+            return int(type.size * self._get_type_length(fcp, type.underlying_type))
+        elif isinstance(type, ComposedType) and type.type == ComposedTypeCategory.Enum:
             return int(
                 2 ** ceil(log2(fcp.get_enum(type.name).unwrap().get_packed_size()))
             )
@@ -219,12 +216,15 @@ class PackedEncoder:
         for i in range(type.size):
             derived_field = copy(field)
 
-            derived_field.type = type.type
+            derived_field.type = type.underlying_type
             derived_field.name = field.name + "_" + str(i)
             self._generate_signal(derived_field, extension, prefix)
 
     def _generate(self, type: Type, extension: Impl, prefix: str = "") -> NoReturn:
-        self._generate_compound_type(type, extension, prefix)
+        if isinstance(type, ComposedType):
+            self._generate_compound_type(type, extension, prefix)
+        else:
+            raise ValueError("Expected ComposeType")
 
     def generate(self, impl: Impl) -> List[EncodeablePiece]:
         """Generate encoding instructions."""

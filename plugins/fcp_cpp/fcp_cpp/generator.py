@@ -57,12 +57,12 @@ def to_wrapper_cpp_type(input: Type) -> str:
         else:
             raise ValueError("Unimplemented")
     elif isinstance(input, ArrayType):
-        underlying_type = to_wrapper_cpp_type(input.type)
+        underlying_type = to_wrapper_cpp_type(input.underlying_type)
         return f"Array<{underlying_type}, {input.size}>"
     elif isinstance(input, ComposedType):
-        if input.category == ComposedTypeCategory.Struct:
+        if input.type == ComposedTypeCategory.Struct:
             return str(input.name)
-        elif input.category == ComposedTypeCategory.Enum:
+        elif input.type == ComposedTypeCategory.Enum:
             return str(input.name)
 
     raise ValueError("Cannot convert type to C++ type")
