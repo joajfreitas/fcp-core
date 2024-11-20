@@ -1,9 +1,6 @@
 #include "can_signal_parser.h"
 
-#include <stdbool.h>
 #include <stdint.h>
-
-#include <cstdint>
 
 #ifdef __cplusplus
 extern "C" {
@@ -126,8 +123,8 @@ int64_t bitfield_sign_conv(uint64_t bitfield, unsigned length) {
     }
 }
 
-uint64_t can_can_decode_signal_as_uint64_t(const CanFrame *msg, uint32_t start, uint32_t length,
-                                           float scale, float offset, bool is_big_endian) {
+uint64_t can_decode_signal_as_uint64_t(const CanFrame *msg, uint32_t start, uint32_t length,
+                                       float scale, float offset, bool is_big_endian) {
     uint64_t bitfield = get_bitfield(can_word(msg), start, length);
     if (is_big_endian) bitfield = __builtin_bswap64(bitfield);
 
