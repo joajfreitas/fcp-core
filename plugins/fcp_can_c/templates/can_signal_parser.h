@@ -1,6 +1,7 @@
 #ifndef CAN_SIGNAL_PARSER_H
 #define CAN_SIGNAL_PARSER_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "can_frame.h"

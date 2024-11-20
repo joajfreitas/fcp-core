@@ -184,7 +184,6 @@ def create_can_signals(
 
         type = piece.composite_type.unwrap_or(piece.type.name)
 
-        breakpoint()
         signals.append(
             CanSignal(
                 name=piece.name.replace("::", "_"),
