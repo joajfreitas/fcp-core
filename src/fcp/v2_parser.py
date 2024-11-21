@@ -223,7 +223,6 @@ class FcpV2Transformer(Transformer):  # type: ignore
         """Parse a dynamic_array_type of the fcp AST."""
         typename = args[0]
 
-        print(typename)
         return DynamicArrayType(typename)  # type: ignore
 
     def param(self, args: List[str]) -> Tuple[str, ...]:
