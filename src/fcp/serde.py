@@ -12,6 +12,7 @@ from .specs.type import (
     ArrayType,
     ComposedType,
     DynamicArrayType,
+    OptionalType,
     ComposedTypeCategory,
 )
 
@@ -116,6 +117,16 @@ def _encode_dynamic_array(
         _encode(buffer, fcp, type.underlying_type, x)
 
 
+def _encode_optional(
+    buffer: _Buffer, fcp: FcpV2, type: OptionalType, data: Any
+) -> None:
+
+    is_some = data is not None
+    _encode_builtin_unsigned(buffer, BuiltinType("u8"), 1 if is_some else 0)
+    if is_some:
+        _encode(buffer, fcp, type.underlying_type, data)
+
+
 def _encode(
     buffer: _Buffer, fcp: FcpV2, type: Type, data: Union[Any, Dict[str, Any]]
 ) -> None:
@@ -139,6 +150,10 @@ def _encode(
         _encode_array(buffer, fcp, type, data)
     elif isinstance(type, DynamicArrayType):
         _encode_dynamic_array(buffer, fcp, type, data)
+    elif isinstance(type, OptionalType):
+        _encode_optional(buffer, fcp, type, data)
+    else:
+        raise ValueError("Unmatched type")
 
 
 def encode(fcp: FcpV2, name: str, data: Dict[str, Any]) -> bytearray:
@@ -196,6 +211,14 @@ def _decode_dynamic_array(
     return data
 
 
+def _decode_optional(buffer: _Buffer, fcp: FcpV2, type: OptionalType) -> List[Any]:
+    is_some = _decode_builtin_unsigned(buffer, BuiltinType("u8")) != 0
+    if is_some:
+        return _decode(buffer, fcp, type.underlying_type)
+    else:
+        return None
+
+
 def _decode_struct(buffer: _Buffer, fcp: FcpV2, name: str) -> Dict[str, Any]:
     struct = fcp.get_struct(name).unwrap()
 
@@ -227,6 +250,10 @@ def _decode(buffer: _Buffer, fcp: FcpV2, type: Type) -> Dict[str, Any]:
         return _decode_array(buffer, fcp, type)
     elif isinstance(type, DynamicArrayType):
         return _decode_dynamic_array(buffer, fcp, type)
+    elif isinstance(type, OptionalType):
+        return _decode_optional(buffer, fcp, type)
+    else:
+        raise ValueError("Unmatched type")
 
 
 def decode(fcp: FcpV2, name: str, data: bytearray) -> Dict[str, Any]:

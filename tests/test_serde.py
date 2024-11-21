@@ -3,7 +3,15 @@
 import os
 from pathlib import Path
 from hypothesis import given, settings
-from hypothesis.strategies import text, integers, floats, text, characters, lists
+from hypothesis.strategies import (
+    text,
+    integers,
+    floats,
+    text,
+    characters,
+    lists,
+    booleans,
+)
 
 from fcp.serde import encode, decode
 from fcp.v2_parser import get_fcp
@@ -111,6 +119,22 @@ def test_encoding_dynamic_array() -> None:
     encoded = encode(fcp_v2, "S1", {"field1": [1, 2, 3]})
 
     assert encoded == bytearray([0x3, 0x0, 0x0, 0x0, 0x1, 0x2, 0x3])
+
+
+def test_encoding_optional_with_value() -> None:
+    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "009_optional")).unwrap()
+
+    encoded = encode(fcp_v2, "S1", {"field1": 1})
+
+    assert encoded == bytearray([0x1, 0x1])
+
+
+def test_encoding_optional_with_none() -> None:
+    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "009_optional")).unwrap()
+
+    encoded = encode(fcp_v2, "S1", {"field1": None})
+
+    assert encoded == bytearray([0x0])
 
 
 def test_decoding_single_byte_types() -> None:
@@ -222,6 +246,30 @@ def test_decoding_dynamic_array() -> None:
     assert decoded == {"field1": [1, 2, 3]}
 
 
+def test_decoding_optional_with_value() -> None:
+    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "009_optional")).unwrap()
+
+    decoded = decode(
+        fcp_v2,
+        "S1",
+        bytearray([0x1, 0x1]),
+    )
+
+    assert decoded == {"field1": 1}
+
+
+def test_decoding_optional_with_none() -> None:
+    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "009_optional")).unwrap()
+
+    decoded = decode(
+        fcp_v2,
+        "S1",
+        bytearray([0x0]),
+    )
+
+    assert decoded == {"field1": None}
+
+
 @settings(max_examples=20)  # type: ignore
 @given(integers(min_value=0, max_value=255))  # type: ignore
 def test_roundtrip_decoding_single_byte_types(integer) -> None:
@@ -301,6 +349,17 @@ def test_roundtrip_decoding_simple_array_type(array) -> None:
     fcp_v2, _ = get_fcp(get_fcp_config("syntax", "008_dynamic_array")).unwrap()
 
     data = {"field1": array}
+    encoded = encode(fcp_v2, "S1", data)
+
+    assert decode(fcp_v2, "S1", encoded) == data
+
+
+@settings(max_examples=20)  # type: ignore
+@given(integers(min_value=0, max_value=255), booleans())  # type: ignore
+def test_roundtrip_decoding_optional(value, is_some) -> None:
+    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "009_optional")).unwrap()
+
+    data = {"field1": value if is_some else None}
     encoded = encode(fcp_v2, "S1", data)
 
     assert decode(fcp_v2, "S1", encoded) == data

@@ -148,7 +148,7 @@ class OptionalType(Type):
 
     def get_length(self) -> int:
         """Type length in bits."""
-        return int(8 + self.underlying_type.get_length())
+        raise ValueError("Cannot compute the size of an Optional ")
 
 
 # Type: TypeAlias = Union[
