@@ -1,0 +1,22 @@
+{
+    "enums": [],
+    "impls": [],
+    "services": [],
+    "structs": [
+        {
+            "name": "S1",
+            "fields": [{
+                "name": "field1",
+                "field_id": 0,
+                "type": {
+                    "underlying_type": {
+                        "name":"u8",
+                        "type": "Builtin"
+                        },
+                    "type": "Optional"
+                }
+            }]
+        }
+    ],
+    "version": "3.0"
+}
