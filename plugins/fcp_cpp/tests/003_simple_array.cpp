@@ -5,7 +5,7 @@
 
 UTEST_MAIN()
 
-UTEST(SimpleArray, Decode) {
+UTEST(SimpleArray, Encode) {
     auto foo = fcp::Foo{{1,2,3,4}, 5,6};
     auto encoded = foo.encode().GetData();
 
@@ -13,10 +13,10 @@ UTEST(SimpleArray, Decode) {
     EXPECT_TRUE(encoded == bytes);
 }
 
-UTEST(SimpleArray, Encode) {
+UTEST(SimpleArray, Decode) {
     std::vector<uint8_t> bytes{1,2,3,4,5,6};
 
-    auto foo = fcp::Foo::Encode(bytes.begin(), bytes.end());
+    auto foo = fcp::Foo::Decode(bytes.begin(), bytes.end());
     auto expected = fcp::Foo{{1,2,3,4}, 5, 6};
     EXPECT_TRUE(foo == expected);
 }

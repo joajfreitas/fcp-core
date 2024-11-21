@@ -362,7 +362,7 @@ struct {{struct.name}} {
     {%- endfor %}
     {}
 
-    static {{struct.name}} Encode(const Buffer& buffer, std::size_t bitstart=0) {
+    static {{struct.name}} Decode(const Buffer& buffer, std::size_t bitstart=0) {
     {%- for signal in struct.fields %}
         auto {{signal.name}} = {{signal.name | capitalize}}Type(buffer, bitstart);
         bitstart += {{signal.name | capitalize}}Type::GetSize();
@@ -372,8 +372,8 @@ struct {{struct.name}} {
     }
 
     template<typename Iterator>
-    static {{struct.name}} Encode(Iterator begin, Iterator end) {
-        return {{struct.name}}::Encode(Buffer{begin, end});
+    static {{struct.name}} Decode(Iterator begin, Iterator end) {
+        return {{struct.name}}::Decode(Buffer{begin, end});
     }
 
     void _encode(Buffer& buffer, std::size_t bitstart) {

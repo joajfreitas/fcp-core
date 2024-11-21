@@ -5,7 +5,7 @@
 
 UTEST_MAIN()
 
-UTEST(BasicStruct, DecodeSignedAndUnsignedStruct) {
+UTEST(BasicStruct, EncodeSignedAndUnsignedStruct) {
     auto foo = fcp::S1{1,-2,3,-4,5,-6,7,-8,9,-10};
     std::vector<std::uint8_t> encoded = foo.encode().GetData();
 
@@ -24,7 +24,7 @@ UTEST(BasicStruct, DecodeSignedAndUnsignedStruct) {
     EXPECT_TRUE(encoded==bytes);
 }
 
-UTEST(BasicStruct, EncodeSignedAndUnsignedStruct) {
+UTEST(BasicStruct, DecodeSignedAndUnsignedStruct) {
     std::vector<uint8_t> bytes{
         0x01,
         0xfe,
@@ -37,7 +37,7 @@ UTEST(BasicStruct, EncodeSignedAndUnsignedStruct) {
         0x09,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
         0xf6,0xff,0xff,0xff,0xff,0xff,0xff,0xff};
 
-    auto foo = fcp::S1::Encode(bytes.begin(), bytes.end());
+    auto foo = fcp::S1::Decode(bytes.begin(), bytes.end());
     auto expected = fcp::S1{1,-2,3,-4,5,-6,7,-8,9,-10};
     EXPECT_TRUE(foo==expected);
 }
