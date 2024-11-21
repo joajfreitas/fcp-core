@@ -10,6 +10,7 @@ from fcp.v2_parser import get_fcp
 from fcp.specs.v2 import FcpV2
 from fcp.verifier import make_general_verifier
 from fcp.types import NoReturn
+from fcp.error_logger import ErrorLogger
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -60,11 +61,13 @@ def test_parser(test_name: str) -> NoReturn:
     "test_name",
     [
         "001_missing_version",
+        "002_wrong_version",
     ],
 )  # type: ignore
 def test_parsing_errors(test_name: str) -> NoReturn:
+    error_logger = ErrorLogger({}, enable_file_paths=False)
     fcp_config = Path(get_fcp_config("error", test_name))
-    fcp = get_fcp(fcp_config)
+    fcp = get_fcp(fcp_config, error_logger)
     result = (
         get_result_txt("error", test_name)
         .replace("    ", "\t")
@@ -72,14 +75,7 @@ def test_parsing_errors(test_name: str) -> NoReturn:
     )
 
     assert fcp.is_err()
-
-    ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
-
-    # Remove full path (user dependant) from message and keep only the error and file
-    error = ansi_escape.sub("", str(fcp.err())).split("/")
-    error = error[0] + error[-1]  # type: ignore
-
-    assert error == result  # type: ignore
+    assert fcp.err() == result
 
 
 def test_verifier_no_error() -> NoReturn:

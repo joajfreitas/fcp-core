@@ -169,7 +169,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         if args[0] == "3":
             return Ok(None)
         else:
-            return Err("Expected IDL version 3")
+            return Err("Expected IDL version 3\n")
 
     def dot(self, args: List[str]) -> str:
         """Parse an dot node of the fcp AST."""
@@ -227,7 +227,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         return args[0]
 
     @v_args(tree=True)  # type: ignore
-    def struct(self, tree: ParseTree) -> Never:
+    def struct(self, tree: ParseTree) -> Result[Nil, str]:
         """Parse a struct node of the fcp AST."""
         name, *fields = tree.children
 
@@ -240,6 +240,8 @@ class FcpV2Transformer(Transformer):  # type: ignore
                 meta=meta,
             )  # type:ignore
         )
+
+        return Ok(())
 
     @v_args(tree=True)  # type: ignore
     def struct_field(self, tree: ParseTree) -> struct_field.StructField:
@@ -268,7 +270,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         return enum.Enumeration(name=name, value=value, meta=meta)  # type: ignore
 
     @v_args(tree=True)  # type: ignore
-    def enum(self, tree: ParseTree) -> Never:
+    def enum(self, tree: ParseTree) -> Result[Nil, str]:
         """Parse an enum node of the fcp AST."""
         name, *fields = tree.children
 
@@ -276,6 +278,8 @@ class FcpV2Transformer(Transformer):  # type: ignore
         self.fcp.enums.append(
             enum.Enum(name=name, enumeration=fields, meta=meta)  # type: ignore
         )
+
+        return Ok(())
 
     @catch
     def mod_expr(self, args: List[str]) -> Result[Nil, str]:
@@ -301,7 +305,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         return Ok(())
 
     @v_args(tree=True)  # type: ignore
-    def impl(self, tree: ParseTree) -> Nil:
+    def impl(self, tree: ParseTree) -> Result[Nil, str]:
         """Parse an impl node of the fcp AST."""
 
         def is_signal_block(x: Any) -> bool:
@@ -324,6 +328,8 @@ class FcpV2Transformer(Transformer):  # type: ignore
             )  # type: ignore
         )
 
+        return Ok(())
+
     def extension_field(self, args: List[Any]) -> Tuple[str, Any]:
         """Parse an extension_field node of the fcp AST."""
         name, value = args
@@ -340,10 +346,12 @@ class FcpV2Transformer(Transformer):  # type: ignore
         )  # type: ignore
 
     @v_args(tree=True)  # type: ignore
-    def service(self, tree: ParseTree) -> Nil:
+    def service(self, tree: ParseTree) -> Result[Nil, str]:
         """Parse a service node of the fcp AST."""
         name, *rpcs = tree.children
         self.fcp.services.append(service.Service(name, rpcs, meta=_get_meta(tree, self)))  # type: ignore
+
+        return Ok(())
 
     @v_args(tree=True)  # type: ignore
     def rpc(self, tree: ParseTree) -> str:
@@ -371,26 +379,28 @@ class FcpV2Transformer(Transformer):  # type: ignore
         """Parse a string node of the fcp AST."""
         return args[0].value[1:-1]  # type: ignore
 
-    def start(self, args: List[str]) -> Result[v2.FcpV2, str]:
+    def start(self, args: List[Result[Nil, str]]) -> Result[v2.FcpV2, str]:
         """Parse the start node of the fcp AST."""
+        for arg in args:
+            if arg.is_err():
+                return arg  # type: ignore
         return Ok(self.fcp)
 
 
 @catch
-def get_fcp(fcp_filename: str) -> Result[Tuple[v2.FcpV2, Dict[str, str]], str]:
+def get_fcp(
+    fcp_filename: str, error_logger: ErrorLogger = ErrorLogger({})
+) -> Result[Tuple[v2.FcpV2, Dict[str, str]], str]:
     """Build a fcp AST from the filename of an fcp schema.
 
     Returns the Fcp AST and source code information for debugging.
     """
-    error_logger = ErrorLogger({})
-
     with open(fcp_filename) as f:
         source = f.read()
         error_logger.add_source(fcp_filename, source)
         try:
             fcp_ast = fcp_parser.parse(source)
         except UnexpectedCharacters as e:
-
             return Err(error_logger.log_lark_unexpected_characters(fcp_filename, e))
 
     parser_context = ParserContext()

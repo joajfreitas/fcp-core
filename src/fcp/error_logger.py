@@ -22,6 +22,7 @@
 
 from beartype.typing import Callable, List, Dict, Any
 from lark import UnexpectedCharacters
+from pathlib import Path
 
 from typing_extensions import Self
 
@@ -44,7 +45,8 @@ def _highlight(source: str, prefix_with_line: str, prefix_without_line: str) -> 
 class ErrorLogBuilder:
     """Builder for error logs."""
 
-    def __init__(self) -> None:
+    def __init__(self, enable_file_paths: bool) -> None:
+        self.enable_file_paths = enable_file_paths
         self.buffer = Color.boldred("Error: ")
 
     def with_newline(self, amount: int = 1) -> Self:
@@ -64,8 +66,13 @@ class ErrorLogBuilder:
         self.buffer += line
         return self
 
-    def with_location(self, filename: str, line: int, column: int) -> Self:
+    def with_location(self, filepath: Path, line: int, column: int) -> Self:
         """Add code location."""
+        if not self.enable_file_paths:
+            filename = filepath.name
+        else:
+            filename = str(filepath)
+
         self.buffer += f"{filename}:{line}:{column}"
 
         return self
@@ -106,8 +113,9 @@ class ErrorLogBuilder:
 class ErrorLogger:
     """Logger for errors."""
 
-    def __init__(self, sources: Dict[str, str]) -> None:
+    def __init__(self, sources: Dict[str, str], enable_file_paths: bool = True) -> None:
         self.sources = sources
+        self.enable_file_paths = enable_file_paths
 
     def add_source(self, name: str, source: str) -> None:
         """Register source files."""
@@ -129,6 +137,9 @@ class ErrorLogger:
         self, error: str, filename: str, line: int, column: int, source: str
     ) -> str:
         """Log source code location."""
+        if not self.enable_file_paths:
+            return ""
+
         line_len = len(str(line))
 
         prefix_with_line = Color.boldblue(f"{line} | ")
@@ -176,10 +187,10 @@ class ErrorLogger:
     ) -> str:
         """Log a lark unexpected characters exception."""
         return (
-            ErrorLogBuilder()
+            ErrorLogBuilder(self.enable_file_paths)
             .with_line(Color.boldwhite(f"Unexpected character '{exception.char}'"))
             .with_line(" -> ")
-            .with_location(filename, exception.line, exception.column)
+            .with_location(Path(filename), exception.line, exception.column)
             .with_newline(amount=2)
             .with_line("Expected one of:")
             .with_newline()
@@ -195,7 +206,7 @@ class ErrorLogger:
         """Log a fcp error."""
         meta = fcp_error.node.meta
         return (
-            ErrorLogBuilder()
+            ErrorLogBuilder(self.enable_file_paths)
             .with_log_level(fcp_error.level)
             .with_line(fcp_error.msg)
             .with_newline()
