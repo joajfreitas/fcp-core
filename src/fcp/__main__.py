@@ -12,6 +12,8 @@ from .v2_parser import get_fcp
 from .codegen import GeneratorManager
 from .verifier import make_general_verifier
 from .error_logger import ErrorLogger
+from .serde import encode as serde_encode
+from .serde import decode as serde_decode
 
 
 def setup_logging() -> None:
@@ -60,6 +62,20 @@ def show(fcp):
         print(fcp_result)
 
 
+@click.command()  # type: ignore
+@click.argument("fcp_schema")  # type: ignore
+@click.argument("fcp_data")  # type: ignore
+@click.argument("output")  # type: ignore
+def encode(fcp_schema: str, fcp_data: str, output: str) -> None:
+    """Encode an .fcp according to the data in the reflection schema."""
+    fcp_schema, _ = get_fcp(fcp_schema).unwrap()
+    fcp_data, _ = get_fcp(fcp_data).unwrap()
+    bytearray = serde_encode(fcp_schema, "Fcp", fcp_data.reflection())  # type: ignore
+
+    with open(output, "wb") as f:
+        f.write(bytearray)
+
+
 @click.group(invoke_without_command=True)  # type: ignore
 @click.option("--version", is_flag=True, default=False)  # type: ignore
 def main(version: str) -> None:
@@ -72,6 +88,7 @@ def main(version: str) -> None:
 
 main.add_command(generate_cmd)
 main.add_command(show)
+main.add_command(encode)
 
 if __name__ == "__main__":
     setup_logging()
