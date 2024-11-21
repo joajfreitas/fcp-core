@@ -1,3 +1,4 @@
+#include <iostream>
 #include "fcp_can.h"
 #include "fcp.h"
 
@@ -25,9 +26,19 @@ UTEST(BasicStruct, DecodeSignedAndUnsignedStruct) {
 }
 
 UTEST(BasicStruct, EncodeSignedAndUnsignedStruct) {
-    std::vector<uint8_t> bytes{1,2,3,4,5,6,7,8,9,10};
+    std::vector<uint8_t> bytes{
+        0x01,
+        0xfe,
+        0x03,0x00,
+        0xfc,0xff,
+        0x05,0x00,0x00,
+        0xfa,0xff,0xff,
+        0x07,0x00,0x00,0x00,
+        0xf8,0xff,0xff,0xff,
+        0x09,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+        0xf6,0xff,0xff,0xff,0xff,0xff,0xff,0xff};
 
     auto foo = fcp::S1::Encode(bytes.begin(), bytes.end());
-    auto expected = fcp::S1{1,2,3,4,5,6,7,8,9,10};
+    auto expected = fcp::S1{1,-2,3,-4,5,-6,7,-8,9,-10};
     EXPECT_TRUE(foo==expected);
 }

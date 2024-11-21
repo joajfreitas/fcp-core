@@ -13,12 +13,14 @@
 #include <algorithm>
 #include <cstring>
 
+#include <iostream>
+
 namespace fcp {
 
 namespace {
 
 template<typename Iterator>
-uint8_t get_bit(Iterator input, uint8_t bit) {
+uint8_t get_bit(Iterator input, uint32_t bit) {
     auto byte_address = bit >> 3;
     auto intra_byte_bit_address = bit & 0b111;
 
@@ -32,11 +34,18 @@ public:
     template<typename Iterator>
     Buffer(Iterator first, Iterator last): buffer_{first, last} {}
 
-
-    uint64_t get_word(std::size_t bitstart, std::size_t bitlength) const {
+    uint64_t get_word(uint64_t bitstart, uint64_t bitlength, bool sign=false) const {
         uint64_t result = 0;
         for (uint64_t i=0; i<bitlength; i++) {
-            result |= (uint64_t) (get_bit(buffer_.begin(), bitstart + i)) << i;
+            auto word = static_cast<uint64_t>(get_bit(buffer_.begin(), bitstart + i)) << i;
+            result |= word;
+        }
+
+        uint64_t mask = 1ULL << (bitlength - 1);
+
+        bool msb_set = (result >> (bitlength-1)) == 1;
+        if (sign && msb_set && !(msb_set && bitlength == 64)) {
+            result = (result ^ mask) - mask;
         }
 
         return result;
@@ -95,13 +104,13 @@ public:
         return Size;
     }
 
-    inline bool operator==(const Unsigned& rhs) const
-    {
-        return true;
-    }
-
     UnderlyingType GetData() const {
         return data_;
+    }
+
+    inline bool operator==(const Unsigned& rhs) const
+    {
+        return GetData() == rhs.GetData();
     }
 
     std::string to_string(std::string prefix = "") const {
@@ -122,7 +131,7 @@ public:
     Signed(UnderlyingType value): data_{value} {}
 
     Signed(const Buffer& buffer, std::size_t bitstart) {
-        auto word = buffer.get_word(bitstart, Size);
+        auto word = buffer.get_word(bitstart, Size, true);
         data_ = static_cast<UnderlyingType>(word);
     }
 
@@ -130,17 +139,17 @@ public:
         buffer.push_word<UnderlyingType, Size>(data_, bitstart) ;
     }
 
-    static std::size_t GetSize() {
+    static std::size_t GetSize(){
         return Size;
-    }
-
-    inline bool operator==(const Signed& rhs) const
-    {
-        return true;
     }
 
     UnderlyingType GetData() const {
         return data_;
+    }
+
+    inline bool operator==(const Signed& rhs) const
+    {
+        return GetData() == rhs.GetData();
     }
 
     std::string to_string(std::string prefix = "") const {
@@ -176,13 +185,14 @@ public:
         return Size;
     }
 
-    inline bool operator==(const Float& rhs) const
-    {
-        return data_ == rhs.GetData();
-    }
 
     UnderlyingType GetData() const {
         return data_;
+    }
+
+    inline bool operator==(const Float& rhs) const
+    {
+        return GetData() == rhs.GetData();
     }
 
     std::string to_string(std::string prefix = "") const {
@@ -219,14 +229,15 @@ public:
         return Size;
     }
 
-    inline bool operator==(const Double& rhs) const
-    {
-        return data_ == rhs.GetData();
-    }
-
     UnderlyingType GetData() const {
         return data_;
     }
+
+    inline bool operator==(const Double& rhs) const
+    {
+        return GetData() == rhs.GetData();
+    }
+
 
     std::string to_string(std::string prefix = "") const {
         std::stringstream ss{};
