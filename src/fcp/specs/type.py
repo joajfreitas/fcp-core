@@ -36,6 +36,10 @@ class Type:
         """Type length in bits."""
         raise ValueError("Don't use Type directly")
 
+    def reflection(self) -> str:
+        """Reflection."""
+        raise ValueError("Don't use Type directly")
+
 
 @serde(type_check=strict)
 class BuiltinType(Type):
@@ -74,6 +78,10 @@ class BuiltinType(Type):
         """Check that type is a string."""
         return self.name == "str"
 
+    def reflection(self) -> str:
+        """Reflection."""
+        return self.name
+
 
 class ComposedTypeCategory(Enum):
     """Category of composed types."""
@@ -100,6 +108,10 @@ class ComposedType(Type):
         else:
             raise ValueError("Signess of struct is meaningless")
 
+    def reflection(self) -> str:
+        """Reflection."""
+        return self.name
+
 
 @serde(type_check=strict)
 class ArrayType(Type):
@@ -118,6 +130,10 @@ class ArrayType(Type):
         """Type length in bits."""
         return int(self.underlying_type.get_length() * self.size)
 
+    def reflection(self) -> str:
+        """Reflection."""
+        return "[" + self.underlying_type.reflection() + "," + str(self.size) + "]"
+
 
 @serde(type_check=strict)
 class DynamicArrayType(Type):
@@ -133,6 +149,10 @@ class DynamicArrayType(Type):
     def get_length(self) -> int:
         """Type length in bits."""
         raise ValueError("Cannot compute the size of a dynamic array")
+
+    def reflection(self) -> str:
+        """Reflection."""
+        return "[" + self.underlying_type.reflection() + "]"
 
 
 @serde(type_check=strict)
@@ -150,11 +170,6 @@ class OptionalType(Type):
         """Type length in bits."""
         raise ValueError("Cannot compute the size of an Optional ")
 
-
-# Type: TypeAlias = Union[
-#    BuiltinType, ArrayType, ComposedType, DynamicArrayType, OptionalType
-# ]
-
-# serde(ArrayType)
-# serde(OptionalType)
-# serde(DynamicArrayType)
+    def reflection(self) -> str:
+        """Reflection."""
+        return "Optional[" + self.underlying_type.reflection() + "]"

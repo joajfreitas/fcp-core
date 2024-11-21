@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from beartype.typing import List
+from beartype.typing import List, Dict, Any
 from serde import serde, strict, to_dict, field
 
 from .rpc import Rpc
@@ -34,6 +34,14 @@ class Service:
     name: str
     rpcs: List[Rpc]
     meta: MetaData = field(skip=True)
+
+    def reflection(self) -> Dict[str, Any]:
+        """Reflection."""
+        return {
+            "name": self.name,
+            "rpcs": [rpc.reflection() for rpc in self.rpcs],
+            "meta": self.meta.reflection(),
+        }
 
     def __repr__(self) -> str:
         return str(to_dict(self))

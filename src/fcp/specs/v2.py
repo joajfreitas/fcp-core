@@ -141,5 +141,15 @@ class FcpV2:
 
         return remove_meta(remove_none_fields(serde.to_dict(self)))
 
+    def reflection(self) -> Dict[str, Any]:
+        """Reflection."""
+        return {
+            "structs": [struct.reflection() for struct in self.structs],
+            "enums": [enum.reflection() for enum in self.enums],
+            "impls": [impl.reflection() for impl in self.impls],
+            "services": [service.reflection() for service in self.services],
+            "version": self.version,
+        }
+
     def __repr__(self) -> str:
         return str(serde.to_dict(self))

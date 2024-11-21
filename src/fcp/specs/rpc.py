@@ -22,7 +22,7 @@
 
 
 from serde import serde, strict, to_dict, field
-
+from beartype.typing import Dict, Any
 from .metadata import MetaData
 
 
@@ -34,6 +34,15 @@ class Rpc:
     input: str
     output: str
     meta: MetaData = field(skip=True)
+
+    def reflection(self) -> Dict[str, Any]:
+        """Reflection."""
+        return {
+            "name": self.name,
+            "input": self.input,
+            "output": self.output,
+            "meta": self.meta.reflection(),
+        }
 
     def __repr__(self) -> str:
         return str(to_dict(self))

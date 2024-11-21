@@ -65,5 +65,18 @@ class Impl:
         else:
             return Some(signal.attempt().fields)
 
+    def reflection(self) -> Dict[str, Any]:
+        """Reflection."""
+        return {
+            "name": self.name,
+            "protocol": self.protocol,
+            "type": self.type,
+            "fields": [
+                {"name": key, "value": str(value)} for key, value in self.fields.items()
+            ],
+            "signals": [signal.refection() for signal in self.signals],
+            "meta": self.meta.reflection(),
+        }
+
     def __repr__(self) -> str:
         return str(to_dict(self))

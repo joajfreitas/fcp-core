@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from beartype.typing import Any, Optional, Union
+from beartype.typing import Any, Optional, Union, Dict
 from serde import serde, strict, field
 
 from .type import Type
@@ -38,6 +38,18 @@ class StructField:
     min_value: Optional[float] = None
     max_value: Optional[float] = None
     meta: Optional[MetaData] = field(skip=True, default=None)
+
+    def reflection(self) -> Dict[str, Any]:
+        """Reflection."""
+        return {
+            "name": self.name,
+            "field_id": self.field_id,
+            "type": self.type.reflection(),
+            "unit": self.unit,
+            "min_value": self.min_value,
+            "max_value": self.max_value,
+            "meta": self.meta.reflection(),
+        }
 
     def __repr__(self) -> str:
         return f"<Signal name={self.name} type={self.type}>"

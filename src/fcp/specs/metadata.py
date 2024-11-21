@@ -22,6 +22,7 @@
 
 
 from serde import serde, strict
+from beartype.typing import Dict, Any
 
 
 @serde(type_check=strict)
@@ -35,3 +36,15 @@ class MetaData:
     start_pos: int
     end_pos: int
     filename: str
+
+    def reflection(self) -> Dict[str, Any]:
+        """Reflection."""
+        return {
+            "line": self.line,
+            "end_line": self.end_line,
+            "column": self.column,
+            "end_column": self.end_column,
+            "start_pos": self.start_pos,
+            "end_pos": self.end_pos,
+            "filename": self.filename,
+        }
