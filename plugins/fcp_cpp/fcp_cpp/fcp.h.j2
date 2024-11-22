@@ -292,6 +292,46 @@ private:
 };
 
 
+class String {
+    public:
+
+    String(): data_{} {}
+    String(const std::string& value): data_{value} {}
+    String(const char* value): data_{value} {}
+
+    String(Buffer& buffer) {
+        auto len = Unsigned<std::uint32_t, 32>(buffer).GetData();
+        for (int i=0; i<len; i++) {
+            data_ += buffer.get_word(8);
+        }
+    }
+
+    void _encode(Buffer& buffer) {
+        Unsigned<std::uint32_t, 32>(data_.size())._encode(buffer);
+        for (const auto& c: data_) {
+            buffer.push_word<std::uint8_t, 8>(c);
+        }
+    }
+
+    std::string GetData() const {
+        return data_;
+    }
+
+    inline bool operator==(const String& rhs) const
+    {
+        return GetData() == rhs.GetData();
+    }
+
+    std::string to_string(std::string prefix="") const {
+        return data_;
+    }
+
+
+private:
+    std::string data_;
+};
+
+
 {% for enum in fcp.enums %}
 class {{enum.name}} {
 public:
