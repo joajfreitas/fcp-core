@@ -29,15 +29,15 @@ uint8_t get_bit(Iterator input, uint32_t bit) {
 
 class Buffer {
 public:
-    Buffer(std::size_t size): buffer_((size + 7)/8) {}
-    Buffer(const std::vector<uint8_t>& buffer): buffer_{buffer} {}
+    Buffer(std::size_t size): buffer_((size + 7)/8), current_bit_{0} {}
+    Buffer(const std::vector<uint8_t>& buffer): buffer_{buffer}, current_bit_{0} {}
     template<typename Iterator>
-    Buffer(Iterator first, Iterator last): buffer_{first, last} {}
+    Buffer(Iterator first, Iterator last): buffer_{first, last}, current_bit_{0} {}
 
-    uint64_t get_word(uint64_t bitstart, uint64_t bitlength, bool sign=false) const {
+    uint64_t get_word(uint64_t bitlength, bool sign=false) {
         uint64_t result = 0;
         for (uint64_t i=0; i<bitlength; i++) {
-            auto word = static_cast<uint64_t>(get_bit(buffer_.begin(), bitstart + i)) << i;
+            auto word = static_cast<uint64_t>(get_bit(buffer_.begin(), current_bit_ + i)) << i;
             result |= word;
         }
 
@@ -48,14 +48,18 @@ public:
             result = (result ^ mask) - mask;
         }
 
+        current_bit_ += bitlength;
+
         return result;
     }
 
     template<typename T, std::size_t Size>
-    void push_word(T word, std::size_t bitstart) {
+    void push_word(T word) {
         for (int i=0; i<Size; i++) {
-            set_bit((word >> i) & 0b1, bitstart + i);
+            set_bit((word >> i) & 0b1, current_bit_ + i);
         }
+
+        current_bit_ += Size;
     }
 
     std::vector<uint8_t> GetData() const {
@@ -77,11 +81,19 @@ private:
         auto byte_address = bit_index >> 3;
         auto intra_byte_bit_address = bit_index & 0b111;
 
-        buffer_[byte_address] = (buffer_[byte_address] & ~((uint8_t)1 << intra_byte_bit_address)) | ((uint8_t) bit << intra_byte_bit_address);
+        if (byte_address >= buffer_.size()) {
+            extend();
+        }
 
+        buffer_[byte_address] = (buffer_[byte_address] & ~((uint8_t)1 << intra_byte_bit_address)) | ((uint8_t) bit << intra_byte_bit_address);
+    }
+
+    void extend() {
+        buffer_.push_back(0);
     }
 
     std::vector<uint8_t> buffer_;
+    std::uint32_t current_bit_;
 };
 }
 
@@ -91,17 +103,13 @@ public:
     Unsigned(): data_{0} {}
     Unsigned(UnderlyingType value): data_{value} {}
 
-    Unsigned(const Buffer& buffer, std::size_t bitstart) {
-        auto word = buffer.get_word(bitstart, Size);
+    Unsigned(Buffer& buffer) {
+        auto word = buffer.get_word(Size);
         data_ = static_cast<UnderlyingType>(word);
     }
 
-    void _encode(Buffer& buffer, std::size_t bitstart) {
-        buffer.push_word<UnderlyingType, Size>(data_, bitstart) ;
-    }
-
-    static std::size_t GetSize() {
-        return Size;
+    void _encode(Buffer& buffer) {
+        buffer.push_word<UnderlyingType, Size>(data_) ;
     }
 
     UnderlyingType GetData() const {
@@ -130,17 +138,13 @@ public:
     Signed(): data_{0}{}
     Signed(UnderlyingType value): data_{value} {}
 
-    Signed(const Buffer& buffer, std::size_t bitstart) {
-        auto word = buffer.get_word(bitstart, Size, true);
+    Signed(Buffer& buffer) {
+        auto word = buffer.get_word(Size, true);
         data_ = static_cast<UnderlyingType>(word);
     }
 
-    void _encode(Buffer& buffer, std::size_t bitstart) {
-        buffer.push_word<UnderlyingType, Size>(data_, bitstart) ;
-    }
-
-    static std::size_t GetSize(){
-        return Size;
+    void _encode(Buffer& buffer) {
+        buffer.push_word<UnderlyingType, Size>(data_) ;
     }
 
     UnderlyingType GetData() const {
@@ -170,21 +174,16 @@ public:
     Float(): data_{0.0}{}
     Float(UnderlyingType value): data_{value} {}
 
-    Float(const Buffer& buffer, std::size_t bitstart) {
-        auto word = buffer.get_word(bitstart, Size);
+    Float(Buffer& buffer) {
+        auto word = buffer.get_word(Size);
         std::memcpy(&data_, &word, 4);
     }
 
-    void _encode(Buffer& buffer, std::size_t bitstart) {
+    void _encode(Buffer& buffer) {
         std::uint32_t tmp = 0;
         std::memcpy(&tmp, &data_, 4);
-        buffer.push_word<std::uint32_t, Size>(tmp, bitstart) ;
+        buffer.push_word<std::uint32_t, Size>(tmp) ;
     }
-
-    static std::size_t GetSize() {
-        return Size;
-    }
-
 
     UnderlyingType GetData() const {
         return data_;
@@ -214,19 +213,15 @@ public:
     Double(): data_{0.0}{}
     Double(UnderlyingType value): data_{value} {}
 
-    Double(const Buffer& buffer, std::size_t bitstart) {
-        auto word = buffer.get_word(bitstart, Size);
+    Double(Buffer& buffer) {
+        auto word = buffer.get_word(Size);
         std::memcpy(&data_, &word, 8);
     }
 
-    void _encode(Buffer& buffer, std::size_t bitstart) {
+    void _encode(Buffer& buffer) {
         std::uint64_t tmp = 0;
         std::memcpy(&tmp, &data_, 8);
-        buffer.push_word<std::uint64_t, Size>(tmp, bitstart) ;
-    }
-
-    static std::size_t GetSize() {
-        return Size;
+        buffer.push_word<std::uint64_t, Size>(tmp) ;
     }
 
     UnderlyingType GetData() const {
@@ -260,21 +255,16 @@ class Array {
     std::transform(ls.begin(), ls.end(), data_.begin(), [](const T& x){return x;});
     }
 
-    Array(const Buffer& buffer, std::size_t bitstart=0) {
+    Array(Buffer& buffer) {
         for (int i=0; i<N; i++) {
-            data_[i] = T(buffer, bitstart);
-            bitstart += T::GetSize();
+            data_[i] = T(buffer);
         }
     }
 
-    void _encode(Buffer& buffer, std::size_t bitstart) {
+    void _encode(Buffer& buffer) {
         for (int i=0; i<N; i++) {
-            data_[i]._encode(buffer, bitstart + i*T::GetSize());
+            data_[i]._encode(buffer);
         }
-    }
-
-    static std::size_t GetSize() {
-        return N*T::GetSize();
     }
 
     const std::array<T,N>& GetData() const {
@@ -313,12 +303,12 @@ public:
     {{enum.name}}(): data_{} {}
     {{enum.name}}(UnderlyingType value): data_{value} {}
 
-    {{enum.name}}(const Buffer& buffer, std::size_t bitstart=0) {
-        data_ = buffer.get_word(bitstart, GetSize());
+    {{enum.name}}(Buffer& buffer) {
+        data_ = buffer.get_word(GetSize());
     }
 
-    void _encode(Buffer& buffer, std::size_t bitstart) {
-        buffer.push_word<UnderlyingType, {{enum.get_packed_size()}}>(data_, bitstart);
+    void _encode(Buffer& buffer) {
+        buffer.push_word<UnderlyingType, {{enum.get_packed_size()}}>(data_);
     }
 
     static std::size_t GetSize() {
@@ -350,7 +340,7 @@ private:
     UnderlyingType data_;
 };
 {% endfor -%}
-{%- for struct, impl in structs %}
+{%- for struct in structs %}
 struct {{struct.name}} {
     {%- for signal in struct.fields %}
     using {{signal.name | capitalize}}Type = {{to_wrapper_cpp_type(signal.type)}};
@@ -362,10 +352,9 @@ struct {{struct.name}} {
     {%- endfor %}
     {}
 
-    static {{struct.name}} Decode(const Buffer& buffer, std::size_t bitstart=0) {
+    static {{struct.name}} Decode(Buffer& buffer) {
     {%- for signal in struct.fields %}
-        auto {{signal.name}} = {{signal.name | capitalize}}Type(buffer, bitstart);
-        bitstart += {{signal.name | capitalize}}Type::GetSize();
+        auto {{signal.name}} = {{signal.name | capitalize}}Type(buffer);
     {%- endfor %}
 
         return {{struct.name}}({% for signal in struct.fields %}{{signal.name}}{% if not loop.last %},{% endif %}{% endfor %});
@@ -373,19 +362,19 @@ struct {{struct.name}} {
 
     template<typename Iterator>
     static {{struct.name}} Decode(Iterator begin, Iterator end) {
-        return {{struct.name}}::Decode(Buffer{begin, end});
+        auto buffer = Buffer{begin, end};
+        return {{struct.name}}::Decode(buffer);
     }
 
-    void _encode(Buffer& buffer, std::size_t bitstart) {
+    void _encode(Buffer& buffer) {
     {%- for signal in struct.fields %}
-        {{signal.name}}_._encode(buffer, bitstart);
-        bitstart += {{signal.name | capitalize}}Type::GetSize();
+        {{signal.name}}_._encode(buffer);
     {%- endfor %}
     }
 
     Buffer encode() {
-        Buffer buffer{GetSize()};
-        _encode(buffer, 0);
+        Buffer buffer{0};
+        _encode(buffer);
         return buffer;
     }
 
@@ -394,11 +383,6 @@ struct {{struct.name}} {
         return {{signal.name}}_;
     }
     {% endfor %}
-
-    static std::size_t GetSize() {
-        return {% for signal in struct.fields %}{{signal.name | capitalize}}Type::GetSize(){% if not loop.last %}
-        {{'\t'}}+ {% endif %}{% endfor %};
-    }
 
     inline bool operator==(const {{struct.name}}& rhs) const {
         return  {% for signal in struct.fields %}{{signal.name}}_ == rhs.Get{{signal.name | capitalize}}(){% if not loop.last %}

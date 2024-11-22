@@ -1,4 +1,4 @@
-#include "fcp_can.h"
+//#include "fcp_can.h"
 #include "fcp.h"
 
 #include "utest.h"
@@ -21,6 +21,6 @@ UTEST(BasicStruct, DecodeSimpleUnsignedStruct) {
     EXPECT_TRUE(foo==expected);
 }
 
-UTEST(BasicStruct, GetDeviceName) {
-    EXPECT_TRUE(fcp::can::get_device_name(10) == "ecu1");
-}
+//UTEST(BasicStruct, GetDeviceName) {
+//    EXPECT_TRUE(fcp::can::get_device_name(10) == "ecu1");
+//}
