@@ -1,0 +1,10 @@
+version: "3"
+
+struct S1 {
+    s1 @ 0: str,
+}
+
+impl can for S1 {
+    id: 10,
+    device: "ecu1",
+}
