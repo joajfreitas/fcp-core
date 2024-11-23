@@ -2,7 +2,7 @@ version: "3"
 
 struct Foo {
     s1 @ 0: u8,
-    s2 @ 1: u8,
+    s2 @ 1: u16,
 }
 
 impl can for Foo {

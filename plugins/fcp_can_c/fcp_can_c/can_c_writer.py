@@ -108,6 +108,7 @@ class CanSignal:
         self.data_type = type_map.get(self.data_type, self.data_type)
         self.is_big_endian_s = "true" if self.byte_order == "big_endian" else "false"
 
+        # If the data type is not in the type map, it is a user defined type or a short type (i12, u5...) so we need to calculate the scalar type
         if self.data_type not in type_map.values():
             self.scalar_type = type_map[
                 "i" if self.signed else "u" + str(ceil_to_power_of_2(self.bit_length))
