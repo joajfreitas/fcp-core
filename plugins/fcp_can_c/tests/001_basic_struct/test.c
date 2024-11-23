@@ -1,37 +1,38 @@
-#include "generated_code/can_frame.h"
-#include "generated_code/ecu_can.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "generated_code/can_frame.h"
+#include "generated_code/ecu_can.h"
+
 bool all_tests_passed = true;
 
-#define VERIFY_TEST(condition)                                                 \
-    if (condition) {                                                           \
-        printf("\033[32m [PASSED] %s\n", __func__);                            \
-    } else {                                                                   \
-        printf("\033[31m [FAILED] %s\033[0m\n", __func__);                     \
-        all_tests_passed = false;                                              \
+#define VERIFY_TEST(condition)                             \
+    if (condition) {                                       \
+        printf("\033[32m [PASSED] %s\n", __func__);        \
+    } else {                                               \
+        printf("\033[31m [FAILED] %s\033[0m\n", __func__); \
+        all_tests_passed = false;                          \
     }
 
-#define ASSERT_TESTS()                                                         \
-    printf("\033[0m");                                                         \
-    if (all_tests_passed) {                                                    \
-        exit(EXIT_SUCCESS);                                                    \
-    } else {                                                                   \
-        exit(EXIT_FAILURE);                                                    \
+#define ASSERT_TESTS()      \
+    printf("\033[0m");      \
+    if (all_tests_passed) { \
+        exit(EXIT_SUCCESS); \
+    } else {                \
+        exit(EXIT_FAILURE); \
     }
 
 CanFrame expected_frame = {
     .id = 10,
     .dlc = 2,
-    .data = {123, 234},
+    .data = {123, 0x12, 0xAB},
 };
 
 void test_encode_msg() {
     CanMsgFoo msg = {
         .s1 = 123,
-        .s2 = 234,
+        .s2 = 0xAB12,
     };
 
     CanFrame frame = can_encode_msg_foo(&msg);
@@ -40,12 +41,12 @@ void test_encode_msg() {
 
 void test_is_dev_msg() { VERIFY_TEST(can_is_ecu_msg(&expected_frame)); }
 
-void test_dlc(CanFrame *frame) { VERIFY_TEST(frame->dlc == 2); }
+void test_dlc(CanFrame *frame) { VERIFY_TEST(frame->dlc == 3); }
 
 void test_decode_msg() {
     CanMsgFoo expected_msg = {
         .s1 = 123,
-        .s2 = 234,
+        .s2 = 0xAB12,
     };
 
     CanMsgFoo msg = can_decode_msg_foo(&expected_frame);
@@ -57,7 +58,7 @@ void test_decode_msg() {
 int main() {
     CanMsgFoo msg = {
         .s1 = 123,
-        .s2 = 234,
+        .s2 = 0xAB12,
     };
     CanFrame frame = can_encode_msg_foo(&msg);
 
