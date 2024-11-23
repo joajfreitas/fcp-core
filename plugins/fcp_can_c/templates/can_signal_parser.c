@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,14 +26,28 @@ extern "C" {
 typedef union {
     float f;
     uint32_t i;
-} f32;
+} u_f32;
 
 typedef union {
     double d;
     uint64_t i;
-} f64;
+} u_f64;
 
 typedef enum { U8, U16, U32, U64, I8, I16, I32, I64 } IntType;
+
+u_f32 set_bitfield_float(float data, uint8_t start, uint8_t length) {
+    u_f32 d = {.f = (data)};
+    d.i = ((d.i & bitmask(length)) << (start));
+
+    return d;
+}
+
+u_f64 set_bitfield_double(double data, uint8_t start, uint8_t length) {
+    u_f64 d = {.d = (data)};
+    d.i = ((d.i & bitmask(length)) << (start));
+
+    return d;
+}
 
 uint64_t apply_linear_uint64_t(uint64_t bitfield, float scale, float offset);
 int64_t apply_linear_int64_t(int64_t bitfield, float scale, float offset);
@@ -66,28 +81,6 @@ uint64_t swap_uint64(uint64_t val) {
     return (val << 32) | (val >> 32);
 }
 
-float swap_float(float val) {
-    union {
-        float f;
-        uint32_t i;
-    } swapper;
-
-    swapper.f = val;
-    swapper.i = swap_uint32(swapper.i);
-    return swapper.f;
-}
-
-double swap_double(double val) {
-    union {
-        double d;
-        uint64_t i;
-    } swapper;
-
-    swapper.d = val;
-    swapper.i = swap_uint64(swapper.i);
-    return swapper.d;
-}
-
 uint64_t swap_bytes_int(uint64_t val, IntType type) {
     switch (type) {
         case U8:
@@ -109,12 +102,9 @@ uint64_t swap_bytes_int(uint64_t val, IntType type) {
     }
 }
 
-float swap_bytes_float(float val) { return swap_float(val); }
-
-double swap_bytes_double(double val) { return swap_double(val); }
-
 /** @fn uint64_t bitmask(uint8_t length)
- *  @brief Generate a bitmask with length bits set to 1.
+ *  @brief Generate a bitmask with length bits
+ * set to 1.
  *  @param length Size of the bit mask
  */
 uint64_t bitmask(uint8_t length) {
@@ -143,9 +133,10 @@ uint64_t bitmask(uint8_t length) {
         return 0xffffffffffffffffULL;
 }
 
-/** @fn uint64_t apply_linear_uint64_t(uint64_t bitfield, float scale, double
- * offset)
- *  @brief apply a linear conversion to a 64 bit uint8_t number.
+/** @fn uint64_t apply_linear_uint64_t(uint64_t
+ * bitfield, float scale, double offset)
+ *  @brief apply a linear conversion to a 64 bit
+ * uint8_t number.
  *  @param bitfield 64 bit uint8_t data
  *  @param scale Scaling to apply
  *  @param offset Offset to apply
@@ -158,10 +149,11 @@ uint64_t apply_linear_uint64_t(uint64_t bitfield, float scale, float offset) {
     }
 }
 
-/** @fn int64_t apply_linear_int64_t(int64_t bitfield, float scale, double
- * offset)
- *  @brief apply a linear conversion to a 64 bit signed number. Only applies
- *  transformations for numbers up to 32 bit
+/** @fn int64_t apply_linear_int64_t(int64_t
+ * bitfield, float scale, double offset)
+ *  @brief apply a linear conversion to a 64 bit
+ * signed number. Only applies transformations
+ * for numbers up to 32 bit
  *  @param bitfield 64 bit signed data.
  *  @param scale Scaling to apply.
  *  @param offset Offset to apply.
@@ -176,8 +168,11 @@ int64_t apply_linear_int64_t(int64_t bitfield, float scale, float offset) {
     }
 }
 
-/** @fn double apply_linear_double(double bitfield, float scale, float offset, bool is_big_endian)
- *  @brief apply a linear conversion to a double.
+/** @fn double apply_linear_double(double
+ * bitfield, float scale, float offset, bool
+ * is_big_endian)
+ *  @brief apply a linear conversion to a
+ * double.
  *  @param bitfield double.
  *  @param scale Scaling to apply.
  *  @param offset Offset to apply.
@@ -186,7 +181,9 @@ double apply_linear_double(double bitfield, float scale, float offset) {
     return scale * bitfield + offset;
 }
 
-/** @fn float apply_linear_float(float bitfield, float scale, float offset, bool is_big_endian)
+/** @fn float apply_linear_float(float bitfield,
+ * float scale, float offset, bool
+ * is_big_endian)
  *  @brief apply a linear conversion to a float.
  *  @param bitfield float.
  *  @param scale Scaling to apply.
@@ -194,11 +191,10 @@ double apply_linear_double(double bitfield, float scale, float offset) {
  */
 float apply_linear_float(float bitfield, float scale, float offset) {
     return scale * bitfield + offset;
-    printf("------------: %f\n", bitfield);
-    fflush(stdout);
 }
 
-/** @fn int64_t bitfield_sign_conv(uint64_t bitfield, uint8_t length)
+/** @fn int64_t bitfield_sign_conv(uint64_t
+ * bitfield, uint8_t length)
  *  @brief change sign of a 64 bit signed number
  *  @param bitfield The number.
  *  @param length Size of the number
@@ -278,34 +274,36 @@ uint64_t can_encode_signal_from_uint8_t(uint8_t signal, uint32_t start, uint32_t
 /* Only works up to 32 bit */
 double can_decode_signal_as_double(const CanFrame *msg, uint32_t start, uint32_t length,
                                    float scale, float offset, bool is_big_endian) {
-    uint64_t bitfield = get_bitfield(can_word(msg), start, length);
-    if (is_big_endian) bitfield = swap_bytes_double(bitfield);
+    u_f64 bitfield;
+    memcpy(&bitfield.i, msg->data, 8);
+    if (is_big_endian) bitfield.i = swap_bytes_int(bitfield.i, U64);
 
-    return apply_linear_double(bitfield, scale, offset);
+    return apply_linear_double(bitfield.d, scale, offset);
 }
 
 uint64_t can_encode_signal_from_double(double signal, uint32_t start, uint32_t length, float scale,
                                        float offset, bool is_big_endian) {
-    uint64_t bitfield =
-        set_bitfield(apply_linear_double(signal, 1 / scale, -offset), start, length);
+    u_f64 bitfield =
+        set_bitfield_double(apply_linear_double(signal, 1 / scale, -offset), start, length);
 
-    return is_big_endian ? swap_bytes_double(bitfield) : bitfield;
+    return is_big_endian ? swap_bytes_int(bitfield.i, U64) : bitfield.i;
 }
 
 /* Only works up to 32 bit */
 float can_decode_signal_as_float(const CanFrame *msg, uint32_t start, uint32_t length, float scale,
                                  float offset, bool is_big_endian) {
-    uint32_t bitfield = (uint32_t)get_bitfield(can_word(msg), start, length);
-    if (is_big_endian) bitfield = swap_bytes_float(bitfield);
+    u_f32 bitfield = {.i = get_bitfield(can_word(msg), start, length)};
+    if (is_big_endian) bitfield.i = swap_bytes_int(bitfield.i, U32);
 
-    return apply_linear_float(bitfield, scale, offset);
+    return apply_linear_float(bitfield.f, scale, offset);
 }
 
 uint64_t can_encode_signal_from_float(float signal, uint32_t start, uint32_t length, float scale,
                                       float offset, bool is_big_endian) {
-    uint64_t bitfield = set_bitfield(apply_linear_float(signal, 1 / scale, -offset), start, length);
+    u_f32 bitfield =
+        set_bitfield_float(apply_linear_float(signal, 1 / scale, -offset), start, length);
 
-    return is_big_endian ? swap_bytes_float(bitfield) : bitfield;
+    return is_big_endian ? swap_bytes_int(bitfield.i, U32) : bitfield.i;
 }
 
 int64_t can_decode_signal_as_int64_t(const CanFrame *msg, uint32_t start, uint32_t length,
