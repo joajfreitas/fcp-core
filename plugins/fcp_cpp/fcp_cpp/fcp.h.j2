@@ -102,9 +102,9 @@ public:
     Unsigned(): data_{0} {}
     Unsigned(UnderlyingType value): data_{value} {}
 
-    Unsigned(Buffer& buffer) {
+    static Unsigned Decode(Buffer& buffer) {
         auto word = buffer.get_word(Size);
-        data_ = static_cast<UnderlyingType>(word);
+        return Unsigned(static_cast<UnderlyingType>(word));
     }
 
     void _encode(Buffer& buffer) const {
@@ -137,9 +137,9 @@ public:
     Signed(): data_{0}{}
     Signed(UnderlyingType value): data_{value} {}
 
-    Signed(Buffer& buffer) {
+    static Signed Decode(Buffer& buffer) {
         auto word = buffer.get_word(Size, true);
-        data_ = static_cast<UnderlyingType>(word);
+        return Signed(static_cast<UnderlyingType>(word));
     }
 
     void _encode(Buffer& buffer) const {
@@ -173,9 +173,13 @@ public:
     Float(): data_{0.0}{}
     Float(UnderlyingType value): data_{value} {}
 
-    Float(Buffer& buffer) {
+    static Float Decode(Buffer& buffer) {
         auto word = buffer.get_word(Size);
-        std::memcpy(&data_, &word, 4);
+
+        UnderlyingType data{};
+        std::memcpy(&data, &word, 4);
+
+        return Float(data);
     }
 
     void _encode(Buffer& buffer) const {
@@ -212,9 +216,13 @@ public:
     Double(): data_{0.0}{}
     Double(UnderlyingType value): data_{value} {}
 
-    Double(Buffer& buffer) {
+    static Double Decode(Buffer& buffer) {
         auto word = buffer.get_word(Size);
-        std::memcpy(&data_, &word, 8);
+
+        UnderlyingType data{};
+        std::memcpy(&data, &word, 8);
+
+        return Double(data);
     }
 
     void _encode(Buffer& buffer) const {
@@ -254,10 +262,14 @@ class Array {
     std::transform(ls.begin(), ls.end(), data_.begin(), [](const T& x){return x;});
     }
 
-    Array(Buffer& buffer) {
+    static Array Decode(Buffer& buffer) {
+        std::array<T, N> data{0};
+
         for (int i=0; i<N; i++) {
-            data_[i] = T(buffer);
+            data[i] = T::Decode(buffer);
         }
+
+        return Array(data);
     }
 
     void _encode(Buffer& buffer) const {
@@ -285,7 +297,6 @@ class Array {
         return ss.str();
     }
 
-
 private:
     std::array<T, N> data_;
 };
@@ -298,11 +309,14 @@ class String {
     String(const std::string& value): data_{value} {}
     String(const char* value): data_{value} {}
 
-    String(Buffer& buffer) {
-        auto len = Unsigned<std::uint32_t, 32>(buffer).GetData();
+    static String Decode(Buffer& buffer) {
+        std::string data{};
+        auto len = Unsigned<std::uint32_t, 32>::Decode(buffer).GetData();
         for (int i=0; i<len; i++) {
-            data_ += buffer.get_word(8);
+            data += buffer.get_word(8);
         }
+
+        return String(data);
     }
 
     void _encode(Buffer& buffer) const {
@@ -338,11 +352,14 @@ class DynamicArray {
     DynamicArray(const std::vector<T>& value): data_{value} {}
     DynamicArray(const char* value): data_{value} {}
 
-    DynamicArray(Buffer& buffer) {
-        auto len = Unsigned<std::uint32_t, 32>(buffer).GetData();
+    static DynamicArray Decode(Buffer& buffer) {
+        std::vector<T> data{};
+        auto len = Unsigned<std::uint32_t, 32>::Decode(buffer).GetData();
         for (int i=0; i<len; i++) {
-            data_.push_back(T(buffer));
+            data.push_back(T::Decode(buffer));
         }
+
+        return DynamicArray(data);
     }
 
     void _encode(Buffer& buffer) const {
@@ -395,15 +412,18 @@ class Optional {
         return Optional(value);
     }
 
-    Optional(Buffer& buffer) {
-        auto is_some = Unsigned<std::uint8_t, 8>(buffer).GetData();
+    static Optional Decode(Buffer& buffer) {
+        std::optional<T> data;
+        auto is_some = Unsigned<std::uint8_t, 8>::Decode(buffer).GetData();
 
         if (is_some) {
-            data_ = T(buffer);
+            data = T::Decode(buffer);
         }
         else {
-            data_ = std::nullopt;
+            data = std::nullopt;
         }
+
+        return Optional(data);
     }
 
     void _encode(Buffer& buffer) const {
@@ -453,8 +473,9 @@ public:
     {{enum.name}}(): data_{} {}
     {{enum.name}}(UnderlyingType value): data_{value} {}
 
-    {{enum.name}}(Buffer& buffer) {
-        data_ = buffer.get_word(GetSize());
+    static {{enum.name}} Decode(Buffer& buffer) {
+        UnderlyingType data = buffer.get_word(GetSize());
+        return data;
     }
 
     void _encode(Buffer& buffer) const {
@@ -504,7 +525,7 @@ struct {{struct.name}} {
 
     static {{struct.name}} Decode(Buffer& buffer) {
     {%- for signal in struct.fields %}
-        auto {{signal.name}} = {{signal.name | capitalize}}Type(buffer);
+        auto {{signal.name}} = {{signal.name | capitalize}}Type::Decode(buffer);
     {%- endfor %}
 
         return {{struct.name}}({% for signal in struct.fields %}{{signal.name}}{% if not loop.last %},{% endif %}{% endfor %});
