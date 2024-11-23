@@ -1,0 +1,61 @@
+[
+    {
+        "name": "standin",
+        "schema": "001_basic_values.fcp",
+        "tests": [
+            {
+                "name": "s1",
+                "datatype": "S1",
+                "decoded": {
+                    "s0": {"value": 0},
+                    "s1": {"value": 0}
+                },
+                "encoded": {"value": [0, 0]}
+            },
+            {
+                "name": "s2",
+                "datatype": "S2",
+                "decoded": {
+                    "s0": {"value": 0},
+                    "s1": {"value": 0}
+                },
+                "encoded": {"value": [0, 0, 0, 0]}
+            },
+            {
+                "name": "s3",
+                "datatype": "S3",
+                "decoded": {
+                    "s0": {"value": 0},
+                    "s1": {"value": 0}
+                },
+                "encoded": {"value": [0,0,0,0,0,0,0,0]}
+            },
+            {
+                "name": "s4",
+                "datatype": "S4",
+                "decoded": {
+                    "s0": {"value": 0},
+                    "s1": {"value": 0}
+                },
+                "encoded": {"value": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}
+            },
+            {
+                "name": "s5",
+                "datatype": "S5",
+                "decoded": {
+                    "s0": {"value": 0},
+                    "s1": {"value": 0}
+                },
+                "encoded": {"value": [0,0,0,0,0,0,0,0,0,0,0,0]}
+            },
+            {
+                "name": "s6",
+                "datatype": "S6",
+                "decoded": {
+                    "s0": {"value": ""}
+                },
+                "encoded": {"value": [0,0,0,0]}
+            }
+        ]
+    }
+]
