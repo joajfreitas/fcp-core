@@ -1,5 +1,3 @@
-#include <iostream>
-
 //#include "fcp_can.h"
 #include "fcp.h"
 
@@ -7,7 +5,7 @@
 
 UTEST_MAIN()
 
-UTEST(BasicStruct, EncodeString) {
+UTEST(BasicStruct, EncodeDynamicArray) {
     auto s1 = fcp::S1{{{0,1,2}}};
     std::vector<std::uint8_t> encoded = s1.encode().GetData();
 
@@ -19,7 +17,7 @@ UTEST(BasicStruct, EncodeString) {
     EXPECT_TRUE(encoded==bytes);
 }
 
-UTEST(BasicStruct, DecodeString) {
+UTEST(BasicStruct, DecodeDynamicArray) {
     std::vector<uint8_t> bytes{
         0x03, 0x00, 0x00, 0x00,
         0x00, 0x01, 0x02};
