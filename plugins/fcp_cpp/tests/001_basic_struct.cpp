@@ -1,11 +1,11 @@
-#include "fcp_can.h"
+//#include "fcp_can.h"
 #include "fcp.h"
 
 #include "utest.h"
 
 UTEST_MAIN()
 
-UTEST(BasicStruct, DecodeSimpleUnsignedStruct) {
+UTEST(BasicStruct, EncodeSimpleUnsignedStruct) {
     auto foo = fcp::S1{1,2};
     auto encoded = foo.encode().GetData();
 
@@ -13,14 +13,14 @@ UTEST(BasicStruct, DecodeSimpleUnsignedStruct) {
     EXPECT_TRUE(encoded==bytes);
 }
 
-UTEST(BasicStruct, EncodeSimpleUnsignedStruct) {
+UTEST(BasicStruct, DecodeSimpleUnsignedStruct) {
     std::vector<uint8_t> bytes{1,2};
 
-    auto foo = fcp::S1::Encode(bytes.begin(), bytes.end());
+    auto foo = fcp::S1::Decode(bytes.begin(), bytes.end());
     auto expected = fcp::S1{1,2};
     EXPECT_TRUE(foo==expected);
 }
 
-UTEST(BasicStruct, GetDeviceName) {
-    EXPECT_TRUE(fcp::can::get_device_name(10) == "ecu1");
-}
+//UTEST(BasicStruct, GetDeviceName) {
+//    EXPECT_TRUE(fcp::can::get_device_name(10) == "ecu1");
+//}

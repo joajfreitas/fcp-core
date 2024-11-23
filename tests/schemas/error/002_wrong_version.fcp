@@ -1,0 +1,5 @@
+version: "4"
+
+struct S1 {
+    s1 @0: u8,
+}

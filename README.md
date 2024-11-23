@@ -22,21 +22,23 @@ See [readthedocs.io](https://fcp-core.readthedocs.io/en/latest/)
 
 ## Supported features
 
-|      | Flat struct | Composite struct | Enum | Array | 1-64 bit signed integers | 1-64 bit unsigned integers | 32/64 bit float |
-|------|-------------|------------------|------|-------|--------------------------|----------------------------|-----------------|
-| core |      ✅     |         ✅       |   ✅ |   ✅  |             ✅           |              ✅            |        ✅       |
-| dbc  |      ✅     |         ✅       |   ✅ |   ✅  |             ✅           |              ✅            |        ✅       |
-| c    |      ✅     |         ❌       |   ✅ |   ❌  |             ✅           |              ✅            |        ✅       |
-| cpp  |      ✅     |         ✅       |   ✅ |   ✅  |             ✅           |              ✅            |        ✅       |
-
-### Can bus
-
-|      | Frame id | Device designation | Bus designation | Big endian | Muxes |
-|------|----------|--------------------|-----------------|------------|-------|
-| core |     ✅   |          ✅        |        ✅       |      ✅    |   ✅  |
-| dbc  |     ✅   |          ✅        |        ✅       |      ✅    |   ✅  |
-| c    |     ✅   |          ✅        |        ❌       |      ❌    |   ❌  |
-| cpp  |     ✅   |          ✅        |        ❌       |      ❌    |   ❌  |
+|                            | core  | dbc  | c  | cpp  | python  |
+|----------------------------|-------|------|----|------|---------|
+| Flat struct                |   ✅  |  ✅  | ✅ |  ✅  |    ✅   |
+| 1-64 bit signed integers   |   ✅  |  ✅  | ✅ |  ✅  |    ✅   |
+| 1-64 bit unsigned integers |   ✅  |  ✅  | ✅ |  ✅  |    ✅   |
+| 32/64 bit float            |   ✅  |  ✅  | ✅ |  ✅  |    ✅   |
+| Composite struct           |   ✅  |  ✅  | ❌ |  ✅  |    ✅   |
+| Enum                       |   ✅  |  ✅  | ✅ |  ✅  |    ✅   |
+| Array                      |   ✅  |  ✅  | ❌ |  ✅  |    ✅   |
+| Dynamic array              |   ✅  |  ❌  | ❌ |  ❌  |    ✅   |
+| String                     |   ✅  |  ❌  | ❌ |  ❌  |    ✅   |
+| Optional                   |   ❌  |  ❌  | ❌ |  ❌  |    ❌   |
+| Frame id                   |   ✅  |  ✅  | ✅ |  ✅  |    ✅   |
+| Device designation         |   ✅  |  ✅  | ✅ |  ✅  |    ✅   |
+| Bus designation            |   ✅  |  ✅  | ❌ |  ❌  |    ❌   |
+| Big endian                 |   ✅  |  ✅  | ❌ |  ❌  |    ❌   |
+| Muxes                      |   ✅  |  ✅  | ❌ |  ❌  |    ❌   |
 
 ## Plugins
 

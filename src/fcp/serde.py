@@ -12,6 +12,7 @@ from .specs.type import (
     ArrayType,
     ComposedType,
     DynamicArrayType,
+    OptionalType,
     ComposedTypeCategory,
 )
 
@@ -104,7 +105,7 @@ def _encode_struct(
 
 def _encode_array(buffer: _Buffer, fcp: FcpV2, type: ArrayType, data: Any) -> None:
     for i in range(type.size):
-        _encode(buffer, fcp, type.type, data[i])
+        _encode(buffer, fcp, type.underlying_type, data[i])
 
 
 def _encode_dynamic_array(
@@ -113,7 +114,17 @@ def _encode_dynamic_array(
     _encode_builtin_unsigned(buffer, BuiltinType("u32"), len(data))
 
     for x in data:
-        _encode(buffer, fcp, type.type, x)
+        _encode(buffer, fcp, type.underlying_type, x)
+
+
+def _encode_optional(
+    buffer: _Buffer, fcp: FcpV2, type: OptionalType, data: Any
+) -> None:
+
+    is_some = data is not None
+    _encode_builtin_unsigned(buffer, BuiltinType("u8"), 1 if is_some else 0)
+    if is_some:
+        _encode(buffer, fcp, type.underlying_type, data)
 
 
 def _encode(
@@ -133,12 +144,16 @@ def _encode(
         else:
             raise ValueError(f"Unexpected field type {type}")
     elif isinstance(type, ComposedType):
-        if type.category == ComposedTypeCategory.Struct:
+        if type.type == ComposedTypeCategory.Struct:
             _encode_struct(buffer, fcp, type.name, data)
     elif isinstance(type, ArrayType):
         _encode_array(buffer, fcp, type, data)
     elif isinstance(type, DynamicArrayType):
         _encode_dynamic_array(buffer, fcp, type, data)
+    elif isinstance(type, OptionalType):
+        _encode_optional(buffer, fcp, type, data)
+    else:
+        raise ValueError("Unmatched type")
 
 
 def encode(fcp: FcpV2, name: str, data: Dict[str, Any]) -> bytearray:
@@ -180,7 +195,7 @@ def _decode_str(buffer: _Buffer, type: BuiltinType) -> str:
 def _decode_array(buffer: _Buffer, fcp: FcpV2, type: ArrayType) -> List[Any]:
     data = []
     for i in range(type.size):
-        data.append(_decode(buffer, fcp, type.type))
+        data.append(_decode(buffer, fcp, type.underlying_type))
 
     return data
 
@@ -191,9 +206,17 @@ def _decode_dynamic_array(
     len = _decode_builtin_unsigned(buffer, BuiltinType("u32"))
     data = []
     for i in range(len):
-        data.append(_decode(buffer, fcp, type.type))
+        data.append(_decode(buffer, fcp, type.underlying_type))
 
     return data
+
+
+def _decode_optional(buffer: _Buffer, fcp: FcpV2, type: OptionalType) -> List[Any]:
+    is_some = _decode_builtin_unsigned(buffer, BuiltinType("u8")) != 0
+    if is_some:
+        return _decode(buffer, fcp, type.underlying_type)
+    else:
+        return None
 
 
 def _decode_struct(buffer: _Buffer, fcp: FcpV2, name: str) -> Dict[str, Any]:
@@ -221,12 +244,16 @@ def _decode(buffer: _Buffer, fcp: FcpV2, type: Type) -> Dict[str, Any]:
         else:
             raise ValueError(f"Unexpected field type {type}")
     elif isinstance(type, ComposedType):
-        if type.category == ComposedTypeCategory.Struct:
+        if type.type == ComposedTypeCategory.Struct:
             return _decode_struct(buffer, fcp, type.name)
     elif isinstance(type, ArrayType):
         return _decode_array(buffer, fcp, type)
     elif isinstance(type, DynamicArrayType):
         return _decode_dynamic_array(buffer, fcp, type)
+    elif isinstance(type, OptionalType):
+        return _decode_optional(buffer, fcp, type)
+    else:
+        raise ValueError("Unmatched type")
 
 
 def decode(fcp: FcpV2, name: str, data: bytearray) -> Dict[str, Any]:

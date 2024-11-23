@@ -1,0 +1,5 @@
+version: "3"
+
+struct S1 {
+    field1 @0: Optional[u8],
+}

@@ -12,6 +12,7 @@ dependencies = [
     "coloredlogs>=15.0.1",
     "pyserde>=0.15.0",
     "termcolor>=2.4.0",
+    "beartype>=0.19",
 ]
 
 [build-system]

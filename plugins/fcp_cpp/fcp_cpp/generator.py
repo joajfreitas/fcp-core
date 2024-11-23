@@ -33,7 +33,14 @@ from fcp.specs.impl import Impl
 from fcp.codegen import CodeGenerator
 from fcp.verifier import Verifier
 from fcp.specs.v2 import FcpV2
-from fcp.specs.type import BuiltinType, ArrayType, ComposedTypeCategory, ComposedType
+from fcp.specs.type import (
+    BuiltinType,
+    ArrayType,
+    ComposedTypeCategory,
+    ComposedType,
+    DynamicArrayType,
+    OptionalType,
+)
 from fcp.encoding import make_encoder, EncodeablePiece, EncoderContext, Value
 
 
@@ -44,26 +51,34 @@ def _to_highest_power_of_two(n: int) -> int:
 def to_wrapper_cpp_type(input: Type) -> str:
     """Convert fcp type to wrapper C++ type."""
     if isinstance(input, BuiltinType):
-        size = input.get_length()
-        cpp_size = _to_highest_power_of_two(size)
         if input.is_unsigned():
+            size = input.get_length()
+            cpp_size = _to_highest_power_of_two(size)
             return f"Unsigned<std::uint{cpp_size}_t, {size}>"
         elif input.is_signed():
+            size = input.get_length()
+            cpp_size = _to_highest_power_of_two(size)
             return f"Signed<std::int{cpp_size}_t, {size}>"
         elif input.is_float():
             return "Float"
         elif input.is_double():
             return "Double"
-        else:
-            raise ValueError("Unimplemented")
+        elif input.is_str():
+            return "String"
     elif isinstance(input, ArrayType):
-        underlying_type = to_wrapper_cpp_type(input.type)
+        underlying_type = to_wrapper_cpp_type(input.underlying_type)
         return f"Array<{underlying_type}, {input.size}>"
     elif isinstance(input, ComposedType):
-        if input.category == ComposedTypeCategory.Struct:
+        if input.type == ComposedTypeCategory.Struct:
             return str(input.name)
-        elif input.category == ComposedTypeCategory.Enum:
+        elif input.type == ComposedTypeCategory.Enum:
             return str(input.name)
+    elif isinstance(input, DynamicArrayType):
+        underlying_type = to_wrapper_cpp_type(input.underlying_type)
+        return f"DynamicArray<{underlying_type}>"
+    elif isinstance(input, OptionalType):
+        underlying_type = to_wrapper_cpp_type(input.underlying_type)
+        return f"Optional<{underlying_type}>"
 
     raise ValueError("Cannot convert type to C++ type")
 
@@ -99,7 +114,6 @@ class Generator(CodeGenerator):
             .read()
         )
 
-    # TODO: generate to string
     def generate(self, fcp: FcpV2, ctx: Any) -> Dict[str, Union[str, Path]]:
         """Generate cpp files."""
         loader = jinja2.DictLoader(
@@ -112,33 +126,21 @@ class Generator(CodeGenerator):
         env = jinja2.Environment(loader=loader)
         env.globals["to_wrapper_cpp_type"] = to_wrapper_cpp_type
 
-        encoder = make_encoder("packed", fcp, EncoderContext())
-        can_encodings = {}
-
-        for impl in fcp.get_matching_impls("can"):
-            encoding = encoder.generate(impl)
-            for encode_piece in encoding:
-                encode_piece.name = encode_piece.name.replace("::", ".")
-
-            can_encodings[impl.type] = CanEncoding(impl, encoding)
-
-        structs = [(struct, can_encodings.get(struct.name)) for struct in fcp.structs]
-
         return [
             {
                 "type": "file",
                 "path": Path(ctx.get("output")) / "fcp.h",
                 "contents": env.get_template("fcp_header").render(
-                    {"fcp": fcp, "can_encodings": can_encodings, "structs": structs}
+                    {"fcp": fcp, "structs": fcp.structs}
                 ),
             },
-            {
-                "type": "file",
-                "path": Path(ctx.get("output")) / "fcp_can.h",
-                "contents": env.get_template("can_header").render(
-                    {"fcp": fcp, "can_encodings": can_encodings, "structs": structs}
-                ),
-            },
+            # {
+            #    "type": "file",
+            #    "path": Path(ctx.get("output")) / "fcp_can.h",
+            #    "contents": env.get_template("can_header").render(
+            #        {"fcp": fcp, "can_encodings": can_encodings, "structs": structs}
+            #    ),
+            # },
         ]
 
     def register_checks(self, verifier: Verifier) -> NoReturn:  # type: ignore

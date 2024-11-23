@@ -13,22 +13,7 @@
                         "name":"u8",
                         "type": "Builtin"
                         },
-                    "type": "DynamicArray"
-                }
-            }]
-        },
-        {
-            "name": "S2",
-            "fields": [{
-                "name": "field1",
-                "field_id": 0,
-                "type": {
-                    "type": "DynamicArray",
-                    "underlying_type":
-                    {
-                        "type": "Struct",
-                        "name":"S1"
-                    }
+                    "type": "Optional"
                 }
             }]
         }

@@ -34,5 +34,16 @@ class SignalBlock:
     fields: Dict[str, Any]
     meta: MetaData
 
+    def reflection(self) -> Dict[str, Any]:
+        """Reflection."""
+        return {
+            "name": self.name,
+            "fields": [
+                {"name": name, "value": str(value)}
+                for name, value in self.fields.items()
+            ],
+            "meta": self.meta.reflection(),
+        }
+
     def __repr__(self) -> str:
         return str(to_dict(self))

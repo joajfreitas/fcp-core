@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from beartype.typing import Optional, List, Tuple
+from beartype.typing import Optional, List, Tuple, Any, Dict
 import serde
 
 from .struct_field import StructField
@@ -42,6 +42,14 @@ class Struct:
                 return field
 
         return None
+
+    def reflection(self) -> Dict[str, Any]:
+        """Reflection."""
+        return {
+            "name": self.name,
+            "fields": [struct_field.reflection() for struct_field in self.fields],
+            "meta": self.meta.reflection(),
+        }
 
     def __repr__(self) -> str:
         return str(serde.to_dict(self))

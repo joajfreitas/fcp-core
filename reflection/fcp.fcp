@@ -1,24 +1,41 @@
 version: "3"
 
+struct MetaData {
+    line @0: i32,
+    end_line @1: i32,
+    column @2: i32,
+    end_column @3: i32,
+    start_pos @4: i32,
+    end_pos @5: i32,
+    filename @6: str,
+}
+
 struct StructField {
     name @0: str,
     field_id @1: u32,
     type @2: str,
+    unit @3: Optional[str],
+    min_value @4: Optional[f64],
+    max_value @5: Optional[f64],
+    meta @6: Optional[MetaData],
 }
 
 struct Struct {
     name @0: str,
     fields @1: [StructField],
+    meta @2: Optional[MetaData],
 }
 
 struct Enumeration {
     name @0: str,
     value @1: i32,
+    meta @2: Optional[MetaData],
 }
 
 struct Enum {
     name @0: str,
     enumeration @1: [Enumeration],
+    meta @2: Optional[MetaData],
 }
 
 struct DictField {
@@ -29,6 +46,7 @@ struct DictField {
 struct SignalBlock {
     name @0: str,
     fields @1: [DictField],
+    meta @2: Optional[MetaData],
 }
 
 struct Impl {
@@ -37,17 +55,20 @@ struct Impl {
     type @3: str,
     fields @4: [DictField],
     signals @5: [SignalBlock],
+    meta @6: Optional[MetaData],
 }
 
 struct Rpc {
     name @0: str,
     input @1: str,
     output @2: str,
+    meta @3: Optional[MetaData],
 }
 
 struct Service {
     name @0: str,
     rpcs @1: [Rpc],
+    meta @2: Optional[MetaData],
 }
 
 struct Fcp {
@@ -55,4 +76,5 @@ struct Fcp {
     enums @1: [Enum],
     impls @2: [Impl],
     services @3: [Service],
+    version @4: str,
 }

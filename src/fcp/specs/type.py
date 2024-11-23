@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from __future__ import annotations
+
 from serde import serde, strict
 from beartype.typing import Union
 from typing_extensions import Self, TypeAlias
@@ -27,13 +29,28 @@ from enum import Enum
 
 
 @serde(type_check=strict)
-class BuiltinType:
+class Type:
+    """Base class for types."""
+
+    def get_length(self) -> int:
+        """Type length in bits."""
+        raise ValueError("Don't use Type directly")
+
+    def reflection(self) -> str:
+        """Reflection."""
+        raise ValueError("Don't use Type directly")
+
+
+@serde(type_check=strict)
+class BuiltinType(Type):
     """fcp builtin types."""
 
     name: str
+    type: str
 
     def __init__(self, name: str):
         self.name = name
+        self.type = "Builtin"
 
     def get_length(self) -> int:
         """Type length in bits."""
@@ -61,6 +78,10 @@ class BuiltinType:
         """Check that type is a string."""
         return self.name == "str"
 
+    def reflection(self) -> str:
+        """Reflection."""
+        return self.name
+
 
 class ComposedTypeCategory(Enum):
     """Category of composed types."""
@@ -70,41 +91,85 @@ class ComposedTypeCategory(Enum):
 
 
 @serde(type_check=strict)
-class ComposedType:
+class ComposedType(Type):
     """fcp type for user defined types such as structs and enums."""
 
     name: str
-    category: ComposedTypeCategory
+    type: ComposedTypeCategory
+
+    def __init__(self, name: str, type: ComposedTypeCategory):
+        self.name = name
+        self.type = type
 
     def is_signed(self) -> bool:
         """Check that type is signed."""
-        if self.category == ComposedTypeCategory.Enum:
+        if self.type == ComposedTypeCategory.Enum:
             return False
         else:
             raise ValueError("Signess of struct is meaningless")
 
+    def reflection(self) -> str:
+        """Reflection."""
+        return self.name
+
 
 @serde(type_check=strict)
-class ArrayType:
+class ArrayType(Type):
     """fcp array type."""
 
-    type: Union[BuiltinType, ComposedType, Self]
+    underlying_type: Type
     size: int
+    type: str
+
+    def __init__(self, underlying_type: Type, size: int):
+        self.underlying_type = underlying_type
+        self.size = size
+        self.type = "Array"
 
     def get_length(self) -> int:
         """Type length in bits."""
-        return int(self.type.get_length() * self.size)
+        return int(self.underlying_type.get_length() * self.size)
+
+    def reflection(self) -> str:
+        """Reflection."""
+        return "[" + self.underlying_type.reflection() + "," + str(self.size) + "]"
 
 
 @serde(type_check=strict)
-class DynamicArrayType:
+class DynamicArrayType(Type):
     """fcp array type."""
 
-    type: Union[BuiltinType, ComposedType, ArrayType, Self]
+    underlying_type: Type
+    type: str
+
+    def __init__(self, underlying_type: Type):
+        self.underlying_type = underlying_type
+        self.type = "DynamicArray"
 
     def get_length(self) -> int:
         """Type length in bits."""
         raise ValueError("Cannot compute the size of a dynamic array")
 
+    def reflection(self) -> str:
+        """Reflection."""
+        return "[" + self.underlying_type.reflection() + "]"
 
-Type: TypeAlias = Union[BuiltinType, ArrayType, ComposedType, DynamicArrayType]
+
+@serde(type_check=strict)
+class OptionalType(Type):
+    """fcp optional type."""
+
+    underlying_type: Type
+    type: str
+
+    def __init__(self, underlying_type: Type):
+        self.underlying_type = underlying_type
+        self.type = "Optional"
+
+    def get_length(self) -> int:
+        """Type length in bits."""
+        raise ValueError("Cannot compute the size of an Optional ")
+
+    def reflection(self) -> str:
+        """Reflection."""
+        return "Optional[" + self.underlying_type.reflection() + "]"

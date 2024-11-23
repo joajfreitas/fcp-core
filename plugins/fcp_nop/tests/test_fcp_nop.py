@@ -49,13 +49,13 @@ struct SensorInformation {
                     {
                         "name": "temperature",
                         "field_id": 0,
-                        "type": {"BuiltinType": {"name": "u32"}},
+                        "type": {"name": "u32", "type": "Builtin"},
                         "unit": "C",
                     },
                     {
                         "name": "timestamp",
                         "field_id": 1,
-                        "type": {"BuiltinType": {"name": "u32"}},
+                        "type": {"name": "u32", "type": "Builtin"},
                         "unit": "s",
                     },
                 ],
@@ -67,18 +67,14 @@ struct SensorInformation {
                         "name": "temperature",
                         "field_id": 0,
                         "type": {
-                            "ComposedType": {
-                                "name": "Temperature",
-                                "category": "Struct",
-                            }
+                            "name": "Temperature",
+                            "type": "Struct",
                         },
                     },
                     {
                         "name": "sensor_state",
                         "field_id": 1,
-                        "type": {
-                            "ComposedType": {"name": "SensorState", "category": "Enum"}
-                        },
+                        "type": {"name": "SensorState", "type": "Enum"},
                     },
                 ],
             },
