@@ -329,6 +329,56 @@ private:
     std::string data_;
 };
 
+template<typename T>
+class DynamicArray {
+    public:
+
+    DynamicArray(): data_{} {}
+    DynamicArray(const std::vector<T>& value): data_{value} {}
+    DynamicArray(const char* value): data_{value} {}
+
+    DynamicArray(Buffer& buffer) {
+        auto len = Unsigned<std::uint32_t, 32>(buffer).GetData();
+        for (int i=0; i<len; i++) {
+            data_.push_back(T(buffer));
+        }
+    }
+
+    void _encode(Buffer& buffer) const {
+        Unsigned<std::uint32_t, 32>(data_.size())._encode(buffer);
+        for (auto x: data_) {
+            x._encode(buffer);
+        }
+    }
+
+    std::vector<T> GetData() const {
+        return data_;
+    }
+
+    inline bool operator==(const DynamicArray& rhs) const
+    {
+        return GetData() == rhs.GetData();
+    }
+
+    std::string to_string(std::string prefix="") const {
+        std::stringstream ss{};
+        ss << "[";
+        for (int i=0; i<data_.size(); i++) {
+            ss << data_[i].to_string();
+            if (i != data_.size()-1) {
+                ss << data_[i].to_string() << ", ";
+            }
+        }
+        ss << "]";
+
+        return ss.str();
+    }
+
+
+private:
+    std::vector<T> data_;
+};
+
 
 {% for enum in fcp.enums %}
 class {{enum.name}} {

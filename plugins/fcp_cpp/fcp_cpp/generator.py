@@ -33,7 +33,13 @@ from fcp.specs.impl import Impl
 from fcp.codegen import CodeGenerator
 from fcp.verifier import Verifier
 from fcp.specs.v2 import FcpV2
-from fcp.specs.type import BuiltinType, ArrayType, ComposedTypeCategory, ComposedType
+from fcp.specs.type import (
+    BuiltinType,
+    ArrayType,
+    ComposedTypeCategory,
+    ComposedType,
+    DynamicArrayType,
+)
 from fcp.encoding import make_encoder, EncodeablePiece, EncoderContext, Value
 
 
@@ -66,6 +72,9 @@ def to_wrapper_cpp_type(input: Type) -> str:
             return str(input.name)
         elif input.type == ComposedTypeCategory.Enum:
             return str(input.name)
+    elif isinstance(input, DynamicArrayType):
+        underlying_type = to_wrapper_cpp_type(input.underlying_type)
+        return f"DynamicArray<{underlying_type}>"
 
     raise ValueError("Cannot convert type to C++ type")
 
