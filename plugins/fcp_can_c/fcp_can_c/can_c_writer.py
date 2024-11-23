@@ -88,7 +88,7 @@ class CanSignal:
     is_multiplexer: bool = False
     multiplexer_ids: Optional[List[int]] = None
     multiplexer_signal: Optional[str] = None
-    is_big_endian_s: str = False
+    is_big_endian_s: str = "False"
 
     def __post_init__(self) -> None:
         """Post init method to set the scalar type and multiplexer count."""
@@ -191,7 +191,9 @@ def create_can_signals(
                 scalar_type=piece.type.name,
                 bit_length=piece.bitlength,
                 byte_order=(
-                    "big_endian" if piece.extended_data.get("endianness", "little") == "big" else "little_endian"
+                    "big_endian"
+                    if piece.extended_data.get("endianness", "little") == "big"
+                    else "little_endian"
                 ),
                 signed=is_signed(piece),
                 is_multiplexer=bool(multiplexer_signal),
