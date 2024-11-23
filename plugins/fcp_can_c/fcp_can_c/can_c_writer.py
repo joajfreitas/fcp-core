@@ -108,8 +108,7 @@ class CanSignal:
         self.data_type = type_map.get(self.data_type, self.data_type)
         self.is_big_endian_s = "true" if self.byte_order == "big_endian" else "false"
 
-        if self.data_type not in ["f32", "f64"]:
-            self.scalar_type = "float"
+        if self.data_type not in type_map.values():
             self.scalar_type = type_map[
                 "i" if self.signed else "u" + str(ceil_to_power_of_2(self.bit_length))
             ]
@@ -183,7 +182,6 @@ def create_can_signals(
         multiplexer_ids = list(range(piece.extended_data.get("mux_count", 0)))
 
         type = piece.composite_type.unwrap_or(piece.type.name)
-
         signals.append(
             CanSignal(
                 name=piece.name.replace("::", "_"),

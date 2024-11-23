@@ -94,7 +94,7 @@ double can_decode_signal_double_as_double(const CanFrame *msg, uint32_t start, u
 uint64_t can_encode_signal_double_from_double(double signal, uint32_t start, uint32_t length,
                                               float scale, float offset, bool is_big_endian);
 
-uint64_t bitmask(unsigned length);
+uint64_t bitmask(uint8_t length);
 #ifdef __cplusplus
 }
 #endif

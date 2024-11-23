@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -6,6 +7,16 @@
 #include "generated_code/ecu_can.h"
 
 bool all_tests_passed = true;
+
+typedef union {
+    float f;
+    uint32_t i;
+} F32;
+
+typedef union {
+    double d;
+    uint64_t i;
+} F64;
 
 #define VERIFY_TEST(condition)                             \
     if (condition) {                                       \
@@ -44,9 +55,12 @@ bool compare_frames(CanFrame *a, CanFrame *b) {
 void test_encode_msg_u16(CanFrame *f) {
     CanFrame expected = {
         .id = CAN_MSG_ID_U16,
-        .data = {0x34, 0x12, 0, 0, 0, 0, 0, 0},
+        .data = {0x12, 0x34, 0, 0, 0, 0, 0, 0},
         .dlc = 2,
     };
+
+    printf("frame: %x %x %x %x %x %x %x %x\n", f->data[0], f->data[1], f->data[2], f->data[3],
+           f->data[4], f->data[5], f->data[6], f->data[7]);
 
     VERIFY_TEST(compare_frames(f, &expected));
 }
@@ -54,7 +68,7 @@ void test_encode_msg_u16(CanFrame *f) {
 void test_encode_msg_u32(CanFrame *f) {
     CanFrame expected = {
         .id = CAN_MSG_ID_U32,
-        .data = {0x78, 0x56, 0x34, 0x12, 0, 0, 0, 0},
+        .data = {0x12, 0x34, 0x56, 0x78, 0, 0, 0, 0},
         .dlc = 4,
     };
 
@@ -64,7 +78,7 @@ void test_encode_msg_u32(CanFrame *f) {
 void test_encode_msg_u64(CanFrame *f) {
     CanFrame expected = {
         .id = CAN_MSG_ID_U64,
-        .data = {0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12},
+        .data = {0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0},
         .dlc = 8,
     };
 
@@ -72,19 +86,27 @@ void test_encode_msg_u64(CanFrame *f) {
 }
 
 void test_encode_msg_f32(CanFrame *f) {
+    F32 v = {.f = 3.14f};
+
     CanFrame expected = {
         .id = CAN_MSG_ID_F32,
-        .data = {0xdb, 0x0f, 0x49, 0x40, 0, 0, 0, 0},
+        .data = {v.i >> 24, v.i >> 16, v.i >> 8, v.i, 0, 0, 0, 0},
         .dlc = 4,
     };
+
+    printf("-> %x \n", v.i);
+    printf("-> %x %x %x %x\n", f->data[0], f->data[1], f->data[2], f->data[3]);
+    fflush(stdout);
 
     VERIFY_TEST(compare_frames(f, &expected));
 }
 
 void test_encode_msg_f64(CanFrame *f) {
+    F64 v = {.d = 3.14159265359};
+
     CanFrame expected = {
         .id = CAN_MSG_ID_F64,
-        .data = {0x18, 0x2d, 0x44, 0x54, 0xfb, 0x21, 0x09, 0x40},
+        .data = {v.i >> 56, v.i >> 48, v.i >> 40, v.i >> 32, v.i >> 24, v.i >> 16, v.i >> 8, v.i},
         .dlc = 8,
     };
 
