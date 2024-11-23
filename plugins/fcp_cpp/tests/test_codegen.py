@@ -68,6 +68,7 @@ def get_fcp_config(name: str) -> str:
         "004_enum_array",
         "005_signed_values",
         "006_floating_point_values",
+        "007_string",
     ],
 )  # type: ignore
 def test_codegen(test_name: str) -> None:
