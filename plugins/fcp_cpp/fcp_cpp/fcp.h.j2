@@ -106,7 +106,7 @@ public:
         data_ = static_cast<UnderlyingType>(word);
     }
 
-    void _encode(Buffer& buffer) {
+    void _encode(Buffer& buffer) const {
         buffer.push_word<UnderlyingType, Size>(data_) ;
     }
 
@@ -141,7 +141,7 @@ public:
         data_ = static_cast<UnderlyingType>(word);
     }
 
-    void _encode(Buffer& buffer) {
+    void _encode(Buffer& buffer) const {
         buffer.push_word<UnderlyingType, Size>(data_) ;
     }
 
@@ -177,7 +177,7 @@ public:
         std::memcpy(&data_, &word, 4);
     }
 
-    void _encode(Buffer& buffer) {
+    void _encode(Buffer& buffer) const {
         std::uint32_t tmp = 0;
         std::memcpy(&tmp, &data_, 4);
         buffer.push_word<std::uint32_t, Size>(tmp) ;
@@ -216,7 +216,7 @@ public:
         std::memcpy(&data_, &word, 8);
     }
 
-    void _encode(Buffer& buffer) {
+    void _encode(Buffer& buffer) const {
         std::uint64_t tmp = 0;
         std::memcpy(&tmp, &data_, 8);
         buffer.push_word<std::uint64_t, Size>(tmp) ;
@@ -259,7 +259,7 @@ class Array {
         }
     }
 
-    void _encode(Buffer& buffer) {
+    void _encode(Buffer& buffer) const {
         for (int i=0; i<N; i++) {
             data_[i]._encode(buffer);
         }
@@ -304,7 +304,7 @@ class String {
         }
     }
 
-    void _encode(Buffer& buffer) {
+    void _encode(Buffer& buffer) const {
         Unsigned<std::uint32_t, 32>(data_.size())._encode(buffer);
         for (const auto& c: data_) {
             buffer.push_word<std::uint8_t, 8>(c);
@@ -345,7 +345,7 @@ public:
         data_ = buffer.get_word(GetSize());
     }
 
-    void _encode(Buffer& buffer) {
+    void _encode(Buffer& buffer) const {
         buffer.push_word<UnderlyingType, {{enum.get_packed_size()}}>(data_);
     }
 
@@ -404,7 +404,7 @@ struct {{struct.name}} {
         return {{struct.name}}::Decode(buffer);
     }
 
-    void _encode(Buffer& buffer) {
+    void _encode(Buffer& buffer) const {
     {%- for signal in struct.fields %}
         {{signal.name}}_._encode(buffer);
     {%- endfor %}
