@@ -23,48 +23,86 @@ bool all_tests_passed = true;
         exit(EXIT_FAILURE); \
     }
 
-CanFrame expected_frame = {
-    .id = 10,
-    .dlc = 2,
-    .data = {123, 0x12, 0xAB},
-};
-
 void test_encode_msg() {
     CanMsgFoo msg = {
         .s1 = 123,
         .s2 = 0xAB12,
     };
 
+    CanFrame expected_frame = {
+        .id = 10,
+        .dlc = 2,
+        .data = {123, 0x12, 0xAB},
+    };
+
     CanFrame frame = can_encode_msg_foo(&msg);
     VERIFY_TEST(frame.id == expected_frame.id);
 }
 
-void test_is_dev_msg() { VERIFY_TEST(can_is_ecu_msg(&expected_frame)); }
+void test_is_dev_msg() {
+    CanFrame test_frame = {
+        .id = 10,
+        .dlc = 2,
+        .data = {123, 0x12, 0xAB},
+    };
 
-void test_dlc(CanFrame *frame) { VERIFY_TEST(frame->dlc == 3); }
+    VERIFY_TEST(can_is_ecu_msg(&test_frame));
+}
+
+void test_dlc() {
+    CanFrame frame = {
+        .id = 10,
+        .dlc = 3,
+        .data = {123, 0x12, 0xAB},
+    };
+
+    VERIFY_TEST(frame.dlc == 3);
+}
 
 void test_decode_msg() {
+    CanFrame test_frame = {
+        .id = 10,
+        .dlc = 2,
+        .data = {123, 0x12, 0xAB},
+    };
+
     CanMsgFoo expected_msg = {
         .s1 = 123,
         .s2 = 0xAB12,
     };
 
-    CanMsgFoo msg = can_decode_msg_foo(&expected_frame);
+    CanMsgFoo msg = can_decode_msg_foo(&test_frame);
 
     bool signals_match = msg.s1 == expected_msg.s1 && msg.s2 == expected_msg.s2;
     VERIFY_TEST(signals_match);
 }
 
-int main() {
-    CanMsgFoo msg = {
-        .s1 = 123,
-        .s2 = 0xAB12,
+void test_float_value() {
+    CanMsgBar msg = {
+        .s1 = 3.14,
     };
-    CanFrame frame = can_encode_msg_foo(&msg);
 
+    CanFrame f = can_encode_msg_bar(&msg);
+    CanMsgBar decoded = can_decode_msg_bar(&f);
+
+    VERIFY_TEST(msg.s1 == decoded.s1);
+}
+
+void test_double_value() {
+    CanMsgBaz msg = {
+        .s1 = 3.14159265359,
+    };
+
+    CanFrame f = can_encode_msg_baz(&msg);
+    CanMsgBaz decoded = can_decode_msg_baz(&f);
+
+    VERIFY_TEST(msg.s1 == decoded.s1);
+}
+
+int main() {
     test_encode_msg();
     test_is_dev_msg();
-    test_dlc(&frame);
+    test_dlc();
     test_decode_msg();
 
     ASSERT_TESTS();
