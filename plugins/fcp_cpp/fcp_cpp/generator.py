@@ -39,6 +39,7 @@ from fcp.specs.type import (
     ComposedTypeCategory,
     ComposedType,
     DynamicArrayType,
+    OptionalType,
 )
 from fcp.encoding import make_encoder, EncodeablePiece, EncoderContext, Value
 
@@ -75,6 +76,9 @@ def to_wrapper_cpp_type(input: Type) -> str:
     elif isinstance(input, DynamicArrayType):
         underlying_type = to_wrapper_cpp_type(input.underlying_type)
         return f"DynamicArray<{underlying_type}>"
+    elif isinstance(input, OptionalType):
+        underlying_type = to_wrapper_cpp_type(input.underlying_type)
+        return f"Optional<{underlying_type}>"
 
     raise ValueError("Cannot convert type to C++ type")
 

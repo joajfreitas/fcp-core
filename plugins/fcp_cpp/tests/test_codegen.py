@@ -70,6 +70,7 @@ def get_fcp_config(name: str) -> str:
         "006_floating_point_values",
         "007_string",
         "008_dynamic_arrays",
+        "009_optional",
     ],
 )  # type: ignore
 def test_codegen(test_name: str) -> None:

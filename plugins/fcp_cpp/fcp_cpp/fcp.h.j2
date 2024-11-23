@@ -12,6 +12,7 @@
 #include <sstream>
 #include <algorithm>
 #include <cstring>
+#include <optional>
 
 namespace fcp {
 
@@ -379,6 +380,67 @@ private:
     std::vector<T> data_;
 };
 
+template<typename T>
+class Optional {
+    public:
+
+    Optional(): data_{} {}
+    Optional(const std::optional<T>& value): data_{value} {}
+
+    static Optional None() {
+        return Optional(std::nullopt);
+    }
+
+    static Optional Some(const T& value) {
+        return Optional(value);
+    }
+
+    Optional(Buffer& buffer) {
+        auto is_some = Unsigned<std::uint8_t, 8>(buffer).GetData();
+
+        if (is_some) {
+            data_ = T(buffer);
+        }
+        else {
+            data_ = std::nullopt;
+        }
+    }
+
+    void _encode(Buffer& buffer) const {
+        Unsigned<std::uint8_t, 8>(data_.has_value() ? 1 : 0)._encode(buffer);
+
+        if (data_.has_value()) {
+            data_.value()._encode(buffer);
+        }
+    }
+
+    std::optional<T> GetData() const {
+        return data_;
+    }
+
+    inline bool operator==(const Optional& rhs) const
+    {
+        return GetData() == rhs.GetData();
+    }
+
+    std::string to_string(std::string prefix="") const {
+        std::stringstream ss{};
+        if (data_.has_value()) {
+            ss << "Some(";
+            ss << data_.value().to_string();
+            ss << ")";
+        }
+        else {
+            ss << "None";
+        }
+
+        return ss.str();
+    }
+
+
+private:
+    std::optional<T> data_;
+};
 
 {% for enum in fcp.enums %}
 class {{enum.name}} {
