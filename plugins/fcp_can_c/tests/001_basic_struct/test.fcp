@@ -9,3 +9,24 @@ impl can for Foo {
     id: 10,
     device: "ecu",
 }
+
+struct Bar {
+    s1 @ 0: f32,
+}
+
+impl can for Bar {
+    id: 11,
+    device: "ecu",
+}
+
+struct Baz {
+    s1 @ 0: f64,
+}
+
+impl can for Baz {
+    id: 12,
+    device: "ecu",
+}
+
+
+
