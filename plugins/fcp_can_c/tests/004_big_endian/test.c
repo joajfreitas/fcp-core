@@ -59,9 +59,6 @@ void test_encode_msg_u16(CanFrame *f) {
         .dlc = 2,
     };
 
-    printf("frame: %x %x %x %x %x %x %x %x\n", f->data[0], f->data[1], f->data[2], f->data[3],
-           f->data[4], f->data[5], f->data[6], f->data[7]);
-
     VERIFY_TEST(compare_frames(f, &expected));
 }
 
@@ -93,10 +90,6 @@ void test_encode_msg_f32(CanFrame *f) {
         .data = {v.i >> 24, v.i >> 16, v.i >> 8, v.i, 0, 0, 0, 0},
         .dlc = 4,
     };
-
-    printf("-> %x \n", v.i);
-    printf("-> %x %x %x %x\n", f->data[0], f->data[1], f->data[2], f->data[3]);
-    fflush(stdout);
 
     VERIFY_TEST(compare_frames(f, &expected));
 }
