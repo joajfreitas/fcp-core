@@ -23,7 +23,7 @@
 from __future__ import annotations
 
 from serde import serde, strict
-from beartype.typing import Union
+from beartype.typing import Union, Dict
 from typing_extensions import Self, TypeAlias
 from enum import Enum
 
@@ -78,9 +78,13 @@ class BuiltinType(Type):
         """Check that type is a string."""
         return self.name == "str"
 
-    def reflection(self) -> str:
+    def reflection(self) -> Dict[str, str]:
         """Reflection."""
-        return self.name
+        return {
+            "name": self.name,
+            "type": self.type,
+            "size": 1,
+        }
 
 
 class ComposedTypeCategory(Enum):
@@ -108,9 +112,13 @@ class ComposedType(Type):
         else:
             raise ValueError("Signess of struct is meaningless")
 
-    def reflection(self) -> str:
+    def reflection(self) -> Dict[str, str]:
         """Reflection."""
-        return self.name
+        return {
+            "name": self.name,
+            "type": str(self.type),
+            "size": 1,
+        }
 
 
 @serde(type_check=strict)
@@ -130,9 +138,13 @@ class ArrayType(Type):
         """Type length in bits."""
         return int(self.underlying_type.get_length() * self.size)
 
-    def reflection(self) -> str:
+    def reflection(self) -> Dict[str,str]:
         """Reflection."""
-        return "[" + self.underlying_type.reflection() + "," + str(self.size) + "]"
+        return {
+            "name": self.name,
+            "type": self.type,
+            "size": self.size,
+        }
 
 
 @serde(type_check=strict)
@@ -150,9 +162,13 @@ class DynamicArrayType(Type):
         """Type length in bits."""
         raise ValueError("Cannot compute the size of a dynamic array")
 
-    def reflection(self) -> str:
+    def reflection(self) -> Dict[str,str]:
         """Reflection."""
-        return "[" + self.underlying_type.reflection() + "]"
+        return {
+            "name": self.underlying_type,
+            "type": self.type,
+            "size": 1,
+        }
 
 
 @serde(type_check=strict)
@@ -170,6 +186,10 @@ class OptionalType(Type):
         """Type length in bits."""
         raise ValueError("Cannot compute the size of an Optional ")
 
-    def reflection(self) -> str:
+    def reflection(self) -> Dict[str, str]:
         """Reflection."""
-        return "Optional[" + self.underlying_type.reflection() + "]"
+        return {
+            "name": self.underlying_type,
+            "type": self.type,
+            "size": 1,
+        }

@@ -28,7 +28,7 @@ uint8_t get_bit(Iterator input, uint32_t bit) {
 
 class Buffer {
 public:
-    Buffer(std::size_t size): buffer_((size + 7)/8), current_bit_{0} {}
+    explicit Buffer(std::size_t size): buffer_((size + 7)/8), current_bit_{0} {}
     Buffer(const std::vector<uint8_t>& buffer): buffer_{buffer}, current_bit_{0} {}
     template<typename Iterator>
     Buffer(Iterator first, Iterator last): buffer_{first, last}, current_bit_{0} {}
@@ -96,19 +96,19 @@ private:
 };
 }
 
-template<typename UnderlyingType, std::size_t Size>
+template<typename UnderlyingType, std::size_t BitSize>
 class Unsigned {
 public:
     Unsigned(): data_{0} {}
     Unsigned(UnderlyingType value): data_{value} {}
 
     static Unsigned Decode(Buffer& buffer) {
-        auto word = buffer.get_word(Size);
+        auto word = buffer.get_word(BitSize);
         return Unsigned(static_cast<UnderlyingType>(word));
     }
 
     void _encode(Buffer& buffer) const {
-        buffer.push_word<UnderlyingType, Size>(data_) ;
+        buffer.push_word<UnderlyingType, BitSize>(data_) ;
     }
 
     UnderlyingType GetData() const {
@@ -131,19 +131,19 @@ private:
 };
 
 
-template<typename UnderlyingType, std::size_t Size>
+template<typename UnderlyingType, std::size_t BitSize>
 class Signed {
 public:
     Signed(): data_{0}{}
     Signed(UnderlyingType value): data_{value} {}
 
     static Signed Decode(Buffer& buffer) {
-        auto word = buffer.get_word(Size, true);
+        auto word = buffer.get_word(BitSize, true);
         return Signed(static_cast<UnderlyingType>(word));
     }
 
     void _encode(Buffer& buffer) const {
-        buffer.push_word<UnderlyingType, Size>(data_) ;
+        buffer.push_word<UnderlyingType, BitSize>(data_) ;
     }
 
     UnderlyingType GetData() const {
@@ -168,13 +168,13 @@ private:
 class Float {
 public:
     using UnderlyingType = float;
-    static constexpr unsigned Size = 32;
+    static constexpr unsigned BitSize = 32;
 
     Float(): data_{0.0}{}
     Float(UnderlyingType value): data_{value} {}
 
     static Float Decode(Buffer& buffer) {
-        auto word = buffer.get_word(Size);
+        auto word = buffer.get_word(BitSize);
 
         UnderlyingType data{};
         std::memcpy(&data, &word, 4);
@@ -185,7 +185,7 @@ public:
     void _encode(Buffer& buffer) const {
         std::uint32_t tmp = 0;
         std::memcpy(&tmp, &data_, 4);
-        buffer.push_word<std::uint32_t, Size>(tmp) ;
+        buffer.push_word<std::uint32_t, BitSize>(tmp) ;
     }
 
     UnderlyingType GetData() const {
@@ -211,13 +211,13 @@ private:
 class Double {
 public:
     using UnderlyingType = double;
-    static constexpr unsigned Size = 64;
+    static constexpr unsigned BitSize = 64;
 
     Double(): data_{0.0}{}
     Double(UnderlyingType value): data_{value} {}
 
     static Double Decode(Buffer& buffer) {
-        auto word = buffer.get_word(Size);
+        auto word = buffer.get_word(BitSize);
 
         UnderlyingType data{};
         std::memcpy(&data, &word, 8);
@@ -228,7 +228,7 @@ public:
     void _encode(Buffer& buffer) const {
         std::uint64_t tmp = 0;
         std::memcpy(&tmp, &data_, 8);
-        buffer.push_word<std::uint64_t, Size>(tmp) ;
+        buffer.push_word<std::uint64_t, BitSize>(tmp) ;
     }
 
     UnderlyingType GetData() const {
@@ -257,9 +257,8 @@ class Array {
 
     Array(): data_{} {}
     Array(std::array<T, N> value): data_{value} {}
-
     Array(std::initializer_list<T> ls) {
-    std::transform(ls.begin(), ls.end(), data_.begin(), [](const T& x){return x;});
+        std::copy(ls.begin(), ls.end(), data_.begin());
     }
 
     static Array Decode(Buffer& buffer) {
@@ -313,7 +312,7 @@ class String {
         std::string data{};
         auto len = Unsigned<std::uint32_t, 32>::Decode(buffer).GetData();
         for (int i=0; i<len; i++) {
-            data += buffer.get_word(8);
+            data.push_back(Unsigned<std::uint8_t, 8>::Decode(buffer).GetData());
         }
 
         return String(data);
@@ -322,7 +321,7 @@ class String {
     void _encode(Buffer& buffer) const {
         Unsigned<std::uint32_t, 32>(data_.size())._encode(buffer);
         for (const auto& c: data_) {
-            buffer.push_word<std::uint8_t, 8>(c);
+            Unsigned<std::uint8_t, 8>(c)._encode(buffer);
         }
     }
 
