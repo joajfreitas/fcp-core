@@ -655,7 +655,7 @@ private:
 struct StructField {
     using NameType = String;
     using Field_idType = Unsigned<std::uint32_t, 32>;
-    using TypeType = Type;
+    using TypeType = DynamicArray<Type>;
     using UnitType = Optional<String>;
     using Min_valueType = Optional<Double>;
     using Max_valueType = Optional<Double>;

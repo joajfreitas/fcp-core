@@ -19,7 +19,7 @@ struct Type {
 struct StructField {
     name @0: str,
     field_id @1: u32,
-    type @2: Type,
+    type @2: [Type],
     unit @3: Optional[str],
     min_value @4: Optional[f64],
     max_value @5: Optional[f64],
