@@ -23,7 +23,7 @@
 from __future__ import annotations
 
 from serde import serde, strict
-from beartype.typing import Union, Dict, List
+from beartype.typing import Union, Dict, List, Any
 from typing_extensions import Self, TypeAlias
 from enum import Enum
 
@@ -168,13 +168,15 @@ class DynamicArrayType(Type):
         """Type length in bits."""
         raise ValueError("Cannot compute the size of a dynamic array")
 
-    def reflection(self) -> List[Dict[str, str]]:
+    def reflection(self) -> List[Dict[str, Any]]:
         """Reflection."""
-        return [{
-            "name": self.underlying_type,
-            "type": self.type,
-            "size": 1,
-        }] + self.underlying_type.reflection()
+        return [
+            {
+                "name": self.type,
+                "type": self.type,
+                "size": 1,
+            }
+        ] + self.underlying_type.reflection()
 
 
 @serde(type_check=strict)
@@ -194,8 +196,10 @@ class OptionalType(Type):
 
     def reflection(self) -> List[Dict[str, str]]:
         """Reflection."""
-        return [{
-            "name": self.underlying_type,
-            "type": self.type,
-            "size": 1,
-        }] + self.underlying_type.reflection()
+        return [
+            {
+                "name": self.type,
+                "type": self.type,
+                "size": 1,
+            }
+        ] + self.underlying_type.reflection()
