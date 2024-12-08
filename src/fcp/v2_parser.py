@@ -209,7 +209,9 @@ class FcpV2Transformer(Transformer):  # type: ignore
         elif self.fcp.get_enum(typename).is_some():
             type_category = ComposedTypeCategory.Enum
         else:
-            raise ValueError(f"Type '{typename}' cannot be found.")
+            # DANGER
+            return ComposedType(typename, ComposedTypeCategory.Struct)
+            # raise ValueError(f"Type '{typename}' cannot be found.")
 
         return ComposedType(typename, type_category)  # type: ignore
 

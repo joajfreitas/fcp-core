@@ -33,6 +33,7 @@ from fcp.specs.impl import Impl
 from fcp.codegen import CodeGenerator
 from fcp.verifier import Verifier
 from fcp.specs.v2 import FcpV2
+from fcp.v2_parser import get_fcp
 from fcp.specs.type import (
     BuiltinType,
     ArrayType,
@@ -42,6 +43,7 @@ from fcp.specs.type import (
     OptionalType,
 )
 from fcp.encoding import make_encoder, EncodeablePiece, EncoderContext, Value
+from fcp.reflection import get_reflection_path
 
 
 def _to_highest_power_of_two(n: int) -> int:
@@ -100,9 +102,23 @@ class Generator(CodeGenerator):
     def __init__(self) -> None:
         pass
 
+    def _decoders_header(self) -> str:
+        return (
+            (Path(os.path.dirname(os.path.abspath(__file__))) / "decoders.h.j2")
+            .open()
+            .read()
+        )
+
     def _fcp_header(self) -> str:
         return (
             (Path(os.path.dirname(os.path.abspath(__file__))) / "fcp.h.j2")
+            .open()
+            .read()
+        )
+
+    def _buffer_header(self) -> str:
+        return (
+            (Path(os.path.dirname(os.path.abspath(__file__))) / "buffer.h.j2")
             .open()
             .read()
         )
@@ -114,11 +130,21 @@ class Generator(CodeGenerator):
             .read()
         )
 
+    def _dynamic_header(self) -> str:
+        return (
+            (Path(os.path.dirname(os.path.abspath(__file__))) / "dynamic.h.j2")
+            .open()
+            .read()
+        )
+
     def generate(self, fcp: FcpV2, ctx: Any) -> Dict[str, Union[str, Path]]:
         """Generate cpp files."""
         loader = jinja2.DictLoader(
             {
+                "decoders_header": self._decoders_header(),
                 "fcp_header": self._fcp_header(),
+                "buffer_header": self._buffer_header(),
+                "dynamic_header": self._dynamic_header(),
                 "can_header": self._can_header(),
             }
         )
@@ -126,13 +152,37 @@ class Generator(CodeGenerator):
         env = jinja2.Environment(loader=loader)
         env.globals["to_wrapper_cpp_type"] = to_wrapper_cpp_type
 
+        fcp_reflection, _ = get_fcp(get_reflection_path()).unwrap()
+
         return [
+            {
+                "type": "file",
+                "path": Path(ctx.get("output")) / "decoders.h",
+                "contents": env.get_template("decoders_header").render(),
+            },
             {
                 "type": "file",
                 "path": Path(ctx.get("output")) / "fcp.h",
                 "contents": env.get_template("fcp_header").render(
                     {"fcp": fcp, "structs": fcp.structs}
                 ),
+            },
+            {
+                "type": "file",
+                "path": Path(ctx.get("output")) / "buffer.h",
+                "contents": env.get_template("buffer_header").render(),
+            },
+            {
+                "type": "file",
+                "path": Path(ctx.get("output")) / "reflection.h",
+                "contents": env.get_template("fcp_header").render(
+                    {"fcp": fcp_reflection, "structs": fcp_reflection.structs}
+                ),
+            },
+            {
+                "type": "file",
+                "path": Path(ctx.get("output")) / "dynamic.h",
+                "contents": env.get_template("dynamic_header").render(),
             },
             # {
             #    "type": "file",
