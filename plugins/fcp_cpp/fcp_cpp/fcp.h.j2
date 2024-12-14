@@ -1,5 +1,4 @@
-#ifndef __FCP_H__
-#define __FCP_H__
+#pragma once
 
 #include <vector>
 #include <cstdint>
@@ -38,6 +37,12 @@ public:
 
     void _encode(Buffer& buffer) const {
         buffer.push_word<UnderlyingType, {{enum.get_packed_size()}}>(data_);
+    }
+
+    Buffer encode() {
+        Buffer buffer{0};
+        _encode(buffer);
+        return buffer;
     }
 
     static std::size_t GetSize() {
@@ -135,5 +140,3 @@ private:
 };
 {% endfor -%}
 } // namespace fcp
-
-#endif // __FCP_CAN_H__
