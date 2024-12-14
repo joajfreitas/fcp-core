@@ -128,6 +128,13 @@ class Generator(CodeGenerator):
             .read()
         )
 
+    def _dynamic_header(self) -> str:
+        return (
+            (Path(os.path.dirname(os.path.abspath(__file__))) / "dynamic.h.j2")
+            .open()
+            .read()
+        )
+
     def generate(self, fcp: FcpV2, ctx: Any) -> Dict[str, Union[str, Path]]:
         """Generate cpp files."""
         loader = jinja2.DictLoader(
@@ -136,6 +143,7 @@ class Generator(CodeGenerator):
                 "can_header": self._can_header(),
                 "buffer_header": self._buffer_header(),
                 "decoders_header": self._decoders_header(),
+                "dynamic_header": self._dynamic_header(),
             }
         )
 
@@ -159,6 +167,11 @@ class Generator(CodeGenerator):
                 "type": "file",
                 "path": Path(ctx.get("output")) / "decoders.h",
                 "contents": env.get_template("decoders_header").render(),
+            },
+            {
+                "type": "file",
+                "path": Path(ctx.get("output")) / "dynamic.h",
+                "contents": env.get_template("dynamic_header").render(),
             },
             # {
             #    "type": "file",
