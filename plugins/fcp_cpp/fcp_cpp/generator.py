@@ -114,12 +114,20 @@ class Generator(CodeGenerator):
             .read()
         )
 
+    def _buffer_header(self) -> str:
+        return (
+            (Path(os.path.dirname(os.path.abspath(__file__))) / "buffer.h.j2")
+            .open()
+            .read()
+        )
+
     def generate(self, fcp: FcpV2, ctx: Any) -> Dict[str, Union[str, Path]]:
         """Generate cpp files."""
         loader = jinja2.DictLoader(
             {
                 "fcp_header": self._fcp_header(),
                 "can_header": self._can_header(),
+                "buffer_header": self._buffer_header(),
             }
         )
 
@@ -133,6 +141,11 @@ class Generator(CodeGenerator):
                 "contents": env.get_template("fcp_header").render(
                     {"fcp": fcp, "structs": fcp.structs}
                 ),
+            },
+            {
+                "type": "file",
+                "path": Path(ctx.get("output")) / "buffer.h",
+                "contents": env.get_template("buffer_header").render(),
             },
             # {
             #    "type": "file",
