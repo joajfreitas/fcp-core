@@ -88,7 +88,9 @@ def test_source_files_structure() -> None:
     for _, _, file_names in os.walk("src/fcp"):
         for file_name in file_names:
             if os.path.splitext(file_name)[1] == ".py":
-                assert file_name in code_blocks[1]
+                assert (
+                    file_name in code_blocks[1]
+                ), f"Couldn't find file {file_name} in docs/hacking.rst"
 
 
 def test_dir_tree_structure() -> None:
@@ -96,7 +98,7 @@ def test_dir_tree_structure() -> None:
 
     code_blocks = [block for _, block in code_blocks]
 
-    for _, dirs, _ in itertools.chain(os.walk("src"), os.walk("plugins")):
+    for _, dirs, y in itertools.chain(os.walk("src"), os.walk("plugins")):
         for dir in dirs:
             if (
                 dir.startswith(".")
@@ -105,4 +107,6 @@ def test_dir_tree_structure() -> None:
             ):
                 continue
 
-            assert dir in code_blocks[0]
+            assert (
+                dir in code_blocks[0]
+            ), f"Couldn't find directory {dir} in docs/hacking.rst"
