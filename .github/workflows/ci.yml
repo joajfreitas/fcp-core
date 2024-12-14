@@ -21,6 +21,7 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - uses: yezz123/setup-uv@v4
+            - run: sudo apt install nlohmann-json3-dev
             - run: make RUN_UNDER="uvx -p 3.12" ci
 
 
@@ -32,6 +33,7 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - uses: yezz123/setup-uv@v4
+            - run: sudo apt install nlohmann-json3-dev
             - run: make RUN_UNDER="uvx -p ${{ matrix.python }}" test
 
     docs:
