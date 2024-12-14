@@ -30,9 +30,12 @@ import pytest
 from beartype.typing import List, Dict, Any
 
 from fcp.v2_parser import get_fcp
+from fcp.specs.v2 import FcpV2
 from fcp.codegen import handle_result
 from fcp_cpp import Generator
 from fcp.maybe import Some, Nothing, Maybe
+from fcp.serde import encode as serde_encode
+from fcp.reflection import get_reflection_schema
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -59,6 +62,10 @@ def get_fcp_config(name: str) -> str:
     return os.path.join(config_dir, name + ".fcp")
 
 
+def get_fcp_reflection() -> FcpV2:
+    return get_reflection_schema().unwrap()[0]
+
+
 @pytest.mark.parametrize(
     "test_name",
     [
@@ -75,12 +82,8 @@ def get_fcp_config(name: str) -> str:
 )  # type: ignore
 def test_codegen(test_name: str) -> None:
     with tempfile.TemporaryDirectory() as tempdirname:
-        print(tempdirname, type(tempdirname))
-
         fcp_v2, _ = get_fcp(Path(get_fcp_config(test_name))).unwrap()
-
         generator = Generator()
-
         results = generator.generate(fcp_v2, {"output": tempdirname})
 
         for result in results:
@@ -107,6 +110,51 @@ def test_codegen(test_name: str) -> None:
             cwd=tempdirname,
             capture_output=True,
         )
+        print(out.stderr.decode("utf-8"))
+        assert out.returncode == 0
+
+        out = subprocess.run(["./" + test_name], cwd=tempdirname, capture_output=True)
+        print(out.stdout.decode("utf-8"))
+        assert out.returncode == 0
+
+
+@pytest.mark.parametrize("test_name", ["001_basic_struct"])  # type: ignore
+def test_dynamic_serialization(test_name: str) -> None:
+    with tempfile.TemporaryDirectory() as tempdirname:
+        fcp_v2, _ = get_fcp(Path(get_fcp_config(test_name))).unwrap()
+
+        bytearray = serde_encode(get_fcp_reflection(), "Fcp", fcp_v2.reflection())
+        with open(Path(tempdirname) / "output.bin", "wb") as f:
+            f.write(bytearray)
+
+        generator = Generator()
+        results = generator.generate(fcp_v2, {"output": tempdirname})
+
+        for result in results:
+            handle_result(result)
+
+        shutil.copyfile(
+            Path(THIS_DIR) / f"{test_name}_dynamic.cpp",
+            Path(tempdirname) / f"{test_name}_dynamic.cpp",
+        )
+
+        shutil.copyfile(
+            Path(THIS_DIR) / "utest.h",
+            Path(tempdirname) / "utest.h",
+        )
+
+        out = subprocess.run(
+            [
+                "/usr/bin/g++",
+                "--std=c++17",
+                f"{test_name}_dynamic.cpp",
+                "-o",
+                test_name,
+            ],
+            cwd=tempdirname,
+            capture_output=True,
+        )
+
         print(out.stderr.decode("utf-8"))
         assert out.returncode == 0
 
