@@ -10,10 +10,16 @@ struct MetaData {
     filename @6: str,
 }
 
+struct Type {
+    name @0: str,
+    size @1: u32,
+    type @2: str,
+}
+
 struct StructField {
     name @0: str,
     field_id @1: u32,
-    type @2: str,
+    type @2: [Type],
     unit @3: Optional[str],
     min_value @4: Optional[f64],
     max_value @5: Optional[f64],

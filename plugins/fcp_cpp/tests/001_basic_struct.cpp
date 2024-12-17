@@ -20,7 +20,3 @@ UTEST(BasicStruct, DecodeSimpleUnsignedStruct) {
     auto expected = fcp::S1{1,2};
     EXPECT_TRUE(foo==expected);
 }
-
-//UTEST(BasicStruct, GetDeviceName) {
-//    EXPECT_TRUE(fcp::can::get_device_name(10) == "ecu1");
-//}

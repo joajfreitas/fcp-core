@@ -33,6 +33,7 @@ from fcp.specs.impl import Impl
 from fcp.codegen import CodeGenerator
 from fcp.verifier import Verifier
 from fcp.specs.v2 import FcpV2
+from fcp.v2_parser import get_fcp
 from fcp.specs.type import (
     BuiltinType,
     ArrayType,
@@ -42,6 +43,7 @@ from fcp.specs.type import (
     OptionalType,
 )
 from fcp.encoding import make_encoder, EncodeablePiece, EncoderContext, Value
+from fcp.reflection import get_reflection_schema
 
 
 def _to_highest_power_of_two(n: int) -> int:
@@ -100,26 +102,33 @@ class Generator(CodeGenerator):
     def __init__(self) -> None:
         pass
 
-    def _fcp_header(self) -> str:
+    def _get_template(self, filename: str) -> str:
         return (
-            (Path(os.path.dirname(os.path.abspath(__file__))) / "fcp.h.j2")
-            .open()
-            .read()
-        )
-
-    def _can_header(self) -> str:
-        return (
-            (Path(os.path.dirname(os.path.abspath(__file__))) / "fcp_can.h.j2")
-            .open()
-            .read()
+            (Path(os.path.dirname(os.path.abspath(__file__))) / filename).open().read()
         )
 
     def generate(self, fcp: FcpV2, ctx: Any) -> Dict[str, Union[str, Path]]:
         """Generate cpp files."""
+        fcp_reflection, _ = get_reflection_schema().unwrap()
+
+        output_files = [
+            ("fcp.h.j2", "fcp.h", {"fcp": fcp, "structs": fcp.structs}),
+            ("buffer.h.j2", "buffer.h", {}),
+            ("decoders.h.j2", "decoders.h", {}),
+            ("dynamic.h.j2", "dynamic.h", {}),
+            (
+                "fcp.h.j2",
+                "reflection.h",
+                {"fcp": fcp_reflection, "structs": fcp_reflection.structs},
+            ),
+        ]
+
         loader = jinja2.DictLoader(
             {
-                "fcp_header": self._fcp_header(),
-                "can_header": self._can_header(),
+                template_name: self._get_template(template_name)
+                for template_name in set(
+                    [template_name for template_name, _, _ in output_files]
+                )
             }
         )
 
@@ -129,18 +138,10 @@ class Generator(CodeGenerator):
         return [
             {
                 "type": "file",
-                "path": Path(ctx.get("output")) / "fcp.h",
-                "contents": env.get_template("fcp_header").render(
-                    {"fcp": fcp, "structs": fcp.structs}
-                ),
-            },
-            # {
-            #    "type": "file",
-            #    "path": Path(ctx.get("output")) / "fcp_can.h",
-            #    "contents": env.get_template("can_header").render(
-            #        {"fcp": fcp, "can_encodings": can_encodings, "structs": structs}
-            #    ),
-            # },
+                "path": Path(ctx.get("output")) / output_file,
+                "contents": env.get_template(template_name).render(template_arguments),
+            }
+            for template_name, output_file, template_arguments in output_files
         ]
 
     def register_checks(self, verifier: Verifier) -> NoReturn:  # type: ignore
