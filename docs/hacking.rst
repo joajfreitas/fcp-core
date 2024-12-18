@@ -18,7 +18,8 @@ Directory structure
     │   │       ├── 001_basic_struct    - Basic struct test for CAN C
     │   │       ├── 002_nested_enum     - Nested enum test for CAN C
     │   │       ├── 003_msg_scheduling  - Msg scheduling test for CAN C
-    │   │       └── 004_big_endian      - Testing big endian encoding for CAN C
+    │   │       └── 004_little_endian   - Testing little endian encoding for CAN C all data types
+    │   │       └── 005_big_endian      - Testing big endian encoding for CAN C all data types
     │   ├── fcp_cpp                     - Example plugin
     │   │   └── fcp_cpp                 - Source for fcp_dbc
     │   ├── fcp_dbc                     - CAN DBC generator

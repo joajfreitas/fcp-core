@@ -1,0 +1,131 @@
+version: "3"
+
+struct U8B {
+    val @0: u8,
+}
+
+impl can for U8B {
+    id: 11,
+    device: "ecu",
+
+    signal val {
+        endianness: "big",
+    },
+}
+
+struct U16B {
+    val @0: u16,
+}
+
+impl can for U16B {
+    id: 12,
+    device: "ecu",
+
+    signal val {
+        endianness: "big",
+    },
+}
+
+struct U32B {
+    val @0: u32,
+}
+
+impl can for U32B {
+    id: 13,
+    device: "ecu",
+
+    signal val {
+        endianness: "big",
+    },
+}
+
+struct U64B {
+    val @0: u64,
+}
+
+impl can for U64B {
+    id: 14,
+    device: "ecu",
+
+    signal val {
+        endianness: "big",
+    },
+}
+
+struct I8B {
+    val @0: i8,
+}
+
+impl can for I8B {
+    id: 15,
+    device: "ecu",
+
+    signal val {
+        endianness: "big",
+    },
+}
+
+struct I16B {
+    val @0: i16,
+}
+
+impl can for I16B {
+    id: 16,
+    device: "ecu",
+
+    signal val {
+        endianness: "big",
+    },
+}
+
+struct I32B {
+    val @0: i32,
+}
+
+impl can for I32B {
+    id: 17,
+    device: "ecu",
+
+    signal val {
+        endianness: "big",
+    },
+}
+
+struct I64B {
+    val @0: i64,
+}
+
+impl can for I64B {
+    id: 18,
+    device: "ecu",
+
+    signal val {
+        endianness: "big",
+    },
+}
+
+struct F32B {
+    val @0: f32,
+}
+
+impl can for F32B {
+    id: 19,
+    device: "ecu",
+
+    signal val {
+        endianness: "big",
+    },
+}
+
+struct F64B {
+    val @0: f64,
+}
+
+impl can for F64B {
+    id: 20,
+    device: "ecu",
+
+    signal val {
+        endianness: "big",
+    },
+}

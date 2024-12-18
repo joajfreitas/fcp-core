@@ -1,0 +1,91 @@
+version: "3"
+
+struct U8L {
+    val @0: u8,
+}
+
+impl can for U8L {
+    id: 1,
+    device: "ecu",
+}
+
+struct U16L {
+    val @0: u16,
+}
+
+impl can for U16L {
+    id: 2,
+    device: "ecu",
+}
+
+struct U32L {
+    val @0: u32,
+}
+
+impl can for U32L {
+    id: 3,
+    device: "ecu",
+}
+
+struct U64L {
+    val @0: u64,
+}
+
+impl can for U64L {
+    id: 4,
+    device: "ecu",
+}
+
+struct I8L {
+    val @0: i8,
+}
+
+impl can for I8L {
+    id: 5,
+    device: "ecu",
+}
+
+struct I16L {
+    val @0: i16,
+}
+
+impl can for I16L {
+    id: 6,
+    device: "ecu",
+}
+
+struct I32L {
+    val @0: i32,
+}
+
+impl can for I32L {
+    id: 7,
+    device: "ecu",
+}
+
+struct I64L {
+    val @0: i64,
+}
+
+impl can for I64L {
+    id: 8,
+    device: "ecu",
+}
+
+struct F32L {
+    val @0: f32,
+}
+
+impl can for F32L {
+    id: 9,
+    device: "ecu",
+}
+
+struct F64L {
+    val @0: f64,
+}
+
+impl can for F64L {
+    id: 10,
+    device: "ecu",
+}
