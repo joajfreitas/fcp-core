@@ -308,7 +308,7 @@ uint64_t can_encode_signal_from_float(float signal, uint32_t start, uint32_t len
 
 int64_t can_decode_signal_as_int64_t(const CanFrame *msg, uint32_t start, uint32_t length,
                                      float scale, float offset, bool is_big_endian) {
-    int64_t bitfield = bitfield_sign_conv(get_bitfield(can_word(msg), start, length), length);
+    int64_t bitfield = get_bitfield(can_word(msg), start, length);
     if (is_big_endian) bitfield = swap_bytes_int(bitfield, I64);
 
     return apply_linear_int64_t(bitfield, scale, offset);

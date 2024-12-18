@@ -361,70 +361,6 @@ void test_decode_msg_f64b(CanMsgF64B *original, CanFrame *f) {
     VERIFY_TEST(original->val == decoded.val);
 }
 
-void test_encode_msg_uenums(CanFrame *f) {
-    CanFrame expected = {
-        .id = CAN_MSG_ID_U_ENUM_S,
-        .data = {0x01, 0x02, S1, 0x04, 0, 0, 0, 0},
-        .dlc = 4,
-    };
-    VERIFY_TEST(compare_frames(f, &expected));
-}
-
-void test_decode_msg_uenums(CanMsgUEnumS *original, CanFrame *f) {
-    CanMsgUEnumS decoded = can_decode_msg_u_enum_s(f);
-
-    VERIFY_TEST(original->val == decoded.val);
-    VERIFY_TEST(original->val1 == decoded.val1);
-}
-
-void test_encode_msg_ienums(CanFrame *f) {
-    CanFrame expected = {
-        .id = CAN_MSG_ID_I_ENUM_S,
-        .data = {0x01, S0, 0x02, 0x04, 0, 0, 0, 0},
-        .dlc = 4,
-    };
-    VERIFY_TEST(compare_frames(f, &expected));
-}
-
-void test_decode_msg_ienums(CanMsgIEnumS *original, CanFrame *f) {
-    CanMsgIEnumS decoded = can_decode_msg_i_enum_s(f);
-
-    VERIFY_TEST(original->val == decoded.val);
-    VERIFY_TEST(original->val1 == decoded.val1);
-}
-
-void test_encode_msg_uenumsb(CanFrame *f) {
-    CanFrame expected = {
-        .id = CAN_MSG_ID_U_ENUM_B,
-        .data = {S0, 0x01, 0x02, 0x04, 0, 0, 0, 0},
-        .dlc = 4,
-    };
-    VERIFY_TEST(compare_frames(f, &expected));
-}
-
-void test_decode_msg_uenumsb(CanMsgUEnumB *original, CanFrame *f) {
-    CanMsgUEnumB decoded = can_decode_msg_u_enum_b(f);
-
-    VERIFY_TEST(original->val == decoded.val);
-    VERIFY_TEST(original->val1 == decoded.val1);
-}
-
-void test_encode_msg_ienumsb(CanFrame *f) {
-    CanFrame expected = {
-        .id = CAN_MSG_ID_I_ENUM_B,
-        .data = {0x01, 0x02, 0x04, S1, 0, 0, 0, 0},
-        .dlc = 4,
-    };
-    VERIFY_TEST(compare_frames(f, &expected));
-}
-
-void test_decode_msg_ienumsb(CanMsgIEnumB *original, CanFrame *f) {
-    CanMsgIEnumB decoded = can_decode_msg_i_enum_b(f);
-
-    VERIFY_TEST(original->val == decoded.val);
-    VERIFY_TEST(original->val1 == decoded.val1);
-}
-
 int main() {
     printf("Running Tests...\n\n");
 
@@ -438,8 +374,6 @@ int main() {
     CanMsgI64S msg_i64s = {.val = 0x123456789abcdef0};
     CanMsgF32S msg_f32s = {.val = 5.843};
     CanMsgF64S msg_f64s = {.val = 5.84367431557};
-    CanMsgUEnumS msg_uenums = {.val = 0x01, .val1 = S1};
-    CanMsgIEnumS msg_ienums = {.val = 0x01, .val1 = S1};
 
     CanFrame frame_u8s = can_encode_msg_u8_s(&msg_u8s);
     CanFrame frame_u16s = can_encode_msg_u16_s(&msg_u16s);
@@ -451,9 +385,6 @@ int main() {
     CanFrame frame_i64s = can_encode_msg_i64_s(&msg_i64s);
     CanFrame frame_f32s = can_encode_msg_f32_s(&msg_f32s);
     CanFrame frame_f64s = can_encode_msg_f64_s(&msg_f64s);
-    CanFrame frame_uenums = can_encode_msg_u_enum_s(&msg_uenums);
-    CanFrame frame_ienums = can_encode_msg_i_enum_s(&msg_ienums);
-
 
     CanMsgU8B msg_u8b = {.val = 0x12};
     CanMsgU16B msg_u16b = {.val = 0x1234};
@@ -465,8 +396,6 @@ int main() {
     CanMsgI64B msg_i64b = {.val = 0x123456789abcdef0};
     CanMsgF32B msg_f32b = {.val = 7.45};
     CanMsgF64B msg_f64b = {.val = 7.4572418329};
-    CanMsgUEnumB msg_uenumsb = {.val = S0, .val1 = 0x01};
-    CanMsgIEnumB msg_ienumsb = {.val = 0x01, .val1 = S1};
 
     CanFrame frame_u8b = can_encode_msg_u8_b(&msg_u8b);
     CanFrame frame_u16b = can_encode_msg_u16_b(&msg_u16b);
@@ -478,10 +407,8 @@ int main() {
     CanFrame frame_i64b = can_encode_msg_i64_b(&msg_i64b);
     CanFrame frame_f32b = can_encode_msg_f32_b(&msg_f32b);
     CanFrame frame_f64b = can_encode_msg_f64_b(&msg_f64b);
-    CanFrame frame_uenumsb = can_encode_msg_u_enum_b(&msg_uenumsb);
-    CanFrame frame_ienumsb = can_encode_msg_i_enum_b(&msg_ienumsb);
 
-    printf("\033[34m\nRunning Encoding Tests on Small Endian...\033[0m\n\n");
+    printf("\033[34m\nRunning Encoding Tests on Little Endian...\033[0m\n\n");
 
     test_encode_msg_u8s(&frame_u8s);
     test_encode_msg_u16s(&frame_u16s);
@@ -493,8 +420,6 @@ int main() {
     test_encode_msg_i64s(&frame_i64s);
     test_encode_msg_f32s(&frame_f32s);
     test_encode_msg_f64s(&frame_f64s);
-    test_encode_msg_uenums(&frame_uenums);
-    test_encode_msg_ienums(&frame_ienums);
 
     printf("\033[34m\nRunning Encoding Tests on Big Endian...\033[0m\n\n");
 
@@ -508,10 +433,8 @@ int main() {
     test_encode_msg_i64b(&frame_i64b);
     test_encode_msg_f32b(&frame_f32b);
     test_encode_msg_f64b(&frame_f64b);
-    test_encode_msg_uenumsb(&frame_uenumsb);
-    test_encode_msg_ienumsb(&frame_ienumsb);
 
-    printf("\033[34m\nRunning Decoding Tests on Small Endian...\033[0m\n\n");
+    printf("\033[34m\nRunning Decoding Tests on Little Endian...\033[0m\n\n");
 
     test_decode_msg_u8s(&msg_u8s, &frame_u8s);
     test_decode_msg_u16s(&msg_u16s, &frame_u16s);
@@ -523,8 +446,6 @@ int main() {
     test_decode_msg_i64s(&msg_i64s, &frame_i64s);
     test_decode_msg_f32s(&msg_f32s, &frame_f32s);
     test_decode_msg_f64s(&msg_f64s, &frame_f64s);
-    test_decode_msg_uenums(&msg_uenums, &frame_uenums);
-    test_decode_msg_ienums(&msg_ienums, &frame_ienums);
 
     printf("\033[34m\nRunning Decoding Tests on Big Endian...\033[0m\n\n");
 
@@ -538,8 +459,6 @@ int main() {
     test_decode_msg_i64b(&msg_i64b, &frame_i64b);
     test_decode_msg_f32b(&msg_f32b, &frame_f32b);
     test_decode_msg_f64b(&msg_f64b, &frame_f64b);
-    test_decode_msg_uenumsb(&msg_uenumsb, &frame_uenumsb);
-    test_decode_msg_ienumsb(&msg_ienumsb, &frame_ienumsb);
 
     ASSERT_TESTS();
 

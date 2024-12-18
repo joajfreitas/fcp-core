@@ -7,7 +7,7 @@ SRCS = $(SRCDIR)/test.c $(wildcard $(LIBDIR)/*.c)
 OBJS = $(SRCS:.c=.o)
 OUTPUT = test
 
-CFLAGS = -I$(LIBDIR) -Wall
+CFLAGS = -I$(LIBDIR) -Wall 
 
 all: $(OUTPUT)
 
