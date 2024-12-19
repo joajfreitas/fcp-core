@@ -4,57 +4,187 @@
         "schema": "001_basic_values.fcp",
         "tests": [
             {
-                "name": "s1",
+                "name": "s1_zeroes",
                 "datatype": "S1",
-                "decoded": {
-                    "s0": {"value": 0},
-                    "s1": {"value": 0}
-                },
+                "decoded": [
+                    {"name": "s0", "type": "u8", "value": 0},
+                    {"name": "s1", "type": "i8", "value": 0}
+                ],
                 "encoded": {"value": [0, 0]}
             },
             {
-                "name": "s2",
+                "name": "s1_highest",
+                "datatype": "S1",
+                "decoded": [
+                    {"name": "s0", "type": "u8", "value": 255},
+                    {"name": "s1", "type": "i8", "value": 127}
+                ],
+                "encoded": {"value": [0xff, 0x7f]}
+            },
+            {
+                "name": "s1_lowest",
+                "datatype": "S1",
+                "decoded": [
+                    {"name": "s0", "type": "u8", "value": 0},
+                    {"name": "s1", "type": "i8", "value": -128}
+                ],
+                "encoded": {"value": [0x0, 0x80]}
+            },
+            {
+                "name": "s2_zeroes",
                 "datatype": "S2",
-                "decoded": {
-                    "s0": {"value": 0},
-                    "s1": {"value": 0}
-                },
+                "decoded": [
+                    {"name": "s0", "type": "u16", "value": 0},
+                    {"name": "s1", "type": "i16", "value": 0}
+                ],
                 "encoded": {"value": [0, 0, 0, 0]}
             },
             {
-                "name": "s3",
+                "name": "s2_highest",
+                "datatype": "S2",
+                "decoded": [
+                    {"name": "s0", "type": "u16", "value": 65535},
+                    {"name": "s1", "type": "i16", "value": 32767}
+                ],
+                "encoded": {"value": [0xff, 0xff, 0xff, 0x7f]}
+            },
+            {
+                "name": "s2_lowest",
+                "datatype": "S2",
+                "decoded": [
+                    {"name": "s0", "type": "u16", "value": 0},
+                    {"name": "s1", "type": "i16", "value": -32768}
+                ],
+                "encoded": {"value": [0x0, 0x0, 0x00, 0x80]}
+            },
+            {
+                "name": "s3_zeroes",
                 "datatype": "S3",
-                "decoded": {
-                    "s0": {"value": 0},
-                    "s1": {"value": 0}
-                },
+                "decoded": [
+                    {"name": "s0", "type": "u32", "value": 0},
+                    {"name": "s1", "type": "i32", "value": 0}
+                ],
                 "encoded": {"value": [0,0,0,0,0,0,0,0]}
             },
             {
-                "name": "s4",
+                "name": "s3_highest",
+                "datatype": "S3",
+                "decoded": [
+                    {"name": "s0", "type": "u32", "value": 4294967295},
+                    {"name": "s1", "type": "i32", "value": 2147483647}
+                ],
+                "encoded": {"value": [0xff,0xff,0xff,0xff,0xff,0xff,0xff,0x7f]}
+            },
+            {
+                "name": "s3_lowest",
+                "datatype": "S3",
+                "decoded": [
+                    {"name": "s0", "type": "u32", "value": 0},
+                    {"name": "s1", "type": "i32", "value": -2147483648}
+                ],
+                "encoded": {"value": [0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x80]}
+            },
+            {
+                "name": "s4_zeroes",
                 "datatype": "S4",
-                "decoded": {
-                    "s0": {"value": 0},
-                    "s1": {"value": 0}
-                },
+                "decoded": [
+                    {"name": "s0", "type": "u64", "value": 0},
+                    {"name": "s1", "type": "i64", "value": 0}
+                ],
                 "encoded": {"value": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}
             },
             {
-                "name": "s5",
+                "name": "s4_highest",
+                "datatype": "S4",
+                "decoded": [
+                    {"name": "s0", "type": "u64", "value": 18446744073709551615},
+                    {"name": "s1", "type": "i64", "value": 9223372036854775807}
+                ],
+                "encoded": {"value": [0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0x7f]}
+            },
+            {
+                "name": "s4_lowest",
+                "datatype": "S4",
+                "decoded": [
+                    {"name": "s0", "type": "u64", "value": 0},
+                    {"name": "s1", "type": "i64", "value": -9223372036854775808}
+                ],
+                "encoded": {"value": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x80]}
+            },
+            {
+                "name": "s5_zeroes",
                 "datatype": "S5",
-                "decoded": {
-                    "s0": {"value": 0},
-                    "s1": {"value": 0}
-                },
+                "decoded": [
+                    {"name": "s0", "type": "f32", "value": 0.0},
+                    {"name": "s1", "type": "f64", "value": 0.0}
+                ],
                 "encoded": {"value": [0,0,0,0,0,0,0,0,0,0,0,0]}
             },
             {
-                "name": "s6",
+                "name": "s5_negative",
+                "datatype": "S5",
+                "decoded": [
+                    {"name": "s0", "type": "f32", "value": -1.0},
+                    {"name": "s1", "type": "f64", "value": -1.0}
+                ],
+                "encoded": {"value": [0x00, 0x00, 0x80, 0xbf, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xBF]}
+            },
+            {
+                "name": "s5_positive",
+                "datatype": "S5",
+                "decoded": [
+                    {"name": "s0", "type": "f32", "value": 1.0},
+                    {"name": "s1", "type": "f64", "value": 1.0}
+                ],
+                "encoded": {"value": [0x00, 0x00, 0x80, 0x3f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x3f]}
+            },
+            {
+                "name": "s6_empty",
                 "datatype": "S6",
-                "decoded": {
-                    "s0": {"value": ""}
-                },
-                "encoded": {"value": [0,0,0,0]}
+                "decoded": [
+                    {"name": "s0", "type": "str", "value": ""}
+                ],
+                "encoded": {"value": [0x0,0x0,0x0,0x0]}
+            },
+            {
+                "name": "s6_hello",
+                "datatype": "S6",
+                "decoded": [
+                    {"name": "s0", "type": "str", "value": "hello"}
+                ],
+                "encoded": {"value": [0x5,0x0,0x0,0x0,0x68, 0x65, 0x6c, 0x6c, 0x6f]}
+            },
+            {
+                "name": "s7",
+                "datatype": "S7",
+                "decoded": [
+                    {"name": "s1", "type": "enum", "enum": "E", "value": "S1"}
+                ],
+                "encoded": {"value": [1]}
+            },
+            {
+                "name": "t8_1",
+                "datatype": "S8",
+                "decoded": [
+                    {"name": "s1", "type": "array", "subtype": "u8", "value": [1,2,3,4]}
+                ],
+                "encoded": {"value": [1,2,3,4]}
+            },
+            {
+                "name": "t9",
+                "datatype": "S9",
+                "decoded": [
+                    {"name": "s1", "type": "array", "subtype": "u16", "value": [1,2,3,4]}
+                ],
+                "encoded": {"value": [1,0,2,0,3,0,4,0]}
+            },
+            {
+                "name": "t10",
+                "datatype": "S10",
+                "decoded": [
+                    {"name": "s1", "type": "array", "subtype": "enum", "value": [1,2,3,4]}
+                ],
+                "encoded": {"value": [1,0,2,0,3,0,4,0]}
             }
         ]
     }
