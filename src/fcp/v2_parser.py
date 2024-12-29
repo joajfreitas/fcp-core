@@ -60,12 +60,12 @@ fcp_parser = Lark(
 
     struct: "struct" identifier "{" struct_field+ "}"
     struct_field: identifier "@" number ":" type param* ","
-    type: (base_type | array_type | composed_type | dynamic_array_type | optional) "|"?
+    type: (base_type | array_type | composed_type | dynamic_array_type | optional_type) "|"?
     base_type: /u\d\d|u\d|i\d\d|i\d|f32|f64|str/
     array_type: "[" type "," number "]"
     dynamic_array_type: "[" type "]"
     composed_type: identifier
-    optional: "Optional" "[" type "]"
+    optional_type: "Optional" "[" type "]"
 
     param: identifier "("? param_argument* ")"? "|"?
     param_argument: value ","?
@@ -213,7 +213,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
         return ComposedType(typename, type_category)  # type: ignore
 
-    def optional(self, args: List[str]) -> OptionalType:
+    def optional_type(self, args: List[str]) -> OptionalType:
         """Parse a option node of the fcp AST."""
         typename = args[0]
 
