@@ -20,3 +20,4 @@
 (struct_field_name) @property
 (enum_field_name) @constant
 (param_name) @function
+(comment) @comment

@@ -14,10 +14,12 @@ module.exports = grammar({
     struct_field: $ => seq($.struct_field_name, '@', $.number, ':', $.type, repeat($.param), ','),
     struct_field_name: $ => $.identifier,
 
-    type: $ => seq(choice($.base_type, $.array_type, $.compound_type), optional('|')),
+    type: $ => seq(choice($.base_type, $.array_type, $.composed_type, $.dynamic_array_type, $.optional_type), optional('|')),
     base_type: $ => /u\d\d|u\d|i\d\d|i\d|f32|f64/,
     array_type: $ => seq('[', $.type, ',', $.number ,']'),
-    compound_type: $ => $.identifier,
+    dynamic_array_type: $ => seq('[', $.type, ']'),
+    optional_type: $ => seq('Optional', '[',  $.type, ']'),
+    composed_type: $ => $.identifier,
 
     param: $ => prec.left(seq($.param_name, optional('('), repeat($.param_argument), optional(')'), optional('|'))), 
     param_name: $ => $.identifier,
