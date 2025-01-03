@@ -124,6 +124,12 @@ struct {{struct.name}} {
     }
     {% endfor %}
 
+    {% for signal in struct.fields %}
+    {{signal.name | capitalize}}Type& View{{signal.name | capitalize}}() {
+        return {{signal.name}}_;
+    }
+    {% endfor %}
+
     inline bool operator==(const {{struct.name}}& rhs) const {
         return  {% for signal in struct.fields %}{{signal.name}}_ == rhs.Get{{signal.name | capitalize}}(){% if not loop.last %}
         {{'\t'}}&& {% endif %}{% endfor %};
