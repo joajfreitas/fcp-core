@@ -133,7 +133,6 @@ class DynamicSchema {
             auto buffer = fcp::Buffer(schema.begin(), schema.end());
             auto fcp = fcp::Fcp::Decode(buffer);
 
-
             for (const auto& x: fcp.GetStructs().GetData()) {
                 std::string name = x.GetName().GetData();
 

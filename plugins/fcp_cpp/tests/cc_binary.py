@@ -64,6 +64,21 @@ class InMemoryFile(Source):
         return self.name
 
 
+class InMemoryBinaryFile(Source):
+    """In memory file source."""
+
+    def __init__(self, name: str, contents: bytearray):
+        self.name = name
+        self.contents = contents
+
+    def apply(self, dirname: Path) -> str:
+        """Commit the source to the target directory."""
+        with open(dirname / self.name, "wb") as f:
+            f.write(self.contents)
+
+        return self.name
+
+
 def cc_binary(name: str, srcs: List[Source], headers: List[str]) -> None:
     """Build and run a C++ program."""
     src_paths = []
@@ -86,7 +101,7 @@ def cc_binary(name: str, srcs: List[Source], headers: List[str]) -> None:
         print(r.stderr.decode())
         raise ValueError("Compilation failed")
 
-    r = subprocess.run([Path(tempdirname) / name])
+    r = subprocess.run([Path(tempdirname) / name], cwd=tempdirname)
     if r.returncode != 0:
         if r.stderr is not None:
             print(r.stderr.decode())

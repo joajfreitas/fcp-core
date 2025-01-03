@@ -36,7 +36,7 @@ from fcp.maybe import Some, Nothing, Maybe
 from fcp.serde import encode as serde_encode
 from fcp.reflection import get_reflection_schema
 
-from .cc_binary import cc_binary, InMemoryFile, File, Source
+from .cc_binary import cc_binary, InMemoryFile, InMemoryBinaryFile, File, Source
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -86,56 +86,46 @@ def get_fcp_reflection() -> FcpV2:
     return get_reflection_schema().unwrap()[0]
 
 
-@pytest.mark.parametrize(
-    "test_name",
-    [
-        "001_basic_struct",
-    ],
-)  # type: ignore
-def test_codegen(test_name: str) -> None:
-    with tempfile.TemporaryDirectory() as tempdirname:
-        fcp_v2, _ = get_fcp(Path(get_fcp_config(test_name))).unwrap()
-        generator = Generator()
+def test_codegen() -> None:
+    fcp_v2, _ = get_fcp(Path(get_fcp_config("test"))).unwrap()
+    generator = Generator()
 
-        fcp_sources = []
-        for result in generator.generate(fcp_v2, {"output": tempdirname}):
-            fcp_sources += handle_result(result)
+    fcp_sources = []
+    for result in generator.generate(fcp_v2, {"output": "/tmp/fcp"}):
+        fcp_sources += handle_result(result)
 
-        cc_binary(
-            name=test_name,
-            srcs=[
-                File(Path(THIS_DIR) / f"{test_name}.cpp"),
-            ],
-            headers=[
-                File(Path(THIS_DIR) / "utest.h"),
-            ]
-            + fcp_sources,
-        )
+    cc_binary(
+        name="test",
+        srcs=[
+            File(Path(THIS_DIR) / f"test.cpp"),
+        ],
+        headers=[
+            File(Path(THIS_DIR) / "utest.h"),
+        ]
+        + fcp_sources,
+    )
 
 
-@pytest.mark.parametrize("test_name", ["001_basic_struct"])  # type: ignore
-def test_dynamic_serialization(test_name: str) -> None:
-    with tempfile.TemporaryDirectory() as tempdirname:
-        fcp_v2, _ = get_fcp(Path(get_fcp_config(test_name))).unwrap()
+def test_dynamic_serialization() -> None:
+    fcp_v2, _ = get_fcp(Path(get_fcp_config("test"))).unwrap()
 
-        bytearray = serde_encode(get_fcp_reflection(), "Fcp", fcp_v2.reflection())
-        with open(Path(tempdirname) / "output.bin", "wb") as f:
-            f.write(bytearray)
+    generator = Generator()
 
-        generator = Generator()
-        results = generator.generate(fcp_v2, {"output": tempdirname})
+    fcp_sources = []
+    for result in generator.generate(fcp_v2, {"output": "/tmp/fcp"}):
+        fcp_sources += handle_result(result)
 
-        fcp_sources = []
-        for result in generator.generate(fcp_v2, {"output": tempdirname}):
-            fcp_sources += handle_result(result)
-
-        cc_binary(
-            name=test_name,
-            srcs=[
-                File(Path(THIS_DIR) / f"{test_name}.cpp"),
-            ],
-            headers=[
-                File(Path(THIS_DIR) / "utest.h"),
-            ]
-            + fcp_sources,
-        )
+    cc_binary(
+        name="test_dynamic",
+        srcs=[
+            File(Path(THIS_DIR) / f"test_dynamic.cpp"),
+        ],
+        headers=[
+            File(Path(THIS_DIR) / "utest.h"),
+            InMemoryBinaryFile(
+                "output.bin",
+                serde_encode(get_fcp_reflection(), "Fcp", fcp_v2.reflection()),
+            ),
+        ]
+        + fcp_sources,
+    )
