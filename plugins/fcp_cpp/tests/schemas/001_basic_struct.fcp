@@ -9,3 +9,61 @@ impl can for S1 {
     id: 10,
     device: "ecu1",
 }
+
+enum E {
+    S0 = 0,
+    S1 = 1,
+    S2 = 2,
+}
+
+struct S2 {
+    s1 @ 0: u8,
+    s2 @ 1: u8,
+    s3 @ 2: E,
+}
+
+struct S3 {
+    s1 @ 0: [u8, 4],
+    s2 @ 1: u8,
+    s3 @ 2: u8,
+}
+
+struct S4 {
+    s1 @ 0: [E, 4],
+    s2 @ 1: u8,
+    s3 @ 2: u8,
+}
+
+struct S5 {
+    s1 @ 0: u8 | unit("m/s"),
+    s2 @ 1: i8 | unit("C"),
+    s3 @ 2: u16 | unit("m/s"),
+    s4 @ 3: i16 | unit("C"),
+    s5 @ 4: u24 | unit("m/s"),
+    s6 @ 5: i24 | unit("C"),
+    s7 @ 6: u32 | unit("m/s"),
+    s8 @ 7: i32| unit("C"),
+    s9 @ 8: u64 | unit("m/s"),
+    s10 @ 9: i64| unit("C"),
+}
+
+struct S6 {
+    s1 @ 0: f32 | unit("m/s"),
+    s2 @ 1: f64 | unit("C"),
+}
+
+struct S7 {
+    s1 @ 0: str,
+}
+
+struct S8 {
+    s1 @ 0: [u8],
+}
+
+struct S9 {
+    s1 @ 0: [S1],
+}
+
+struct S10 {
+    s1 @ 0: Optional[u8],
+}
