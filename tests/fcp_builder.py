@@ -21,7 +21,7 @@ SOFTWARE.
 
 # ruff: noqa: D103 D100
 
-from beartype.typing import Self
+from typing_extensions import Self
 
 from fcp.specs.v2 import FcpV2
 from fcp.specs.struct import Struct
