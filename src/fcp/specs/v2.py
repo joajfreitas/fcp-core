@@ -23,8 +23,11 @@
 from beartype.typing import Any, Callable, Union, List, Dict, Generator
 import serde
 import struct
+import re
 
+from ..xpath import Xpath
 from ..maybe import Maybe, Some, Nothing
+from ..result import Result, Ok, Err
 from .enum import Enum
 from .struct_field import StructField
 from .struct import Struct
@@ -121,6 +124,24 @@ class FcpV2:
                 return Some(enum)
 
         return Nothing()
+
+    def get_xpath(self, xpath: Xpath) -> Result[StructField, str]:
+        """Get struct field by xpath."""
+        if not re.match(r"(\w+):((\w+\/)*\w+)", str(xpath)):
+            return Err("Invalid xpath format")
+
+        struct = self.get_struct(xpath.root).unwrap()
+
+        for i in range(len(xpath.path) - 1):
+            for field in struct.fields:
+                if field.name == xpath.path[i]:
+                    struct = self.get_type(field.type).unwrap()
+
+        for field in struct.fields:
+            if field.name == xpath.path[-1]:
+                return Ok(field)
+
+        return Err("Field not found")
 
     def to_dict(self) -> Any:
         """Get the fcp AST as a python dictionary."""
