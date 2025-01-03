@@ -24,7 +24,12 @@ SOFTWARE.
 import serde
 import serde.json
 import pytest
+
+from fcp.xpath import Xpath
 from fcp.specs.v2 import FcpV2
+from fcp.specs.type import ComposedType, BuiltinType, ComposedTypeCategory
+
+from .fcp_builder import FcpV2Builder, StructBuilder, StructFieldBuilder
 
 from beartype.typing import Dict, Any
 
@@ -78,3 +83,61 @@ def test_v2_dict_to_fcp(fcp_v2: FcpV2, fcp_v2_dict: Dict[str, Any]) -> None:
 
 def test_v2_json_to_fcp(fcp_v2: FcpV2, fcp_v2_json: str) -> None:
     assert fcp_v2 == serde.json.from_json(FcpV2, fcp_v2_json)
+
+
+@pytest.fixture  # type: ignore
+def fcp_sample() -> FcpV2:
+    return (
+        FcpV2Builder()
+        .with_struct(
+            StructBuilder()
+            .with_name("S1")
+            .with_field(
+                StructFieldBuilder()
+                .with_name("s1")
+                .with_type(ComposedType("S2", ComposedTypeCategory.Struct))
+                .build()
+            )
+            .with_field(
+                StructFieldBuilder()
+                .with_name("s2")
+                .with_type(BuiltinType("u8"))
+                .build()
+            )
+            .build()
+        )
+        .with_struct(
+            StructBuilder()
+            .with_name("S2")
+            .with_field(
+                StructFieldBuilder()
+                .with_name("s1")
+                .with_type(BuiltinType("u8"))
+                .build()
+            )
+            .build()
+        )
+        .build()
+    )
+
+
+def test_xpath(fcp_sample: FcpV2) -> None:
+    r = fcp_sample.get_xpath(Xpath("S1:s1/s1"))
+
+    assert r.is_ok()
+    assert r.unwrap().name == "s1"
+    assert r.unwrap().type == BuiltinType("u8")
+
+
+def test_shallow_xpath(fcp_sample: FcpV2) -> None:
+    r = fcp_sample.get_xpath(Xpath("S1:s2"))
+
+    assert r.is_ok()
+    assert r.unwrap().name == "s2"
+    assert r.unwrap().type == BuiltinType("u8")
+
+
+def test_wrong_xpath(fcp_sample: FcpV2) -> None:
+    r = fcp_sample.get_xpath(Xpath("S1:s1/s2"))
+
+    assert r.is_err()
