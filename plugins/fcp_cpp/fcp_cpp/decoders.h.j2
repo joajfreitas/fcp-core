@@ -256,6 +256,7 @@ class DynamicArray {
     DynamicArray(): data_{} {}
     DynamicArray(const std::vector<T>& value): data_{value} {}
     DynamicArray(const char* value): data_{value} {}
+    DynamicArray(std::initializer_list<T> ls) : data_{ls} {}
 
     static DynamicArray Decode(Buffer& buffer) {
         std::vector<T> data{};

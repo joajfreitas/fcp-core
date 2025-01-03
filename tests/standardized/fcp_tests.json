@@ -179,12 +179,20 @@
                 "encoded": [1,0,2,0,3,0,4,0]
             },
             {
-                "name": "s10",
+                "name": "static_array_enum",
                 "datatype": "S10",
                 "decoded": {
                     "S10:s1": ["S1","S2","S0","S1"]
                 },
                 "encoded": [73]
+            },
+            {
+                "name": "dynamic_array_eight_bit",
+                "datatype": "S11",
+                "decoded": {
+                    "S11:s1": ["0x0","0x1","0x2","0x3"]
+                },
+                "encoded": [4, 0, 0, 0, 0, 1, 2, 3]
             }
         ]
     }

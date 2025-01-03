@@ -50,3 +50,7 @@ struct S9 {
 struct S10 {
     s1 @ 0: [E, 4],
 }
+
+struct S11 {
+    s1 @ 0: [u8],
+}
