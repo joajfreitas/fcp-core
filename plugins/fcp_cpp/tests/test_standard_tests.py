@@ -158,7 +158,7 @@ def test_standardized_tests(test_suite):
     env.globals["access_field"] = access_field
     template = env.get_template("test_template")
 
-    fcp_v2, _ = get_fcp(STANDARDIZED_TESTS_DIR / "001_basic_values.fcp").unwrap()
+    fcp_v2, _ = get_fcp(STANDARDIZED_TESTS_DIR / test_suite["schema"]).unwrap()
 
     generator = Generator()
 

@@ -25,40 +25,24 @@ struct S5 {
     s1 @ 1: f64,
 }
 
-struct S6 {
-    s0 @ 0: str,
-}
-
 enum E {
     S0 = 0,
     S1 = 1,
     S2 = 2,
 }
 
-struct S7 {
+struct S6 {
     s1 @ 0: E,
 }
 
-struct S8 {
+struct S7 {
     s1 @ 0: [u8, 4],
 }
 
-struct S9 {
+struct S8 {
     s1 @ 0: [u16, 4],
 }
 
-struct S10 {
+struct S9 {
     s1 @ 0: [E, 4],
-}
-
-struct S11 {
-    s1 @ 0: [u8],
-}
-
-struct S12 {
-    s1 @ 0: [E],
-}
-
-struct S13 {
-    s1 @0: Optional[u8],
 }

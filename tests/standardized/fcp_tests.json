@@ -139,90 +139,96 @@
                 "encoded": ["0x00", "0x00", "0x80", "0x3f", "0x00", "0x00", "0x00", "0x00", "0x00", "0x00", "0xf0", "0x3f"]
             },
             {
-                "name": "string_empty",
-                "datatype": "S6",
-                "decoded": {
-                    "S6:s0": ""
-                },
-                "encoded": ["0x0","0x0","0x0","0x0"]
-            },
-            {
-                "name": "string_hello",
-                "datatype": "S6",
-                "decoded": {
-                    "S6:s0": "hello"
-                },
-                "encoded": ["0x5","0x0","0x0","0x0","0x68", "0x65", "0x6c", "0x6c", "0x6f"]
-            },
-            {
                 "name": "enum",
-                "datatype": "S7",
+                "datatype": "S6",
                 "decoded": {
-                    "S7:s1": "S1"
+                    "S6:s1": "S1"
                 },
                 "encoded": ["0x1"]
             },
             {
                 "name": "eight_bit_static_array_increasing",
-                "datatype": "S8",
+                "datatype": "S7",
                 "decoded": {
-                    "S8:s1": ["1","2","3","4"]
+                    "S7:s1": ["1","2","3","4"]
                 },
                 "encoded": ["0x1","0x2","0x3","0x4"]
             },
             {
                 "name": "sixteen_bit_static_array_increasing",
-                "datatype": "S9",
+                "datatype": "S8",
                 "decoded": {
-                    "S9:s1": ["1","2","3","4"]
+                    "S8:s1": ["1","2","3","4"]
                 },
                 "encoded": [1,0,2,0,3,0,4,0]
             },
             {
                 "name": "static_array_enum",
-                "datatype": "S10",
+                "datatype": "S9",
                 "decoded": {
-                    "S10:s1": ["S1","S2","S0","S1"]
+                    "S9:s1": ["S1","S2","S0","S1"]
                 },
                 "encoded": [73]
+            }
+        ]
+    },
+    {
+        "name": "optional_features",
+        "schema": "002_optional_features.fcp",
+        "tests": [
+            {
+                "name": "string_empty",
+                "datatype": "S1",
+                "decoded": {
+                    "S1:s1": ""
+                },
+                "encoded": ["0x0","0x0","0x0","0x0"]
+            },
+            {
+                "name": "string_hello",
+                "datatype": "S1",
+                "decoded": {
+                    "S1:s1": "hello"
+                },
+                "encoded": ["0x5","0x0","0x0","0x0","0x68", "0x65", "0x6c", "0x6c", "0x6f"]
             },
             {
                 "name": "dynamic_array_eight_bit",
-                "datatype": "S11",
+                "datatype": "S2",
                 "decoded": {
-                    "S11:s1": ["0x0","0x1","0x2","0x3"]
+                    "S2:s1": ["0x0","0x1","0x2","0x3"]
                 },
                 "encoded": [4, 0, 0, 0, 0, 1, 2, 3]
             },
             {
                 "name": "dynamic_array_enum",
-                "datatype": "S12",
+                "datatype": "S3",
                 "decoded": {
-                    "S12:s1": ["S0","S1","S2"]
+                    "S3:s1": ["S0","S1","S2"]
                 },
                 "encoded": [3, 0, 0, 0, 36]
             },
             {
                 "name": "dynamic_array_enum2",
-                "datatype": "S12",
+                "datatype": "S3",
                 "decoded": {
-                    "S12:s1": ["S0","S1","S2", "S0", "S1", "S2"]
+                    "S3:s1": ["S0","S1","S2", "S0", "S1", "S2"]
                 },
                 "encoded": [6, 0, 0, 0, 36, 9]
             },
             {
                 "name": "optional_unsigned_eight_bit_with_value",
-                "datatype": "S13",
+                "datatype": "S4",
                 "decoded": {
-                    "S13:s1": 255
+                    "S4:s1": 255
                 },
                 "encoded": [1, 255]
             },
             {
                 "name": "optional_unsigned_eight_bit_with_no_value",
-                "datatype": "S13",
+                "datatype": "S4",
                 "decoded": {
-                    "S13:s1": null
+                    "S4:s1": null
                 },
                 "encoded": [0]
             }
