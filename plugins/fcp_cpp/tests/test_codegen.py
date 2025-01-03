@@ -31,13 +31,33 @@ from beartype.typing import List, Dict, Any
 
 from fcp.v2_parser import get_fcp
 from fcp.specs.v2 import FcpV2
-from fcp.codegen import handle_result
 from fcp_cpp import Generator
 from fcp.maybe import Some, Nothing, Maybe
 from fcp.serde import encode as serde_encode
 from fcp.reflection import get_reflection_schema
 
+from .cc_binary import cc_binary, InMemoryFile, File, Source
+
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def _handle_file(result: Dict[str, str]) -> List[Source]:
+    path: Path = Path(result.get("path"))  # type: ignore
+    return [InMemoryFile(path.name, str(result.get("contents")))]
+
+
+def _handle_print(result: Dict[str, str]) -> List[Source]:
+    print(result.get("contents"))
+    return []
+
+
+def handle_result(result: Dict[str, str]) -> List[Source]:
+    if result.get("type") == "file":
+        return _handle_file(result)
+    elif result.get("type") == "print":
+        return _handle_print(result)
+    else:
+        raise ValueError(f"Cannot handle result of type: {result.get('type')}")
 
 
 def match_result(
@@ -84,38 +104,21 @@ def test_codegen(test_name: str) -> None:
     with tempfile.TemporaryDirectory() as tempdirname:
         fcp_v2, _ = get_fcp(Path(get_fcp_config(test_name))).unwrap()
         generator = Generator()
-        results = generator.generate(fcp_v2, {"output": tempdirname})
 
-        for result in results:
-            handle_result(result)
+        fcp_sources = []
+        for result in generator.generate(fcp_v2, {"output": tempdirname}):
+            fcp_sources += handle_result(result)
 
-        shutil.copyfile(
-            Path(THIS_DIR) / f"{test_name}.cpp",
-            Path(tempdirname) / f"{test_name}.cpp",
-        )
-
-        shutil.copyfile(
-            Path(THIS_DIR) / "utest.h",
-            Path(tempdirname) / "utest.h",
-        )
-
-        out = subprocess.run(
-            [
-                "/usr/bin/g++",
-                "--std=c++17",
-                f"{test_name}.cpp",
-                "-o",
-                test_name,
+        cc_binary(
+            name=test_name,
+            srcs=[
+                File(Path(THIS_DIR) / f"{test_name}.cpp"),
             ],
-            cwd=tempdirname,
-            capture_output=True,
+            headers=[
+                File(Path(THIS_DIR) / "utest.h"),
+            ]
+            + fcp_sources,
         )
-        print(out.stderr.decode("utf-8"))
-        assert out.returncode == 0
-
-        out = subprocess.run(["./" + test_name], cwd=tempdirname, capture_output=True)
-        print(out.stdout.decode("utf-8"))
-        assert out.returncode == 0
 
 
 @pytest.mark.parametrize("test_name", ["001_basic_struct"])  # type: ignore
@@ -130,34 +133,17 @@ def test_dynamic_serialization(test_name: str) -> None:
         generator = Generator()
         results = generator.generate(fcp_v2, {"output": tempdirname})
 
-        for result in results:
-            handle_result(result)
+        fcp_sources = []
+        for result in generator.generate(fcp_v2, {"output": tempdirname}):
+            fcp_sources += handle_result(result)
 
-        shutil.copyfile(
-            Path(THIS_DIR) / f"{test_name}_dynamic.cpp",
-            Path(tempdirname) / f"{test_name}_dynamic.cpp",
-        )
-
-        shutil.copyfile(
-            Path(THIS_DIR) / "utest.h",
-            Path(tempdirname) / "utest.h",
-        )
-
-        out = subprocess.run(
-            [
-                "/usr/bin/g++",
-                "--std=c++17",
-                f"{test_name}_dynamic.cpp",
-                "-o",
-                test_name,
+        cc_binary(
+            name=test_name,
+            srcs=[
+                File(Path(THIS_DIR) / f"{test_name}.cpp"),
             ],
-            cwd=tempdirname,
-            capture_output=True,
+            headers=[
+                File(Path(THIS_DIR) / "utest.h"),
+            ]
+            + fcp_sources,
         )
-
-        print(out.stderr.decode("utf-8"))
-        assert out.returncode == 0
-
-        out = subprocess.run(["./" + test_name], cwd=tempdirname, capture_output=True)
-        print(out.stdout.decode("utf-8"))
-        assert out.returncode == 0
