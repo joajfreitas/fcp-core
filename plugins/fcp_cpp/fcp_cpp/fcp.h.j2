@@ -80,6 +80,12 @@ struct {{struct.name}} {
     using {{signal.name | capitalize}}Type = {{to_wrapper_cpp_type(signal.type)}};
     {%- endfor %}
 
+    {{struct.name}}():
+    {%- for signal in struct.fields %}
+    {{signal.name}}_{{'{'}}{{'}'}}{% if not loop.last %},{% endif %}
+    {%- endfor %}
+    {}
+
     {{struct.name}}({% for signal in struct.fields %}{{signal.name | capitalize}}Type {{signal.name}}{% if not loop.last %},{% endif %}{% endfor %}):
     {%- for signal in struct.fields %}
     {{signal.name}}_{{'{'}}{{signal.name}}{{'}'}}{% if not loop.last %},{% endif %}
