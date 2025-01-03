@@ -22,7 +22,6 @@
 
 from beartype.typing import Any, Callable, Union, List, Dict, Generator
 import serde
-import struct
 import re
 
 from ..xpath import Xpath
@@ -140,7 +139,6 @@ class FcpV2:
         for field in struct.fields:
             if field.name == xpath.path[-1]:
                 return Ok(field)
-
         return Err("Field not found")
 
     def to_dict(self) -> Any:
