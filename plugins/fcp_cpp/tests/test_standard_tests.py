@@ -107,6 +107,7 @@ def access_field(fcp: FcpV2, xpath: str) -> str:
 
 
 test_template = """
+#include <iostream>
 #include "fcp.h"
 #include "utest.h"
 
@@ -126,6 +127,15 @@ UTEST({{ suite["name"] }}, {{ test["name"] }}) {
     std::vector<std::uint8_t> expected { {%- for value in test["encoded"] -%} {{value}} {%- if not loop.last -%},{%- endif -%}{%- endfor -%} };
 
     EXPECT_TRUE(encoded == expected);
+    if (encoded != expected) {
+        for (size_t i = 0; i < encoded.size(); i++) {
+            std::cout << "encoded[" << i << "] = " << (int)encoded[i] << std::endl;
+        }
+
+        for (size_t i = 0; i < expected.size(); i++) {
+            std::cout << "expected[" << i << "] = " << (int)expected[i] << std::endl;
+        }
+    }
 }
 {% endfor %}
 """

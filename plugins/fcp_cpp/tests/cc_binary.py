@@ -88,5 +88,8 @@ def cc_binary(name: str, srcs: List[Source], headers: List[str]) -> None:
 
     r = subprocess.run([Path(tempdirname) / name])
     if r.returncode != 0:
-        print(r.stderr.decode())
+        if r.stderr is not None:
+            print(r.stderr.decode())
+        if r.stdout is not None:
+            print(r.stdout.decode())
         raise ValueError("Running executable failed")
