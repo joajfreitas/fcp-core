@@ -307,8 +307,18 @@ template<typename T>
 class Optional {
     public:
 
-    Optional(): data_{} {}
     Optional(const std::optional<T>& value): data_{value} {}
+    Optional(): data_{std::nullopt} {}
+
+    Optional& operator=(const T that) {
+        data_ = that;
+        return *this;
+    }
+
+    Optional& operator=(std::nullopt_t that) {
+        data_ = that;
+        return *this;
+    }
 
     static Optional None() {
         return Optional(std::nullopt);

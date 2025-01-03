@@ -58,3 +58,7 @@ struct S11 {
 struct S12 {
     s1 @ 0: [E],
 }
+
+struct S13 {
+    s1 @0: Optional[u8],
+}

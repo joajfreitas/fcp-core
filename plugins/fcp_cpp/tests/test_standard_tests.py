@@ -43,6 +43,7 @@ from fcp.specs.type import (
     ComposedTypeCategory,
     ArrayType,
     DynamicArrayType,
+    OptionalType,
 )
 from fcp.xpath import Xpath
 
@@ -76,9 +77,9 @@ def to_constant(fcp: FcpV2, type: Type, value: Any) -> str:
     """Convert a value to a constant."""
     if isinstance(type, BuiltinType):
         if type.is_signed():
-            return str(value + "LL")
+            return str(value) + "LL"
         elif type.is_unsigned():
-            return str(value + "ULL")
+            return str(value) + "ULL"
         elif type.is_str():
             return str('"' + value + '"')
         else:
@@ -91,6 +92,11 @@ def to_constant(fcp: FcpV2, type: Type, value: Any) -> str:
             + ", ".join([to_constant(fcp, type.underlying_type, v) for v in value])
             + "}"
         )
+    elif isinstance(type, OptionalType):
+        if value is None:
+            return "std::nullopt"
+        else:
+            return to_constant(fcp, type.underlying_type, value)
     else:
         raise ValueError(f"Unknown type: {type}")
 

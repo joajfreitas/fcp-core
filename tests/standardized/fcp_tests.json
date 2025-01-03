@@ -209,6 +209,22 @@
                     "S12:s1": ["S0","S1","S2", "S0", "S1", "S2"]
                 },
                 "encoded": [6, 0, 0, 0, 36, 9]
+            },
+            {
+                "name": "optional_unsigned_eight_bit_with_value",
+                "datatype": "S13",
+                "decoded": {
+                    "S13:s1": 255
+                },
+                "encoded": [1, 255]
+            },
+            {
+                "name": "optional_unsigned_eight_bit_with_no_value",
+                "datatype": "S13",
+                "decoded": {
+                    "S13:s1": null
+                },
+                "encoded": [0]
             }
         ]
     }
