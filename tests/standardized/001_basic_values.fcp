@@ -1,0 +1,52 @@
+version: "3"
+
+struct S1 {
+    s0 @ 0: u8,
+    s1 @ 1: i8,
+}
+
+struct S2 {
+    s0 @ 0: u16,
+    s1 @ 1: i16,
+}
+
+struct S3 {
+    s0 @ 0: u32,
+    s1 @ 1: i32,
+}
+
+struct S4 {
+    s0 @ 0: u64,
+    s1 @ 1: i64,
+}
+
+struct S5 {
+    s0 @ 0: f32,
+    s1 @ 1: f64,
+}
+
+struct S6 {
+    s0 @ 0: str,
+}
+
+enum E {
+    S0 = 0,
+    S1 = 1,
+    S2 = 2,
+}
+
+struct S7 {
+    s1 @ 0: E,
+}
+
+struct S8 {
+    s1 @ 0: [u8, 4],
+}
+
+struct S9 {
+    s1 @ 0: [u16, 4],
+}
+
+struct S10 {
+    s1 @ 0: [E, 4],
+}

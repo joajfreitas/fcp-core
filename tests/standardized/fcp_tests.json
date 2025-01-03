@@ -1,0 +1,191 @@
+[
+    {
+        "name": "basic",
+        "schema": "001_basic_values.fcp",
+        "tests": [
+            {
+                "name": "s1_zeroes",
+                "datatype": "S1",
+                "decoded": {
+                    "S1:s0": "0",
+                    "S1:s1": "0"
+                },
+                "encoded": ["0x0", "0x0"]
+            },
+            {
+                "name": "s1_highest",
+                "datatype": "S1",
+                "decoded": {
+                    "S1:s0": "255",
+                    "S1:s1": "127"
+                },
+                "encoded": ["0xff", "0x7f"]
+            },
+            {
+                "name": "s1_lowest",
+                "datatype": "S1",
+                "decoded": {
+                    "S1:s0": "0",
+                    "S1:s1": "-128"
+                },
+                "encoded": ["0x0", "0x80"]
+            },
+            {
+                "name": "s2_zeroes",
+                "datatype": "S2",
+                "decoded": {
+                    "S2:s0": "0",
+                    "S2:s1": "0"
+                },
+                "encoded": ["0x0", "0x0", "0x0", "0x0"]
+            },
+            {
+                "name": "s2_highest",
+                "datatype": "S2",
+                "decoded": {
+                    "S2:s0": "65535",
+                    "S2:s1": "32767"
+                },
+                "encoded": ["0xff", "0xff", "0xff", "0x7f"]
+            },
+            {
+                "name": "s2_lowest",
+                "datatype": "S2",
+                "decoded": {
+                    "S2:s0": "0",
+                    "S2:s1": "-32768"
+                },
+                "encoded": ["0x00", "0x00", "0x00", "0x80"]
+            },
+            {
+                "name": "s3_zeroes",
+                "datatype": "S3",
+                "decoded": {
+                    "S3:s0": "0",
+                    "S3:s1": "0"
+                },
+                "encoded": ["0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0"]
+            },
+            {
+                "name": "s3_highest",
+                "datatype": "S3",
+                "decoded": {
+                    "S3:s0": "4294967295",
+                    "S3:s1": "2147483647"
+                },
+                "encoded": ["0xff","0xff","0xff","0xff","0xff","0xff","0xff","0x7f"]
+            },
+            {
+                "name": "s3_lowest",
+                "datatype": "S3",
+                "decoded": {
+                    "S3:s0":  "0",
+                    "S3:s1":  "-2147483648"
+                },
+                "encoded": ["0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x80"]
+            },
+            {
+                "name": "s4_zeroes",
+                "datatype": "S4",
+                "decoded": {
+                    "S4:s0": "0",
+                    "S4:s1": "0"
+                },
+                "encoded": ["0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0"]
+            },
+            {
+                "name": "s4_highest",
+                "datatype": "S4",
+                "decoded": {
+                    "S4:s0": "18446744073709551615",
+                    "S4:s1": "9223372036854775807"
+                },
+                "encoded":  ["0xff","0xff","0xff","0xff","0xff","0xff","0xff","0xff","0xff","0xff","0xff","0xff","0xff","0xff","0xff","0x7f"]
+            },
+            {
+                "name": "s4_lowest",
+                "datatype": "S4",
+                "decoded": {
+                    "S4:s0": "0",
+                    "S4:s1": "-9223372036854775808"
+                },
+                "encoded": ["0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x80"]
+            },
+            {
+                "name": "s5_zeroes",
+                "datatype": "S5",
+                "decoded": {
+                    "S5:s0": "0.0",
+                    "S5:s1": "0.0"
+                },
+                "encoded": ["0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0"]
+            },
+            {
+                "name": "s5_negative",
+                "datatype": "S5",
+                "decoded": {
+                    "S5:s0": "-1.0",
+                    "S5:s1": "-1.0"
+                },
+                "encoded": ["0x00", "0x00", "0x80", "0xbf", "0x00", "0x00", "0x00", "0x00", "0x00", "0x00", "0xf0", "0xbf"]
+            },
+            {
+                "name": "s5_positive",
+                "datatype": "S5",
+                "decoded": {
+                    "S5:s0": "1.0",
+                    "S5:s1": "1.0"
+                },
+                "encoded": ["0x00", "0x00", "0x80", "0x3f", "0x00", "0x00", "0x00", "0x00", "0x00", "0x00", "0xf0", "0x3f"]
+            },
+            {
+                "name": "s6_empty",
+                "datatype": "S6",
+                "decoded": {
+                    "S6:s0": ""
+                },
+                "encoded": ["0x0","0x0","0x0","0x0"]
+            },
+            {
+                "name": "s6_hello",
+                "datatype": "S6",
+                "decoded": {
+                    "S6:s0": "hello"
+                },
+                "encoded": ["0x5","0x0","0x0","0x0","0x68", "0x65", "0x6c", "0x6c", "0x6f"]
+            },
+            {
+                "name": "s7",
+                "datatype": "S7",
+                "decoded": {
+                    "S7:s1": "S1"
+                },
+                "encoded": ["0x1"]
+            },
+            {
+                "name": "s8",
+                "datatype": "S8",
+                "decoded": {
+                    "S8:s1": ["1","2","3","4"]
+                },
+                "encoded": ["0x1","0x2","0x3","0x4"]
+            },
+            {
+                "name": "s9",
+                "datatype": "S9",
+                "decoded": {
+                    "S9:s1": ["1","2","3","4"]
+                },
+                "encoded": [1,0,2,0,3,0,4,0]
+            },
+            {
+                "name": "s10",
+                "datatype": "S10",
+                "decoded": {
+                    "S10:s1": ["S1","S2","S0","S1"]
+                },
+                "encoded": [73]
+            }
+        ]
+    }
+]
