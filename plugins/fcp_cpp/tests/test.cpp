@@ -7,7 +7,7 @@ UTEST_MAIN()
 
 UTEST(BasicStruct, EncodeSimpleUnsignedStruct) {
     auto foo = fcp::S1{1,2};
-    auto encoded = foo.encode().GetData();
+    auto encoded = foo.Encode().GetData();
 
     std::vector<uint8_t> bytes{1,2};
     EXPECT_TRUE(encoded==bytes);
@@ -23,7 +23,7 @@ UTEST(BasicStruct, DecodeSimpleUnsignedStruct) {
 
 UTEST(NestedEnum, Encode) {
     auto foo = fcp::S2{1,2,fcp::E::S1};
-    auto encoded = foo.encode().GetData();
+    auto encoded = foo.Encode().GetData();
 
     std::vector<uint8_t> bytes{1,2,1};
     EXPECT_TRUE(encoded == bytes);
@@ -39,7 +39,7 @@ UTEST(NestedEnum, Decode) {
 
 UTEST(SimpleArray, Encode) {
     auto foo = fcp::S3{{1,2,3,4}, 5,6};
-    auto encoded = foo.encode().GetData();
+    auto encoded = foo.Encode().GetData();
 
     std::vector<uint8_t> bytes{1,2,3,4,5,6};
     EXPECT_TRUE(encoded == bytes);
@@ -55,7 +55,7 @@ UTEST(SimpleArray, Decode) {
 
 UTEST(EnumArray, Encode) {
     auto foo = fcp::S4{{fcp::E::S0,fcp::E::S1,fcp::E::S2,fcp::E::S0}, 5,6};
-    auto encoded = foo.encode().GetData();
+    auto encoded = foo.Encode().GetData();
 
     std::vector<uint8_t> bytes{0x24,5,6};
     EXPECT_TRUE(encoded == bytes);
@@ -73,7 +73,7 @@ UTEST(EnumArray, Decode) {
 
 UTEST(SignedValues, Encode) {
     auto foo = fcp::S5{1,-2,3,-4,5,-6,7,-8,9,-10};
-    std::vector<std::uint8_t> encoded = foo.encode().GetData();
+    std::vector<std::uint8_t> encoded = foo.Encode().GetData();
 
     std::vector<uint8_t> bytes{
         0x01,
@@ -110,7 +110,7 @@ UTEST(SignedValues, Decode) {
 
 UTEST(FloatingPointValues, EncodeSignedAndUnsignedStruct) {
     auto foo = fcp::S6{1.0, 1.0};
-    std::vector<std::uint8_t> encoded = foo.encode().GetData();
+    std::vector<std::uint8_t> encoded = foo.Encode().GetData();
 
     std::vector<uint8_t> bytes{
         0x00, 0x00, 0x80, 0x3f,
@@ -133,7 +133,7 @@ UTEST(FloatingPointValues, DecodeSignedAndUnsignedStruct) {
 
 UTEST(BasicStruct, EncodeString) {
     auto s1 = fcp::S7{"hello"};
-    std::vector<std::uint8_t> encoded = s1.encode().GetData();
+    std::vector<std::uint8_t> encoded = s1.Encode().GetData();
 
     std::vector<uint8_t> bytes{
         0x05, 0x00, 0x00, 0x00,
@@ -156,7 +156,7 @@ UTEST(BasicStruct, DecodeString) {
 
 UTEST(DynamicArray, Encode) {
     auto s1 = fcp::S8{{{0,1,2}}};
-    std::vector<std::uint8_t> encoded = s1.encode().GetData();
+    std::vector<std::uint8_t> encoded = s1.Encode().GetData();
 
     std::vector<uint8_t> bytes{
         0x03, 0x00, 0x00, 0x00,
@@ -179,7 +179,7 @@ UTEST(DynamicArray, Decode) {
 
 UTEST(Optional, EncodeOptionalWithValue) {
     auto s1 = fcp::S10{fcp::S10::S1Type{1}};
-    std::vector<std::uint8_t> encoded = s1.encode().GetData();
+    std::vector<std::uint8_t> encoded = s1.Encode().GetData();
 
     std::vector<uint8_t> bytes{0x01, 0x1};
 
@@ -188,7 +188,7 @@ UTEST(Optional, EncodeOptionalWithValue) {
 
 UTEST(Optional, EncodeOptionalWithNoValue) {
     auto s1 = fcp::S10{fcp::Optional<fcp::Unsigned<std::uint8_t, 8>>::None()};
-    std::vector<std::uint8_t> encoded = s1.encode().GetData();
+    std::vector<std::uint8_t> encoded = s1.Encode().GetData();
 
     std::vector<uint8_t> bytes{0x00};
 

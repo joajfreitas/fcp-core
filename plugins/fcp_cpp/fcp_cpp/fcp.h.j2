@@ -50,14 +50,14 @@ public:
         return GetData();
     }
 
-    void _encode(Buffer& buffer) const {
-        buffer.push_word<UnderlyingType, {{enum.get_packed_size()}}>(data_);
+    Buffer Encode() {
+        Buffer buffer{0};
+        Encode(buffer);
+        return buffer;
     }
 
-    Buffer encode() {
-        Buffer buffer{0};
-        _encode(buffer);
-        return buffer;
+    void Encode(Buffer& buffer) const {
+        buffer.push_word<UnderlyingType, {{enum.get_packed_size()}}>(data_);
     }
 
     static std::size_t GetSize() {
@@ -140,16 +140,16 @@ struct {{struct.name}} {
         return j;
     }
 
-    void _encode(Buffer& buffer) const {
-    {%- for signal in struct.fields %}
-        {{signal.name}}_._encode(buffer);
-    {%- endfor %}
+    Buffer Encode() {
+        Buffer buffer{0};
+        Encode(buffer);
+        return buffer;
     }
 
-    Buffer encode() {
-        Buffer buffer{0};
-        _encode(buffer);
-        return buffer;
+    void Encode(Buffer& buffer) const {
+    {%- for signal in struct.fields %}
+        {{signal.name}}_.Encode(buffer);
+    {%- endfor %}
     }
 
     {% for signal in struct.fields %}
@@ -180,6 +180,7 @@ struct {{struct.name}} {
         return ss.str();
     }
 private:
+
     {%- for signal in struct.fields %}
     {{signal.name | capitalize}}Type {{signal.name}}_;
     {%- endfor %}

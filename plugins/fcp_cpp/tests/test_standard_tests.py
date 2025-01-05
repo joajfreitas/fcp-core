@@ -128,7 +128,7 @@ UTEST({{ suite["name"] }}, {{ test["name"] }}) {
     sut.{{access_field(fcp,xpath)}} = {{to_initializer(fcp, xpath, value)}};
     {% endfor %}
 
-    auto encoded = sut.encode().GetData();
+    auto encoded = sut.Encode().GetData();
 
     std::vector<std::uint8_t> expected { {%- for value in test["encoded"] -%} {{value}} {%- if not loop.last -%},{%- endif -%}{%- endfor -%} };
 
