@@ -17,6 +17,7 @@
 
 #include "buffer.h"
 #include "decoders.h"
+#include "ischema.h"
 
 namespace fcp {
 {% if namespace is not none %}
@@ -184,6 +185,22 @@ private:
     {%- endfor %}
 };
 {% endfor -%}
+
+struct StaticSchema: public ISchema
+{
+    StaticSchema() = default;
+
+    std::optional<json> DecodeJson(std::string name, std::vector<uint8_t> data) override {
+        auto buffer = Buffer{data.begin(), data.end()};
+        {% for struct in structs %}
+        if (name == "{{struct.name}}") {
+            return {{struct.name}}::Decode(buffer).DecodeJson();
+        }
+        {%- endfor %}
+
+        return std::nullopt;
+    }
+};
 
 {% if namespace is not none %}
 } // {{namespace}}
