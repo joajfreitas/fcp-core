@@ -1,0 +1,82 @@
+#pragma once
+
+#include <map>
+#include <any>
+#include <cstdint>
+#include <string>
+#include <optional>
+#include <cstring>
+#include <utility>
+
+#include <nlohmann/json.hpp>
+
+#include "fcp.h"
+
+namespace fcp {
+namespace can {
+
+using json = nlohmann::json;
+
+struct frame_t {
+    char bus[4];
+    std::uint16_t sid;
+    std::uint8_t dlc;
+    std::array<std::uint8_t, 8> data;
+};
+
+struct Can {
+    Can(ISchema& schema): schema_{schema} {}
+
+    std::optional<std::pair<std::string,json>> Decode(const frame_t& frame) {
+        auto msg_name = GetMsgName(frame.sid, frame.bus);
+
+        if (!msg_name.has_value()) {
+            return std::nullopt;
+        }
+        auto decoded = schema_.DecodeJson(msg_name.value(), std::vector<uint8_t>{frame.data.begin(), frame.data.end()});
+
+        if (!decoded.has_value()) {
+            return std::nullopt;
+        }
+        return {msg_name.value(), decoded.value()};
+    }
+
+    std::optional<frame_t> Encode(std::string msg_name, json j) {
+
+        {% for impl in impls %}
+        if (msg_name == "{{impl.name}}") {
+            return BuildMessage("{{impl.fields.get('bus')}}", {{impl.fields.get('id')}}, {{impl.type}}::FromJson(j).encode().GetData());
+        }
+        {% endfor %}
+
+        return std::nullopt;
+    }
+
+    private:
+
+    std::optional<std::string> GetMsgName(std::uint16_t sid, const char bus_name[4]) {
+        std::string bus_name_str(bus_name, bus_name + 4);
+
+        {% for impl in impls %}
+        if (sid == {{impl.fields.get('id')}} && bus_name_str == "{{impl.fields.get('bus')}}") {
+            return "{{impl.name}}";
+        }
+        {% endfor %}
+
+        return std::nullopt;
+    }
+
+    frame_t BuildMessage(std::string bus_name, std::uint16_t sid, std::vector<uint8_t> data) {
+        frame_t frame{};
+        std::copy(bus_name.begin(), bus_name.end(), frame.bus);
+        frame.sid = sid;
+        frame.dlc = data.size();
+        std::copy(data.begin(), data.end(), frame.data.begin());
+        return frame;
+    }
+
+    ISchema& schema_;
+};
+
+} // namesapce can
+} // namespace fcp
