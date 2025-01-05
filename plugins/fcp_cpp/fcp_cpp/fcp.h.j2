@@ -13,11 +13,14 @@
 #include <cstring>
 #include <optional>
 
+#include <nlohmann/json.hpp>
 
 #include "buffer.h"
 #include "decoders.h"
 
 namespace fcp {
+
+using json = nlohmann::json;
 
 {% for enum in fcp.enums %}
 class {{enum.name}} {
@@ -30,9 +33,17 @@ public:
     {{enum.name}}(): data_{} {}
     {{enum.name}}(UnderlyingType value): data_{value} {}
 
+    static {{enum.name}} FromJson(json j) {
+        return {{enum.name}}{j.get<UnderlyingType>()};
+    }
+
     static {{enum.name}} Decode(Buffer& buffer) {
         UnderlyingType data = buffer.get_word(GetSize());
         return data;
+    }
+
+    json DecodeJson() const {
+        return GetData();
     }
 
     void _encode(Buffer& buffer) const {
@@ -92,6 +103,16 @@ struct {{struct.name}} {
     {%- endfor %}
     {}
 
+    static {{struct.name}} FromJson(json j){
+        {{struct.name}} s{};
+
+        {%- for signal in struct.fields %}
+        s.{{signal.name}}_ = {{signal.name | capitalize}}Type::FromJson(j["{{signal.name}}"]);
+        {%- endfor %}
+
+        return s;
+    }
+
     static {{struct.name}} Decode(Buffer& buffer) {
     {%- for signal in struct.fields %}
         auto {{signal.name}} = {{signal.name | capitalize}}Type::Decode(buffer);
@@ -104,6 +125,15 @@ struct {{struct.name}} {
     static {{struct.name}} Decode(Iterator begin, Iterator end) {
         auto buffer = Buffer{begin, end};
         return {{struct.name}}::Decode(buffer);
+    }
+
+    json DecodeJson() const {
+        json j{};
+        {%- for signal in struct.fields %}
+        j["{{signal.name}}"] = {{signal.name}}_.DecodeJson();
+        {% endfor %}
+
+        return j;
     }
 
     void _encode(Buffer& buffer) const {

@@ -1,6 +1,10 @@
 #pragma once
 
+#include <nlohmann/json.hpp>
+
 namespace fcp {
+
+using json = nlohmann::json;
 
 template<typename UnderlyingType, std::size_t BitSize>
 class Unsigned {
@@ -8,9 +12,17 @@ public:
     Unsigned(): data_{0} {}
     Unsigned(UnderlyingType value): data_{value} {}
 
+    static Unsigned FromJson(json j) {
+        return Unsigned(j.get<UnderlyingType>());
+    }
+
     static Unsigned Decode(Buffer& buffer) {
         auto word = buffer.get_word(BitSize);
         return Unsigned(static_cast<UnderlyingType>(word));
+    }
+
+    json DecodeJson() const {
+        return GetData();
     }
 
     void _encode(Buffer& buffer) const {
@@ -43,9 +55,17 @@ public:
     Signed(): data_{0}{}
     Signed(UnderlyingType value): data_{value} {}
 
+    static Signed FromJson(json j) {
+        return Signed(j.get<UnderlyingType>());
+    }
+
     static Signed Decode(Buffer& buffer) {
         auto word = buffer.get_word(BitSize, true);
         return Signed(static_cast<UnderlyingType>(word));
+    }
+
+    json DecodeJson() const {
+        return GetData();
     }
 
     void _encode(Buffer& buffer) const {
@@ -79,6 +99,10 @@ public:
     Float(): data_{0.0}{}
     Float(UnderlyingType value): data_{value} {}
 
+    static Float FromJson(json j) {
+        return Float(j.get<UnderlyingType>());
+    }
+
     static Float Decode(Buffer& buffer) {
         auto word = buffer.get_word(BitSize);
 
@@ -86,6 +110,10 @@ public:
         std::memcpy(&data, &word, 4);
 
         return Float(data);
+    }
+
+    json DecodeJson() const {
+        return GetData();
     }
 
     void _encode(Buffer& buffer) const {
@@ -121,6 +149,9 @@ public:
 
     Double(): data_{0.0}{}
     Double(UnderlyingType value): data_{value} {}
+    static Double FromJson(json j) {
+        return Double(j.get<UnderlyingType>());
+    }
 
     static Double Decode(Buffer& buffer) {
         auto word = buffer.get_word(BitSize);
@@ -129,6 +160,10 @@ public:
         std::memcpy(&data, &word, 8);
 
         return Double(data);
+    }
+
+    json DecodeJson() const {
+        return GetData();
     }
 
     void _encode(Buffer& buffer) const {
@@ -167,6 +202,16 @@ class Array {
         std::copy(ls.begin(), ls.end(), data_.begin());
     }
 
+    static Array FromJson(json j) {
+        std::array<T, N> data{0};
+
+        for (int i=0; i<N && i<j.size(); i++) {
+            data[i] = T::FromJson(j[i]);
+        }
+
+        return Array(data);
+    }
+
     static Array Decode(Buffer& buffer) {
         std::array<T, N> data{0};
 
@@ -175,6 +220,16 @@ class Array {
         }
 
         return Array(data);
+    }
+
+    json DecodeJson() const {
+        json j{};
+
+        for (const auto& x: GetData()) {
+            j.push_back(x.DecodeJson());
+        }
+
+        return j;
     }
 
     void _encode(Buffer& buffer) const {
@@ -214,6 +269,10 @@ class String {
     String(const std::string& value): data_{value} {}
     String(const char* value): data_{value} {}
 
+    static String FromJson(json j) {
+        return String(j.get<std::string>());
+    }
+
     static String Decode(Buffer& buffer) {
         std::string data{};
         auto len = Unsigned<std::uint32_t, 32>::Decode(buffer).GetData();
@@ -222,6 +281,10 @@ class String {
         }
 
         return String(data);
+    }
+
+    json DecodeJson() const {
+        return GetData();
     }
 
     void _encode(Buffer& buffer) const {
@@ -258,6 +321,15 @@ class DynamicArray {
     DynamicArray(const char* value): data_{value} {}
     DynamicArray(std::initializer_list<T> ls) : data_{ls} {}
 
+    static DynamicArray FromJson(json j) {
+        std::vector<T> data{};
+        for (const auto& x: j) {
+            data.push_back(T::FromJson(x));
+        }
+
+        return DynamicArray(data);
+    }
+
     static DynamicArray Decode(Buffer& buffer) {
         std::vector<T> data{};
         auto len = Unsigned<std::uint32_t, 32>::Decode(buffer).GetData();
@@ -266,6 +338,14 @@ class DynamicArray {
         }
 
         return DynamicArray(data);
+    }
+
+    json DecodeJson() const {
+        json j{};
+        for (auto x: GetData()) {
+            j.push_back(x.DecodeJson());
+        }
+        return j;
     }
 
     void _encode(Buffer& buffer) const {
@@ -328,6 +408,15 @@ class Optional {
         return Optional(value);
     }
 
+    static Optional FromJson(json j) {
+        if (j.is_null()) {
+            return Optional{std::nullopt};
+        }
+        else {
+            return Optional{std::optional<T>{T::FromJson(j)}};
+        }
+    }
+
     static Optional Decode(Buffer& buffer) {
         std::optional<T> data;
         auto is_some = Unsigned<std::uint8_t, 8>::Decode(buffer).GetData();
@@ -340,6 +429,15 @@ class Optional {
         }
 
         return Optional(data);
+    }
+
+    json DecodeJson() const {
+        if (GetData().has_value()) {
+            return GetData().value().DecodeJson();
+        }
+        else {
+            return nullptr;
+        }
     }
 
     void _encode(Buffer& buffer) const {
