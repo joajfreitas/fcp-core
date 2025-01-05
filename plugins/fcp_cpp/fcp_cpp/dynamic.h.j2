@@ -117,7 +117,7 @@ class Service {
 };
 
 
-class DynamicSchema {
+class DynamicSchema : public ISchema {
     public:
         DynamicSchema() = default;
 
@@ -131,7 +131,7 @@ class DynamicSchema {
 
         void LoadBinarySchema(std::string schema) {
             auto buffer = fcp::Buffer(schema.begin(), schema.end());
-            auto fcp = fcp::Fcp::Decode(buffer);
+            auto fcp = fcp::reflection::Fcp::Decode(buffer);
 
             for (const auto& x: fcp.GetStructs().GetData()) {
                 std::string name = x.GetName().GetData();
@@ -176,13 +176,20 @@ class DynamicSchema {
         }
 
 
-        json DecodeStruct(std::string name, Buffer& buffer) {
+        std::optional<json> DecodeStruct(std::string name, Buffer& buffer) {
+            if (structs.find(name) == structs.end()) {
+                return std::nullopt;
+            }
             auto s = structs[name];
 
             auto struct_json = json{};
 
             for(const auto& field: s.fields) {
-                struct_json[field.name] = _Decode(field.type, buffer);
+                auto decoded = _Decode(field.type, buffer);
+                if (!decoded.has_value()) {
+                    return std::nullopt;
+                }
+                struct_json[field.name] = decoded.value();
             }
 
             return struct_json;
@@ -242,36 +249,48 @@ class DynamicSchema {
             return data;
         }
 
-        json DecodeArray(Type type, Buffer& buffer) {
+        std::optional<json> DecodeArray(Type type, Buffer& buffer) {
             std::vector<json> data;
             for (int i=0; i<type.size; i++) {
-                data.push_back(_Decode(*type.underlying_type, buffer));
+                auto decoded = _Decode(*type.underlying_type, buffer);
+                if (!decoded.has_value()) {
+                    return std::nullopt;
+                }
+                data.push_back(decoded.value());
             }
 
             return data;
         }
 
-        json DecodeDynamicArray(Type type, Buffer& buffer) {
+        std::optional<json> DecodeDynamicArray(Type type, Buffer& buffer) {
             auto length = buffer.get_word(32);
             std::vector<json> data;
             for (int i=0; i<length; i++) {
-                data.push_back(_Decode(*type.underlying_type, buffer));
+                auto decoded = _Decode(*type.underlying_type, buffer);
+                if (!decoded.has_value()) {
+                    return std::nullopt;
+                }
+                data.push_back(decoded.value());
             }
 
             return data;
         }
 
-        json DecodeOptional(Type type, Buffer& buffer) {
+        std::optional<json> DecodeOptional(Type type, Buffer& buffer) {
             auto is_value = buffer.get_word(8);
             json data{};
 
             if (is_value) {
-                data = _Decode(*type.underlying_type, buffer);
+                auto decoded = _Decode(*type.underlying_type, buffer);
+                if (!decoded.has_value()) {
+                    return std::nullopt;
+                }
+                data = decoded.value();
             }
             return data;
         }
 
-        json _Decode(Type type, Buffer& buffer) {
+        std::optional<json> _Decode(Type type, Buffer& buffer) {
             if (type.type == "Builtin") {
                 if (type.name[0] == 'u') {
                     return DecodeUnsigned(type, buffer);
@@ -290,7 +309,13 @@ class DynamicSchema {
                 }
             }
             else if (type.type == "Struct") {
-                return DecodeStruct(type.name, buffer);
+                auto st = DecodeStruct(type.name, buffer);
+                if (st.has_value()) {
+                    return st.value();
+                }
+                else {
+                    return std::nullopt;
+                }
             }
             else if (type.type == "Enum") {
                 return DecodeEnum(type.name, buffer);
@@ -313,7 +338,7 @@ class DynamicSchema {
 
             return {};
         }
-        json Decode(std::string name, std::vector<uint8_t> data) {
+        std::optional<json> DecodeJson(std::string name, std::vector<uint8_t> data) override {
             auto buffer = Buffer{data.begin(), data.end()};
             return DecodeStruct(name, buffer);
         }
