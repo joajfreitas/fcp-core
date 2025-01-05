@@ -72,7 +72,7 @@ public:
         return GetData() == rhs.GetData();
     }
 
-    std::string to_string(std::string prefix="") const {
+    std::string ToString(std::string prefix="") const {
         std::stringstream ss{};
 
         switch(GetData()) {
@@ -97,24 +97,22 @@ struct {{struct.name}} {
 
     {{struct.name}}():
     {%- for signal in struct.fields %}
-    {{signal.name}}_{{'{'}}{{'}'}}{% if not loop.last %},{% endif %}
+        {{signal.name}}_{{'{'}}{{'}'}}{% if not loop.last %},{% endif %}
     {%- endfor %}
     {}
 
     {{struct.name}}({% for signal in struct.fields %}{{signal.name | capitalize}}Type {{signal.name}}{% if not loop.last %},{% endif %}{% endfor %}):
     {%- for signal in struct.fields %}
-    {{signal.name}}_{{'{'}}{{signal.name}}{{'}'}}{% if not loop.last %},{% endif %}
+        {{signal.name}}_{{'{'}}{{signal.name}}{{'}'}}{% if not loop.last %},{% endif %}
     {%- endfor %}
     {}
 
     static {{struct.name}} FromJson(json j){
-        {{struct.name}} s{};
-
+        return {{struct.name}} {
         {%- for signal in struct.fields %}
-        s.{{signal.name}}_ = {{signal.name | capitalize}}Type::FromJson(j["{{signal.name}}"]);
+            {{signal.name | capitalize}}Type::FromJson(j["{{signal.name}}"]),
         {%- endfor %}
-
-        return s;
+        };
     }
 
     static {{struct.name}} Decode(Buffer& buffer) {
@@ -133,9 +131,9 @@ struct {{struct.name}} {
 
     json DecodeJson() const {
         json j{};
-        {%- for signal in struct.fields %}
+        {% for signal in struct.fields -%}
         j["{{signal.name}}"] = {{signal.name}}_.DecodeJson();
-        {% endfor %}
+        {% endfor -%}
 
         return j;
     }
@@ -151,42 +149,40 @@ struct {{struct.name}} {
         {{signal.name}}_.Encode(buffer);
     {%- endfor %}
     }
-
     {% for signal in struct.fields %}
     {{signal.name | capitalize}}Type Get{{signal.name | capitalize}}() const {
         return {{signal.name}}_;
     }
-    {% endfor %}
+    {% endfor -%}
 
     {% for signal in struct.fields %}
     {{signal.name | capitalize}}Type& View{{signal.name | capitalize}}() {
         return {{signal.name}}_;
     }
     {% endfor %}
-
     inline bool operator==(const {{struct.name}}& rhs) const {
         return  {% for signal in struct.fields %}{{signal.name}}_ == rhs.Get{{signal.name | capitalize}}(){% if not loop.last %}
         {{'\t'}}&& {% endif %}{% endfor %};
     }
 
-    std::string to_string(std::string prefix = "") const {
+    std::string ToString(std::string prefix = "") const {
         std::stringstream ss{};
         auto p = prefix + "\t";
         ss << "{{struct.name}} {" << std::endl;
         {%- for signal in struct.fields %}
-        ss << p << "{{signal.name}}: " << {{signal.name}}_.to_string(p) << std::endl;
+        ss << p << "{{signal.name}}: " << {{signal.name}}_.ToString(p) << std::endl;
         {%- endfor %}
         ss << prefix << "}" << std::endl;
         return ss.str();
     }
+
 private:
 
     {%- for signal in struct.fields %}
     {{signal.name | capitalize}}Type {{signal.name}}_;
     {%- endfor %}
 };
-{% endfor -%}
-
+{% endfor %}
 struct StaticSchema: public ISchema
 {
     StaticSchema() = default;
@@ -202,8 +198,6 @@ struct StaticSchema: public ISchema
         return std::nullopt;
     }
 };
-
 {% if namespace is not none %}
 } // {{namespace}}
-{% endif %}
-} // namespace fcp
+{% endif %}} // namespace fcp
