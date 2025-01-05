@@ -73,7 +73,7 @@ fcp_parser = Lark(
     enum: "enum" identifier "{" enum_field* "}"
     enum_field : identifier "=" value ","
 
-    impl: "impl" identifier "for" identifier "{" (extension_field | signal_block)+ "}"
+    impl: "impl" identifier "for" identifier "as"? identifier? "{" (extension_field | signal_block)+ "}"
     signal_block: "signal" identifier "{" extension_field+ "}" ","
     extension_field: identifier ":" value ","
 
@@ -322,8 +322,18 @@ class FcpV2Transformer(Transformer):  # type: ignore
         def is_signal_block(x: Any) -> bool:
             return isinstance(x, signal_block.SignalBlock)
 
-        protocol, name, *fields = tree.children
-        type = name  # type and name are the same!
+        def is_extension_field(x: Any) -> bool:
+            return isinstance(x, tuple)
+
+        def is_impl_name(x: Any) -> bool:
+            return isinstance(x, str)
+
+        protocol, type, *fields = tree.children
+        if len(fields) != 0 and is_impl_name(fields[0]):
+            name = fields[0]
+            fields = fields[1:]
+        else:
+            name = type
 
         signal_blocks = [field for field in fields if is_signal_block(field)]
         fields = [field for field in fields if not is_signal_block(field)]
