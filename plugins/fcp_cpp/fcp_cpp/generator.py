@@ -112,15 +112,34 @@ class Generator(CodeGenerator):
         fcp_reflection, _ = get_reflection_schema().unwrap()
 
         output_files = [
-            ("fcp.h.j2", "fcp.h", {"fcp": fcp, "structs": fcp.structs}),
+            (
+                "fcp.h.j2",
+                "fcp.h",
+                {
+                    "fcp": fcp,
+                    "structs": fcp.structs,
+                    "impls": fcp.impls,
+                    "namespace": None,
+                },
+            ),
             ("buffer.h.j2", "buffer.h", {}),
             ("decoders.h.j2", "decoders.h", {}),
             ("dynamic.h.j2", "dynamic.h", {}),
             (
                 "fcp.h.j2",
                 "reflection.h",
-                {"fcp": fcp_reflection, "structs": fcp_reflection.structs},
+                {
+                    "fcp": fcp_reflection,
+                    "structs": fcp_reflection.structs,
+                    "namespace": "reflection",
+                },
             ),
+            (
+                "can.h.j2",
+                "can.h",
+                {"fcp": fcp, "structs": fcp.structs, "impls": fcp.impls},
+            ),
+            ("ischema.h.j2", "ischema.h", {}),
         ]
 
         loader = jinja2.DictLoader(
