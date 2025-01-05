@@ -19,6 +19,9 @@
 #include "decoders.h"
 
 namespace fcp {
+{% if namespace is not none %}
+namespace {{namespace}} {
+{% endif %}
 
 using json = nlohmann::json;
 
@@ -181,4 +184,8 @@ private:
     {%- endfor %}
 };
 {% endfor -%}
+
+{% if namespace is not none %}
+} // {{namespace}}
+{% endif %}
 } // namespace fcp
