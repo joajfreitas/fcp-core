@@ -17,7 +17,7 @@ public:
     template<typename Iterator>
     Buffer(Iterator first, Iterator last): buffer_{first, last}, current_bit_{0} {}
 
-    uint64_t get_word(uint64_t bitlength, bool sign=false) {
+    uint64_t GetWord(uint64_t bitlength, bool sign=false) {
         uint64_t result = 0;
         for (uint64_t i=0; i<bitlength; i++) {
             auto word = static_cast<uint64_t>(get_bit(buffer_.begin(), current_bit_ + i)) << i;
@@ -37,9 +37,9 @@ public:
     }
 
     template<typename T, std::size_t Size>
-    void push_word(T word) {
+    void PushWord(T word) {
         for (int i=0; i<Size; i++) {
-            set_bit((word >> i) & 0b1, current_bit_ + i);
+            SetBit((word >> i) & 0b1, current_bit_ + i);
         }
 
         current_bit_ += Size;
@@ -49,7 +49,7 @@ public:
         return buffer_;
     }
 
-    std::string to_string(std::string prefix = "") const {
+    std::string ToString(std::string prefix = "") const {
         std::stringstream ss{};
         ss << std::hex << "{";
         for (const auto& x: GetData()) {
@@ -60,18 +60,18 @@ public:
     }
 
 private:
-    void set_bit(uint8_t bit, std::size_t bit_index) {
+    void SetBit(uint8_t bit, std::size_t bit_index) {
         auto byte_address = bit_index >> 3;
         auto intra_byte_bit_address = bit_index & 0b111;
 
         if (byte_address >= buffer_.size()) {
-            extend();
+            Extend();
         }
 
         buffer_[byte_address] = (buffer_[byte_address] & ~((uint8_t)1 << intra_byte_bit_address)) | ((uint8_t) bit << intra_byte_bit_address);
     }
 
-    void extend() {
+    void Extend() {
         buffer_.push_back(0);
     }
 

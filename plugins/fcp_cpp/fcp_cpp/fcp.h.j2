@@ -42,7 +42,7 @@ public:
     }
 
     static {{enum.name}} Decode(Buffer& buffer) {
-        UnderlyingType data = buffer.get_word(GetSize());
+        UnderlyingType data = buffer.GetWord(GetSize());
         return data;
     }
 
@@ -57,7 +57,7 @@ public:
     }
 
     void Encode(Buffer& buffer) const {
-        buffer.push_word<UnderlyingType, {{enum.get_packed_size()}}>(data_);
+        buffer.PushWord<UnderlyingType, {{enum.get_packed_size()}}>(data_);
     }
 
     static std::size_t GetSize() {

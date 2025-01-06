@@ -216,17 +216,17 @@ class DynamicSchema : public ISchema {
 
         json DecodeUnsigned(Type type, Buffer& buffer) {
             auto size = std::stoi(type.name.substr(1));
-            return buffer.get_word(size);
+            return buffer.GetWord(size);
         }
 
         json DecodeSigned(Type type, Buffer& buffer) {
             auto size = std::stoi(type.name.substr(1));
-            return buffer.get_word(size, true);
+            return buffer.GetWord(size, true);
         }
 
         json DecodeFloat32(Type type, Buffer& buffer) {
             float data;
-            auto word = buffer.get_word(32);
+            auto word = buffer.GetWord(32);
             std::memcpy(&data, &word, sizeof(data));
 
             return data;
@@ -234,17 +234,17 @@ class DynamicSchema : public ISchema {
 
         json DecodeFloat64(Type type, Buffer& buffer) {
             double data;
-            auto word = buffer.get_word(64);
+            auto word = buffer.GetWord(64);
             std::memcpy(&data, &word, sizeof(data));
 
             return data;
         }
 
         json DecodeString(Type type, Buffer& buffer) {
-            auto length = buffer.get_word(32);
+            auto length = buffer.GetWord(32);
             std::string data;
             for (int i=0; i<length; i++) {
-                data += buffer.get_word(8);
+                data += buffer.GetWord(8);
             }
             return data;
         }
@@ -263,7 +263,7 @@ class DynamicSchema : public ISchema {
         }
 
         std::optional<json> DecodeDynamicArray(Type type, Buffer& buffer) {
-            auto length = buffer.get_word(32);
+            auto length = buffer.GetWord(32);
             std::vector<json> data;
             for (int i=0; i<length; i++) {
                 auto decoded = _Decode(*type.underlying_type, buffer);
@@ -277,7 +277,7 @@ class DynamicSchema : public ISchema {
         }
 
         std::optional<json> DecodeOptional(Type type, Buffer& buffer) {
-            auto is_value = buffer.get_word(8);
+            auto is_value = buffer.GetWord(8);
             json data{};
 
             if (is_value) {

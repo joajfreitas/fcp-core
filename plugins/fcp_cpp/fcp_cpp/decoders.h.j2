@@ -1,6 +1,8 @@
 #pragma once
 
 #include <nlohmann/json.hpp>
+#
+#include "buffer.h"
 
 namespace fcp {
 
@@ -17,7 +19,7 @@ public:
     }
 
     static Unsigned Decode(Buffer& buffer) {
-        auto word = buffer.get_word(BitSize);
+        auto word = buffer.GetWord(BitSize);
         return Unsigned(static_cast<UnderlyingType>(word));
     }
 
@@ -26,7 +28,7 @@ public:
     }
 
     void Encode(Buffer& buffer) const {
-        buffer.push_word<UnderlyingType, BitSize>(data_) ;
+        buffer.PushWord<UnderlyingType, BitSize>(data_) ;
     }
 
     UnderlyingType GetData() const {
@@ -60,7 +62,7 @@ public:
     }
 
     static Signed Decode(Buffer& buffer) {
-        auto word = buffer.get_word(BitSize, true);
+        auto word = buffer.GetWord(BitSize, true);
         return Signed(static_cast<UnderlyingType>(word));
     }
 
@@ -69,7 +71,7 @@ public:
     }
 
     void Encode(Buffer& buffer) const {
-        buffer.push_word<UnderlyingType, BitSize>(data_) ;
+        buffer.PushWord<UnderlyingType, BitSize>(data_) ;
     }
 
     UnderlyingType GetData() const {
@@ -104,7 +106,7 @@ public:
     }
 
     static Float Decode(Buffer& buffer) {
-        auto word = buffer.get_word(BitSize);
+        auto word = buffer.GetWord(BitSize);
 
         UnderlyingType data{};
         std::memcpy(&data, &word, 4);
@@ -119,7 +121,7 @@ public:
     void Encode(Buffer& buffer) const {
         std::uint32_t tmp = 0;
         std::memcpy(&tmp, &data_, 4);
-        buffer.push_word<std::uint32_t, BitSize>(tmp) ;
+        buffer.PushWord<std::uint32_t, BitSize>(tmp) ;
     }
 
     UnderlyingType GetData() const {
@@ -154,7 +156,7 @@ public:
     }
 
     static Double Decode(Buffer& buffer) {
-        auto word = buffer.get_word(BitSize);
+        auto word = buffer.GetWord(BitSize);
 
         UnderlyingType data{};
         std::memcpy(&data, &word, 8);
@@ -169,7 +171,7 @@ public:
     void Encode(Buffer& buffer) const {
         std::uint64_t tmp = 0;
         std::memcpy(&tmp, &data_, 8);
-        buffer.push_word<std::uint64_t, BitSize>(tmp) ;
+        buffer.PushWord<std::uint64_t, BitSize>(tmp) ;
     }
 
     UnderlyingType GetData() const {
