@@ -150,18 +150,18 @@ struct {{struct.name}} {
     {%- endfor %}
     }
     {% for signal in struct.fields %}
-    {{signal.name | capitalize}}Type Get{{signal.name | capitalize}}() const {
+    {{signal.name | capitalize}}Type Get{{signal.name | to_pascal_case}}() const {
         return {{signal.name}}_;
     }
     {% endfor -%}
 
     {% for signal in struct.fields %}
-    {{signal.name | capitalize}}Type& View{{signal.name | capitalize}}() {
+    {{signal.name | capitalize}}Type& View{{signal.name | to_pascal_case}}() {
         return {{signal.name}}_;
     }
     {% endfor %}
     inline bool operator==(const {{struct.name}}& rhs) const {
-        return  {% for signal in struct.fields %}{{signal.name}}_ == rhs.Get{{signal.name | capitalize}}(){% if not loop.last %}
+        return  {% for signal in struct.fields %}{{signal.name}}_ == rhs.Get{{signal.name | to_pascal_case}}(){% if not loop.last %}
         {{'\t'}}&& {% endif %}{% endfor %};
     }
 

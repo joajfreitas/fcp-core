@@ -85,6 +85,11 @@ def to_wrapper_cpp_type(input: Type) -> str:
     raise ValueError("Cannot convert type to C++ type")
 
 
+def to_pascal_case(name: str) -> str:
+    """Convert snake case to pascal case."""
+    return "".join([n.capitalize() for n in name.split("_")])
+
+
 class CanEncoding:
     """Can encoding representation used in templates."""
 
@@ -153,6 +158,7 @@ class Generator(CodeGenerator):
 
         env = jinja2.Environment(loader=loader)
         env.globals["to_wrapper_cpp_type"] = to_wrapper_cpp_type
+        env.filters["to_pascal_case"] = to_pascal_case
 
         return [
             {
