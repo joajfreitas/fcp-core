@@ -79,7 +79,7 @@ class CodeGenerator:
         for result in self.generate(fcp, ctx):
             handle_result(result)
 
-    def generate(self, fcp: FcpV2, ctx: Any) -> Dict[str, Union[str, Path]]:
+    def generate(self, fcp: FcpV2, ctx: Any) -> List[Dict[str, Union[str, Path]]]:
         """Function to override from generator. Implements actual code generation."""
         raise NotImplementedError
 

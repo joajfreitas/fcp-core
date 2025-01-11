@@ -1,5 +1,20 @@
 {
-  "impls":[],
+  "impls": [
+      {
+          "fields": {},
+          "name": "A",
+          "protocol": "default",
+          "signals": [],
+          "type": "A"
+      },
+      {
+          "fields": {},
+          "name": "B",
+          "protocol": "default",
+          "signals": [],
+          "type": "B"
+      }
+  ],
   "structs": [
     {
       "name": "A",

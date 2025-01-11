@@ -28,13 +28,14 @@ import jinja2
 import math
 import os
 
-from fcp.specs.type import Type
 from fcp.specs.impl import Impl
 from fcp.codegen import CodeGenerator
 from fcp.verifier import Verifier
 from fcp.specs.v2 import FcpV2
+from fcp.specs.struct import Struct
 from fcp.v2_parser import get_fcp
 from fcp.specs.type import (
+    Type,
     BuiltinType,
     ArrayType,
     ComposedTypeCategory,
@@ -85,6 +86,16 @@ def to_wrapper_cpp_type(input: Type) -> str:
     raise ValueError("Cannot convert type to C++ type")
 
 
+def get_matching_impls(fcp: FcpV2, protocol: str) -> List[Impl]:
+    """Get impls matching a protocol."""
+    return list(fcp.get_matching_impls(protocol))
+
+
+def get_struct_from_type(fcp: FcpV2, type: str) -> Struct:
+    """Get struct from type name."""
+    return fcp.get_type(ComposedType(type, ComposedTypeCategory.Struct)).unwrap()
+
+
 def to_pascal_case(name: str) -> str:
     """Convert snake case to pascal case."""
     return "".join([n.capitalize() for n in name.split("_")])
@@ -112,7 +123,7 @@ class Generator(CodeGenerator):
             (Path(os.path.dirname(os.path.abspath(__file__))) / filename).open().read()
         )
 
-    def generate(self, fcp: FcpV2, ctx: Any) -> Dict[str, Union[str, Path]]:
+    def generate(self, fcp: FcpV2, ctx: Any) -> List[Dict[str, Union[str, Path]]]:
         """Generate cpp files."""
         fcp_reflection, _ = get_reflection_schema().unwrap()
 
@@ -122,9 +133,8 @@ class Generator(CodeGenerator):
                 "fcp.h",
                 {
                     "fcp": fcp,
-                    "structs": fcp.structs,
-                    "impls": fcp.impls,
                     "namespace": None,
+                    "protocol": "default",
                 },
             ),
             ("buffer.h.j2", "buffer.h", {}),
@@ -135,14 +145,14 @@ class Generator(CodeGenerator):
                 "reflection.h",
                 {
                     "fcp": fcp_reflection,
-                    "structs": fcp_reflection.structs,
                     "namespace": "reflection",
+                    "protocol": "default",
                 },
             ),
             (
                 "can.h.j2",
                 "can.h",
-                {"fcp": fcp, "structs": fcp.structs, "impls": fcp.impls},
+                {"fcp": fcp},
             ),
             ("ischema.h.j2", "ischema.h", {}),
         ]
@@ -158,6 +168,8 @@ class Generator(CodeGenerator):
 
         env = jinja2.Environment(loader=loader)
         env.globals["to_wrapper_cpp_type"] = to_wrapper_cpp_type
+        env.globals["get_matching_impls"] = get_matching_impls
+        env.globals["get_struct_from_type"] = get_struct_from_type
         env.filters["to_pascal_case"] = to_pascal_case
 
         return [

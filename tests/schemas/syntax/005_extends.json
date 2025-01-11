@@ -1,6 +1,13 @@
 {
   "impls":[
       {
+          "fields": {},
+          "name": "A",
+          "protocol": "default",
+          "signals": [],
+          "type": "A"
+      },
+      {
           "name": "A",
           "protocol": "protocol1",
           "type": "A",

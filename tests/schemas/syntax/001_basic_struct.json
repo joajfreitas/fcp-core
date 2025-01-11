@@ -1,5 +1,41 @@
 {
-  "impls": [],
+  "impls": [
+      {
+          "fields": {},
+          "name": "S1",
+          "protocol": "default",
+          "signals": [],
+          "type": "S1"
+      },
+      {
+          "fields": {},
+          "name": "S2",
+          "protocol": "default",
+          "signals": [],
+          "type": "S2"
+      },
+      {
+          "fields": {},
+          "name": "S3",
+          "protocol": "default",
+          "signals": [],
+          "type": "S3"
+      },
+      {
+          "fields": {},
+          "name": "S4",
+          "protocol": "default",
+          "signals": [],
+          "type": "S4"
+      },
+      {
+          "fields": {},
+          "name": "S5",
+          "protocol": "default",
+          "signals": [],
+          "type": "S5"
+      }
+  ],
   "structs": [
     {
       "name": "S1",

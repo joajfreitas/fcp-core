@@ -1,6 +1,14 @@
 {
     "enums": [],
-    "impls": [],
+    "impls": [
+        {
+            "fields": {},
+            "name": "A",
+            "protocol": "default",
+            "signals": [],
+            "type": "A"
+        }
+    ],
     "services": [],
     "structs": [
         {

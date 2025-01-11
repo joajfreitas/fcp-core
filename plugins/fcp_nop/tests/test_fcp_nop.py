@@ -89,7 +89,22 @@ struct SensorInformation {
                 ],
             }
         ],
-        "impls": [],
+        "impls": [
+            {
+                "name": "Temperature",
+                "protocol": "default",
+                "type": "Temperature",
+                "fields": {},
+                "signals": [],
+            },
+            {
+                "name": "SensorInformation",
+                "protocol": "default",
+                "type": "SensorInformation",
+                "fields": {},
+                "signals": [],
+            },
+        ],
         "services": [],
         "version": "3.0",
     }
