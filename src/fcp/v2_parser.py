@@ -252,6 +252,17 @@ class FcpV2Transformer(Transformer):  # type: ignore
             )  # type:ignore
         )
 
+        self.fcp.impls.append(
+            impl.Impl(
+                name=name,
+                protocol="default",
+                type=name,
+                fields={},
+                signals=[],
+                meta=meta,
+            )  # type: ignore
+        )
+
         return Ok(())
 
     @v_args(tree=True)  # type: ignore
