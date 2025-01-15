@@ -96,7 +96,6 @@ class FcpV2:
 
     def get_matching_impl(self, struct: Struct, protocol: str) -> List[Impl]:
         """Get impl for corresponding struct with a specific protocol."""
-
         impls = []
         for extension in self.impls:
             if extension.type == struct.name and extension.protocol == protocol:
@@ -111,6 +110,7 @@ class FcpV2:
                 yield impl
 
     def get_matching_impls_or_default(self, protocol: str) -> List[Impl]:
+        """Get list of impls matching protocol or the default for a given struct."""
         impls = []
         for struct in self.structs:
             tmp = self.get_matching_impl(struct, protocol)
@@ -155,6 +155,7 @@ class FcpV2:
         return Err("Field not found")
 
     def get_protocols(self) -> List[str]:
+        """Get list of unique protocol names."""
         return list(set([impl.protocol for impl in self.impls]))
 
     def to_dict(self) -> Any:
