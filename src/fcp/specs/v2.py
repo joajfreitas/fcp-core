@@ -94,19 +94,32 @@ class FcpV2:
         else:
             return Nothing()
 
-    def get_matching_impl(self, struct: Struct, protocol: str) -> Maybe[Impl]:
+    def get_matching_impl(self, struct: Struct, protocol: str) -> List[Impl]:
         """Get impl for corresponding struct with a specific protocol."""
+
+        impls = []
         for extension in self.impls:
             if extension.type == struct.name and extension.protocol == protocol:
-                return Some(extension)
+                impls.append(extension)
 
-        return Nothing()
+        return impls
 
     def get_matching_impls(self, protocol: str) -> Generator[Impl, None, None]:
         """Get impls by protocol name."""
-        for extension in self.impls:
-            if extension.protocol == protocol:
-                yield extension
+        for impl in self.impls:
+            if impl.protocol == protocol:
+                yield impl
+
+    def get_matching_impls_or_default(self, protocol: str) -> List[Impl]:
+        impls = []
+        for struct in self.structs:
+            tmp = self.get_matching_impl(struct, protocol)
+            if len(tmp) != 0:
+                impls += tmp
+            else:
+                impls += self.get_matching_impl(struct, "default")
+
+        return impls
 
     def get_struct(self, name: str) -> Maybe[Struct]:
         """Get struct by name."""
@@ -140,6 +153,9 @@ class FcpV2:
             if field.name == xpath.path[-1]:
                 return Ok(field)
         return Err("Field not found")
+
+    def get_protocols(self) -> List[str]:
+        return list(set([impl.protocol for impl in self.impls]))
 
     def to_dict(self) -> Any:
         """Get the fcp AST as a python dictionary."""

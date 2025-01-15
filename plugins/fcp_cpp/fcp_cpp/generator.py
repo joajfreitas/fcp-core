@@ -33,7 +33,6 @@ from fcp.codegen import CodeGenerator
 from fcp.verifier import Verifier
 from fcp.specs.v2 import FcpV2
 from fcp.specs.struct import Struct
-from fcp.v2_parser import get_fcp
 from fcp.specs.type import (
     Type,
     BuiltinType,
@@ -43,7 +42,6 @@ from fcp.specs.type import (
     DynamicArrayType,
     OptionalType,
 )
-from fcp.encoding import make_encoder, EncodeablePiece, EncoderContext, Value
 from fcp.reflection import get_reflection_schema
 
 
@@ -88,8 +86,7 @@ def to_wrapper_cpp_type(input: Type) -> str:
 
 def get_matching_impls(fcp: FcpV2, protocol: str) -> List[Impl]:
     """Get impls matching a protocol."""
-    return list(fcp.get_matching_impls(protocol))
-
+    return fcp.get_matching_impls_or_default(protocol)
 
 def get_struct_from_type(fcp: FcpV2, type: str) -> Struct:
     """Get struct from type name."""
@@ -99,17 +96,6 @@ def get_struct_from_type(fcp: FcpV2, type: str) -> Struct:
 def to_pascal_case(name: str) -> str:
     """Convert snake case to pascal case."""
     return "".join([n.capitalize() for n in name.split("_")])
-
-
-class CanEncoding:
-    """Can encoding representation used in templates."""
-
-    def __init__(self, impl: Impl, encoding: List[EncodeablePiece]) -> None:
-        self.impl = impl
-        self.encoding = encoding
-        self.id = impl.fields.get("id")
-        self.device_name = impl.fields.get("device")
-        self.dlc = math.ceil((encoding[-1].bitstart + encoding[-1].bitlength) / 8)
 
 
 class Generator(CodeGenerator):
@@ -155,6 +141,17 @@ class Generator(CodeGenerator):
                 {"fcp": fcp},
             ),
             ("ischema.h.j2", "ischema.h", {}),
+        ] + [
+            (
+                "fcp.h.j2",
+                "fcp_" + protocol + ".h",
+                {
+                    "fcp": fcp,
+                    "namespace": None,
+                    "protocol": protocol
+                }
+            )
+            for protocol in fcp.get_protocols()
         ]
 
         loader = jinja2.DictLoader(
