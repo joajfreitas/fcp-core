@@ -88,6 +88,7 @@ def get_matching_impls(fcp: FcpV2, protocol: str) -> List[Impl]:
     """Get impls matching a protocol."""
     return fcp.get_matching_impls_or_default(protocol)
 
+
 def get_struct_from_type(fcp: FcpV2, type: str) -> Struct:
     """Get struct from type name."""
     return fcp.get_type(ComposedType(type, ComposedTypeCategory.Struct)).unwrap()
@@ -145,11 +146,7 @@ class Generator(CodeGenerator):
             (
                 "fcp.h.j2",
                 "fcp_" + protocol + ".h",
-                {
-                    "fcp": fcp,
-                    "namespace": None,
-                    "protocol": protocol
-                }
+                {"fcp": fcp, "namespace": None, "protocol": protocol},
             )
             for protocol in fcp.get_protocols()
         ]
