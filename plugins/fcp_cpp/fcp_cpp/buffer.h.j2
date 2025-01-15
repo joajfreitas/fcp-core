@@ -10,6 +10,11 @@ uint8_t get_bit(Iterator input, uint32_t bit) {
     return (*(input+byte_address) >> intra_byte_bit_address) & 0b1;
 }
 
+enum class Endianess {
+    Little,
+    Big
+};
+
 class Buffer {
 public:
     explicit Buffer(std::size_t size): buffer_((size + 7)/8), current_bit_{0} {}
@@ -17,7 +22,7 @@ public:
     template<typename Iterator>
     Buffer(Iterator first, Iterator last): buffer_{first, last}, current_bit_{0} {}
 
-    uint64_t GetWord(uint64_t bitlength, bool sign=false) {
+    uint64_t GetWord(uint64_t bitlength, bool sign=false, Endianess endianess=Endianess::Little) {
         uint64_t result = 0;
         for (uint64_t i=0; i<bitlength; i++) {
             auto word = static_cast<uint64_t>(get_bit(buffer_.begin(), current_bit_ + i)) << i;
@@ -33,7 +38,7 @@ public:
 
         current_bit_ += bitlength;
 
-        return result;
+        return endianess==Endianess::Little ? result : ToBigEndian(result, bitlength);
     }
 
     template<typename T, std::size_t Size>
@@ -73,6 +78,10 @@ private:
 
     void Extend() {
         buffer_.push_back(0);
+    }
+
+    uint64_t ToBigEndian(uint64_t value, uint64_t bitlength) {
+        return value;
     }
 
     std::vector<uint8_t> buffer_;

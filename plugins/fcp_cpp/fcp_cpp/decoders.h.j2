@@ -18,8 +18,8 @@ public:
         return Unsigned(j.get<UnderlyingType>());
     }
 
-    static Unsigned Decode(Buffer& buffer) {
-        auto word = buffer.GetWord(BitSize);
+    static Unsigned Decode(Buffer& buffer, Endianess endianess=Endianess::Little) {
+        auto word = buffer.GetWord(BitSize, false, endianess);
         return Unsigned(static_cast<UnderlyingType>(word));
     }
 
@@ -61,8 +61,8 @@ public:
         return Signed(j.get<UnderlyingType>());
     }
 
-    static Signed Decode(Buffer& buffer) {
-        auto word = buffer.GetWord(BitSize, true);
+    static Signed Decode(Buffer& buffer, Endianess endianess=Endianess::Little) {
+        auto word = buffer.GetWord(BitSize, true, endianess);
         return Signed(static_cast<UnderlyingType>(word));
     }
 
@@ -105,8 +105,8 @@ public:
         return Float(j.get<UnderlyingType>());
     }
 
-    static Float Decode(Buffer& buffer) {
-        auto word = buffer.GetWord(BitSize);
+    static Float Decode(Buffer& buffer, Endianess endianess=Endianess::Little) {
+        auto word = buffer.GetWord(BitSize, false, endianess);
 
         UnderlyingType data{};
         std::memcpy(&data, &word, 4);
@@ -155,8 +155,8 @@ public:
         return Double(j.get<UnderlyingType>());
     }
 
-    static Double Decode(Buffer& buffer) {
-        auto word = buffer.GetWord(BitSize);
+    static Double Decode(Buffer& buffer, Endianess endianess=Endianess::Little) {
+        auto word = buffer.GetWord(BitSize, false, endianess);
 
         UnderlyingType data{};
         std::memcpy(&data, &word, 8);
