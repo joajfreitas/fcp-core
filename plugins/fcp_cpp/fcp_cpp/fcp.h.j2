@@ -41,8 +41,8 @@ public:
         return {{enum.name}}{j.get<UnderlyingType>()};
     }
 
-    static {{enum.name}} Decode(Buffer& buffer) {
-        UnderlyingType data = buffer.GetWord(GetSize());
+    static {{enum.name}} Decode(Buffer& buffer, Endianess endianess=Endianess::Little) {
+        UnderlyingType data = buffer.GetWord(GetSize(), false, endianess);
         return data;
     }
 
@@ -116,9 +116,9 @@ struct {{struct.name}} {
         };
     }
 
-    static {{struct.name}} Decode(Buffer& buffer) {
+    static {{struct.name}} Decode(Buffer& buffer, Endianess endianess={% if impl.fields.get('endianess', 'little') == 'big' %}Endianess::Big{% else %}Endianess::Little{% endif %}) {
     {%- for signal in struct.fields %}
-        auto {{signal.name}} = {{signal.name | to_pascal_case}}Type::Decode(buffer);
+        auto {{signal.name}} = {{signal.name | to_pascal_case}}Type::Decode(buffer, endianess);
     {%- endfor %}
 
         return {{struct.name}}({% for signal in struct.fields %}{{signal.name}}{% if not loop.last %},{% endif %}{% endfor %});

@@ -67,3 +67,12 @@ struct S9 {
 struct S10 {
     s1 @ 0: Optional[u8],
 }
+
+struct S11 {
+    s1 @ 0: u8,
+}
+
+impl can for S11 {
+    id: 11,
+    endianess: "big",
+}

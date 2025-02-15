@@ -150,7 +150,7 @@ UTEST({{ suite["name"] }}, {{ test["name"] }}) {
 @pytest.mark.parametrize(
     "test_suite", json.loads((STANDARDIZED_TESTS_DIR / "fcp_tests.json").read_text())
 )  # type: ignore
-def test_standardized_tests(test_suite):
+def test_standardized_tests(test_suite: Dict[Any, Any]) -> None:
     loader = jinja2.DictLoader({"test_template": test_template})
 
     env = jinja2.Environment(loader=loader)

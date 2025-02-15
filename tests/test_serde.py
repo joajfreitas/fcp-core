@@ -272,7 +272,7 @@ def test_decoding_optional_with_none() -> None:
 
 @settings(max_examples=20)  # type: ignore
 @given(integers(min_value=0, max_value=255))  # type: ignore
-def test_roundtrip_decoding_single_byte_types(integer) -> None:
+def test_roundtrip_decoding_single_byte_types(integer: int) -> None:
     fcp_v2, _ = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
 
     data = {
@@ -291,7 +291,7 @@ def test_roundtrip_decoding_single_byte_types(integer) -> None:
     integer1=integers(min_value=0, max_value=2**64 - 1),
     integer2=integers(min_value=-(2**63 - 1), max_value=2**63),
 )  # type: ignore
-def test_roundtrip_decoding_8_byte_types(integer1, integer2) -> None:
+def test_roundtrip_decoding_8_byte_types(integer1: int, integer2: int) -> None:
     fcp_v2, _ = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
 
     data = {
@@ -307,7 +307,7 @@ def test_roundtrip_decoding_8_byte_types(integer1, integer2) -> None:
 
 @settings(max_examples=20)  # type: ignore
 @given(f1=floats(width=32, allow_nan=False), f2=floats(width=64, allow_nan=False))  # type: ignore
-def test_roundtrip_decoding_floating_point_types(f1, f2) -> None:
+def test_roundtrip_decoding_floating_point_types(f1: float, f2: float) -> None:
     fcp_v2, _ = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
 
     data = {
@@ -322,7 +322,7 @@ def test_roundtrip_decoding_floating_point_types(f1, f2) -> None:
 
 @settings(max_examples=20)  # type: ignore
 @given(text(alphabet=characters(codec="ascii"), max_size=4096))  # type: ignore
-def test_roundtrip_decoding_str(t) -> None:
+def test_roundtrip_decoding_str(t: str) -> None:
     fcp_v2, _ = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
 
     data = {"s0": t}
@@ -356,7 +356,7 @@ def test_roundtrip_decoding_simple_array_type(array) -> None:
 
 @settings(max_examples=20)  # type: ignore
 @given(integers(min_value=0, max_value=255), booleans())  # type: ignore
-def test_roundtrip_decoding_optional(value, is_some) -> None:
+def test_roundtrip_decoding_optional(value: int, is_some: bool) -> None:
     fcp_v2, _ = get_fcp(get_fcp_config("syntax", "009_optional")).unwrap()
 
     data = {"field1": value if is_some else None}

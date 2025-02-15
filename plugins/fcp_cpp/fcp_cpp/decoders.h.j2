@@ -214,11 +214,11 @@ class Array {
         return Array(data);
     }
 
-    static Array Decode(Buffer& buffer) {
+    static Array Decode(Buffer& buffer, Endianess endianess = Endianess::Little) {
         std::array<T, N> data{0};
 
         for (int i=0; i<N; i++) {
-            data[i] = T::Decode(buffer);
+            data[i] = T::Decode(buffer, endianess);
         }
 
         return Array(data);
@@ -275,11 +275,11 @@ class String {
         return String(j.get<std::string>());
     }
 
-    static String Decode(Buffer& buffer) {
+    static String Decode(Buffer& buffer, Endianess endianess=Endianess::Little) {
         std::string data{};
         auto len = Unsigned<std::uint32_t, 32>::Decode(buffer).GetData();
         for (int i=0; i<len; i++) {
-            data.push_back(Unsigned<std::uint8_t, 8>::Decode(buffer).GetData());
+            data.push_back(Unsigned<std::uint8_t, 8>::Decode(buffer, endianess).GetData());
         }
 
         return String(data);
@@ -332,11 +332,11 @@ class DynamicArray {
         return DynamicArray(data);
     }
 
-    static DynamicArray Decode(Buffer& buffer) {
+    static DynamicArray Decode(Buffer& buffer, Endianess endianess=Endianess::Little) {
         std::vector<T> data{};
         auto len = Unsigned<std::uint32_t, 32>::Decode(buffer).GetData();
         for (int i=0; i<len; i++) {
-            data.push_back(T::Decode(buffer));
+            data.push_back(T::Decode(buffer, endianess));
         }
 
         return DynamicArray(data);
@@ -419,12 +419,12 @@ class Optional {
         }
     }
 
-    static Optional Decode(Buffer& buffer) {
+    static Optional Decode(Buffer& buffer, Endianess endianess=Endianess::Little) {
         std::optional<T> data;
         auto is_some = Unsigned<std::uint8_t, 8>::Decode(buffer).GetData();
 
         if (is_some) {
-            data = T::Decode(buffer);
+            data = T::Decode(buffer, endianess);
         }
         else {
             data = std::nullopt;

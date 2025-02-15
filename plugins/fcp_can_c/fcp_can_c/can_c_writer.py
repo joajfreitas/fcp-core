@@ -1,4 +1,4 @@
-""""CAN C writer module."""
+"""CAN C writer module."""
 
 import os
 

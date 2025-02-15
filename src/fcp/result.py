@@ -432,7 +432,7 @@ def as_async_result(
         raise TypeError("as_result() requires one or more exception types")
 
     def decorator(
-        f: Callable[P, Awaitable[R]]
+        f: Callable[P, Awaitable[R]],
     ) -> Callable[P, Awaitable[Result[R, TBE]]]:
         """Decorator to turn a function into one that returns a ``Result``."""
 
@@ -525,7 +525,7 @@ def do(gen: Generator[Result[T, E], None, None]) -> Result[T, E]:
 
 
 async def do_async(
-    gen: Union[Generator[Result[T, E], None, None], AsyncGenerator[Result[T, E], None]]
+    gen: Union[Generator[Result[T, E], None, None], AsyncGenerator[Result[T, E], None]],
 ) -> Result[T, E]:
     """Async version of do.
 

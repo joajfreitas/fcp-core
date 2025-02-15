@@ -49,15 +49,15 @@ def generate_cmd(
         print(error_logger.log_fcp_error(result.err()))
 
 
-@click.command()
+@click.command()  # type: ignore
 @click.argument("fcp")  # type: ignore
-def show(fcp):
+def show(fcp: str) -> None:
     """Show fcp schema as dictionary."""
     fcp_result = get_fcp(fcp)
 
     if fcp_result.is_ok():
-        fcp, sources = fcp_result.unwrap()
-        pprint(fcp.to_dict())
+        fcp_v2, _ = fcp_result.unwrap()
+        pprint(fcp_v2.to_dict())
     else:
         print(fcp_result)
 

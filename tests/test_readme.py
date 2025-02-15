@@ -26,7 +26,7 @@ def get_fcp_code_blocks(filename: str) -> List[str]:
     "filename, fcp_code_block",
     get_fcp_code_blocks("README.md") + get_fcp_code_blocks("plugins/fcp_dbc/README.md"),
 )  # type: ignore
-def test_readme(filename: str, fcp_code_block: str):
+def test_readme(filename: str, fcp_code_block: str) -> None:
     tmp_name = f"/tmp/{Path(filename).name}.fcp"
     with open(tmp_name, "w") as fp:
         fp.write(fcp_code_block)

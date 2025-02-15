@@ -139,14 +139,16 @@ class Generator(CodeGenerator):
             (
                 "can.h.j2",
                 "can.h",
-                {"fcp": fcp},
+                {
+                    "fcp": fcp,
+                },
             ),
             ("ischema.h.j2", "ischema.h", {}),
         ] + [
             (
                 "fcp.h.j2",
                 "fcp_" + protocol + ".h",
-                {"fcp": fcp, "namespace": None, "protocol": protocol},
+                {"fcp": fcp, "namespace": protocol, "protocol": protocol},
             )
             for protocol in fcp.get_protocols()
         ]
