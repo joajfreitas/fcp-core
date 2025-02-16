@@ -38,13 +38,14 @@ public:
 
         current_bit_ += bitlength;
 
-        return endianess==Endianess::Little ? result : ToBigEndian(result, bitlength);
+        return endianess==Endianess::Little ? result : FromBigEndian(result, bitlength);
     }
 
     template<typename T, std::size_t Size>
-    void PushWord(T word) {
+    void PushWord(T word, Endianess endianess=Endianess::Little) {
+        T tmp = (endianess == Endianess::Little) ? word : FromBigEndian(word, Size);
         for (int i=0; i<Size; i++) {
-            SetBit((word >> i) & 0b1, current_bit_ + i);
+            SetBit((tmp >> i) & 0b1, current_bit_ + i);
         }
 
         current_bit_ += Size;
@@ -80,7 +81,7 @@ private:
         buffer_.push_back(0);
     }
 
-    uint64_t ToBigEndian(uint64_t value, uint64_t bitlength) {
+    uint64_t FromBigEndian(uint64_t value, uint64_t bitlength) {
         if (!(bitlength == 8 || bitlength == 16 || bitlength == 32 || bitlength == 64)) {
             throw std::runtime_error("Big endian conversion only supported for 8, 16, 32, 64 bit values");
         }
