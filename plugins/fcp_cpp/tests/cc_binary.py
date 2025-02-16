@@ -79,7 +79,12 @@ class InMemoryBinaryFile(Source):
         return self.name
 
 
-def cc_binary(name: str, srcs: List[Source], headers: List[str]) -> None:
+def cc_binary(
+    name: str,
+    srcs: List[Source],
+    headers: List[str],
+    dynamic_libraries: List[str] = list(),
+) -> None:
     """Build and run a C++ program."""
     src_paths = []
 
@@ -92,7 +97,10 @@ def cc_binary(name: str, srcs: List[Source], headers: List[str]) -> None:
         header.apply(Path(tempdirname))
 
     r = subprocess.run(
-        ["/usr/bin/g++", "--std=c++17"] + src_paths + ["-o", name],
+        ["/usr/bin/g++", "--std=c++17"]
+        + src_paths
+        + ["-o", name]
+        + ["-l" + lib for lib in dynamic_libraries],
         capture_output=True,
         cwd=tempdirname,
     )
