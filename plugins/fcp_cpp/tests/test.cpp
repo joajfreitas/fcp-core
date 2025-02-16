@@ -213,3 +213,12 @@ UTEST(Optional, DecodeOptionalWithNoValue) {
 
     EXPECT_TRUE(foo==expected);
 }
+
+UTEST(BigEndian16Bit, Decode) {
+    std::vector<uint8_t> bytes{0x01, 0x02};
+
+    auto s11 = fcp::can::S11::Decode(bytes.begin(), bytes.end());
+    auto expected = fcp::can::S11{0x102};
+
+    EXPECT_TRUE(s11==expected);
+}
