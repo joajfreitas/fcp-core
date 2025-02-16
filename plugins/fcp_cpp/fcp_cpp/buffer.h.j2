@@ -81,7 +81,30 @@ private:
     }
 
     uint64_t ToBigEndian(uint64_t value, uint64_t bitlength) {
-        return value;
+        if (!(bitlength == 8 || bitlength == 16 || bitlength == 32 || bitlength == 64)) {
+            throw std::runtime_error("Big endian conversion only supported for 8, 16, 32, 64 bit values");
+        }
+
+        if (bitlength == 8) {
+            return value;
+        }
+        else if (bitlength == 16) {
+            return ((value & 0x00FF) << 8) | ((value & 0xFF00) >> 8);
+        }
+        else if (bitlength == 32) {
+            return ((value & 0x000000FF) << 24) | ((value & 0x0000FF00) << 8) | ((value & 0x00FF0000) >> 8) | ((value & 0xFF000000) >> 24);
+        }
+        else if (bitlength == 64) {
+            return
+            ((value & 0x00000000000000FF) << 56) |
+            ((value & 0x000000000000FF00) << 40) |
+            ((value & 0x0000000000FF0000) << 24) |
+            ((value & 0x00000000FF000000) << 8) |
+            ((value & 0x000000FF00000000) >> 8) |
+            ((value & 0x0000FF0000000000) >> 24) |
+            ((value & 0x00FF000000000000) >> 40) |
+            ((value & 0xFF00000000000000) >> 56);
+        }
     }
 
     std::vector<uint8_t> buffer_;
