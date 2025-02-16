@@ -98,7 +98,7 @@ def test_dir_tree_structure() -> None:
 
     code_blocks = [block for _, block in code_blocks]
 
-    for _, dirs, y in itertools.chain(os.walk("src"), os.walk("plugins")):
+    for dirpath, dirs, _ in itertools.chain(os.walk("src"), os.walk("plugins")):
         for dir in dirs:
             if (
                 dir.startswith(".")
@@ -109,4 +109,4 @@ def test_dir_tree_structure() -> None:
 
             assert (
                 dir in code_blocks[0]
-            ), f"Couldn't find directory {dir} in docs/hacking.rst"
+            ), f"Couldn't find directory {dirpath}/{dir} in docs/hacking.rst"
