@@ -1,78 +1,75 @@
-//#include "fcp_can.h"
 #include "fcp.h"
 #include "fcp_can.h"
 
-#include "utest.h"
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
-UTEST_MAIN()
 
-UTEST(BasicStruct, EncodeSimpleUnsignedStruct) {
+TEST(BasicStruct, EncodeSimpleUnsignedStruct) {
     auto foo = fcp::S1{1,2};
     auto encoded = foo.Encode().GetData();
 
     std::vector<uint8_t> bytes{1,2};
-    EXPECT_TRUE(encoded==bytes);
+    EXPECT_THAT(encoded,bytes);
 }
 
-UTEST(BasicStruct, DecodeSimpleUnsignedStruct) {
+TEST(BasicStruct, DecodeSimpleUnsignedStruct) {
     std::vector<uint8_t> bytes{1,2};
 
     auto foo = fcp::S1::Decode(bytes.begin(), bytes.end());
     auto expected = fcp::S1{1,2};
-    EXPECT_TRUE(foo==expected);
+    EXPECT_THAT(foo,expected);
 }
 
-UTEST(NestedEnum, Encode) {
+TEST(NestedEnum, Encode) {
     auto foo = fcp::S2{1,2,fcp::E::S1};
     auto encoded = foo.Encode().GetData();
 
     std::vector<uint8_t> bytes{1,2,1};
-    EXPECT_TRUE(encoded == bytes);
+    EXPECT_THAT(encoded,bytes);
 }
 
-UTEST(NestedEnum, Decode) {
+TEST(NestedEnum,Decode) {
     std::vector<uint8_t> bytes{1,2,1};
 
     auto foo = fcp::S2::Decode(bytes.begin(), bytes.end());
     auto expected = fcp::S2{1,2, fcp::E::S1};
-    EXPECT_TRUE(foo == expected);
+    EXPECT_THAT(foo,expected);
 }
 
-UTEST(SimpleArray, Encode) {
+TEST(SimpleArray, Encode) {
     auto foo = fcp::S3{{1,2,3,4}, 5,6};
     auto encoded = foo.Encode().GetData();
 
     std::vector<uint8_t> bytes{1,2,3,4,5,6};
-    EXPECT_TRUE(encoded == bytes);
+    EXPECT_THAT(encoded,bytes);
 }
 
-UTEST(SimpleArray, Decode) {
+TEST(SimpleArray, Decode) {
     std::vector<uint8_t> bytes{1,2,3,4,5,6};
 
     auto foo = fcp::S3::Decode(bytes.begin(), bytes.end());
     auto expected = fcp::S3{{1,2,3,4}, 5, 6};
-    EXPECT_TRUE(foo == expected);
+    EXPECT_THAT(foo,expected);
 }
 
-UTEST(EnumArray, Encode) {
+TEST(EnumArray, Encode) {
     auto foo = fcp::S4{{fcp::E::S0,fcp::E::S1,fcp::E::S2,fcp::E::S0}, 5,6};
     auto encoded = foo.Encode().GetData();
 
     std::vector<uint8_t> bytes{0x24,5,6};
-    EXPECT_TRUE(encoded == bytes);
+    EXPECT_THAT(encoded,bytes);
 }
 
-UTEST(EnumArray, Decode) {
+TEST(EnumArray, Decode) {
     std::vector<uint8_t> bytes{0x24,5,6};
 
     auto foo = fcp::S4::Decode(bytes.begin(), bytes.end());
     auto expected = fcp::S4{{fcp::E::S0,fcp::E::S1,fcp::E::S2,fcp::E::S0}, 5, 6};
-
-    EXPECT_TRUE(foo == expected);
+    EXPECT_THAT(foo,expected);
 }
 
-
-UTEST(SignedValues, Encode) {
+TEST(SignedValues, Encode) {
     auto foo = fcp::S5{1,-2,3,-4,5,-6,7,-8,9,-10};
     std::vector<std::uint8_t> encoded = foo.Encode().GetData();
 
@@ -88,10 +85,10 @@ UTEST(SignedValues, Encode) {
         0x09,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
         0xf6,0xff,0xff,0xff,0xff,0xff,0xff,0xff};
 
-    EXPECT_TRUE(encoded==bytes);
+    EXPECT_THAT(encoded,bytes);
 }
 
-UTEST(SignedValues, Decode) {
+TEST(SignedValues, Decode) {
     std::vector<uint8_t> bytes{
         0x01,
         0xfe,
@@ -106,10 +103,10 @@ UTEST(SignedValues, Decode) {
 
     auto foo = fcp::S5::Decode(bytes.begin(), bytes.end());
     auto expected = fcp::S5{1,-2,3,-4,5,-6,7,-8,9,-10};
-    EXPECT_TRUE(foo==expected);
+    EXPECT_THAT(foo,expected);
 }
 
-UTEST(FloatingPointValues, EncodeSignedAndUnsignedStruct) {
+TEST(FloatingPointValues, EncodeSignedAndUnsignedStruct) {
     auto foo = fcp::S6{1.0, 1.0};
     std::vector<std::uint8_t> encoded = foo.Encode().GetData();
 
@@ -117,22 +114,20 @@ UTEST(FloatingPointValues, EncodeSignedAndUnsignedStruct) {
         0x00, 0x00, 0x80, 0x3f,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F};
 
-
-    EXPECT_TRUE(encoded==bytes);
+    EXPECT_THAT(encoded,bytes);
 }
 
-UTEST(FloatingPointValues, DecodeSignedAndUnsignedStruct) {
+TEST(FloatingPointValues, DecodeSignedAndUnsignedStruct) {
     std::vector<uint8_t> bytes{
         0x00, 0x00, 0x80, 0x3f,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F};
 
     auto foo = fcp::S6::Decode(bytes.begin(), bytes.end());
     auto expected = fcp::S6{1.0, 1.0};
-
-    EXPECT_TRUE(foo==expected);
+    EXPECT_THAT(foo,expected);
 }
 
-UTEST(BasicStruct, EncodeString) {
+TEST(BasicStruct, EncodeString) {
     auto s1 = fcp::S7{"hello"};
     std::vector<std::uint8_t> encoded = s1.Encode().GetData();
 
@@ -140,22 +135,20 @@ UTEST(BasicStruct, EncodeString) {
         0x05, 0x00, 0x00, 0x00,
         0x68, 0x65, 0x6c, 0x6c, 0x6f};
 
-
-    EXPECT_TRUE(encoded==bytes);
+    EXPECT_THAT(encoded,bytes);
 }
 
-UTEST(BasicStruct, DecodeString) {
+TEST(BasicStruct, DecodeString) {
     std::vector<uint8_t> bytes{
         0x05, 0x00, 0x00, 0x00,
         0x68, 0x65, 0x6c, 0x6c, 0x6f};
 
     auto foo = fcp::S7::Decode(bytes.begin(), bytes.end());
     auto expected = fcp::S7{"hello"};
-
-    EXPECT_TRUE(foo==expected);
+    EXPECT_THAT(foo,expected);
 }
 
-UTEST(DynamicArray, Encode) {
+TEST(DynamicArray, Encode) {
     auto s1 = fcp::S8{{{0,1,2}}};
     std::vector<std::uint8_t> encoded = s1.Encode().GetData();
 
@@ -163,62 +156,58 @@ UTEST(DynamicArray, Encode) {
         0x03, 0x00, 0x00, 0x00,
         0x00, 0x01, 0x02};
 
-
-    EXPECT_TRUE(encoded==bytes);
+    EXPECT_THAT(encoded,bytes);
 }
 
-UTEST(DynamicArray, Decode) {
+TEST(DynamicArray, Decode) {
     std::vector<uint8_t> bytes{
         0x03, 0x00, 0x00, 0x00,
         0x00, 0x01, 0x02};
 
     auto foo = fcp::S8::Decode(bytes.begin(), bytes.end());
     auto expected = fcp::S8{{{0,1,2}}};
-
-    EXPECT_TRUE(foo==expected);
+    EXPECT_THAT(foo,expected);
 }
 
-UTEST(Optional, EncodeOptionalWithValue) {
+TEST(Optional, EncodeOptionalWithValue) {
     auto s1 = fcp::S10{fcp::S10::S1Type{1}};
     std::vector<std::uint8_t> encoded = s1.Encode().GetData();
 
     std::vector<uint8_t> bytes{0x01, 0x1};
 
-    EXPECT_TRUE(encoded==bytes);
+    EXPECT_THAT(encoded,bytes);
 }
 
-UTEST(Optional, EncodeOptionalWithNoValue) {
+TEST(Optional, EncodeOptionalWithNoValue) {
     auto s1 = fcp::S10{fcp::Optional<fcp::Unsigned<std::uint8_t, 8>>::None()};
     std::vector<std::uint8_t> encoded = s1.Encode().GetData();
 
     std::vector<uint8_t> bytes{0x00};
 
-    EXPECT_TRUE(encoded==bytes);
+    EXPECT_THAT(encoded,bytes);
 }
 
-UTEST(Optional, DecodeOptionalWithValue) {
+TEST(Optional, DecodeOptionalWithValue) {
     std::vector<uint8_t> bytes{0x01, 0x01};
 
     auto foo = fcp::S10::Decode(bytes.begin(), bytes.end());
     auto expected = fcp::S10{fcp::S10::S1Type{1}};
-
-    EXPECT_TRUE(foo==expected);
+    EXPECT_THAT(foo,expected);
 }
 
-UTEST(Optional, DecodeOptionalWithNoValue) {
+TEST(Optional, DecodeOptionalWithNoValue) {
     std::vector<uint8_t> bytes{0x00};
 
     auto foo = fcp::S10::Decode(bytes.begin(), bytes.end());
     auto expected = fcp::S10{fcp::Optional<fcp::Unsigned<std::uint8_t, 8>>::None()};
-
-    EXPECT_TRUE(foo==expected);
+    EXPECT_THAT(foo,expected);
 }
 
-UTEST(BigEndian16Bit, Decode) {
+TEST(BigEndian16Bit, Decode) {
     std::vector<uint8_t> bytes{0x01, 0x02};
 
     auto s11 = fcp::can::S11::Decode(bytes.begin(), bytes.end());
     auto expected = fcp::can::S11{0x102};
 
-    EXPECT_TRUE(s11==expected);
+    EXPECT_THAT(s11,expected);
 }
