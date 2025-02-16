@@ -9,6 +9,6 @@ namespace fcp {
 using json = nlohmann::json;
 
 struct ISchema {
-    virtual std::optional<json> DecodeJson(std::string msg_name, std::vector<uint8_t> j) = 0;
+    virtual std::optional<json> DecodeJson(std::string msg_name, std::vector<uint8_t> j, std::string bus = "default") = 0;
 };
 }
