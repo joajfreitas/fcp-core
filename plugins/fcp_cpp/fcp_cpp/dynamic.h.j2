@@ -338,7 +338,8 @@ class DynamicSchema : public ISchema {
 
             return {};
         }
-        std::optional<json> DecodeJson(std::string name, std::vector<uint8_t> data) override {
+        std::optional<json> DecodeJson(std::string name, std::vector<uint8_t> data, std::string bus = "default") override {
+            std::ignore = bus;
             auto buffer = Buffer{data.begin(), data.end()};
             return DecodeStruct(name, buffer);
         }
