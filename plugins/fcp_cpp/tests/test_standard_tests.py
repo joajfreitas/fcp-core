@@ -113,14 +113,13 @@ def access_field(fcp: FcpV2, xpath: str) -> str:
 
 
 test_template = """
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include <iostream>
 #include "fcp.h"
-#include "utest.h"
-
-UTEST_MAIN()
 
 {% for test in suite["tests"] %}
-UTEST({{ suite["name"] }}, {{ test["name"] }}) {
+TEST({{ suite["name"] }}, {{ test["name"] }}) {
 
     auto sut = fcp::{{test["datatype"]}}{};
 
@@ -132,7 +131,7 @@ UTEST({{ suite["name"] }}, {{ test["name"] }}) {
 
     std::vector<std::uint8_t> expected { {%- for value in test["encoded"] -%} {{value}} {%- if not loop.last -%},{%- endif -%}{%- endfor -%} };
 
-    EXPECT_TRUE(encoded == expected);
+    EXPECT_THAT(encoded, expected);
     if (encoded != expected) {
         for (size_t i = 0; i < encoded.size(); i++) {
             std::cout << "encoded[" << i << "] = " << (int)encoded[i] << std::endl;
@@ -179,8 +178,6 @@ def test_standardized_tests(test_suite: Dict[Any, Any]) -> None:
                 ),
             ),
         ],
-        headers=[
-            File(Path(THIS_DIR) / "utest.h"),
-        ]
-        + fcp_sources,
+        headers=[] + fcp_sources,
+        dynamic_libraries=["gtest_main", "gtest"],
     )
