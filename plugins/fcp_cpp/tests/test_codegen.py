@@ -99,10 +99,7 @@ def test_codegen() -> None:
         srcs=[
             File(Path(THIS_DIR) / f"test.cpp"),
         ],
-        headers=[
-            File(Path(THIS_DIR) / "utest.h"),
-        ]
-        + fcp_sources,
+        headers=fcp_sources,
         dynamic_libraries=["gtest_main", "gtest"],
     )
 
@@ -122,11 +119,11 @@ def test_dynamic_serialization() -> None:
             File(Path(THIS_DIR) / f"test_dynamic.cpp"),
         ],
         headers=[
-            File(Path(THIS_DIR) / "utest.h"),
             InMemoryBinaryFile(
                 "output.bin",
                 serde_encode(get_fcp_reflection(), "Fcp", fcp_v2.reflection()),
             ),
         ]
         + fcp_sources,
+        dynamic_libraries=["gtest_main", "gtest"],
     )
