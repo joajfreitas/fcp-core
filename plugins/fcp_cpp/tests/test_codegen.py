@@ -106,7 +106,6 @@ def test_codegen() -> None:
 
 def test_dynamic_serialization() -> None:
     fcp_v2, _ = get_fcp(Path(get_fcp_config("test"))).unwrap()
-
     generator = Generator()
 
     fcp_sources = []
@@ -125,5 +124,23 @@ def test_dynamic_serialization() -> None:
             ),
         ]
         + fcp_sources,
+        dynamic_libraries=["gtest_main", "gtest"],
+    )
+
+
+def test_can_codegen() -> None:
+    fcp_v2, _ = get_fcp(Path(get_fcp_config("test"))).unwrap()
+    generator = Generator()
+
+    fcp_sources = []
+    for result in generator.generate(fcp_v2, {"output": "/tmp/fcp"}):
+        fcp_sources += handle_result(result)
+
+    cc_binary(
+        name="test",
+        srcs=[
+            File(Path(THIS_DIR) / f"test_can.cpp"),
+        ],
+        headers=fcp_sources,
         dynamic_libraries=["gtest_main", "gtest"],
     )
