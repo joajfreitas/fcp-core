@@ -18,11 +18,18 @@ namespace can {
 using json = nlohmann::json;
 
 struct frame_t {
-    char bus[4];
+    std::array<char,4> bus;
     std::uint16_t sid;
     std::uint8_t dlc;
     std::array<std::uint8_t, 8> data;
 };
+
+inline bool operator==(const frame_t& lhs, const frame_t& rhs) {
+    return lhs.bus == rhs.bus &&
+            lhs.sid == rhs.sid &&
+            lhs.dlc == rhs.dlc &&
+            lhs.data == rhs.data;
+}
 
 struct Can {
     Can(ISchema& schema): schema_{schema} {}
@@ -38,26 +45,26 @@ struct Can {
         if (!decoded.has_value()) {
             return std::nullopt;
         }
-        return {msg_name.value(), decoded.value()};
+        return std::make_pair(msg_name.value(), decoded.value());
     }
 
     std::optional<frame_t> Encode(std::string msg_name, json j) {
 
-        {% for impl in impls %}
+        {% for impl in fcp.get_matching_impls('can') %}
         if (msg_name == "{{impl.name}}") {
-            return BuildMessage("{{impl.fields.get('bus')}}", {{impl.fields.get('id')}}, {{impl.type}}::FromJson(j).encode().GetData());
+            return BuildMessage("{{impl.fields.get('bus')}}", {{impl.fields.get('id')}}, {{impl.type}}::FromJson(j).Encode().GetData());
         }
         {% endfor %}
 
         return std::nullopt;
     }
 
-    private:
+  private:
 
-    std::optional<std::string> GetMsgName(std::uint16_t sid, const char bus_name[4]) {
-        std::string bus_name_str(bus_name, bus_name + 4);
+    std::optional<std::string> GetMsgName(std::uint16_t sid, const std::array<char,4> bus_name) {
+        std::string bus_name_str(bus_name.begin(), bus_name.end());
 
-        {% for impl in impls %}
+        {% for impl in fcp.get_matching_impls("can") %}
         if (sid == {{impl.fields.get('id')}} && bus_name_str == "{{impl.fields.get('bus')}}") {
             return "{{impl.name}}";
         }
@@ -68,7 +75,7 @@ struct Can {
 
     frame_t BuildMessage(std::string bus_name, std::uint16_t sid, std::vector<uint8_t> data) {
         frame_t frame{};
-        std::copy(bus_name.begin(), bus_name.end(), frame.bus);
+        std::copy(bus_name.begin(), bus_name.end(), frame.bus.data());
         frame.sid = sid;
         frame.dlc = data.size();
         std::copy(data.begin(), data.end(), frame.data.begin());

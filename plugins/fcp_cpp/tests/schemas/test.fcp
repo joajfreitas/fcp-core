@@ -8,6 +8,7 @@ struct S1 {
 impl can for S1 {
     id: 10,
     device: "ecu1",
+    bus: "bus1",
 }
 
 enum E {
