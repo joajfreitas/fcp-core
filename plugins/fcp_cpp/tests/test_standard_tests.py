@@ -77,9 +77,15 @@ def to_constant(fcp: FcpV2, type: Type, value: Any) -> str:
     """Convert a value to a constant."""
     if isinstance(type, BuiltinType):
         if type.is_signed():
-            return str(value) + "LL"
+            if not value[0].isdigit():
+                return str(value)
+            else:
+                return str(value) + "LL"
         elif type.is_unsigned():
-            return str(value) + "ULL"
+            if value[0].isdigit() or value[0] == "-":
+                return str(value) + "ULL"
+            else:
+                return str(value)
         elif type.is_str():
             return str('"' + value + '"')
         else:

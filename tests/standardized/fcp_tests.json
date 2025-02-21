@@ -97,8 +97,8 @@
                 "name": "sixty_four_bit_highest_values",
                 "datatype": "S4",
                 "decoded": {
-                    "S4:s0": "18446744073709551615",
-                    "S4:s1": "9223372036854775807"
+                    "S4:s0": "ULONG_MAX",
+                    "S4:s1": "LLONG_MAX"
                 },
                 "encoded":  ["0xff","0xff","0xff","0xff","0xff","0xff","0xff","0xff","0xff","0xff","0xff","0xff","0xff","0xff","0xff","0x7f"]
             },
@@ -107,7 +107,7 @@
                 "datatype": "S4",
                 "decoded": {
                     "S4:s0": "0",
-                    "S4:s1": "-9223372036854775808"
+                    "S4:s1": "LLONG_MIN"
                 },
                 "encoded": ["0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x0","0x80"]
             },
@@ -220,7 +220,7 @@
                 "name": "optional_unsigned_eight_bit_with_value",
                 "datatype": "S4",
                 "decoded": {
-                    "S4:s1": 255
+                    "S4:s1": "255"
                 },
                 "encoded": [1, 255]
             },
