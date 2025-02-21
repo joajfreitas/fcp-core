@@ -83,6 +83,26 @@ def cc_binary(
     name: str,
     srcs: List[Source],
     headers: List[str],
+    flags: List[str] = [
+        "-Wall",
+        "-Wextra",
+        "-Wformat-nonliteral",
+        "-Wcast-align",
+        "-Wpointer-arith",
+        "-Wbad-function-cast",
+        "-Wmissing-prototypes",
+        "-Wstrict-prototypes",
+        "-Wmissing-declarations",
+        "-Winline",
+        "-Wundef",
+        "-Wnested-externs",
+        "-Wcast-qual",
+        "-Wshadow",
+        "-Wwrite-strings",
+        "-Wno-unused-parameter",
+        "-Wfloat-equal",
+        "-pedantic",
+    ],
     dynamic_libraries: List[str] = list(),
 ) -> None:
     """Build and run a C++ program."""
@@ -98,6 +118,7 @@ def cc_binary(
 
     r = subprocess.run(
         ["/usr/bin/g++", "--std=c++17"]
+        + flags
         + src_paths
         + ["-o", name]
         + ["-l" + lib for lib in dynamic_libraries],
