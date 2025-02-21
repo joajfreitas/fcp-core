@@ -84,3 +84,20 @@ class Generator(CodeGenerator):
                 )
             else:
                 return Ok(())
+
+        @register(verifier, "impl")  # type: ignore
+        def check_impl_size(
+            self: Any, fcp: FcpV2, extension: Any
+        ) -> Result[Nil, FcpError]:
+            """Check if extension has a valid type."""
+            struct = fcp.get_struct(extension.type)
+            size = sum([field.type.get_length() for field in struct.unwrap().fields])
+            if size > 64:
+                return Err(
+                    FcpError(
+                        f"Impl {extension.name} is way too big at {size} bits",
+                        node=extension,
+                    )
+                )
+            else:
+                return Ok(())
