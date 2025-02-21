@@ -82,10 +82,6 @@ private:
     }
 
     uint64_t FromBigEndian(uint64_t value, uint64_t bitlength) {
-        if (!(bitlength == 8 || bitlength == 16 || bitlength == 32 || bitlength == 64)) {
-            throw std::runtime_error("Big endian conversion only supported for 8, 16, 32, 64 bit values");
-        }
-
         if (bitlength == 8) {
             return value;
         }
@@ -106,6 +102,8 @@ private:
             ((value & 0x00FF000000000000) >> 40) |
             ((value & 0xFF00000000000000) >> 56);
         }
+
+        throw std::runtime_error("Big endian conversion only supported for 8, 16, 32, 64 bit values");
     }
 
     std::vector<uint8_t> buffer_;
