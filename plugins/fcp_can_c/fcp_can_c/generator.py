@@ -69,8 +69,8 @@ class Generator(CodeGenerator):
 
         """
 
-        @register(verifier, "extension")  # type: ignore
-        def check_extension_valid_type(
+        @register(verifier, "impl")  # type: ignore
+        def check_impl_valid_type(
             self: Any, fcp: FcpV2, extension: Any
         ) -> Result[Nil, FcpError]:
             """Check if extension has a valid type."""

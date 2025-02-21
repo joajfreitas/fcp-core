@@ -40,7 +40,18 @@ class Verifier:
 
     def __init__(self) -> None:
         """Construct a Verifier."""
-        self.checks: Dict[str, Callable] = {"uncategorized": []}
+        self.categories = [
+            "struct",
+            "field",
+            "enum",
+            "impl",
+            "signal_block",
+            "type",
+            "uncategorized",
+        ]
+        self.checks: Dict[str, Callable] = {
+            category: [] for category in self.categories
+        }
 
     def register(self, function: Callable, category: Optional[str] = None) -> NoReturn:
         """Register a check in the verifier. Optionally, the check can be categorized.
@@ -59,8 +70,8 @@ class Verifier:
             self.checks["uncategorized"].append(function)
             return
 
-        if category not in self.checks.keys():
-            self.checks[category] = []
+        if category not in self.categories:
+            raise ValueError(f"Invalid category: {category}")
         self.checks[category].append(function)
 
     @catch
@@ -75,13 +86,8 @@ class Verifier:
     @catch
     def verify(self, fcp: FcpV2) -> Result[Nil, FcpError]:
         """Run the checks."""
-        self.run_checks("struct", fcp).attempt()
-        self.run_checks("field", fcp).attempt()
-        self.run_checks("enum", fcp).attempt()
-        self.run_checks("impl", fcp).attempt()
-        self.run_checks("signal_block", fcp).attempt()
-        self.run_checks("type", fcp).attempt()
-        self.run_checks("uncategorized", fcp).attempt()
+        for category in self.categories:
+            self.run_checks(category, fcp).attempt()
 
         return Ok(())
 
