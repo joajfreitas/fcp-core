@@ -381,6 +381,18 @@ class DynamicSchema : public ISchema {
             return buffer.GetData();
         }
 
+        std::optional<std::vector<std::uint8_t>> EncodeArray(Type type, json j) {
+            auto buffer = Buffer{0};
+            for (int i=0; i<type.size; i++) {
+                auto encoded = _Encode(*type.underlying_type, j[i]);
+                if (!encoded.has_value()) {
+                    return std::nullopt;
+                }
+                buffer.Insert(encoded.value().begin(), encoded.value().end());
+            }
+            return buffer.GetData();
+        }
+
         std::optional<std::vector<std::uint8_t>> _Encode(Type type, json j){
             if (type.type == "Builtin") {
                 if (type.name[0] == 'u') {
@@ -389,6 +401,9 @@ class DynamicSchema : public ISchema {
                 else if (type.name[0] == 'i') {
                     return EncodeSigned(type, j);
                 }
+            }
+            else if (type.type == "Array") {
+                return EncodeArray(type, j);
             }
             return std::nullopt;
         }

@@ -72,6 +72,13 @@ TEST_F(DynamicSchemaTest, DecodeStaticArray)
     auto decoded = schema.DecodeJson("S3", { 1, 2, 3, 4, 5, 6 });
 
     EXPECT_THAT(decoded, Optional(Eq(json { { "s1", { 1, 2, 3, 4 } }, { "s2", 5 }, { "s3", 6 } })));
+}
 
+TEST_F(DynamicSchemaTest, EncodeStaticArray)
+{
+    auto schema = GetSchema();
 
+    auto decoded = schema.EncodeJson("S3", json { { "s1", { 1, 2, 3, 4 } }, { "s2", 5 }, { "s3", 6 } });
+
+    EXPECT_THAT(decoded, Optional(Eq(std::vector<uint8_t> { 1, 2, 3, 4, 5, 6 })));
 }
