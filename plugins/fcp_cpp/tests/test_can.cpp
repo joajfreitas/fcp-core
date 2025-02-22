@@ -1,5 +1,6 @@
 #include "can.h"
 #include "fcp.h"
+#include "can_static_schema.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -14,7 +15,7 @@ TEST(Decode, Basic)
 {
     fcp::can::frame_t frame { { 'b', 'u', 's', '1' }, 10, 2, { 1, 2 } };
 
-    auto schema = fcp::StaticSchema {};
+    auto schema = fcp::can::CanStaticSchema {};
     auto can = fcp::can::Can { schema };
     const auto decoded = can.Decode(frame);
 
@@ -27,7 +28,7 @@ TEST(Decode, Basic)
 
 TEST(Encode, Basic)
 {
-    auto schema = fcp::StaticSchema {};
+    auto schema = fcp::can::CanStaticSchema {};
     auto can = fcp::can::Can { schema };
     const auto frame = can.Encode("S1", { { "s1", 1 }, { "s2", 2 } });
 

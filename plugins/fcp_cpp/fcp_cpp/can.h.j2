@@ -11,18 +11,12 @@
 #include <nlohmann/json.hpp>
 
 #include "fcp.h"
+#include "i_can_schema.h"
 
 namespace fcp {
 namespace can {
 
 using json = nlohmann::json;
-
-struct frame_t {
-    std::array<char,4> bus;
-    std::uint16_t sid;
-    std::uint8_t dlc;
-    std::array<std::uint8_t, 8> data;
-};
 
 inline bool operator==(const frame_t& lhs, const frame_t& rhs) {
     return lhs.bus == rhs.bus &&
@@ -31,21 +25,12 @@ inline bool operator==(const frame_t& lhs, const frame_t& rhs) {
             lhs.data == rhs.data;
 }
 
+
 struct Can {
-    Can(ISchema& schema): schema_{schema} {}
+    Can(ICanSchema& schema): schema_{schema} {}
 
     std::optional<std::pair<std::string,json>> Decode(const frame_t& frame) {
-        auto msg_name = GetMsgName(frame.sid, frame.bus);
-
-        if (!msg_name.has_value()) {
-            return std::nullopt;
-        }
-        auto decoded = schema_.DecodeJson(msg_name.value(), std::vector<uint8_t>{frame.data.begin(), frame.data.end()});
-
-        if (!decoded.has_value()) {
-            return std::nullopt;
-        }
-        return std::make_pair(msg_name.value(), decoded.value());
+        return schema_.Decode(frame);
     }
 
     std::optional<frame_t> Encode(std::string msg_name, json j) {
@@ -60,19 +45,6 @@ struct Can {
     }
 
   private:
-
-    std::optional<std::string> GetMsgName(std::uint16_t sid, const std::array<char,4> bus_name) {
-        std::string bus_name_str(bus_name.begin(), bus_name.end());
-
-        {% for impl in fcp.get_matching_impls("can") %}
-        if (sid == {{impl.fields.get('id')}} && bus_name_str == "{{impl.fields.get('bus')}}") {
-            return "{{impl.name}}";
-        }
-        {% endfor %}
-
-        return std::nullopt;
-    }
-
     frame_t BuildMessage(std::string bus_name, std::uint16_t sid, std::vector<uint8_t> data) {
         frame_t frame{};
         std::copy(bus_name.begin(), bus_name.end(), frame.bus.data());
@@ -82,7 +54,7 @@ struct Can {
         return frame;
     }
 
-    ISchema& schema_;
+    ICanSchema& schema_;
 };
 
 } // namesapce can

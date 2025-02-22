@@ -1,0 +1,46 @@
+#pragma once
+
+#include "fcp.h"
+#include "can.h"
+
+namespace fcp {
+namespace can {
+
+class CanStaticSchema: public ICanSchema {
+  public:
+    CanStaticSchema(): static_schema_{} {}
+
+    std::optional<std::pair<std::string, json>> Decode(const frame_t& frame) {
+        auto msg_name = GetMsgName(frame.sid, frame.bus);
+
+        if (!msg_name.has_value()) {
+            return std::nullopt;
+        }
+        auto decoded = static_schema_.DecodeJson(msg_name.value(), std::vector<uint8_t>{frame.data.begin(), frame.data.end()});
+
+        if (!decoded.has_value()) {
+            return std::nullopt;
+        }
+
+        return std::make_pair(msg_name.value(), decoded.value());
+    }
+
+  private:
+    std::optional<std::string> GetMsgName(std::uint16_t sid, const std::array<char,4> bus_name) {
+        std::string bus_name_str(bus_name.begin(), bus_name.end());
+
+        {% for impl in fcp.get_matching_impls("can") %}
+        if (sid == {{impl.fields.get('id')}} && bus_name_str == "{{impl.fields.get('bus', 'unkn')}}") {
+            return "{{impl.name}}";
+        }
+        {% endfor %}
+
+        return std::nullopt;
+    }
+
+    StaticSchema static_schema_;
+};
+
+
+}
+}

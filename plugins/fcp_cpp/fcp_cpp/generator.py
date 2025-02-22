@@ -143,6 +143,8 @@ class Generator(CodeGenerator):
                     "fcp": fcp,
                 },
             ),
+            ("i_can_schema.h.j2", "i_can_schema.h", {}),
+            ("can_static_schema.h.j2", "can_static_schema.h", {"fcp": fcp}),
             ("i_schema.h.j2", "ischema.h", {}),
         ] + [
             (
