@@ -61,6 +61,11 @@ public:
         current_bit_ += bitlength;
     }
 
+    template<typename T>
+    void Insert(T begin, T end) {
+        buffer_.insert(buffer_.end(), begin, end);
+    }
+
     std::vector<uint8_t> GetData() const {
         return buffer_;
     }
