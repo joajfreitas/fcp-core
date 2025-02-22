@@ -65,6 +65,66 @@ TEST_F(DynamicSchemaTest, EncodeIntegerStruct)
     EXPECT_THAT(encoded, Optional(Eq(std::vector<uint8_t> { 1, 2, 3, 0, 4, 0, 5, 0, 0, 6, 0, 0, 7, 0, 0, 0, 8, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0 })));
 }
 
+TEST_F(DynamicSchemaTest, DecodeFloat)
+{
+    auto schema = GetSchema();
+
+    auto decoded = schema.DecodeJson("S6", { 0, 0, 0x80, 0x3f, 0, 0, 0, 0, 0, 0, 0, 0});
+
+    EXPECT_THAT(decoded, Optional(Eq(json {
+        { "s1", 1.0 }, { "s2", 0.0 }})));
+}
+
+TEST_F(DynamicSchemaTest, EncodeFloat)
+{
+    auto schema = GetSchema();
+
+    auto decoded = schema.EncodeJson("S6", json {{ "s1", 1.0 }, { "s2", 0.0 }});
+
+    EXPECT_THAT(decoded, Optional(Eq(std::vector<uint8_t>
+            { 0, 0, 0x80, 0x3f, 0, 0, 0, 0, 0, 0, 0, 0})));
+}
+
+TEST_F(DynamicSchemaTest, DecodeDouble)
+{
+    auto schema = GetSchema();
+
+    auto decoded = schema.DecodeJson("S6", { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xf0, 0x3f});
+
+    EXPECT_THAT(decoded, Optional(Eq(json {
+        { "s1", 0.0 }, { "s2", 1.0 }})));
+}
+
+TEST_F(DynamicSchemaTest, EncodeDouble)
+{
+    auto schema = GetSchema();
+
+    auto decoded = schema.EncodeJson("S6", json {{ "s1", 0.0 }, { "s2", 1.0 }});
+
+    EXPECT_THAT(decoded, Optional(Eq(std::vector<uint8_t>
+            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xf0, 0x3f})));
+}
+
+//TEST_F(DynamicSchemaTest, DecodeString)
+//{
+//    auto schema = GetSchema();
+//
+//    auto decoded = schema.DecodeJson("S7", { 5, 0, 0, 0, 'h', 'e', 'l', 'l', 'o'});
+//    std::cout << "size: " << decoded.value()["s1"].size() << std::endl;
+//    std::cout << (decoded.value()["s1"] == std::string{"hello"}) << std::endl;
+//    EXPECT_THAT(decoded, Optional(Eq(json {"s1", std::string{"hello"}})));
+//}
+
+TEST_F(DynamicSchemaTest, EncodeString)
+{
+    auto schema = GetSchema();
+
+    auto encoded = schema.EncodeJson("S7", json{{"s1", "hello"}});
+
+    EXPECT_THAT(encoded, Optional(Eq(std::vector<uint8_t>
+            { 5, 0, 0, 0, 'h', 'e', 'l', 'l', 'o'})));
+}
+
 TEST_F(DynamicSchemaTest, DecodeStaticArray)
 {
     auto schema = GetSchema();

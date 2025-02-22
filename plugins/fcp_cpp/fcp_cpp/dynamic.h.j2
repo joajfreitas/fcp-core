@@ -354,9 +354,6 @@ class DynamicSchema : public ISchema {
             auto buffer = Buffer{0};
 
             for(const auto& field: s.fields) {
-                if (j.find(field.name) == j.end()) {
-                    return std::nullopt;
-                }
                 auto encoded = _Encode(field.type, j[field.name]);
                 if (!encoded.has_value()) {
                     return std::nullopt;
@@ -381,6 +378,34 @@ class DynamicSchema : public ISchema {
             return buffer.GetData();
         }
 
+        std::optional<std::vector<std::uint8_t>> EncodeFloat(Type type, json j) {
+            auto buffer = Buffer{0};
+            float data = j.get<float>();
+            std::uint32_t word;
+            std::memcpy(&word, &data, sizeof(word));
+            buffer.PushWord(word, 32);
+            return buffer.GetData();
+        }
+
+        std::optional<std::vector<std::uint8_t>> EncodeDouble(Type type, json j) {
+            auto buffer = Buffer{0};
+            double data = j.get<double>();
+            std::uint64_t word;
+            std::memcpy(&word, &data, sizeof(word));
+            buffer.PushWord(word, 64);
+            return buffer.GetData();
+        }
+
+        std::optional<std::vector<std::uint8_t>> EncodeString(Type type, json j) {
+            auto buffer = Buffer{0};
+            auto data = j.get<std::string>();
+            buffer.PushWord(data.size(), 32);
+            for (const auto& c: data) {
+                buffer.PushWord(c, 8);
+            }
+            return buffer.GetData();
+        }
+
         std::optional<std::vector<std::uint8_t>> EncodeArray(Type type, json j) {
             auto buffer = Buffer{0};
             for (unsigned i=0; i<type.size; i++) {
@@ -400,6 +425,15 @@ class DynamicSchema : public ISchema {
                 }
                 else if (type.name[0] == 'i') {
                     return EncodeSigned(type, j);
+                }
+                else if (type.name == "f32") {
+                    return EncodeFloat(type, j);
+                }
+                else if (type.name == "f64") {
+                    return EncodeDouble(type, j);
+                }
+                else if (type.name == "str") {
+                    return EncodeString(type, j);
                 }
             }
             else if (type.type == "Array") {
