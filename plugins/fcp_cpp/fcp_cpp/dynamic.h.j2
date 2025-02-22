@@ -338,15 +338,63 @@ class DynamicSchema : public ISchema {
 
             return {};
         }
+
         std::optional<json> DecodeJson(std::string name, std::vector<uint8_t> data, std::string bus = "default") override {
             std::ignore = bus;
             auto buffer = Buffer{data.begin(), data.end()};
             return DecodeStruct(name, buffer);
         }
 
+        std::optional<std::vector<std::uint8_t>> EncodeStruct(std::string name, json j) {
+            if (structs.find(name) == structs.end()) {
+                return std::nullopt;
+            }
+            auto s = structs[name];
 
-        std::optional<std::vector<std::uint8_t>> EncodeJson(std::string msg_name, json j) override {
+            auto buffer = Buffer{0};
+
+            for(const auto& field: s.fields) {
+                if (j.find(field.name) == j.end()) {
+                    return std::nullopt;
+                }
+                auto encoded = _Encode(field.type, j[field.name]);
+                if (!encoded.has_value()) {
+                    return std::nullopt;
+                }
+                buffer.Insert(encoded.value().begin(), encoded.value().end());
+            }
+
+            return buffer.GetData();
+        }
+
+        std::optional<std::vector<std::uint8_t>> EncodeUnsigned(Type type, json j) {
+            auto size = std::stoi(type.name.substr(1));
+            auto buffer = Buffer{0};
+            buffer.PushWord(j.get<std::uint64_t>(), size);
+            return buffer.GetData();
+        }
+
+        std::optional<std::vector<std::uint8_t>> EncodeSigned(Type type, json j) {
+            auto size = std::stoi(type.name.substr(1));
+            auto buffer = Buffer{0};
+            buffer.PushWord(j.get<std::int64_t>(), size);
+            return buffer.GetData();
+        }
+
+        std::optional<std::vector<std::uint8_t>> _Encode(Type type, json j){
+            if (type.type == "Builtin") {
+                if (type.name[0] == 'u') {
+                    return EncodeUnsigned(type, j);
+                }
+                else if (type.name[0] == 'i') {
+                    return EncodeSigned(type, j);
+                }
+            }
             return std::nullopt;
+        }
+
+        std::optional<std::vector<std::uint8_t>> EncodeJson(std::string name, json j) override {
+            return EncodeStruct(name, j);
         }
 
     private:

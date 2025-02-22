@@ -38,6 +38,14 @@ TEST_F(DynamicSchemaTest, DecodeSimpleUnsignedStruct)
     EXPECT_THAT(decoded, Optional(Eq(json { { "s1", 1 }, { "s2", 2 } })));
 }
 
+TEST_F(DynamicSchemaTest, EncodeSimpleUnsignedStruct)
+{
+    auto schema = GetSchema();
+
+    auto encoded = schema.EncodeJson("S1", { { "s1", 1 }, { "s2", 2 } });
+
+    EXPECT_THAT(encoded, Optional(Eq(std::vector<uint8_t> { 1, 2 })));
+}
 
 TEST_F(DynamicSchemaTest, DecodeIntegerStruct)
 {
@@ -48,6 +56,14 @@ TEST_F(DynamicSchemaTest, DecodeIntegerStruct)
     EXPECT_THAT(decoded, Optional(Eq(json { { "s1", 1 }, { "s2", 2 }, { "s3", 3 }, { "s4", 4 }, { "s5", 5 }, { "s6", 6 }, { "s7", 7 }, { "s8", 8 }, { "s9", 9 }, { "s10", 10 } })));
 }
 
+TEST_F(DynamicSchemaTest, EncodeIntegerStruct)
+{
+    auto schema = GetSchema();
+
+    auto encoded = schema.EncodeJson("S5", { { "s1", 1 }, { "s2", 2 }, { "s3", 3 }, { "s4", 4 }, { "s5", 5 }, { "s6", 6 }, { "s7", 7 }, { "s8", 8 }, { "s9", 9 }, { "s10", 10 } });
+
+    EXPECT_THAT(encoded, Optional(Eq(std::vector<uint8_t> { 1, 2, 3, 0, 4, 0, 5, 0, 0, 6, 0, 0, 7, 0, 0, 0, 8, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0 })));
+}
 
 TEST_F(DynamicSchemaTest, DecodeStaticArray)
 {
