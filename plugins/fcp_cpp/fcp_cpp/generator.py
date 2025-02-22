@@ -143,7 +143,7 @@ class Generator(CodeGenerator):
                     "fcp": fcp,
                 },
             ),
-            ("ischema.h.j2", "ischema.h", {}),
+            ("i_schema.h.j2", "ischema.h", {}),
         ] + [
             (
                 "fcp.h.j2",
