@@ -1,19 +1,42 @@
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
-#include "fcp.h"
 #include "dynamic.h"
+#include "fcp.h"
 #include <nlohmann/json.hpp>
 
 #include <cstring>
 
-TEST(BasicStruct, DecodeSimpleUnsigendStruct) {
-    fcp::dynamic::DynamicSchema schema{};
+using json = nlohmann::json;
 
-    schema.LoadBinarySchemaFromFile("output.bin");
+using testing::Eq;
+using testing::Optional;
 
-    auto decoded = schema.DecodeJson("S1", {1,2}).value();
+class DynamicSchemaTest : public testing::Test {
+public:
+    DynamicSchemaTest()
+        : schema {}
+    {
+        schema.LoadBinarySchemaFromFile("output.bin");
+    }
 
-    EXPECT_THAT(decoded["s1"], 1);
-    EXPECT_THAT(decoded["s2"], 2);
+    fcp::dynamic::DynamicSchema GetSchema()
+    {
+        return schema;
+    }
+
+private:
+    fcp::dynamic::DynamicSchema schema;
+};
+
+TEST_F(DynamicSchemaTest, DecodeSimpleUnsignedStruct)
+{
+    auto schema = GetSchema();
+
+    auto decoded = schema.DecodeJson("S1", { 1, 2 });
+
+    EXPECT_THAT(decoded, Optional(Eq(json { { "s1", 1 }, { "s2", 2 } })));
+
+
+
 }
