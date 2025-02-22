@@ -102,6 +102,7 @@ def cc_binary(
         "-Wno-unused-parameter",
         "-Wfloat-equal",
         "-pedantic",
+        "-fdiagnostics-color",
     ],
     dynamic_libraries: List[str] = list(),
 ) -> None:
@@ -109,6 +110,7 @@ def cc_binary(
     src_paths = []
 
     tempdirname = tempfile.mkdtemp()
+    print(f"Build directory: {tempdirname}")
 
     for src in srcs:
         src_paths.append(src.apply(Path(tempdirname)))
