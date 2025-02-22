@@ -15,18 +15,18 @@ using testing::Optional;
 class DynamicSchemaTest : public testing::Test {
 public:
     DynamicSchemaTest()
-        : schema {}
+        : schema_{}
     {
-        schema.LoadBinarySchemaFromFile("output.bin");
+        schema_.LoadBinarySchemaFromFile("output.bin");
     }
 
     fcp::dynamic::DynamicSchema GetSchema()
     {
-        return schema;
+        return schema_;
     }
 
 private:
-    fcp::dynamic::DynamicSchema schema;
+    fcp::dynamic::DynamicSchema schema_;
 };
 
 TEST_F(DynamicSchemaTest, DecodeSimpleUnsignedStruct)

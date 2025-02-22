@@ -48,18 +48,18 @@ class Type {
 class StructField {
     public:
         StructField(
-                std::string name,
-                std::uint32_t field_id,
-                Type type,
-                std::optional<std::string> unit = std::nullopt,
-                std::optional<double> min_value = std::nullopt,
-                std::optional<double> max_value = std::nullopt):
-            name{name},
-            field_id{field_id},
-            type{type},
-            unit{unit},
-            min_value{min_value},
-            max_value{max_value} {};
+                std::string name_arg,
+                std::uint32_t field_id_arg,
+                Type type_arg,
+                std::optional<std::string> unit_arg = std::nullopt,
+                std::optional<double> min_value_arg = std::nullopt,
+                std::optional<double> max_value_arg = std::nullopt):
+            name{name_arg},
+            field_id{field_id_arg},
+            type{type_arg},
+            unit{unit_arg},
+            min_value{min_value_arg},
+            max_value{max_value_arg} {};
 
         std::string name;
         std::uint32_t field_id;
@@ -73,7 +73,7 @@ class Struct {
 
 public:
     Struct() = default;
-    Struct(std::string name, std::vector<StructField> fields) : name{name}, fields{fields} {};
+    Struct(std::string name_arg, std::vector<StructField> fields_arg) : name{name_arg}, fields{fields_arg} {};
 
     std::string name;
     std::vector<StructField> fields;
@@ -82,7 +82,7 @@ public:
 class Enum {
     public:
         Enum() = default;
-        Enum(std::string name, std::map<std::string, std::int32_t> enumeration): name{name}, enumeration{enumeration} {};
+        Enum(std::string name_arg, std::map<std::string, std::int32_t> enumeration_arg): name{name_arg}, enumeration{enumeration_arg} {};
 
         std::string name;
         std::map<std::string, std::int32_t> enumeration;
@@ -242,16 +242,16 @@ class DynamicSchema : public ISchema {
 
         json DecodeString(Type type, Buffer& buffer) {
             auto length = buffer.GetWord(32);
-            std::string data;
-            for (int i=0; i<length; i++) {
-                data += buffer.GetWord(8);
+            std::vector<std::uint8_t> data{};
+            for (std::size_t i=0; i<length; i++) {
+                data.push_back(static_cast<char>(buffer.GetWord(8)));
             }
-            return data;
+            return std::string{data.begin(), data.end()};
         }
 
         std::optional<json> DecodeArray(Type type, Buffer& buffer) {
             std::vector<json> data;
-            for (int i=0; i<type.size; i++) {
+            for (unsigned i=0; i<type.size; i++) {
                 auto decoded = _Decode(*type.underlying_type, buffer);
                 if (!decoded.has_value()) {
                     return std::nullopt;
@@ -265,7 +265,7 @@ class DynamicSchema : public ISchema {
         std::optional<json> DecodeDynamicArray(Type type, Buffer& buffer) {
             auto length = buffer.GetWord(32);
             std::vector<json> data;
-            for (int i=0; i<length; i++) {
+            for (unsigned i=0; i<length; i++) {
                 auto decoded = _Decode(*type.underlying_type, buffer);
                 if (!decoded.has_value()) {
                     return std::nullopt;
@@ -383,7 +383,7 @@ class DynamicSchema : public ISchema {
 
         std::optional<std::vector<std::uint8_t>> EncodeArray(Type type, json j) {
             auto buffer = Buffer{0};
-            for (int i=0; i<type.size; i++) {
+            for (unsigned i=0; i<type.size; i++) {
                 auto encoded = _Encode(*type.underlying_type, j[i]);
                 if (!encoded.has_value()) {
                     return std::nullopt;

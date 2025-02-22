@@ -130,7 +130,7 @@ public:
 
     inline bool operator==(const Float& rhs) const
     {
-        return GetData() == rhs.GetData();
+        return std::fabs(GetData() - rhs.GetData()) <= std::numeric_limits<float>::epsilon();
     }
 
     std::string ToString(std::string prefix = "") const {
@@ -180,7 +180,7 @@ public:
 
     inline bool operator==(const Double& rhs) const
     {
-        return GetData() == rhs.GetData();
+        return std::fabs(GetData() - rhs.GetData()) <= std::numeric_limits<double>::epsilon();
     }
 
 
@@ -207,7 +207,7 @@ class Array {
     static Array FromJson(json j) {
         std::array<T, N> data{0};
 
-        for (int i=0; i<N && i<j.size(); i++) {
+        for (std::size_t i=0; i<N && i<j.size(); i++) {
             data[i] = T::FromJson(j[i]);
         }
 
@@ -217,7 +217,7 @@ class Array {
     static Array Decode(Buffer& buffer, Endianess endianess = Endianess::Little) {
         std::array<T, N> data{0};
 
-        for (int i=0; i<N; i++) {
+        for (std::size_t i=0; i<N; i++) {
             data[i] = T::Decode(buffer, endianess);
         }
 
@@ -235,7 +235,7 @@ class Array {
     }
 
     void Encode(Buffer& buffer, Endianess endianess=Endianess::Little) const {
-        for (int i=0; i<N; i++) {
+        for (std::size_t i=0; i<N; i++) {
             data_[i].Encode(buffer, endianess);
         }
     }
@@ -252,7 +252,7 @@ class Array {
     std::string ToString(std::string prefix="") const {
         std::stringstream ss{};
         ss << "[";
-        for (int i=0; i<N-1; i++){
+        for (std::size_t i=0; i<N-1; i++){
             ss << data_[i].ToString() << ", ";
         }
         ss << data_[N-1].ToString() << "]";
@@ -278,7 +278,7 @@ class String {
     static String Decode(Buffer& buffer, Endianess endianess=Endianess::Little) {
         std::string data{};
         auto len = Unsigned<std::uint32_t, 32>::Decode(buffer).GetData();
-        for (int i=0; i<len; i++) {
+        for (unsigned i=0; i<len; i++) {
             data.push_back(Unsigned<std::uint8_t, 8>::Decode(buffer, endianess).GetData());
         }
 
@@ -335,7 +335,7 @@ class DynamicArray {
     static DynamicArray Decode(Buffer& buffer, Endianess endianess=Endianess::Little) {
         std::vector<T> data{};
         auto len = Unsigned<std::uint32_t, 32>::Decode(buffer).GetData();
-        for (int i=0; i<len; i++) {
+        for (unsigned i=0; i<len; i++) {
             data.push_back(T::Decode(buffer, endianess));
         }
 
@@ -369,7 +369,7 @@ class DynamicArray {
     std::string ToString(std::string prefix="") const {
         std::stringstream ss{};
         ss << "[";
-        for (int i=0; i<data_.size(); i++) {
+        for (std::size_t i=0; i<data_.size(); i++) {
             ss << data_[i].ToString();
             if (i != data_.size()-1) {
                 ss << data_[i].ToString() << ", ";
