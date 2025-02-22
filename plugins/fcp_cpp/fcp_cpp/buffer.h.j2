@@ -51,6 +51,16 @@ public:
         current_bit_ += Size;
     }
 
+    template<typename T>
+    void PushWord(T word, std::size_t bitlength, Endianess endianess=Endianess::Little) {
+        T tmp = (endianess == Endianess::Little) ? word : FromBigEndian(word, bitlength);
+        for (int i=0; i<bitlength; i++) {
+            SetBit((tmp >> i) & 0b1, current_bit_ + i);
+        }
+
+        current_bit_ += bitlength;
+    }
+
     std::vector<uint8_t> GetData() const {
         return buffer_;
     }
