@@ -345,6 +345,10 @@ class DynamicSchema : public ISchema {
         }
 
 
+        std::optional<std::vector<std::uint8_t>> EncodeJson(std::string msg_name, json j) override {
+            return std::nullopt;
+        }
+
     private:
         std::map<std::string, Struct> structs;
         std::map<std::string, Enum> enums;

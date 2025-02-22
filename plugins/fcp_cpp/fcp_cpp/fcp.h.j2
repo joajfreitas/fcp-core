@@ -184,16 +184,30 @@ private:
     {%- endfor %}
 };
 {% endfor %}
+
 struct StaticSchema: public ISchema
 {
     StaticSchema() = default;
 
-    std::optional<json> DecodeJson(std::string name, std::vector<uint8_t> data, std::string bus="default") override {
+    std::optional<json> DecodeJson(std::string name, std::vector<std::uint8_t> data, std::string bus="default") override {
         auto buffer = Buffer{data.begin(), data.end()};
         {% for impl in get_matching_impls(fcp, protocol) %}
         {% set struct = get_struct_from_type(fcp, impl.type) %}
         if (name == "{{struct.name}}" && bus == "{{impl.fields.get('bus', 'default')}}") {
             return {{struct.name}}::Decode(buffer).DecodeJson();
+        }
+        {%- endfor %}
+
+        return std::nullopt;
+    }
+
+
+    std::optional<std::vector<std::uint8_t>> EncodeJson(std::string msg_name, json j) {
+        {% for impl in get_matching_impls(fcp, protocol) %}
+        {% set struct = get_struct_from_type(fcp, impl.type) %}
+        if (msg_name == "{{impl.name}}") {
+            auto s = {{struct.name}}::FromJson(j);
+            return s.Encode().GetData();
         }
         {%- endfor %}
 
