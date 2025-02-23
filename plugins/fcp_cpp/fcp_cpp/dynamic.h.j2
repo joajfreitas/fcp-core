@@ -324,11 +324,7 @@ class DynamicSchema : public ISchema {
             else if (type.type == "Optional") {
                 return DecodeOptional(type, buffer);
             }
-            else {
-                throw std::runtime_error("Unknown type" + type.type);
-            }
-
-            return {};
+            throw std::runtime_error("Unknown type" + type.type);
         }
 
         std::optional<json> DecodeJson(std::string name, std::vector<uint8_t> data, std::string bus = "default") override {
@@ -497,7 +493,7 @@ class DynamicSchema : public ISchema {
             else if (type.type == "Optional") {
                 return EncodeOptional(type, j);
             }
-            return std::nullopt;
+            throw std::runtime_error("Unknown type" + type.type);
         }
 
         std::optional<std::vector<std::uint8_t>> EncodeJson(std::string name, json j) override {
