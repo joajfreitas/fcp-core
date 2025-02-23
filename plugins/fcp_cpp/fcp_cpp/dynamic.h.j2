@@ -309,13 +309,7 @@ class DynamicSchema : public ISchema {
                 }
             }
             else if (type.type == "Struct") {
-                auto st = DecodeStruct(type.name, buffer);
-                if (st.has_value()) {
-                    return st.value();
-                }
-                else {
-                    return std::nullopt;
-                }
+                return DecodeStruct(type.name, buffer);
             }
             else if (type.type == "Enum") {
                 return DecodeEnum(type.name, buffer);

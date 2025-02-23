@@ -77,3 +77,7 @@ impl can for S11 {
     id: 11,
     endianess: "big",
 }
+
+struct S12 {
+    s1 @ 0: S1,
+}
