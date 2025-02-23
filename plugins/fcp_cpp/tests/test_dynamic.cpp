@@ -105,15 +105,14 @@ TEST_F(DynamicSchemaTest, EncodeDouble)
             { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xf0, 0x3f})));
 }
 
-//TEST_F(DynamicSchemaTest, DecodeString)
-//{
-//    auto schema = GetSchema();
-//
-//    auto decoded = schema.DecodeJson("S7", { 5, 0, 0, 0, 'h', 'e', 'l', 'l', 'o'});
-//    std::cout << "size: " << decoded.value()["s1"].size() << std::endl;
-//    std::cout << (decoded.value()["s1"] == std::string{"hello"}) << std::endl;
-//    EXPECT_THAT(decoded, Optional(Eq(json {"s1", std::string{"hello"}})));
-//}
+TEST_F(DynamicSchemaTest, DecodeString)
+{
+    auto schema = GetSchema();
+
+    auto decoded = schema.DecodeJson("S7", { 5, 0, 0, 0, 'h', 'e', 'l', 'l', 'o' });
+
+    EXPECT_THAT(decoded, Optional(Eq(json { { "s1", std::string { "hello" } } })));
+}
 
 TEST_F(DynamicSchemaTest, EncodeString)
 {
