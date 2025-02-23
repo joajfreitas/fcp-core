@@ -185,3 +185,12 @@ TEST_F(DynamicSchemaTest, DecodeDynamicArray)
 
     EXPECT_THAT(decoded, Optional(Eq(json { { "s1", { 1, 2, 3, 4 } }})));
 }
+
+TEST_F(DynamicSchemaTest, EncodeDynamicArray)
+{
+    auto schema = GetSchema();
+
+    auto encoded = schema.EncodeJson("S8", json { { "s1", { 1, 2, 3, 4 } }});
+
+    EXPECT_THAT(encoded, Optional(Eq(std::vector<std::uint8_t>{ 4, 0, 0, 0, 1, 2, 3, 4 })));
+}
