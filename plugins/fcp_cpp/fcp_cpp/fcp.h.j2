@@ -201,7 +201,6 @@ struct StaticSchema: public ISchema
         return std::nullopt;
     }
 
-
     std::optional<std::vector<std::uint8_t>> EncodeJson(std::string msg_name, json j) {
         {% for impl in get_matching_impls(fcp, protocol) %}
         {% set struct = get_struct_from_type(fcp, impl.type) %}

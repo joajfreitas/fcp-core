@@ -208,7 +208,6 @@ class DynamicSchema : public ISchema {
 
             auto enum_value = DecodeUnsigned(Type{"u" + std::to_string(bitsize), 1, "Builtin"}, buffer);
 
-
             return std::find_if(e.enumeration.begin(), e.enumeration.end(),
                     [enum_value](const auto& x) {
                         return x.second == enum_value;
