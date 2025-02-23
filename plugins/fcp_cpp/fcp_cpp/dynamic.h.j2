@@ -324,9 +324,6 @@ class DynamicSchema : public ISchema {
             else if (type.type == "Optional") {
                 return DecodeOptional(type, buffer);
             }
-            else if (type.type == "String") {
-                return DecodeString(type, buffer);
-            }
             else {
                 throw std::runtime_error("Unknown type" + type.type);
             }
