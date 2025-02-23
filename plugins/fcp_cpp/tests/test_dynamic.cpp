@@ -159,3 +159,12 @@ TEST_F(DynamicSchemaTest, EncodeNestedStruct)
 
     EXPECT_THAT(encoded, Optional(Eq(std::vector<uint8_t> { 1, 2 })));
 }
+
+TEST_F(DynamicSchemaTest, DecodeEnum)
+{
+    auto schema = GetSchema();
+
+    auto decoded = schema.DecodeJson("S2", { 0 , 1, 2});
+
+    EXPECT_THAT(decoded, Optional(Eq(json { { "s1", 0}, {"s2", 1}, {"s3", "S2" } })));
+}
