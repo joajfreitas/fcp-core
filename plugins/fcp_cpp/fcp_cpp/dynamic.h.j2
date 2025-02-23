@@ -430,6 +430,9 @@ class DynamicSchema : public ISchema {
                     return EncodeString(type, j);
                 }
             }
+            else if (type.type == "Struct") {
+                return EncodeStruct(type.name, j);
+            }
             else if (type.type == "Array") {
                 return EncodeArray(type, j);
             }
