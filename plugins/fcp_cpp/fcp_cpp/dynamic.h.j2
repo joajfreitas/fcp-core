@@ -359,6 +359,30 @@ class DynamicSchema : public ISchema {
             return buffer.GetData();
         }
 
+        std::optional<std::vector<std::uint8_t>> EncodeEnum(std::string name, json j) {
+            if (enums.find(name) == enums.end()) {
+                return std::nullopt;
+            }
+            auto e = enums[name];
+
+            auto max_value = std::max_element(e.enumeration.begin(), e.enumeration.end(),
+                    [](const auto& a, const auto& b) {
+                        return a.second < b.second;
+                    })->second;
+
+            auto bitsize = std::ceil(std::log2(max_value+1));
+
+            auto enum_value = std::find_if(e.enumeration.begin(), e.enumeration.end(),
+                    [j](const auto& x) {
+                        return x.first == j.get<std::string>();
+                    })->second;
+
+            auto buffer = Buffer{0};
+            buffer.PushWord(enum_value, bitsize);
+
+            return buffer.GetData();
+        }
+
         std::optional<std::vector<std::uint8_t>> EncodeUnsigned(Type type, json j) {
             auto size = std::stoi(type.name.substr(1));
             auto buffer = Buffer{0};
@@ -433,6 +457,9 @@ class DynamicSchema : public ISchema {
             }
             else if (type.type == "Struct") {
                 return EncodeStruct(type.name, j);
+            }
+            else if (type.type == "Enum") {
+                return EncodeEnum(type.name, j);
             }
             else if (type.type == "Array") {
                 return EncodeArray(type, j);
