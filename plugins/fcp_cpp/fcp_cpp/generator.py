@@ -124,9 +124,9 @@ class Generator(CodeGenerator):
                     "protocol": "default",
                 },
             ),
-            ("buffer.h.j2", "buffer.h", {}),
-            ("decoders.h.j2", "decoders.h", {}),
-            ("dynamic.h.j2", "dynamic.h", {}),
+            ("buffer.h", "buffer.h", {}),
+            ("decoders.h", "decoders.h", {}),
+            ("dynamic.h", "dynamic.h", {}),
             (
                 "fcp.h.j2",
                 "reflection.h",
@@ -143,9 +143,9 @@ class Generator(CodeGenerator):
                     "fcp": fcp,
                 },
             ),
-            ("i_can_schema.h.j2", "i_can_schema.h", {}),
-            ("can_static_schema.h.j2", "can_static_schema.h", {"fcp": fcp}),
-            ("i_schema.h.j2", "ischema.h", {}),
+            ("i_can_schema.h", "i_can_schema.h", {}),
+            ("can_static_schema.h", "can_static_schema.h", {"fcp": fcp}),
+            ("i_schema.h", "i_schema.h", {}),
         ] + [
             (
                 "fcp.h.j2",
