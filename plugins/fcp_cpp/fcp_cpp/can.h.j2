@@ -34,26 +34,10 @@ struct Can {
     }
 
     std::optional<frame_t> Encode(std::string msg_name, json j) {
-
-        {% for impl in fcp.get_matching_impls('can') %}
-        if (msg_name == "{{impl.name}}") {
-            return BuildMessage("{{impl.fields.get('bus')}}", {{impl.fields.get('id')}}, {{impl.type}}::FromJson(j).Encode().GetData());
-        }
-        {% endfor %}
-
-        return std::nullopt;
+        return schema_.Encode(msg_name, j);
     }
 
   private:
-    frame_t BuildMessage(std::string bus_name, std::uint16_t sid, std::vector<uint8_t> data) {
-        frame_t frame{};
-        std::copy(bus_name.begin(), bus_name.end(), frame.bus.data());
-        frame.sid = sid;
-        frame.dlc = data.size();
-        std::copy(data.begin(), data.end(), frame.data.begin());
-        return frame;
-    }
-
     ICanSchema& schema_;
 };
 
