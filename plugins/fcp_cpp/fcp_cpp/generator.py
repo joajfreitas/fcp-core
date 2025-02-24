@@ -145,6 +145,7 @@ class Generator(CodeGenerator):
             ),
             ("i_can_schema.h", "i_can_schema.h", {}),
             ("can_static_schema.h", "can_static_schema.h", {"fcp": fcp}),
+            ("can_dynamic_schema.h", "can_dynamic_schema.h", {}),
             ("i_schema.h", "i_schema.h", {}),
         ] + [
             (
