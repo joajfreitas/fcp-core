@@ -29,7 +29,29 @@ class CanDynamicSchema: public ICanSchema {
     }
 
     std::optional<frame_t> Encode(std::string msg_name, json j) override {
-        return std::nullopt;
+        auto encoded = dynamic_schema_.EncodeJson(msg_name, j);
+
+        if (!encoded.has_value()) {
+            return std::nullopt;
+        }
+
+        std::array<char, 4> bus_name = {0};
+        std::copy(msg_name.begin(), msg_name.end(), bus_name.begin());
+
+        auto id = GetId(msg_name);
+        if (!id.has_value()) {
+            return std::nullopt;
+        }
+
+        auto bus = GetBus(msg_name);
+        if (!bus.has_value()) {
+            return std::nullopt;
+        }
+
+        std::uint8_t dlc = encoded.value().size();
+        std::array<std::uint8_t, 8> data = {0};
+        std::copy(encoded.value().begin(), encoded.value().end(), data.begin());
+        return frame_t{bus.value(), id.value(), dlc, data};
     }
 
     private:
@@ -48,6 +70,38 @@ class CanDynamicSchema: public ICanSchema {
 
                 if (sid_match && bus_match) {
                     return impl.name;
+                }
+            }
+
+            return std::nullopt;
+        }
+
+        std::optional<std::uint16_t> GetId(std::string msg_name) {
+            auto impls = dynamic_schema_.GetImpls();
+            for (const auto& impl: impls) {
+                if (impl.protocol != "can") {
+                    continue;
+                }
+
+                if (impl.name == msg_name) {
+                    return std::stoi(impl.fields.at("id"));
+                }
+            }
+
+            return std::nullopt;
+        }
+
+        std::optional<std::array<char, 4>> GetBus(std::string msg_name) {
+            auto impls = dynamic_schema_.GetImpls();
+            for (const auto& impl: impls) {
+                if (impl.protocol != "can") {
+                    continue;
+                }
+
+                if (impl.name == msg_name) {
+                    std::array<char, 4> bus_name = {0};
+                    std::copy(impl.fields.at("bus").begin(), impl.fields.at("bus").end(), bus_name.begin());
+                    return bus_name;
                 }
             }
 

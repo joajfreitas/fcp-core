@@ -34,7 +34,7 @@ TEST_P(CanTest, BasicDecode)
     fcp::can::frame_t frame { { 'b', 'u', 's', '1' }, 10, 2, { 1, 2 } };
 
     auto schema = GetParam();
-    auto can = fcp::can::Can ( *schema );
+    auto can = fcp::can::Can (*schema);
     const auto decoded = can.Decode(frame);
 
     EXPECT_THAT(decoded,
@@ -44,10 +44,10 @@ TEST_P(CanTest, BasicDecode)
                 Eq(json { { "s1", 1 }, { "s2", 2 } }))));
 }
 
-TEST_F(CanTest, BasicEncode)
+TEST_P(CanTest, BasicEncode)
 {
-    auto schema = fcp::can::CanStaticSchema();
-    auto can = fcp::can::Can ( schema );
+    auto schema = GetParam();
+    auto can = fcp::can::Can (*schema);
     const auto frame = can.Encode("S1", { { "s1", 1 }, { "s2", 2 } });
 
     fcp::can::frame_t expected { { 'b', 'u', 's', '1' }, 10, 2, { 1, 2 } };
