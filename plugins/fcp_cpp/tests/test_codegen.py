@@ -141,6 +141,12 @@ def test_can_codegen() -> None:
         srcs=[
             File(Path(THIS_DIR) / f"test_can.cpp"),
         ],
-        headers=fcp_sources,
+        headers=[
+            InMemoryBinaryFile(
+                "output.bin",
+                serde_encode(get_fcp_reflection(), "Fcp", fcp_v2.reflection()),
+            )
+        ]
+        + fcp_sources,
         dynamic_libraries=["gtest_main", "gtest"],
     )
