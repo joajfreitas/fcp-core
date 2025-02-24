@@ -95,7 +95,7 @@ class SignalBlock {
 };
 
 class Impl {
-    private:
+    public:
         std::string name;
         std::string protocol;
         std::string type;
@@ -172,6 +172,20 @@ class DynamicSchema : public ISchema {
                     enumeration.insert({enum_field.GetName().GetData(), enum_field.GetValue().GetData()});
                 }
                 enums.insert({name, Enum{name, enumeration}});
+            }
+
+            for (const auto& x: fcp.GetImpls().GetData()) {
+                std::string name = x.GetName().GetData();
+                std::string protocol = x.GetProtocol().GetData();
+                std::string type = x.GetType().GetData();
+                std::map<std::string, std::string> fields{};
+                for (const auto& field: x.GetFields().GetData()) {
+                    fields.insert({field.GetName().GetData(), field.GetValue().GetData()});
+                }
+                std::map<std::string, SignalBlock> signals{};
+
+                auto impl = Impl{name, protocol, type, fields, signals};
+                impls.push_back(impl);
             }
         }
 
@@ -499,10 +513,14 @@ class DynamicSchema : public ISchema {
             return EncodeStruct(name, j);
         }
 
+        std::vector<Impl> GetImpls() const {
+            return impls;
+        }
+
     private:
         std::map<std::string, Struct> structs;
         std::map<std::string, Enum> enums;
-        std::map<std::string, Impl> impls;
+        std::vector<Impl> impls;
         std::map<std::string, Service> services;
 };
 }
