@@ -90,7 +90,6 @@ def cc_binary(
         "-Wformat-nonliteral",
         "-Wcast-align",
         "-Wpointer-arith",
-        "-Wmissing-declarations",
         "-Winline",
         "-Wundef",
         "-Wcast-qual",
