@@ -15,27 +15,25 @@ using testing::Values;
 
 using json = nlohmann::json;
 
-using CanTest = testing::TestWithParam<std::shared_ptr<fcp::can::ICanSchema>>;
+using CanTest = testing::TestWithParam<fcp::can::Can>;
 
-std::shared_ptr<fcp::can::CanDynamicSchema> BuildCanDynamicSchema() {
+fcp::can::CanDynamicSchema BuildCanDynamicSchema() {
     auto dynamic_schema = fcp::dynamic::DynamicSchema();
     dynamic_schema.LoadBinarySchemaFromFile("output.bin");
-    return std::make_shared<fcp::can::CanDynamicSchema>(dynamic_schema);
+    return fcp::can::CanDynamicSchema(dynamic_schema);
 }
 
 INSTANTIATE_TEST_SUITE_P(, CanTest,
         Values(
-            std::make_shared<fcp::can::CanStaticSchema>(),
-            BuildCanDynamicSchema()
+            fcp::can::Can{std::make_shared<fcp::can::CanStaticSchema>(fcp::can::CanStaticSchema{})},
+            fcp::can::Can{std::make_shared<fcp::can::CanDynamicSchema>(BuildCanDynamicSchema())}
         ));
 
 TEST_P(CanTest, BasicDecode)
 {
-    fcp::can::frame_t frame { { 'b', 'u', 's', '1' }, 10, 2, { 1, 2 } };
+    auto can = GetParam();
 
-    auto schema = GetParam();
-    auto can = fcp::can::Can (*schema);
-    const auto decoded = can.Decode(frame);
+    const auto decoded = can.Decode(fcp::can::frame_t{{'b','u','s','1'}, 10, 2, {1, 2}});
 
     EXPECT_THAT(decoded,
         Optional(
@@ -46,11 +44,9 @@ TEST_P(CanTest, BasicDecode)
 
 TEST_P(CanTest, BasicEncode)
 {
-    auto schema = GetParam();
-    auto can = fcp::can::Can (*schema);
+    auto can = GetParam();
+
     const auto frame = can.Encode("S1", { { "s1", 1 }, { "s2", 2 } });
 
-    fcp::can::frame_t expected { { 'b', 'u', 's', '1' }, 10, 2, { 1, 2 } };
-
-    EXPECT_THAT(frame, Optional(Eq(expected)));
+    EXPECT_THAT(frame, Optional(Eq(fcp::can::frame_t{{'b','u','s','1'}, 10, 2, {1,2}})));
 }
