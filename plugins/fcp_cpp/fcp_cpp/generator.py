@@ -137,7 +137,7 @@ class Generator(CodeGenerator):
                 },
             ),
             (
-                "can.h.j2",
+                "can.h",
                 "can.h",
                 {
                     "fcp": fcp,
