@@ -523,5 +523,6 @@ class DynamicSchema : public ISchema {
         std::vector<Impl> impls;
         std::map<std::string, Service> services;
 };
+
 }
 }

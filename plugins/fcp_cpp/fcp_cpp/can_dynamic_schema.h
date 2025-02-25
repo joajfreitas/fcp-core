@@ -110,5 +110,6 @@ class CanDynamicSchema: public ICanSchema {
 
         dynamic::DynamicSchema dynamic_schema_;
 };
+
 }
 }
