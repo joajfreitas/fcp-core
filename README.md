@@ -45,3 +45,7 @@ See [readthedocs.io](https://fcp-core.readthedocs.io/en/latest/)
  * [dbc](https://github.com/joajfreitas/fcp-core/tree/master/plugins/fcp_dbc)
  * [can_c](https://github.com/joajfreitas/fcp-core/tree/master/plugins/fcp_can_c)
  * [cpp](https://github.com/joajfreitas/fcp-core/tree/master/plugins/fcp_cpp)
+
+## Editor support
+
+ * [neovim](https://github.com/joajfreitas/fcp.vim)
