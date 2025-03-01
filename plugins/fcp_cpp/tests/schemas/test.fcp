@@ -81,3 +81,11 @@ impl can for S11 {
 struct S12 {
     s1 @ 0: S1,
 }
+
+service Service1 {
+    rpc Method1(S2) returns S3
+}
+
+impl can for Service1 {
+    service_id: 1,
+}
