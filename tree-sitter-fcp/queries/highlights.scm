@@ -8,6 +8,7 @@
 "version" @keyword
 "device" @keyword
 "mod" @keyword
+"device" @keyword
 ((identifier) @variable
     (#set! priority 5))
 (number) @number
