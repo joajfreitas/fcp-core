@@ -74,10 +74,9 @@ fcp_parser = Lark(
     enum: "enum" identifier "{" enum_field* "}"
     enum_field : identifier "=" value ","
 
-    impl: "impl" identifier "for" identifier "as"? identifier? "{" (extension_field | signal_block | rpc_impl)+ "}"
+    impl: "impl" identifier "for" identifier "as"? identifier? "{" (extension_field | signal_block)+ "}"
     signal_block: "signal" identifier "{" extension_field+ "}" ","
     extension_field: identifier ":" value ","
-    rpc_impl: "rpc" identifier "{" extension_field+ "}" ","
 
     service: "service" identifier "@" number "{" method* "}"
     method: "method" identifier "(" identifier ")" "@" number "returns" identifier
