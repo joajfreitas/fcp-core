@@ -113,47 +113,58 @@ class Generator(CodeGenerator):
         """Generate cpp files."""
         fcp_reflection, _ = get_reflection_schema().unwrap()
 
-        output_files = [
-            (
-                "fcp.h.j2",
-                "fcp.h",
-                {
-                    "fcp": fcp,
-                    "namespace": None,
-                    "protocol": "default",
-                },
-            ),
-            ("buffer.h", "buffer.h", {}),
-            ("decoders.h", "decoders.h", {}),
-            ("dynamic.h", "dynamic.h", {}),
-            (
-                "fcp.h.j2",
-                "reflection.h",
-                {
-                    "fcp": fcp_reflection,
-                    "namespace": "reflection",
-                    "protocol": "default",
-                },
-            ),
-            (
-                "can.h",
-                "can.h",
-                {
-                    "fcp": fcp,
-                },
-            ),
-            ("i_can_schema.h", "i_can_schema.h", {}),
-            ("can_static_schema.h", "can_static_schema.h", {"fcp": fcp}),
-            ("can_dynamic_schema.h", "can_dynamic_schema.h", {}),
-            ("i_schema.h", "i_schema.h", {}),
-        ] + [
-            (
-                "fcp.h.j2",
-                "fcp_" + protocol + ".h",
-                {"fcp": fcp, "namespace": protocol, "protocol": protocol},
-            )
-            for protocol in fcp.get_protocols()
-        ]
+        output_files = (
+            [
+                (
+                    "fcp.h.j2",
+                    "fcp.h",
+                    {
+                        "fcp": fcp,
+                        "namespace": None,
+                        "protocol": "default",
+                    },
+                ),
+                ("buffer.h", "buffer.h", {}),
+                ("decoders.h", "decoders.h", {}),
+                ("dynamic.h", "dynamic.h", {}),
+                (
+                    "fcp.h.j2",
+                    "reflection.h",
+                    {
+                        "fcp": fcp_reflection,
+                        "namespace": "reflection",
+                        "protocol": "default",
+                    },
+                ),
+                (
+                    "can.h",
+                    "can.h",
+                    {
+                        "fcp": fcp,
+                    },
+                ),
+                ("i_can_schema.h", "i_can_schema.h", {}),
+                ("can_static_schema.h", "can_static_schema.h", {"fcp": fcp}),
+                ("can_dynamic_schema.h", "can_dynamic_schema.h", {}),
+                ("i_schema.h", "i_schema.h", {}),
+            ]
+            + [
+                (
+                    "fcp.h.j2",
+                    "fcp_" + protocol + ".h",
+                    {"fcp": fcp, "namespace": protocol, "protocol": protocol},
+                )
+                for protocol in fcp.get_protocols()
+            ]
+            + [
+                (
+                    "service.h.j2",
+                    service.name.lower() + "_service.h",
+                    {"fcp": fcp, "service": service},
+                )
+                for service in fcp.get_service("can")
+            ]
+        )
 
         loader = jinja2.DictLoader(
             {
