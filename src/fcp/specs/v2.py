@@ -160,9 +160,8 @@ class FcpV2:
         """Get list of unique protocol names."""
         return list(set([impl.protocol for impl in self.impls]))
 
-    def get_service(self, protocol) -> List[Service]:
+    def get_service(self, protocol: str) -> List[Service]:
         """Get list of services."""
-
         impls = [impl.name for impl in self.impls if impl.protocol == protocol]
 
         services = []

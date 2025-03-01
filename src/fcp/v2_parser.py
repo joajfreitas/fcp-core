@@ -269,7 +269,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
         return Ok(())
 
-    @v_args(tree=Tre)  # type: ignore
+    @v_args(tree=True)  # type: ignore
     def struct_field(self, tree: ParseTree) -> struct_field.StructField:
         """Parse a struct_field node of the fcp AST."""
         name, field_id, type, *values = tree.children
