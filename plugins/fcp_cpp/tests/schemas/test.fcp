@@ -81,3 +81,7 @@ impl can for S11 {
 struct S12 {
     s1 @ 0: S1,
 }
+
+service Service1 @0 {
+    method Method1(S2) @0 returns S3
+}

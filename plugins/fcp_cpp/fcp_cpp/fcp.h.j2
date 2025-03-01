@@ -203,6 +203,10 @@ struct {{struct.name}} {
         return ss.str();
     }
 
+    static constexpr const char* GetTypeName() {
+        return "{{struct.name}}";
+    }
+
 private:
 
     {%- for signal in struct.fields %}

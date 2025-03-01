@@ -20,6 +20,9 @@
 
 #include "fcp.h"
 #include "fcp_can.h"
+#include "rpc.h"
+#include "service1_client.h"
+#include "service1_server.h"
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -238,4 +241,60 @@ TEST(BigEndian16Bit, Decode) {
 
     auto expected = fcp::can::S11{0x102};
     EXPECT_THAT(s11,expected);
+}
+
+class MockedBusProxy: public fcp::IBusProxy {
+    public:
+        MOCK_METHOD(
+                void,
+                Send,
+                (const std::vector<std::uint8_t>& data, std::string msg_name),
+                (override));
+
+        MOCK_METHOD(
+                (std::optional<std::pair<std::vector<std::uint8_t>, std::string>>),
+                Recv,
+                (),
+                (override));
+};
+
+TEST(Service, Method1Call) {
+    auto bus = MockedBusProxy{};
+    EXPECT_CALL(
+            bus,
+            Send(
+                testing::Eq(std::vector<std::uint8_t>{0, 0, 1,2,1}),
+                testing::Eq("S2Input"))
+        ).Times(testing::Exactly(1));
+
+    auto schema = fcp::StaticSchema{};
+    auto service1 = fcp::Service1Proxy(bus, schema);
+
+    service1.Method1(fcp::S2{1,2,fcp::E::S1});
+}
+
+class Service1Impl: public fcp::IService1Impl {
+    public:
+        Service1Impl() = default;
+
+        fcp::S3 Method1(const fcp::S2& s2) {
+            return fcp::S3{{1,2,3,4}, 5,6};
+        }
+};
+
+TEST(Service, Method1Response) {
+    auto bus = MockedBusProxy{};
+
+    EXPECT_CALL(bus, Recv()).WillRepeatedly(testing::Return(std::make_pair(std::vector<std::uint8_t>{0,0,1,2,1}, "S2Input")));
+
+    EXPECT_CALL(bus, Send(testing::Eq(std::vector<std::uint8_t>{0,0,1,2,3,4,5,6}), testing::Eq("S3Output"))).Times(testing::Exactly(1));
+
+    auto schema = fcp::StaticSchema{};
+
+    auto service1_impl = Service1Impl{};
+    auto broker = fcp::Service1Broker<fcp::IService1Impl>(bus, schema, service1_impl, fcp::ServiceId::Service1);
+
+    broker.Step();
+
+
 }
