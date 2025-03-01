@@ -32,10 +32,6 @@ device ecu1 {
     some_config: 10,
 }
 
-impl can for SensorService {
-    service_id: 1,
-
-    rpc RequestState {
-        method_id: 1,
-    },
+impl SensorService {
+    id : 1,
 }
