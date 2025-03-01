@@ -38,7 +38,7 @@ class I{{service.name}}Impl {
 template<typename ServiceImpl>
 class {{service.name}}Broker {
     public:
-        {{service.name}}Broker(IBusProxy& bus_proxy, const fcp::ISchema& schema, const ServiceImpl& service_impl, std::uint8_t service_id):
+        {{service.name}}Broker(IBusProxy& bus_proxy, const fcp::ISchema& schema, ServiceImpl& service_impl, std::uint8_t service_id):
             bus_proxy_{bus_proxy},
             schema_{schema},
             service_impl_{service_impl},
@@ -94,7 +94,7 @@ class {{service.name}}Broker {
 
         IBusProxy& bus_proxy_;
         const fcp::ISchema& schema_;
-        ServiceImpl service_impl_;
+        ServiceImpl& service_impl_;
         std::uint8_t service_id_;
 };
 

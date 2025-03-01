@@ -95,7 +95,7 @@ def test_codegen() -> None:
             File(Path(THIS_DIR) / f"test.cpp"),
         ],
         headers=fcp_sources,
-        dynamic_libraries=["gtest_main", "gtest"],
+        dynamic_libraries=["gtest_main", "gtest", "gmock"],
     )
 
 
