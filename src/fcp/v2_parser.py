@@ -35,7 +35,7 @@ from .specs import enum
 from .specs import impl
 from .specs import signal_block
 from .specs import service
-from .specs import rpc
+from .specs import method
 from .specs import device
 from .specs.type import (
     BuiltinType,
@@ -78,8 +78,8 @@ fcp_parser = Lark(
     signal_block: "signal" identifier "{" extension_field+ "}" ","
     extension_field: identifier ":" value ","
 
-    service: "service" identifier "{" rpc* "}"
-    rpc: "rpc" identifier "(" identifier ")"  "returns" identifier
+    service: "service" identifier "@" number "{" method* "}"
+    method: "method" identifier "(" identifier ")" "@" number "returns" identifier
 
     device: "device" identifier "{" extension_field+ "}"
 
@@ -383,16 +383,16 @@ class FcpV2Transformer(Transformer):  # type: ignore
     @v_args(tree=True)  # type: ignore
     def service(self, tree: ParseTree) -> Result[Nil, str]:
         """Parse a service node of the fcp AST."""
-        name, *rpcs = tree.children
-        self.fcp.services.append(service.Service(name, rpcs, meta=_get_meta(tree, self)))  # type: ignore
+        name, id, *methods = tree.children
+        self.fcp.services.append(service.Service(name, id, methods, meta=_get_meta(tree, self)))  # type: ignore
 
         return Ok(())
 
     @v_args(tree=True)  # type: ignore
-    def rpc(self, tree: ParseTree) -> str:
-        """Parse a rpc node of the fcp AST."""
-        name, input, output = tree.children
-        return rpc.Rpc(name, input, output, meta=_get_meta(tree, self))  # type: ignore
+    def method(self, tree: ParseTree) -> str:
+        """Parse a method node of the fcp AST."""
+        name, input, id, output = tree.children
+        return method.Method(name, id, input, output, meta=_get_meta(tree, self))  # type: ignore
 
     def signal_field(self, args: List[Any]) -> Tuple[str, Any]:
         """Parse a signal_field node of the fcp AST."""

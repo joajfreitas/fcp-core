@@ -1,4 +1,4 @@
-"""Rpc."""
+"""Method."""
 
 # Copyright (c) 2024 the fcp AUTHORS.
 #
@@ -27,10 +27,11 @@ from .metadata import MetaData
 
 
 @serde(type_check=strict)
-class Rpc:
-    """Rpc AST node."""
+class Method:
+    """Method AST node."""
 
     name: str
+    id: int
     input: str
     output: str
     meta: MetaData = field(skip=True)
@@ -39,6 +40,7 @@ class Rpc:
         """Reflection."""
         return {
             "name": self.name,
+            "id": self.id,
             "input": self.input,
             "output": self.output,
             "meta": self.meta.reflection(),

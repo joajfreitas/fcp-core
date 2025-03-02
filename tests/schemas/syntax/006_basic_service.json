@@ -47,9 +47,11 @@
   "enums": [],
   "services": [
       {
+          "id": 0,
           "name": "Service",
-          "rpcs": [
+          "methods": [
               {
+                  "id": 0,
                   "name": "Foo",
                   "input": "A",
                   "output": "B"

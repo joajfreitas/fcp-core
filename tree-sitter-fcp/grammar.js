@@ -21,7 +21,7 @@ module.exports = grammar({
     optional_type: $ => seq('Optional', '[',  $.type, ']'),
     composed_type: $ => $.identifier,
 
-    param: $ => prec.left(seq($.param_name, optional('('), repeat($.param_argument), optional(')'), optional('|'))), 
+    param: $ => prec.left(seq($.param_name, optional('('), repeat($.param_argument), optional(')'), optional('|'))),
     param_name: $ => $.identifier,
 
     param_argument: $ => prec.left(seq($.value, optional(','))),
@@ -35,11 +35,11 @@ module.exports = grammar({
     extension_field: $ => seq($.identifier, ':', $.value, ','),
     signal_block: $ => seq('signal', $.identifier, '{', repeat1($.extension_field), '}', ','),
 
-    service: $ => seq('service', $.identifier, '{', repeat1($.rpc), '}'),
-    rpc: $ => seq('rpc', $.rpc_name, '(', $.rpc_input_type, ')', 'returns', $.rpc_output_type),
-    rpc_name: $ => $.identifier,
-    rpc_input_type: $ => $.identifier,
-    rpc_output_type: $ => $.identifier,
+    service: $ => seq('service', $.identifier, '@', $.number, '{', repeat1($.method), '}'),
+    method: $ => seq('method', $.method_name, '(', $.method_input_type, ')', '@', $.number, 'returns', $.method_output_type),
+    method_name: $ => $.identifier,
+    method_input_type: $ => $.identifier,
+    method_output_type: $ => $.identifier,
 
     device: $ => seq('device', $.identifier, '{', repeat1($.device_field), '}'),
     device_field: $ => seq($.device_field_name, ':', $.value, ','),
@@ -62,4 +62,3 @@ module.exports = grammar({
     )),
   }
 });
-

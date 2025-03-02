@@ -62,7 +62,7 @@ Directory structure
     │   ├── struct_field.py  - Field object
     │   ├── __init__.py
     │   ├── metadata.py      - Metadata object
-    │   ├── rpc.py           - Rpc object
+    │   ├── method.py        - Rpc object
     │   ├── service.py       - Service object
     │   ├── signal_block.py  - Signal block object
     │   ├── struct.py        - Struct object

@@ -3,7 +3,7 @@
 "impl" @keyword
 "for" @keyword
 "service" @keyword
-"rpc" @keyword
+"method" @keyword
 "returns" @keyword
 "version" @keyword
 "device" @keyword
@@ -15,9 +15,9 @@
 (string) @string
 (struct_name) @type
 (enum_name) @type
-(rpc_name) @function
-(rpc_input_type) @type
-(rpc_output_type) @type
+(method_name) @function
+(method_input_type) @type
+(method_output_type) @type
 (struct_field_name) @property
 (enum_field_name) @constant
 (param_name) @function

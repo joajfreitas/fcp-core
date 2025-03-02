@@ -8,6 +8,6 @@ struct B {
     field1 @0: u16,
 }
 
-service Service {
-    rpc Foo(A) returns B
+service Service @0 {
+    method Foo(A) @0 returns B
 }

@@ -23,7 +23,7 @@
 from beartype.typing import List, Dict, Any
 from serde import serde, strict, to_dict, field
 
-from .rpc import Rpc
+from .method import Method
 from .metadata import MetaData
 
 
@@ -32,14 +32,16 @@ class Service:
     """Service AST node."""
 
     name: str
-    rpcs: List[Rpc]
+    id: int
+    methods: List[Method]
     meta: MetaData = field(skip=True)
 
     def reflection(self) -> Dict[str, Any]:
         """Reflection."""
         return {
             "name": self.name,
-            "rpcs": [rpc.reflection() for rpc in self.rpcs],
+            "id": self.id,
+            "methods": [method.reflection() for method in self.methods],
             "meta": self.meta.reflection(),
         }
 
