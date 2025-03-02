@@ -56,6 +56,7 @@ Directory structure
     ├── serde.py             - python serialization/deserialization library
     ├── specs                - Fcp object tree
     │   ├── comment.py       - Comment object
+    │   ├── device.py        - Device object
     │   ├── enum.py          - Enum object
     │   ├── impl.py          - Impl object
     │   ├── struct_field.py  - Field object

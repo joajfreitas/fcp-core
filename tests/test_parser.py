@@ -48,6 +48,7 @@ def get_result_txt(scope: str, name: str) -> str:
         "007_simple_array_type",
         "008_dynamic_array",
         "009_optional",
+        "010_device",
     ],
 )  # type: ignore
 def test_parser(test_name: str) -> NoReturn:

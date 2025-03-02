@@ -36,6 +36,7 @@ from .specs import impl
 from .specs import signal_block
 from .specs import service
 from .specs import rpc
+from .specs import device
 from .specs.type import (
     BuiltinType,
     ArrayType,
@@ -54,7 +55,7 @@ from .error_logger import ErrorLogger
 
 fcp_parser = Lark(
     """
-    start: preamble (struct | enum | mod_expr | impl | service)*
+    start: preamble (struct | enum | mod_expr | impl | service | device)*
 
     preamble: "version" ":" string
 
@@ -79,6 +80,8 @@ fcp_parser = Lark(
 
     service: "service" identifier "{" rpc* "}"
     rpc: "rpc" identifier "(" identifier ")"  "returns" identifier
+
+    device: "device" identifier "{" extension_field+ "}"
 
     mod_expr: "mod" identifier ";"
 
@@ -410,6 +413,16 @@ class FcpV2Transformer(Transformer):  # type: ignore
     def string(self, args: List[str]) -> str:
         """Parse a string node of the fcp AST."""
         return args[0].value[1:-1]  # type: ignore
+
+    @v_args(tree=True)  # type: ignore
+    def device(self, tree: ParseTree) -> Result[Nil, str]:
+        """Parse a device node of the fcp AST."""
+        name, *fields = tree.children
+        self.fcp.devices.append(
+            device.Device(name, {k: v for k, v in fields}, _get_meta(tree, self))  # type: ignore
+        )
+
+        return Ok(())
 
     def start(self, args: List[Result[Nil, str]]) -> Result[v2.FcpV2, str]:
         """Parse the start node of the fcp AST."""

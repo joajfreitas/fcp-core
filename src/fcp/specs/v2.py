@@ -32,6 +32,7 @@ from .struct_field import StructField
 from .struct import Struct
 from .impl import Impl
 from .service import Service
+from .device import Device
 from .type import Type, BuiltinType, ComposedType
 
 
@@ -47,6 +48,7 @@ class FcpV2:
     enums: List[Enum] = serde.field(default_factory=list)
     impls: List[Impl] = serde.field(default_factory=list)
     services: List[Service] = serde.field(default_factory=list)
+    devices: List[Device] = serde.field(default_factory=list)
     version: str = "3.0"
 
     def merge(self, fcp: "FcpV2") -> None:

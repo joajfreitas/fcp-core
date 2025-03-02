@@ -106,6 +106,7 @@ struct SensorInformation {
             },
         ],
         "services": [],
+        "devices": [],
         "version": "3.0",
     }
     assert json.loads(results[0].get("contents")) == txt

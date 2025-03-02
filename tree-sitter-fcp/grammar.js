@@ -5,8 +5,8 @@ module.exports = grammar({
     $.comment,
   ],
   rules: {
-    source_file: $ => seq($.preamble, repeat1(choice($.struct, $.enum_block, $.impl, $.service, $.mod_expr))),
-    
+    source_file: $ => seq($.preamble, repeat1(choice($.struct, $.enum_block, $.impl, $.service, $.device, $.mod_expr))),
+
     preamble: $ => seq('version', ':', $.string),
 
     struct: $ => seq('struct', $.struct_name, '{', repeat1($.struct_field), '}'),
@@ -40,6 +40,10 @@ module.exports = grammar({
     rpc_name: $ => $.identifier,
     rpc_input_type: $ => $.identifier,
     rpc_output_type: $ => $.identifier,
+
+    device: $ => seq('device', $.identifier, '{', repeat1($.device_field), '}'),
+    device_field: $ => seq($.device_field_name, ':', $.value, ','),
+    device_field_name: $ => $.identifier,
 
     mod_expr: $ => seq('mod', $.identifier, ';'),
 

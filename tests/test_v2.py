@@ -52,7 +52,7 @@ def fcp_v2_dict() -> Dict[str, Any]:
 
 @pytest.fixture  # type: ignore
 def fcp_v2_json() -> str:
-    return '{"structs": [], "enums": [], "impls": [], "services": [], "version": "3.0"}'
+    return '{"structs": [], "devices": [], "enums": [], "impls": [], "services": [], "version": "3.0"}'
 
 
 def test_fcp_v2_init(fcp_v2: FcpV2) -> None:
@@ -62,13 +62,14 @@ def test_fcp_v2_init(fcp_v2: FcpV2) -> None:
 def test_fcp_v2_to_json(fcp_v2: FcpV2) -> None:
     assert (
         serde.json.to_json(fcp_v2)
-        == '{"structs":[],"enums":[],"impls":[],"services":[],"version":"3.0"}'
+        == '{"structs":[],"enums":[],"impls":[],"services":[],"devices":[],"version":"3.0"}'
     )
 
 
 def test_fcp_v2_to_dict(fcp_v2: FcpV2) -> None:
     assert serde.to_dict(fcp_v2) == {
         "structs": [],
+        "devices": [],
         "enums": [],
         "impls": [],
         "services": [],

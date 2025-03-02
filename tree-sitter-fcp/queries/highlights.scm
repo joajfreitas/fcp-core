@@ -6,6 +6,7 @@
 "rpc" @keyword
 "returns" @keyword
 "version" @keyword
+"device" @keyword
 "mod" @keyword
 ((identifier) @variable
     (#set! priority 5))
