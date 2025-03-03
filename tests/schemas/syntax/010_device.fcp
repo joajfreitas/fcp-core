@@ -1,0 +1,5 @@
+version: "3"
+
+device ecu1 {
+    some_field: 10,
+}

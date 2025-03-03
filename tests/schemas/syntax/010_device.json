@@ -1,0 +1,15 @@
+{
+    "devices": [
+        {
+            "fields": {
+                "some_field": 10
+            },
+            "name": "ecu1"
+        }
+    ],
+    "enums": [],
+    "impls": [],
+    "services": [],
+    "structs": [],
+    "version": "3.0"
+}
