@@ -23,6 +23,6 @@ struct SensorReq {
     sensor_id @0 : SensorId,
 }
 
-service SensorService {
-    rpc RequestState(SensorReq) returns SensorInformation
+service SensorService @0 {
+    method RequestState(SensorReq) @0 returns SensorInformation
 }
