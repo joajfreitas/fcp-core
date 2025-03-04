@@ -1,5 +1,3 @@
-"""Colors."""
-
 # Copyright (c) 2024 the fcp AUTHORS.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,6 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""Colors."""
 
 from termcolor import colored
 

@@ -1,5 +1,3 @@
-"""Version."""
-
 # Copyright (c) 2024 the fcp AUTHORS.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,5 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""Version."""
 
 VERSION = "1.0.0"

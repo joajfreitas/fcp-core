@@ -1,5 +1,3 @@
-"""fcp version 2 AST."""
-
 # Copyright (c) 2024 the fcp AUTHORS.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,6 +17,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
+"""fcp version 2 AST."""
 
 from beartype.typing import Any, Callable, Union, List, Dict, Generator
 import serde

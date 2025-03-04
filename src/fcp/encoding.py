@@ -1,23 +1,3 @@
-"""Produce encodable instructions from an Fcp v2 AST.
-
-Available encoders:
-    * PackedEncoder - encoder for static length packed data
-
-The generate function in the encoder returns a list of encodeable pieces.
-Availble encodeable pieces:
-    * Value - Value containing data in the payload
-
-Usage example:
-
-.. code-block: python
-
-    encoder = make_encoder("packed", fcp, PackedEncoderContext())
-    for impl in fcp.get_matching_impls("can"):
-        for encodeable_piece in encoder.generate(impl):
-            # encode it somehow
-            ...
-"""
-
 # Copyright (c) 2024 the fcp AUTHORS.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -38,6 +18,25 @@ Usage example:
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""Produce encodable instructions from an Fcp v2 AST.
+
+Available encoders:
+    * PackedEncoder - encoder for static length packed data
+
+The generate function in the encoder returns a list of encodeable pieces.
+Availble encodeable pieces:
+    * Value - Value containing data in the payload
+
+Usage example:
+
+.. code-block: python
+
+    encoder = make_encoder("packed", fcp, PackedEncoderContext())
+    for impl in fcp.get_matching_impls("can"):
+        for encodeable_piece in encoder.generate(impl):
+            # encode it somehow
+            ...
+"""
 
 from beartype.typing import Union, NoReturn, List, Dict, Any, Optional
 from typing_extensions import Self, TypeAlias
