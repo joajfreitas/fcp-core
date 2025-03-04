@@ -18,10 +18,12 @@ def get_python_files(
         if filename.is_file() and filename.suffix == ".py":
             yield filename
 
+def param_name(path: Path) -> str:
+    return str(path)
 
 @pytest.mark.parametrize(
     "filename",
-    list(get_python_files("src", excluded=["result.py", "maybe.py"])) + list(get_python_files("plugins")),
+    list(get_python_files("src", excluded=["result.py", "maybe.py"])) + list(get_python_files("plugins")), ids=param_name
 )  # type: ignore
 def test_license_notice_is_present(filename: Path) -> None:
     print(filename)
