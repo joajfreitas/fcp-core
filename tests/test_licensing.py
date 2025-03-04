@@ -21,7 +21,7 @@ def get_python_files(
 
 @pytest.mark.parametrize(
     "filename",
-    list(get_python_files("src", excluded=["__init__.py", "result.py", "maybe.py"])),
+    list(get_python_files("src", excluded=["result.py", "maybe.py"])) + list(get_python_files("plugins")),
 )  # type: ignore
 def test_license_notice_is_present(filename: Path) -> None:
     print(filename)
