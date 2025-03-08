@@ -31,3 +31,7 @@ service SensorService @0 {
 device ecu1 {
     some_config: 10,
 }
+
+impl SensorService {
+    id : 1,
+}
