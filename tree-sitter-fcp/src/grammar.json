@@ -69,7 +69,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "struct_name"
+          "name": "_struct_name"
         },
         {
           "type": "STRING",
@@ -88,16 +88,21 @@
         }
       ]
     },
-    "struct_name": {
-      "type": "SYMBOL",
-      "name": "identifier"
+    "_struct_name": {
+      "type": "ALIAS",
+      "content": {
+        "type": "SYMBOL",
+        "name": "identifier"
+      },
+      "named": true,
+      "value": "struct_name"
     },
     "struct_field": {
       "type": "SEQ",
       "members": [
         {
           "type": "SYMBOL",
-          "name": "struct_field_name"
+          "name": "_struct_field_name"
         },
         {
           "type": "STRING",
@@ -128,9 +133,14 @@
         }
       ]
     },
-    "struct_field_name": {
-      "type": "SYMBOL",
-      "name": "identifier"
+    "_struct_field_name": {
+      "type": "ALIAS",
+      "content": {
+        "type": "SYMBOL",
+        "name": "identifier"
+      },
+      "named": true,
+      "value": "struct_field_name"
     },
     "type": {
       "type": "SEQ",
@@ -148,7 +158,7 @@
             },
             {
               "type": "SYMBOL",
-              "name": "composed_type"
+              "name": "_composed_type"
             },
             {
               "type": "SYMBOL",
@@ -241,9 +251,14 @@
         }
       ]
     },
-    "composed_type": {
-      "type": "SYMBOL",
-      "name": "identifier"
+    "_composed_type": {
+      "type": "ALIAS",
+      "content": {
+        "type": "SYMBOL",
+        "name": "identifier"
+      },
+      "named": true,
+      "value": "composed_type"
     },
     "param": {
       "type": "PREC_LEFT",
@@ -253,7 +268,7 @@
         "members": [
           {
             "type": "SYMBOL",
-            "name": "param_name"
+            "name": "_param_name"
           },
           {
             "type": "CHOICE",
@@ -301,9 +316,14 @@
         ]
       }
     },
-    "param_name": {
-      "type": "SYMBOL",
-      "name": "identifier"
+    "_param_name": {
+      "type": "ALIAS",
+      "content": {
+        "type": "SYMBOL",
+        "name": "identifier"
+      },
+      "named": true,
+      "value": "param_name"
     },
     "param_argument": {
       "type": "PREC_LEFT",
@@ -339,7 +359,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "enum_name"
+          "name": "_enum_name"
         },
         {
           "type": "STRING",
@@ -358,16 +378,21 @@
         }
       ]
     },
-    "enum_name": {
-      "type": "SYMBOL",
-      "name": "identifier"
+    "_enum_name": {
+      "type": "ALIAS",
+      "content": {
+        "type": "SYMBOL",
+        "name": "identifier"
+      },
+      "named": true,
+      "value": "enum_name"
     },
     "enum_field": {
       "type": "SEQ",
       "members": [
         {
           "type": "SYMBOL",
-          "name": "enum_field_name"
+          "name": "_enum_field_name"
         },
         {
           "type": "STRING",
@@ -383,9 +408,14 @@
         }
       ]
     },
-    "enum_field_name": {
-      "type": "SYMBOL",
-      "name": "identifier"
+    "_enum_field_name": {
+      "type": "ALIAS",
+      "content": {
+        "type": "SYMBOL",
+        "name": "identifier"
+      },
+      "named": true,
+      "value": "enum_field_name"
     },
     "impl": {
       "type": "SEQ",
@@ -494,7 +524,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "identifier"
+          "name": "_service_name"
         },
         {
           "type": "STRING",
@@ -521,6 +551,15 @@
         }
       ]
     },
+    "_service_name": {
+      "type": "ALIAS",
+      "content": {
+        "type": "SYMBOL",
+        "name": "identifier"
+      },
+      "named": true,
+      "value": "service_name"
+    },
     "method": {
       "type": "SEQ",
       "members": [
@@ -530,7 +569,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "method_name"
+          "name": "_method_name"
         },
         {
           "type": "STRING",
@@ -538,7 +577,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "method_input_type"
+          "name": "_method_input_type"
         },
         {
           "type": "STRING",
@@ -558,21 +597,36 @@
         },
         {
           "type": "SYMBOL",
-          "name": "method_output_type"
+          "name": "_method_output_type"
         }
       ]
     },
-    "method_name": {
-      "type": "SYMBOL",
-      "name": "identifier"
+    "_method_name": {
+      "type": "ALIAS",
+      "content": {
+        "type": "SYMBOL",
+        "name": "identifier"
+      },
+      "named": true,
+      "value": "method_name"
     },
-    "method_input_type": {
-      "type": "SYMBOL",
-      "name": "identifier"
+    "_method_input_type": {
+      "type": "ALIAS",
+      "content": {
+        "type": "SYMBOL",
+        "name": "identifier"
+      },
+      "named": true,
+      "value": "method_input_type"
     },
-    "method_output_type": {
-      "type": "SYMBOL",
-      "name": "identifier"
+    "_method_output_type": {
+      "type": "ALIAS",
+      "content": {
+        "type": "SYMBOL",
+        "name": "identifier"
+      },
+      "named": true,
+      "value": "method_output_type"
     },
     "device": {
       "type": "SEQ",
@@ -636,13 +690,22 @@
         },
         {
           "type": "SYMBOL",
-          "name": "identifier"
+          "name": "_mod_name"
         },
         {
           "type": "STRING",
           "value": ";"
         }
       ]
+    },
+    "_mod_name": {
+      "type": "ALIAS",
+      "content": {
+        "type": "SYMBOL",
+        "name": "identifier"
+      },
+      "named": true,
+      "value": "mod_name"
     },
     "value": {
       "type": "CHOICE",
@@ -725,7 +788,18 @@
   "conflicts": [],
   "precedences": [],
   "externals": [],
-  "inline": [],
+  "inline": [
+    "_struct_name",
+    "_struct_field_name",
+    "_composed_type",
+    "_param_name",
+    "_enum_name",
+    "_enum_field_name",
+    "_method_name",
+    "_service_name",
+    "_method_input_type",
+    "_method_output_type"
+  ],
   "supertypes": [],
   "reserved": {}
 }

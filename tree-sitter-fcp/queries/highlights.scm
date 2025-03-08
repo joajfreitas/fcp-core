@@ -8,17 +8,24 @@
 "version" @keyword
 "device" @keyword
 "mod" @keyword
-((identifier) @variable
-    (#set! priority 5))
 (number) @number
 (type) @type
+(mod_name) @variable
+(composed_type) @type
+(array_type) @type
+(base_type) @type
+(dynamic_array_type) @type
+(optional_type) @type
 (string) @string
 (struct_name) @type
 (enum_name) @type
 (method_name) @function
 (method_input_type) @type
 (method_output_type) @type
-(struct_field_name) @property
+(struct_field_name) @variable
 (enum_field_name) @constant
 (param_name) @function
+(service_name) @type
 (comment) @comment
+((identifier) @variable
+    (#set! priority 10))

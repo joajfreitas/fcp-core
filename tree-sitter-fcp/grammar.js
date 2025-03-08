@@ -4,48 +4,74 @@ module.exports = grammar({
     /\s|\\\r?\n/,
     $.comment,
   ],
+  inline: $ => [
+    $._struct_name,
+    $._struct_field_name,
+    $._composed_type,
+    $._param_name,
+    $._enum_name,
+    $._enum_field_name,
+    $._method_name,
+    $._service_name,
+    $._method_input_type,
+    $._method_output_type,
+  ],
   rules: {
     source_file: $ => seq($.preamble, repeat1(choice($.struct, $.enum_block, $.impl, $.service, $.device, $.mod_expr))),
 
     preamble: $ => seq('version', ':', $.string),
 
-    struct: $ => seq('struct', $.struct_name, '{', repeat1($.struct_field), '}'),
-    struct_name: $ => $.identifier,
-    struct_field: $ => seq($.struct_field_name, '@', $.number, ':', $.type, repeat($.param), ','),
-    struct_field_name: $ => $.identifier,
+    struct: $ => seq('struct', $._struct_name, '{', repeat1($.struct_field), '}'),
+    _struct_name: $ => alias(
+      $.identifier,
+      $.struct_name,
+    ),
+    struct_field: $ => seq($._struct_field_name, '@', $.number, ':', $.type, repeat($.param), ','),
+    _struct_field_name: $ => alias(
+      $.identifier,
+      $.struct_field_name
+    ),
 
-    type: $ => seq(choice($.base_type, $.array_type, $.composed_type, $.dynamic_array_type, $.optional_type), optional('|')),
+    type: $ => seq(choice($.base_type, $.array_type, $._composed_type, $.dynamic_array_type, $.optional_type), optional('|')),
     base_type: $ => /u\d\d|u\d|i\d\d|i\d|f32|f64/,
     array_type: $ => seq('[', $.type, ',', $.number ,']'),
     dynamic_array_type: $ => seq('[', $.type, ']'),
     optional_type: $ => seq('Optional', '[',  $.type, ']'),
-    composed_type: $ => $.identifier,
+    _composed_type: $ => alias(
+      $.identifier,
+      $.composed_type
+    ),
 
-    param: $ => prec.left(seq($.param_name, optional('('), repeat($.param_argument), optional(')'), optional('|'))),
-    param_name: $ => $.identifier,
+    param: $ => prec.left(seq($._param_name, optional('('), repeat($.param_argument), optional(')'), optional('|'))),
+    _param_name: $ => alias(
+      $.identifier,
+      $.param_name
+    ),
 
     param_argument: $ => prec.left(seq($.value, optional(','))),
 
-    enum_block: $ => seq('enum', $.enum_name, '{', repeat1($.enum_field), '}'),
-    enum_name: $ => $.identifier,
-    enum_field: $ => seq($.enum_field_name, '=', $.value, ','),
-    enum_field_name: $ => $.identifier,
+    enum_block: $ => seq('enum', $._enum_name, '{', repeat1($.enum_field), '}'),
+    _enum_name: $ => alias($.identifier, $.enum_name),
+    enum_field: $ => seq($._enum_field_name, '=', $.value, ','),
+    _enum_field_name: $ => alias($.identifier, $.enum_field_name),
 
     impl: $ => seq('impl', $.identifier, 'for', $.identifier, '{', repeat1(choice($.extension_field, $.signal_block)), '}'),
     extension_field: $ => seq($.identifier, ':', $.value, ','),
     signal_block: $ => seq('signal', $.identifier, '{', repeat1($.extension_field), '}', ','),
 
-    service: $ => seq('service', $.identifier, '@', $.number, '{', repeat1($.method), '}'),
-    method: $ => seq('method', $.method_name, '(', $.method_input_type, ')', '@', $.number, 'returns', $.method_output_type),
-    method_name: $ => $.identifier,
-    method_input_type: $ => $.identifier,
-    method_output_type: $ => $.identifier,
+    service: $ => seq('service', $._service_name, '@', $.number, '{', repeat1($.method), '}'),
+    _service_name: $ => alias($.identifier, $.service_name),
+    method: $ => seq('method', $._method_name, '(', $._method_input_type, ')', '@', $.number, 'returns', $._method_output_type),
+    _method_name: $ => alias($.identifier, $.method_name),
+    _method_input_type: $ => alias($.identifier, $.method_input_type),
+    _method_output_type: $ => alias($.identifier, $.method_output_type),
 
     device: $ => seq('device', $.identifier, '{', repeat1($.device_field), '}'),
     device_field: $ => seq($.device_field_name, ':', $.value, ','),
     device_field_name: $ => $.identifier,
 
-    mod_expr: $ => seq('mod', $.identifier, ';'),
+    mod_expr: $ => seq('mod', $._mod_name, ';'),
+    _mod_name: $ => alias($.identifier, $.mod_name),
 
     value: $ => choice($.identifier, $.number, $.string),
     identifier: _ => /[a-zA-Z_][a-zA-Z_\d]*/,
