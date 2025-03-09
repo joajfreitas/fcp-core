@@ -31,9 +31,9 @@ See [readthedocs.io](https://fcp-core.readthedocs.io/en/latest/)
 | Composite struct           |   ✅  |  ✅  | ❌ |  ✅  |    ✅   |
 | Enum                       |   ✅  |  ✅  | ✅ |  ✅  |    ✅   |
 | Array                      |   ✅  |  ✅  | ❌ |  ✅  |    ✅   |
-| Dynamic array              |   ✅  |  ❌  | ❌ |  ❌  |    ✅   |
-| String                     |   ✅  |  ❌  | ❌ |  ❌  |    ✅   |
-| Optional                   |   ❌  |  ❌  | ❌ |  ❌  |    ❌   |
+| Dynamic array              |   ✅  |  ❌  | ❌ |  ✅  |    ✅   |
+| String                     |   ✅  |  ❌  | ❌ |  ✅  |    ✅   |
+| Optional                   |   ❌  |  ❌  | ❌ |  ✅  |    ✅   |
 | Frame id                   |   ✅  |  ✅  | ✅ |  ✅  |    ✅   |
 | Device designation         |   ✅  |  ✅  | ✅ |  ✅  |    ✅   |
 | Bus designation            |   ✅  |  ✅  | ❌ |  ❌  |    ❌   |
