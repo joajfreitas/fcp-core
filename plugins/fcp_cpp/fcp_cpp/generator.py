@@ -48,7 +48,6 @@ from fcp.specs.struct_field import StructField
 from fcp.specs.metadata import MetaData
 from fcp.specs.enum import Enum, Enumeration
 from fcp.version import VERSION
-
 from fcp.reflection import get_reflection_schema
 
 
@@ -113,6 +112,38 @@ def to_snake_case(name: str) -> str:
     )
 
 
+def create_rpc_input_data(payload: Struct) -> Struct:
+    payload_type_name = payload.name + "Input"
+    return (Struct(
+        name=payload_type_name,
+        fields=[
+            StructField(name="service_id", field_id=0, type=BuiltinType("u8")),
+            StructField(name="method_id", field_id=1, type=BuiltinType("u8")),
+            StructField(
+                name="payload",
+                field_id=2,
+                type=ComposedType(payload.name, ComposedTypeCategory.Struct),
+            ),
+        ],
+    ), Impl(name = payload_type_name, protocol="default", type = payload_type_name, fields={}, signals=[], meta=MetaData(0,0,0,0,0,0,"")))
+
+
+def create_rpc_output_data(payload: Struct) -> Struct:
+    payload_type_name = payload.name + "Output"
+    return (Struct(
+        name=payload_type_name,
+        fields=[
+            StructField(name="service_id", field_id=0, type=BuiltinType("u8")),
+            StructField(name="method_id", field_id=1, type=BuiltinType("u8")),
+            StructField(
+                name="payload",
+                field_id=2,
+                type=ComposedType(payload.name, ComposedTypeCategory.Struct),
+            ),
+        ],
+    ), Impl(name = payload_type_name, protocol="default", type = payload_type_name, fields={}, signals=[], meta=MetaData(0,0,0,0,0,0,"")))
+
+
 class Generator(CodeGenerator):
     """Cpp code generator."""
 
@@ -134,6 +165,31 @@ class Generator(CodeGenerator):
             "user": pwd.getpwuid(os.getuid())[0],
             "hostname": socket.gethostname(),
         }
+        method_inputs = set() 
+        method_outputs = set()
+
+        for service in fcp.services:
+            for method in service.methods:
+                input_struct = fcp.get_struct(method.input).unwrap()
+                output_struct = fcp.get_struct(method.output).unwrap()
+                method_inputs.add(method.input)
+                method_outputs.add(method.output)
+
+        for method_input in method_inputs:
+            input_struct = fcp.get_struct(method_input).unwrap()
+            rpc_input_struct, rpc_input_impl = create_rpc_input_data(input_struct)
+            fcp.structs.append(rpc_input_struct)
+            fcp.impls.append(rpc_input_impl)
+
+        for method_output in method_outputs:
+            output_struct = fcp.get_struct(method_output).unwrap()
+            rpc_output_struct, rpc_output_impl = create_rpc_output_data(output_struct)
+            fcp.structs.append(rpc_output_struct)
+            fcp.impls.append(rpc_output_impl)
+
+
+        impls = get_matching_impls(fcp, "default")
+
         output_files = (
             [
                 (
