@@ -45,6 +45,8 @@ from fcp.version import VERSION
 from fcp.type_visitor import TypeVisitor
 from fcp.reflection import get_reflection_schema
 
+from .rpc import generate_rpc
+
 
 def _to_highest_power_of_two(n: int) -> int:
     return int(max(2 ** math.ceil(math.log2(n)), 8))
@@ -139,6 +141,7 @@ class Generator(CodeGenerator):
     def generate(self, fcp: FcpV2, ctx: Any) -> List[Dict[str, Union[str, Path]]]:
         """Generate cpp files."""
         fcp_reflection, _ = get_reflection_schema().unwrap()
+        fcp = generate_rpc(fcp)
 
         metadata = {
             "version": VERSION,
