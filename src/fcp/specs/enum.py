@@ -20,7 +20,7 @@
 
 """Enum."""
 
-from serde import serde, strict, field
+from serde import serde, strict, field, to_dict
 from beartype.typing import Optional, List, Tuple, Dict, Any
 import math
 
@@ -53,7 +53,7 @@ class Enum:
 
     def get_packed_size(self) -> int:
         """Get packed enum size."""
-        return math.ceil(math.log2(max([x.value for x in self.enumeration])) + 1)
+        return math.ceil(math.log2(max(max([x.value for x in self.enumeration]), 1)) + 1)
 
     def reflection(self) -> Dict[str, Any]:
         """Reflection."""
@@ -66,4 +66,4 @@ class Enum:
         }
 
     def __repr__(self) -> str:
-        return "Enum name: {}".format(self.name)
+        return str(to_dict(self))

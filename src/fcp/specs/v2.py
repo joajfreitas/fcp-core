@@ -162,13 +162,8 @@ class FcpV2:
 
     def get_service(self, protocol: str) -> List[Service]:
         """Get list of services."""
-        impls = [impl.name for impl in self.impls if impl.protocol == protocol]
 
-        services = []
-        for service in self.services:
-            if service.name in impls:
-                services.append(service)
-        return services
+        return self.services
 
     def to_dict(self) -> Any:
         """Get the fcp AST as a python dictionary."""
