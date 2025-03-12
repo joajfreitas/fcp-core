@@ -48,7 +48,7 @@ class StructField:
             "unit": self.unit,
             "min_value": self.min_value,
             "max_value": self.max_value,
-            "meta": self.meta.reflection(),
+            "meta": self.meta.reflection() if self.meta else None,
         }
 
     def __repr__(self) -> str:
