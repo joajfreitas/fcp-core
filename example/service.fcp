@@ -29,5 +29,6 @@ service SensorService @0 {
 }
 
 device ecu1 {
-    some_config: 10,
+    request_can_id: 10,
+    response_can_id: 11,
 }
