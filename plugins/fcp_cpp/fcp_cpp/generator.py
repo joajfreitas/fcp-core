@@ -112,8 +112,6 @@ def to_snake_case(name: str) -> str:
     )
 
 
-
-
 class Generator(CodeGenerator):
     """Cpp code generator."""
 
@@ -123,34 +121,73 @@ class Generator(CodeGenerator):
 
     def create_rpc_input_data(self, service, payload: Struct) -> Struct:
         payload_type_name = payload.name + "Input"
-        return (Struct(
-            name=payload_type_name,
-            fields=[
-                StructField(name="service_id", field_id=0, type=ComposedType("ServiceId", ComposedTypeCategory.Enum)),
-                StructField(name="method_id", field_id=1, type=ComposedType(service.name + "MethodId", ComposedTypeCategory.Enum)),
-                StructField(
-                    name="payload",
-                    field_id=2,
-                    type=ComposedType(payload.name, ComposedTypeCategory.Struct),
-                ),
-            ],
-        ), Impl(name = payload_type_name, protocol="default", type = payload_type_name, fields={}, signals=[], meta=MetaData(0,0,0,0,0,0,"")))
-
+        return (
+            Struct(
+                name=payload_type_name,
+                fields=[
+                    StructField(
+                        name="service_id",
+                        field_id=0,
+                        type=ComposedType("ServiceId", ComposedTypeCategory.Enum),
+                    ),
+                    StructField(
+                        name="method_id",
+                        field_id=1,
+                        type=ComposedType(
+                            service.name + "MethodId", ComposedTypeCategory.Enum
+                        ),
+                    ),
+                    StructField(
+                        name="payload",
+                        field_id=2,
+                        type=ComposedType(payload.name, ComposedTypeCategory.Struct),
+                    ),
+                ],
+            ),
+            Impl(
+                name=payload_type_name,
+                protocol="default",
+                type=payload_type_name,
+                fields={},
+                signals=[],
+                meta=MetaData(0, 0, 0, 0, 0, 0, ""),
+            ),
+        )
 
     def create_rpc_output_data(self, service, payload: Struct) -> Struct:
         payload_type_name = payload.name + "Output"
-        return (Struct(
-            name=payload_type_name,
-            fields=[
-                StructField(name="service_id", field_id=0, type=ComposedType("ServiceId", ComposedTypeCategory.Enum)),
-                StructField(name="method_id", field_id=1, type=ComposedType(service.name + "MethodId", ComposedTypeCategory.Enum)),
-                StructField(
-                    name="payload",
-                    field_id=2,
-                    type=ComposedType(payload.name, ComposedTypeCategory.Struct),
-                ),
-            ],
-        ), Impl(name = payload_type_name, protocol="default", type = payload_type_name, fields={}, signals=[], meta=MetaData(0,0,0,0,0,0,"")))
+        return (
+            Struct(
+                name=payload_type_name,
+                fields=[
+                    StructField(
+                        name="service_id",
+                        field_id=0,
+                        type=ComposedType("ServiceId", ComposedTypeCategory.Enum),
+                    ),
+                    StructField(
+                        name="method_id",
+                        field_id=1,
+                        type=ComposedType(
+                            service.name + "MethodId", ComposedTypeCategory.Enum
+                        ),
+                    ),
+                    StructField(
+                        name="payload",
+                        field_id=2,
+                        type=ComposedType(payload.name, ComposedTypeCategory.Struct),
+                    ),
+                ],
+            ),
+            Impl(
+                name=payload_type_name,
+                protocol="default",
+                type=payload_type_name,
+                fields={},
+                signals=[],
+                meta=MetaData(0, 0, 0, 0, 0, 0, ""),
+            ),
+        )
 
     def _get_template(self, filename: str) -> str:
         return (
@@ -176,9 +213,13 @@ class Generator(CodeGenerator):
                 input_struct = fcp.get_struct(method.input).unwrap()
                 output_struct = fcp.get_struct(method.output).unwrap()
                 input_struct = fcp.get_struct(method.input).unwrap()
-                method_inputs[method.input] = self.create_rpc_input_data(service, input_struct)
+                method_inputs[method.input] = self.create_rpc_input_data(
+                    service, input_struct
+                )
                 output_struct = fcp.get_struct(method.output).unwrap()
-                method_outputs[method.output] = self.create_rpc_output_data(service, output_struct)
+                method_outputs[method.output] = self.create_rpc_output_data(
+                    service, output_struct
+                )
                 self.service_methods_enum[service.name].append((method.name, method.id))
 
         for rpc_input_struct, rpc_input_impl in method_inputs.values():
@@ -189,11 +230,38 @@ class Generator(CodeGenerator):
             fcp.structs.append(rpc_output_struct)
             fcp.impls.append(rpc_output_impl)
 
-        service_id = Enum(name = "ServiceId", enumeration = [Enumeration(service.name, service.id, None) for service in fcp.services], meta = None)
+        service_id = Enum(
+            name="ServiceId",
+            enumeration=[
+                Enumeration(service.name, service.id, None) for service in fcp.services
+            ],
+            meta=None,
+        )
+        m = max([e.value for e in service_id.enumeration])
+        if m > 255:
+            raise ValueError("ServiceId must not be larger than 8 bit")
+        elif m != 255:
+            service_id.enumeration.append(Enumeration("Max", 255, None))
+
         fcp.enums.append(service_id)
 
         for service_name, service_method_enum in self.service_methods_enum.items():
-            enum = Enum(name = service_name + "MethodId", enumeration = [Enumeration(method_name, id, None) for method_name, id in service_method_enum], meta = None)
+            enum = Enum(
+                name=service_name + "MethodId",
+                enumeration=[
+                    Enumeration(method_name, id, None)
+                    for method_name, id in service_method_enum
+                ],
+                meta=None,
+            )
+            m = max([e.value for e in enum.enumeration])
+            if m > 255:
+                raise ValueError(
+                    service_name + "MethodId must not be larger than 8 bit"
+                )
+            elif m != 255:
+                enum.enumeration.append(Enumeration("Max", 255, None))
+
             fcp.enums.append(enum)
 
         output_files = (
