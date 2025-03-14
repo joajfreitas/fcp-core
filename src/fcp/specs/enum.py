@@ -53,7 +53,13 @@ class Enum:
 
     def get_packed_size(self) -> int:
         """Get packed enum size."""
-        return math.ceil(math.log2(max([x.value for x in self.enumeration])) + 1)
+        m = max([x.value for x in self.enumeration])
+        if m == 1 or m == 0:
+            return 1
+        else:
+            l = math.log2(max(m, 1.0))
+            s = math.ceil(l)
+            return s
 
     def reflection(self) -> Dict[str, Any]:
         """Reflection."""
