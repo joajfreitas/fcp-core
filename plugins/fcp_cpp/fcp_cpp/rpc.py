@@ -27,7 +27,7 @@ from fcp.specs.impl import Impl
 from fcp.specs.metadata import MetaData
 
 
-def create_rpc_input_data(payload: Struct) -> Struct:
+def _create_rpc_input_data(service: Service, payload: Struct) -> Struct:
     payload_type_name = payload.name + "Input"
     return (
         Struct(
@@ -53,7 +53,7 @@ def create_rpc_input_data(payload: Struct) -> Struct:
     )
 
 
-def create_rpc_output_data(payload: Struct) -> Struct:
+def _create_rpc_output_data(self, service: Service, payload: Struct) -> Struct:
     payload_type_name = payload.name + "Output"
     return (
         Struct(
@@ -79,9 +79,14 @@ def create_rpc_output_data(payload: Struct) -> Struct:
     )
 
 
-def generate_rpc(fcp: FcpV2) -> FcpV2:
-    method_inputs = set()
-    method_outputs = set()
+def generate_rpc(
+    fcp: FcpV2,
+) -> FcpV2:
+
+    method_inputs = {}
+    method_outputs = {}
+
+    service_methods_enum = {}
 
     for service in fcp.services:
         for method in service.methods:
@@ -102,4 +107,36 @@ def generate_rpc(fcp: FcpV2) -> FcpV2:
         fcp.structs.append(rpc_output_struct)
         fcp.impls.append(rpc_output_impl)
 
-    return fcp
+    service_id = Enum(
+        name="ServiceId",
+        enumeration=[
+            Enumeration(service.name, service.id, None) for service in fcp.services
+        ],
+        meta=None,
+    )
+    m = max([e.value for e in service_id.enumeration])
+    if m > 255:
+        raise ValueError("ServiceId must not be larger than 8 bit")
+    elif m != 255:
+        service_id.enumeration.append(Enumeration("Max", 255, None))
+
+    fcp.enums.append(service_id)
+
+    for service_name, service_method_enum in service_methods_enum.items():
+        enum = Enum(
+            name=service_name + "MethodId",
+            enumeration=[
+                Enumeration(method_name, id, None)
+                for method_name, id in service_method_enum
+            ],
+            meta=None,
+        )
+        m = max([e.value for e in enum.enumeration])
+        if m > 255:
+            raise ValueError(service_name + "MethodId must not be larger than 8 bit")
+        elif m != 255:
+            enum.enumeration.append(Enumeration("Max", 255, None))
+
+        fcp.enums.append(enum)
+
+        return fcp
