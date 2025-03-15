@@ -1,0 +1,528 @@
+#pragma once
+
+#include <nlohmann/json.hpp>
+
+#include <cstring>
+#include <fstream>
+#include <filesystem>
+
+#include "buffer.h"
+#include "reflection.h"
+
+using json = nlohmann::json;
+
+namespace fcp {
+namespace dynamic {
+
+class Type {
+    public:
+        Type(
+            std::string name_,
+            std::uint32_t size_,
+            std::string type_
+        ) :
+            name{name_},
+            size{size_},
+            type{type_},
+            underlying_type{nullptr}
+        {}
+
+        Type(
+            std::string name_,
+            std::uint32_t size_,
+            std::string type_,
+            Type* underlying_type_
+        ) :
+            name{name_},
+            size{size_},
+            type{type_},
+            underlying_type{underlying_type_}
+        {}
+
+        std::string name;
+        std::uint32_t size;
+        std::string type;
+        Type* underlying_type;
+};
+
+class StructField {
+    public:
+        StructField(
+                std::string name_arg,
+                std::uint32_t field_id_arg,
+                Type type_arg,
+                std::optional<std::string> unit_arg = std::nullopt,
+                std::optional<double> min_value_arg = std::nullopt,
+                std::optional<double> max_value_arg = std::nullopt):
+            name{name_arg},
+            field_id{field_id_arg},
+            type{type_arg},
+            unit{unit_arg},
+            min_value{min_value_arg},
+            max_value{max_value_arg} {};
+
+        std::string name;
+        std::uint32_t field_id;
+        Type type;
+        std::optional<std::string> unit;
+        std::optional<double> min_value;
+        std::optional<double> max_value;
+};
+
+class Struct {
+
+public:
+    Struct() = default;
+    Struct(std::string name_arg, std::vector<StructField> fields_arg) : name{name_arg}, fields{fields_arg} {};
+
+    std::string name;
+    std::vector<StructField> fields;
+};
+
+class Enum {
+    public:
+        Enum() = default;
+        Enum(std::string name_arg, std::map<std::string, std::int32_t> enumeration_arg): name{name_arg}, enumeration{enumeration_arg} {};
+
+        std::string name;
+        std::map<std::string, std::int32_t> enumeration;
+};
+
+class SignalBlock {
+    private:
+    std::string name;
+    std::map<std::string, std::string> fields;
+};
+
+class Impl {
+    public:
+        std::string name;
+        std::string protocol;
+        std::string type;
+        std::map<std::string, std::string> fields;
+        std::map<std::string, SignalBlock> signals;
+};
+
+class Rpc {
+    private:
+        std::string name;
+        std::string input;
+        std::string output;
+};
+
+class Service {
+    private:
+        std::string name;
+        std::map<std::string, Rpc> rpcs;
+};
+
+
+class DynamicSchema : public ISchema {
+    public:
+        DynamicSchema() = default;
+
+        void LoadBinarySchemaFromFile(std::filesystem::path path) {
+            std::ifstream fcp_bin(path.string());
+            std::stringstream buffer;
+            buffer << fcp_bin.rdbuf();
+
+            LoadBinarySchema(buffer.str());
+        }
+
+        void LoadBinarySchema(std::string schema) {
+            auto buffer = fcp::Buffer(schema.begin(), schema.end());
+            auto fcp = fcp::reflection::Fcp::Decode(buffer);
+
+            for (const auto& x: fcp.GetStructs().GetData()) {
+                std::string name = x.GetName().GetData();
+
+                std::vector<StructField> fields{};
+                for (const auto& struct_field: x.GetFields().GetData()) {
+                    auto type_chain = struct_field.GetType().GetData();
+                    auto last = type_chain.size()-1;
+                    auto type = new Type(
+                        type_chain[last].GetName().GetData(),
+                        type_chain[last].GetSize().GetData(),
+                        type_chain[last].GetType().GetData()
+                    );
+                    for (int i=type_chain.size() - 1; i>=0; i--) {
+                        type = new Type(
+                            type_chain[i].GetName().GetData(),
+                            type_chain[i].GetSize().GetData(),
+                            type_chain[i].GetType().GetData(),
+                            type
+                        );
+                    }
+
+                    fields.push_back(
+                            StructField{
+                                struct_field.GetName().GetData(),
+                                struct_field.GetFieldId().GetData(),
+                                *type
+                            }
+                        );
+                }
+                structs.insert({name, Struct(name, fields)});
+            }
+
+            for (const auto& x: fcp.GetEnums().GetData()) {
+                std::string name = x.GetName().GetData();
+                std::map<std::string, std::int32_t> enumeration{};
+                for (const auto& enum_field: x.GetEnumeration().GetData()) {
+                    enumeration.insert({enum_field.GetName().GetData(), enum_field.GetValue().GetData()});
+                }
+                enums.insert({name, Enum{name, enumeration}});
+            }
+
+            for (const auto& x: fcp.GetImpls().GetData()) {
+                std::string name = x.GetName().GetData();
+                std::string protocol = x.GetProtocol().GetData();
+                std::string type = x.GetType().GetData();
+                std::map<std::string, std::string> fields{};
+                for (const auto& field: x.GetFields().GetData()) {
+                    fields.insert({field.GetName().GetData(), field.GetValue().GetData()});
+                }
+                std::map<std::string, SignalBlock> signals{};
+
+                auto impl = Impl{name, protocol, type, fields, signals};
+                impls.push_back(impl);
+            }
+        }
+
+
+        std::optional<json> DecodeStruct(std::string name, Buffer& buffer) {
+            if (structs.find(name) == structs.end()) {
+                return std::nullopt;
+            }
+            auto s = structs[name];
+
+            auto struct_json = json{};
+
+            for(const auto& field: s.fields) {
+                auto decoded = _Decode(field.type, buffer);
+                if (!decoded.has_value()) {
+                    return std::nullopt;
+                }
+                struct_json[field.name] = decoded.value();
+            }
+
+            return struct_json;
+        }
+
+
+        json DecodeEnum(std::string name, Buffer& buffer) {
+            auto e = enums[name];
+
+            auto max_value = std::max_element(e.enumeration.begin(), e.enumeration.end(),
+                    [](const auto& a, const auto& b) {
+                        return a.second < b.second;
+                    })->second;
+
+            auto bitsize = std::ceil(std::log2(max_value+1));
+
+            auto enum_value = DecodeUnsigned(Type{"u" + std::to_string(bitsize), 1, "Builtin"}, buffer);
+
+            return std::find_if(e.enumeration.begin(), e.enumeration.end(),
+                    [enum_value](const auto& x) {
+                        return x.second == enum_value;
+                    })->first;
+        }
+
+        json DecodeUnsigned(Type type, Buffer& buffer) {
+            auto size = std::stoi(type.name.substr(1));
+            return buffer.GetWord(size);
+        }
+
+        json DecodeSigned(Type type, Buffer& buffer) {
+            auto size = std::stoi(type.name.substr(1));
+            return buffer.GetWord(size, true);
+        }
+
+        json DecodeFloat32(Type type, Buffer& buffer) {
+            float data;
+            auto word = buffer.GetWord(32);
+            std::memcpy(&data, &word, sizeof(data));
+
+            return data;
+        }
+
+        json DecodeFloat64(Type type, Buffer& buffer) {
+            double data;
+            auto word = buffer.GetWord(64);
+            std::memcpy(&data, &word, sizeof(data));
+
+            return data;
+        }
+
+        json DecodeString(Type type, Buffer& buffer) {
+            auto length = buffer.GetWord(32);
+            std::vector<std::uint8_t> data{};
+            for (std::size_t i=0; i<length; i++) {
+                data.push_back(static_cast<char>(buffer.GetWord(8)));
+            }
+            return std::string{data.begin(), data.end()};
+        }
+
+        std::optional<json> DecodeArray(Type type, Buffer& buffer) {
+            std::vector<json> data;
+            for (unsigned i=0; i<type.size; i++) {
+                auto decoded = _Decode(*type.underlying_type, buffer);
+                if (!decoded.has_value()) {
+                    return std::nullopt;
+                }
+                data.push_back(decoded.value());
+            }
+
+            return data;
+        }
+
+        std::optional<json> DecodeDynamicArray(Type type, Buffer& buffer) {
+            auto length = buffer.GetWord(32);
+            std::vector<json> data;
+            for (unsigned i=0; i<length; i++) {
+                auto decoded = _Decode(*type.underlying_type, buffer);
+                if (!decoded.has_value()) {
+                    return std::nullopt;
+                }
+                data.push_back(decoded.value());
+            }
+
+            return data;
+        }
+
+        std::optional<json> DecodeOptional(Type type, Buffer& buffer) {
+            auto is_value = buffer.GetWord(8);
+            json data{};
+
+            if (is_value) {
+                auto decoded = _Decode(*type.underlying_type, buffer);
+                if (!decoded.has_value()) {
+                    return std::nullopt;
+                }
+                data = decoded.value();
+            }
+            return data;
+        }
+
+        std::optional<json> _Decode(Type type, Buffer& buffer) {
+            if (type.type == "Builtin") {
+                if (type.name[0] == 'u') {
+                    return DecodeUnsigned(type, buffer);
+                }
+                else if (type.name[0] == 'i') {
+                    return DecodeSigned(type, buffer);
+                }
+                else if (type.name == "f32") {
+                    return DecodeFloat32(type, buffer);
+                }
+                else if (type.name == "f64") {
+                    return DecodeFloat64(type, buffer);
+                }
+                else if (type.name == "str") {
+                    return DecodeString(type, buffer);
+                }
+            }
+            else if (type.type == "Struct") {
+                return DecodeStruct(type.name, buffer);
+            }
+            else if (type.type == "Enum") {
+                return DecodeEnum(type.name, buffer);
+            }
+            else if (type.type == "Array") {
+                return DecodeArray(type, buffer);
+            }
+            else if (type.type == "DynamicArray") {
+                return DecodeDynamicArray(type, buffer);
+            }
+            else if (type.type == "Optional") {
+                return DecodeOptional(type, buffer);
+            }
+            throw std::runtime_error("Unknown type" + type.type);
+        }
+
+        std::optional<json> DecodeJson(std::string name, std::vector<uint8_t> data, std::string bus = "default") override {
+            std::ignore = bus;
+            auto buffer = Buffer{data.begin(), data.end()};
+            return DecodeStruct(name, buffer);
+        }
+
+        std::optional<std::vector<std::uint8_t>> EncodeStruct(std::string name, json j) {
+            if (structs.find(name) == structs.end()) {
+                return std::nullopt;
+            }
+            auto s = structs[name];
+
+            auto buffer = Buffer{0};
+
+            for(const auto& field: s.fields) {
+                auto encoded = _Encode(field.type, j[field.name]);
+                if (!encoded.has_value()) {
+                    return std::nullopt;
+                }
+                buffer.Insert(encoded.value().begin(), encoded.value().end());
+            }
+
+            return buffer.GetData();
+        }
+
+        std::optional<std::vector<std::uint8_t>> EncodeEnum(std::string name, json j) {
+            if (enums.find(name) == enums.end()) {
+                return std::nullopt;
+            }
+            auto e = enums[name];
+
+            auto max_value = std::max_element(e.enumeration.begin(), e.enumeration.end(),
+                    [](const auto& a, const auto& b) {
+                        return a.second < b.second;
+                    })->second;
+
+            auto bitsize = std::ceil(std::log2(max_value+1));
+
+            auto enum_value = std::find_if(e.enumeration.begin(), e.enumeration.end(),
+                    [j](const auto& x) {
+                        return x.first == j.get<std::string>();
+                    })->second;
+
+            auto buffer = Buffer{0};
+            buffer.PushWord(enum_value, bitsize);
+
+            return buffer.GetData();
+        }
+
+        std::optional<std::vector<std::uint8_t>> EncodeUnsigned(Type type, json j) {
+            auto size = std::stoi(type.name.substr(1));
+            auto buffer = Buffer{0};
+            buffer.PushWord(j.get<std::uint64_t>(), size);
+            return buffer.GetData();
+        }
+
+        std::optional<std::vector<std::uint8_t>> EncodeSigned(Type type, json j) {
+            auto size = std::stoi(type.name.substr(1));
+            auto buffer = Buffer{0};
+            buffer.PushWord(j.get<std::int64_t>(), size);
+            return buffer.GetData();
+        }
+
+        std::optional<std::vector<std::uint8_t>> EncodeFloat(Type type, json j) {
+            auto buffer = Buffer{0};
+            float data = j.get<float>();
+            std::uint32_t word;
+            std::memcpy(&word, &data, sizeof(word));
+            buffer.PushWord(word, 32);
+            return buffer.GetData();
+        }
+
+        std::optional<std::vector<std::uint8_t>> EncodeDouble(Type type, json j) {
+            auto buffer = Buffer{0};
+            double data = j.get<double>();
+            std::uint64_t word;
+            std::memcpy(&word, &data, sizeof(word));
+            buffer.PushWord(word, 64);
+            return buffer.GetData();
+        }
+
+        std::optional<std::vector<std::uint8_t>> EncodeString(Type type, json j) {
+            auto buffer = Buffer{0};
+            auto data = j.get<std::string>();
+            buffer.PushWord(data.size(), 32);
+            for (const auto& c: data) {
+                buffer.PushWord(c, 8);
+            }
+            return buffer.GetData();
+        }
+
+        std::optional<std::vector<std::uint8_t>> EncodeArray(Type type, json j) {
+            auto buffer = Buffer{0};
+            for (unsigned i=0; i<type.size; i++) {
+                auto encoded = _Encode(*type.underlying_type, j[i]);
+                if (!encoded.has_value()) {
+                    return std::nullopt;
+                }
+                buffer.Insert(encoded.value().begin(), encoded.value().end());
+            }
+            return buffer.GetData();
+        }
+
+        std::optional<std::vector<std::uint8_t>> EncodeDynamicArray(Type type, json j) {
+            auto buffer = Buffer{0};
+            buffer.PushWord(j.size(), 32);
+            for (const auto& x: j) {
+                auto encoded = _Encode(*type.underlying_type, x);
+                if (!encoded.has_value()) {
+                    return std::nullopt;
+                }
+                buffer.Insert(encoded.value().begin(), encoded.value().end());
+            }
+
+            return buffer.GetData();
+        }
+
+        std::optional<std::vector<std::uint8_t>> EncodeOptional(Type type, json j) {
+            auto buffer = Buffer{0};
+            if (j.empty()) {
+                buffer.PushWord(0, 8);
+            }
+            else {
+                buffer.PushWord(1, 8);
+                auto encoded = _Encode(*type.underlying_type, j);
+                if (!encoded.has_value()) {
+                    return std::nullopt;
+                }
+                buffer.Insert(encoded.value().begin(), encoded.value().end());
+            }
+            return buffer.GetData();
+        }
+
+        std::optional<std::vector<std::uint8_t>> _Encode(Type type, json j){
+            if (type.type == "Builtin") {
+                if (type.name[0] == 'u') {
+                    return EncodeUnsigned(type, j);
+                }
+                else if (type.name[0] == 'i') {
+                    return EncodeSigned(type, j);
+                }
+                else if (type.name == "f32") {
+                    return EncodeFloat(type, j);
+                }
+                else if (type.name == "f64") {
+                    return EncodeDouble(type, j);
+                }
+                else if (type.name == "str") {
+                    return EncodeString(type, j);
+                }
+            }
+            else if (type.type == "Struct") {
+                return EncodeStruct(type.name, j);
+            }
+            else if (type.type == "Enum") {
+                return EncodeEnum(type.name, j);
+            }
+            else if (type.type == "Array") {
+                return EncodeArray(type, j);
+            }
+            else if (type.type == "DynamicArray") {
+                return EncodeDynamicArray(type, j);
+            }
+            else if (type.type == "Optional") {
+                return EncodeOptional(type, j);
+            }
+            throw std::runtime_error("Unknown type" + type.type);
+        }
+
+        std::optional<std::vector<std::uint8_t>> EncodeJson(std::string name, json j) override {
+            return EncodeStruct(name, j);
+        }
+
+        std::vector<Impl> GetImpls() const {
+            return impls;
+        }
+
+    private:
+        std::map<std::string, Struct> structs;
+        std::map<std::string, Enum> enums;
+        std::vector<Impl> impls;
+        std::map<std::string, Service> services;
+};
+
+}
+}
