@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Copyright (c) 2024 the fcp AUTHORS.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -44,6 +45,31 @@ struct MethodIds {
     }
 };
 } // namespace fcp
+||||||| parent of 602a689 (Generate rpc code)
+=======
+#pragma once
+
+#include <future>
+#include <cstdint>
+#include <optional>
+
+#include <nlohmann/json.hpp>
+
+namespace fcp {
+using json = nlohmann::json;
+using namespace std::chrono_literals;
+
+struct MethodIds {
+    std::uint16_t service_id;
+    std::uint16_t method_id;
+
+    bool operator==(const MethodIds &other) const
+    {
+        return service_id == other.service_id && method_id == other.method_id;
+    }
+};
+}
+>>>>>>> 602a689 (Generate rpc code)
 
 template<>
 struct std::hash<fcp::MethodIds> {
