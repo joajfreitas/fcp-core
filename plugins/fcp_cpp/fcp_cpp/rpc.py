@@ -29,54 +29,69 @@ from fcp.specs.metadata import MetaData
 
 def _create_rpc_input_data(service: Service, payload: Struct) -> Struct:
     payload_type_name = payload.name + "Input"
-    return (
-        Struct(
-            name=payload_type_name,
-            fields=[
-                StructField(name="service_id", field_id=0, type=BuiltinType("u8")),
-                StructField(name="method_id", field_id=1, type=BuiltinType("u8")),
-                StructField(
-                    name="payload",
-                    field_id=2,
-                    type=ComposedType(payload.name, ComposedTypeCategory.Struct),
-                ),
-            ],
-        ),
-        Impl(
-            name=payload_type_name,
-            protocol="default",
-            type=payload_type_name,
-            fields={},
-            signals=[],
-            meta=MetaData(0, 0, 0, 0, 0, 0, ""),
-        ),
+    s = Struct(
+        name=payload_type_name,
+        fields=[
+            StructField(
+                name="service_id",
+                field_id=0,
+                type=ComposedType("ServiceId", ComposedTypeCategory.Enum),
+            ),
+            StructField(
+                name="method_id",
+                field_id=1,
+                type=ComposedType(service.name + "MethodId", ComposedTypeCategory.Enum),
+            ),
+            StructField(
+                name="payload",
+                field_id=2,
+                type=ComposedType(payload.name, ComposedTypeCategory.Struct),
+            ),
+        ],
     )
+    i = Impl(
+        name=payload_type_name,
+        protocol="default",
+        type=payload_type_name,
+        fields={},
+        signals=[],
+        meta=MetaData(0, 0, 0, 0, 0, 0, ""),
+    )
+    i._is_method_input = True
+    return (s, i)
 
 
-def _create_rpc_output_data(self, service: Service, payload: Struct) -> Struct:
+def _create_rpc_output_data(service: Service, payload: Struct) -> Struct:
     payload_type_name = payload.name + "Output"
-    return (
-        Struct(
-            name=payload_type_name,
-            fields=[
-                StructField(name="service_id", field_id=0, type=BuiltinType("u8")),
-                StructField(name="method_id", field_id=1, type=BuiltinType("u8")),
-                StructField(
-                    name="payload",
-                    field_id=2,
-                    type=ComposedType(payload.name, ComposedTypeCategory.Struct),
-                ),
-            ],
-        ),
-        Impl(
-            name=payload_type_name,
-            protocol="default",
-            type=payload_type_name,
-            fields={},
-            signals=[],
-            meta=MetaData(0, 0, 0, 0, 0, 0, ""),
-        ),
+    s = Struct(
+        name=payload_type_name,
+        fields=[
+            StructField(
+                name="service_id",
+                field_id=0,
+                type=ComposedType("ServiceId", ComposedTypeCategory.Enum),
+            ),
+            StructField(
+                name="method_id",
+                field_id=1,
+                type=ComposedType(service.name + "MethodId", ComposedTypeCategory.Enum),
+            ),
+            StructField(
+                name="payload",
+                field_id=2,
+                type=ComposedType(payload.name, ComposedTypeCategory.Struct),
+            ),
+        ],
     )
+    i = Impl(
+        name=payload_type_name,
+        protocol="default",
+        type=payload_type_name,
+        fields={},
+        signals=[],
+        meta=None,
+    )
+    return (s, i)
 
 
 def generate_rpc(
