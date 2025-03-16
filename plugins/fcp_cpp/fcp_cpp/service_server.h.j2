@@ -92,66 +92,6 @@ class {{service.name}}Broker {
             return decoded;
         }
 
-||||||| parent of 602a689 (Generate rpc code)
-=======
-#pragma once
-
-#include "rpc.h"
-#include "i_schema.h"
-#include "fcp.h"
-
-namespace fcp {
-class I{{service.name}}Impl {
-    public:
-{% for method in service.methods %}        virtual {{method.output}} {{method.name}}(const {{method.input}}& input) = 0;
-{% endfor -%}
-};
-
-template<typename ServiceImpl>
-class {{service.name}}Broker {
-    public:
-        {{service.name}}Broker(IBusProxy& bus_proxy, const fcp::ISchema& schema, const ServiceImpl& service_impl, std::uint8_t service_id):
-            bus_proxy_{bus_proxy},
-            schema_{schema},
-            service_impl_{service_impl},
-            service_id_{service_id}
-        {}
-
-        void Step() {
-            auto msg = bus_proxy_.Recv();
-            if (!msg.has_value()) {
-                return;
-            }
-
-            auto [data, msg_name] = msg.value();
-            auto decoded_ = schema_.DecodeJson(msg_name, data);
-            if (!decoded_.has_value()) {
-                return;
-            }
-
-            auto decoded = decoded_.value();
-
-            if (!decoded.contains("__is_method_input")) {
-                return;
-            }
-
-            auto service_id = decoded["service_id"].get<std::uint8_t>();
-            auto method_id = decoded["method_id"].get<std::uint8_t>();
-
-            if (service_id != service_id_) {
-                return;
-            }
-
-            if (method_id == fcp::SensorServiceMethodId::RequestState) {
-                auto sensor_req = fcp::SensorReq::FromJson(decoded["payload"]);
-                auto request_state_payload = service_impl_.RequestState(sensor_req);
-                auto response = fcp::SensorInformationOutput{service_id_, method_id, request_state_payload};
-                bus_proxy_.Send(response.Encode().GetData(), "SensorInformationOutput");
-            }
-        }
-
-    private:
->>>>>>> 602a689 (Generate rpc code)
         IBusProxy& bus_proxy_;
         const fcp::ISchema& schema_;
         ServiceImpl service_impl_;
