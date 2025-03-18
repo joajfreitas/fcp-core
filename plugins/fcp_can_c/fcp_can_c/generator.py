@@ -117,3 +117,10 @@ class Generator(CodeGenerator):
                 )
             else:
                 return Ok(())
+            
+class Node: 
+    """Represents a device node with RPC compatibility."""
+    def __init__(self, dev_name, rpc_get, rpc_ans):
+        self.dev_name = dev_name
+        self.rpc_get = rpc_get
+        self.rpc_ans = rpc_ans
