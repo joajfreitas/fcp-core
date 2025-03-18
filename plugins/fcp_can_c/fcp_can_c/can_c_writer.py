@@ -27,7 +27,7 @@ from beartype.typing import Generator, List, Dict, Any, Optional, Tuple
 from math import ceil
 from cantools.database import conversion
 from jinja2 import Environment, FileSystemLoader
-from cantools.database.can.node import Node as CanNode
+from generator import Node
 from fcp.specs.struct_field import StructField
 from fcp.specs.v2 import FcpV2
 from dataclasses import dataclass
