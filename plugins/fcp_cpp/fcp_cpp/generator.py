@@ -263,6 +263,12 @@ class Generator(CodeGenerator):
 
             fcp.enums.append(enum)
 
+        metadata = {
+            "version": VERSION,
+            "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "user": pwd.getpwuid(os.getuid())[0],
+            "hostname": socket.gethostname(),
+        }
         output_files = (
             [
                 (
