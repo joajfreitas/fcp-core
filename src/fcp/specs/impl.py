@@ -21,7 +21,7 @@
 """Impl."""
 
 
-from beartype.typing import Any, Dict, List
+from beartype.typing import Any, Dict, List, Optional
 from serde import serde, strict, to_dict, field
 
 from .signal_block import SignalBlock
@@ -39,7 +39,7 @@ class Impl:
     type: str
     fields: Dict[str, Any]
     signals: List[SignalBlock]
-    meta: MetaData = field(skip=True)
+    meta: Optional[MetaData] = field(default=None, skip=True)
 
     def get_signal(self, name: str) -> Maybe[SignalBlock]:
         """Get impl signal."""
