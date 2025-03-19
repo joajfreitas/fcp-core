@@ -1,0 +1,100 @@
+// Copyright (c) 2024 the fcp AUTHORS.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+// Generated using fcp {{version}} on {{date}} by {{user}}@{{hostname}}
+
+// DO NOT EDIT
+
+#pragma once
+
+#include "rpc.h"
+#include "i_schema.h"
+#include "fcp.h"
+
+namespace fcp {
+class I{{service.name}}Impl {
+    public:
+{% for method in service.methods %}        virtual {{method.output}} {{method.name}}(const {{method.input}}& input) = 0;
+{% endfor -%}
+};
+
+template<typename ServiceImpl>
+class {{service.name}}Broker {
+    public:
+        {{service.name}}Broker(IBusProxy& bus_proxy, const fcp::ISchema& schema, const ServiceImpl& service_impl, std::uint8_t service_id):
+            bus_proxy_{bus_proxy},
+            schema_{schema},
+            service_impl_{service_impl},
+            service_id_{service_id}
+        {}
+
+        void Step() {
+            auto decoded_ = GetDecodedMethod(bus_proxy_.Recv());
+
+            if (!decoded_.has_value()) {
+                return;
+            }
+
+            auto decoded = decoded_.value();
+
+            auto service_id = decoded["service_id"]. template get<std::uint8_t>();
+            auto method_id = decoded["method_id"]. template get<std::uint8_t>();
+
+            if (service_id != service_id_) {
+                return;
+            }
+
+            {% for method in service.methods -%}
+            if (method_id == {{service.name}}MethodId::{{method.name}}) {
+                auto input = {{method.input}}::FromJson(decoded["payload"]);
+                auto response_payload = service_impl_.{{method.name}}(input);
+                auto response = {{method.output}}Output{service_id_, method_id, response_payload};
+                bus_proxy_.Send(response.Encode().GetData(), "{{method.output}}Output");
+                return;
+            }
+            {% endfor -%}
+        }
+
+    private:
+        std::optional<json> GetDecodedMethod(std::optional<std::pair<std::vector<std::uint8_t>, std::string>> msg) {
+            if (!msg.has_value()) {
+                return std::nullopt;
+            }
+
+            auto [data, msg_name] = msg.value();
+            auto decoded = schema_.DecodeJson(msg_name, data);
+            if (!decoded.has_value()) {
+                return std::nullopt;
+            }
+
+            if (!decoded.value().contains("__is_method_input")) {
+                return std::nullopt;
+            }
+
+            return decoded;
+        }
+
+        IBusProxy& bus_proxy_;
+        const fcp::ISchema& schema_;
+        ServiceImpl service_impl_;
+        std::uint8_t service_id_;
+};
+
+}

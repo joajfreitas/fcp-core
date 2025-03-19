@@ -1,0 +1,82 @@
+// Copyright (c) 2024 the fcp AUTHORS.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+// Generated using fcp {{version}} on {{date}} by {{user}}@{{hostname}}
+
+// DO NOT EDIT
+
+#pragma once
+
+#include "rpc.h"
+#include "i_schema.h"
+
+namespace fcp {
+
+class {{service.name}}Proxy {
+    public:
+        {{service.name}}Proxy(IBusProxy& bus_proxy, ISchema& schema): bus_proxy_{bus_proxy}, schema_{schema}, pending_requests_{} {}
+
+        template<typename Input, typename Output>
+        MethodResponse<typename Output::PayloadType> HandleMethod(const typename Input::PayloadType& input, std::uint8_t service_id, std::uint8_t method_id) {
+            Input input_req{service_id, method_id, input};
+            bus_proxy_.Send(input_req.Encode().GetData(), "SensorReqInput");
+
+            std::promise<json> promise;
+            std::future<json> future = promise.get_future();
+            pending_requests_.insert({MethodIds{service_id, method_id}, std::move(promise)});
+            return future;
+        }
+
+{%- for method in service.methods %}
+        MethodResponse<{{method.output}}> {{method.name}}(const {{method.input}}& input) {
+            return HandleMethod<{{method.input}}Input, {{method.output}}Output>(input, ServiceId::{{service.name}}, {{service.name}}MethodId::{{method.name}});
+        }
+{% endfor -%}
+
+        void Step() {
+            auto msg = bus_proxy_.Recv();
+            if (!msg.has_value()) {
+                return;
+            }
+            auto decoded = schema_.DecodeJson(msg.value().second, msg.value().first);
+
+            if (!decoded.has_value()) {
+                return;
+            }
+
+            auto service_id = decoded.value()["service_id"].get<std::uint8_t>();
+            auto method_id = decoded.value()["method_id"].get<std::uint8_t>();
+            for (auto& [key, value]: pending_requests_) {
+                if (key.service_id == service_id && key.method_id == method_id) {
+                    value.set_value(decoded.value()["payload"]);
+                    pending_requests_.erase(key);
+                    return;
+                }
+            }
+            return;
+        }
+
+    private:
+        IBusProxy& bus_proxy_;
+        ISchema& schema_;
+        std::unordered_map<MethodIds, std::promise<json>> pending_requests_;
+};
+
+} // namespace fcp

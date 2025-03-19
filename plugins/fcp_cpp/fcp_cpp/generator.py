@@ -26,6 +26,9 @@ from pathlib import Path
 import jinja2
 import math
 import os
+import pwd
+import socket
+import datetime
 
 from fcp.specs.impl import Impl
 from fcp.codegen import CodeGenerator
@@ -41,6 +44,11 @@ from fcp.specs.type import (
     DynamicArrayType,
     OptionalType,
 )
+from fcp.specs.struct_field import StructField
+from fcp.specs.metadata import MetaData
+from fcp.specs.enum import Enum, Enumeration
+from fcp.version import VERSION
+
 from fcp.reflection import get_reflection_schema
 
 
@@ -98,6 +106,13 @@ def to_pascal_case(name: str) -> str:
     return "".join([n.capitalize() for n in name.split("_")])
 
 
+def to_snake_case(name: str) -> str:
+    """Convert pascal case to snake case."""
+    return name[:1].lower() + "".join(
+        "_" + c.lower() if c.isupper() else c for c in name[1:]
+    )
+
+
 class Generator(CodeGenerator):
     """Cpp code generator."""
 
@@ -113,47 +128,89 @@ class Generator(CodeGenerator):
         """Generate cpp files."""
         fcp_reflection, _ = get_reflection_schema().unwrap()
 
-        output_files = [
-            (
-                "fcp.h.j2",
-                "fcp.h",
-                {
-                    "fcp": fcp,
-                    "namespace": None,
-                    "protocol": "default",
-                },
-            ),
-            ("buffer.h", "buffer.h", {}),
-            ("decoders.h", "decoders.h", {}),
-            ("dynamic.h", "dynamic.h", {}),
-            (
-                "fcp.h.j2",
-                "reflection.h",
-                {
-                    "fcp": fcp_reflection,
-                    "namespace": "reflection",
-                    "protocol": "default",
-                },
-            ),
-            (
-                "can.h",
-                "can.h",
-                {
-                    "fcp": fcp,
-                },
-            ),
-            ("i_can_schema.h", "i_can_schema.h", {}),
-            ("can_static_schema.h", "can_static_schema.h", {"fcp": fcp}),
-            ("can_dynamic_schema.h", "can_dynamic_schema.h", {}),
-            ("i_schema.h", "i_schema.h", {}),
-        ] + [
-            (
-                "fcp.h.j2",
-                "fcp_" + protocol + ".h",
-                {"fcp": fcp, "namespace": protocol, "protocol": protocol},
-            )
-            for protocol in fcp.get_protocols()
-        ]
+        metadata = {
+            "version": VERSION,
+            "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "user": pwd.getpwuid(os.getuid())[0],
+            "hostname": socket.gethostname(),
+        }
+        output_files = (
+            [
+                (
+                    "fcp.h.j2",
+                    "fcp.h",
+                    {
+                        "fcp": fcp,
+                        "namespace": None,
+                        "protocol": "default",
+                        **metadata,
+                    },
+                ),
+                ("buffer.h", "buffer.h", {**metadata}),
+                ("decoders.h", "decoders.h", {**metadata}),
+                ("dynamic.h", "dynamic.h", {**metadata}),
+                (
+                    "fcp.h.j2",
+                    "reflection.h",
+                    {
+                        **metadata,
+                        "fcp": fcp_reflection,
+                        "namespace": "reflection",
+                        "protocol": "default",
+                    },
+                ),
+                (
+                    "can.h",
+                    "can.h",
+                    {
+                        **metadata,
+                        "fcp": fcp,
+                    },
+                ),
+                ("i_can_schema.h", "i_can_schema.h", {**metadata}),
+                (
+                    "can_static_schema.h",
+                    "can_static_schema.h",
+                    {**metadata, "fcp": fcp},
+                ),
+                ("can_dynamic_schema.h", "can_dynamic_schema.h", {**metadata}),
+                ("i_schema.h", "i_schema.h", {**metadata}),
+                (
+                    "rpc.h.j2",
+                    "rpc.h",
+                    {**metadata, "fcp": fcp},
+                ),
+            ]
+            + [
+                (
+                    "fcp.h.j2",
+                    "fcp_" + protocol + ".h",
+                    {
+                        **metadata,
+                        "fcp": fcp,
+                        "namespace": protocol,
+                        "protocol": protocol,
+                    },
+                )
+                for protocol in fcp.get_protocols()
+            ]
+            + [
+                (
+                    "service_server.h.j2",
+                    to_snake_case(service.name) + "_server.h",
+                    {**metadata, "fcp": fcp, "service": service},
+                )
+                for service in fcp.services
+            ]
+            + [
+                (
+                    "service_client.h.j2",
+                    to_snake_case(service.name) + "_client.h",
+                    {**metadata, "fcp": fcp, "service": service},
+                )
+                for service in fcp.services
+            ]
+        )
 
         loader = jinja2.DictLoader(
             {
