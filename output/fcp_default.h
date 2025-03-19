@@ -1,3 +1,27 @@
+// Copyright (c) 2024 the fcp AUTHORS.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+// Generated using fcp 1.0.0 on 2025-03-19 21:51:29 by joaj@saturn
+
+// DO NOT EDIT
+
 #pragma once
 
 #include <vector>
@@ -20,9 +44,7 @@
 #include "i_schema.h"
 
 namespace fcp {
-
 namespace default {
-
 
 using json = nlohmann::json;
 
@@ -514,43 +536,43 @@ private:
 };
 
 
-struct SensorReqInput {
+struct SensorreqInput {
     using ServiceIdType = ServiceId;
     using MethodIdType = SensorServiceMethodId;
     using PayloadType = SensorReq;
 
-    SensorReqInput():
+    SensorreqInput():
         service_id_{},
         method_id_{},
         payload_{}
     {}
 
-    SensorReqInput(ServiceIdType service_id,MethodIdType method_id,PayloadType payload):
+    SensorreqInput(ServiceIdType service_id,MethodIdType method_id,PayloadType payload):
         service_id_{service_id},
         method_id_{method_id},
         payload_{payload}
     {}
 
-    static SensorReqInput FromJson(json j){
-        return SensorReqInput {
+    static SensorreqInput FromJson(json j){
+        return SensorreqInput {
             ServiceIdType::FromJson(j["service_id"]),
             MethodIdType::FromJson(j["method_id"]),
             PayloadType::FromJson(j["payload"]),
         };
     }
 
-    static SensorReqInput Decode(Buffer& buffer, Endianess endianess=Endianess::Little) {
+    static SensorreqInput Decode(Buffer& buffer, Endianess endianess=Endianess::Little) {
         auto service_id = ServiceIdType::Decode(buffer, endianess);
         auto method_id = MethodIdType::Decode(buffer, endianess);
         auto payload = PayloadType::Decode(buffer, endianess);
 
-        return SensorReqInput(service_id,method_id,payload);
+        return SensorreqInput(service_id,method_id,payload);
     }
 
     template<typename Iterator>
-    static SensorReqInput Decode(Iterator begin, Iterator end) {
+    static SensorreqInput Decode(Iterator begin, Iterator end) {
         auto buffer = Buffer{begin, end};
-        return SensorReqInput::Decode(buffer);
+        return SensorreqInput::Decode(buffer);
     }
 
     json DecodeJson() const {
@@ -558,6 +580,7 @@ struct SensorReqInput {
         j["service_id"] = service_id_.DecodeJson();
         j["method_id"] = method_id_.DecodeJson();
         j["payload"] = payload_.DecodeJson();
+        j["__is_method_input"] = true;
         return j;
     }
 
@@ -590,7 +613,7 @@ struct SensorReqInput {
     PayloadType& ViewPayload() {
         return payload_;
     }
-    inline bool operator==(const SensorReqInput& rhs) const {
+    inline bool operator==(const SensorreqInput& rhs) const {
         return  service_id_ == rhs.GetServiceId()
         	&& method_id_ == rhs.GetMethodId()
         	&& payload_ == rhs.GetPayload();
@@ -599,7 +622,7 @@ struct SensorReqInput {
     std::string ToString(std::string prefix = "") const {
         std::stringstream ss{};
         auto p = prefix + "\t";
-        ss << "SensorReqInput {" << std::endl;
+        ss << "SensorreqInput {" << std::endl;
         ss << p << "service_id: " << service_id_.ToString(p) << std::endl;
         ss << p << "method_id: " << method_id_.ToString(p) << std::endl;
         ss << p << "payload: " << payload_.ToString(p) << std::endl;
@@ -614,43 +637,43 @@ private:
 };
 
 
-struct SensorInformationOutput {
+struct SensorinformationOutput {
     using ServiceIdType = ServiceId;
     using MethodIdType = SensorServiceMethodId;
     using PayloadType = SensorInformation;
 
-    SensorInformationOutput():
+    SensorinformationOutput():
         service_id_{},
         method_id_{},
         payload_{}
     {}
 
-    SensorInformationOutput(ServiceIdType service_id,MethodIdType method_id,PayloadType payload):
+    SensorinformationOutput(ServiceIdType service_id,MethodIdType method_id,PayloadType payload):
         service_id_{service_id},
         method_id_{method_id},
         payload_{payload}
     {}
 
-    static SensorInformationOutput FromJson(json j){
-        return SensorInformationOutput {
+    static SensorinformationOutput FromJson(json j){
+        return SensorinformationOutput {
             ServiceIdType::FromJson(j["service_id"]),
             MethodIdType::FromJson(j["method_id"]),
             PayloadType::FromJson(j["payload"]),
         };
     }
 
-    static SensorInformationOutput Decode(Buffer& buffer, Endianess endianess=Endianess::Little) {
+    static SensorinformationOutput Decode(Buffer& buffer, Endianess endianess=Endianess::Little) {
         auto service_id = ServiceIdType::Decode(buffer, endianess);
         auto method_id = MethodIdType::Decode(buffer, endianess);
         auto payload = PayloadType::Decode(buffer, endianess);
 
-        return SensorInformationOutput(service_id,method_id,payload);
+        return SensorinformationOutput(service_id,method_id,payload);
     }
 
     template<typename Iterator>
-    static SensorInformationOutput Decode(Iterator begin, Iterator end) {
+    static SensorinformationOutput Decode(Iterator begin, Iterator end) {
         auto buffer = Buffer{begin, end};
-        return SensorInformationOutput::Decode(buffer);
+        return SensorinformationOutput::Decode(buffer);
     }
 
     json DecodeJson() const {
@@ -690,7 +713,7 @@ struct SensorInformationOutput {
     PayloadType& ViewPayload() {
         return payload_;
     }
-    inline bool operator==(const SensorInformationOutput& rhs) const {
+    inline bool operator==(const SensorinformationOutput& rhs) const {
         return  service_id_ == rhs.GetServiceId()
         	&& method_id_ == rhs.GetMethodId()
         	&& payload_ == rhs.GetPayload();
@@ -699,7 +722,7 @@ struct SensorInformationOutput {
     std::string ToString(std::string prefix = "") const {
         std::stringstream ss{};
         auto p = prefix + "\t";
-        ss << "SensorInformationOutput {" << std::endl;
+        ss << "SensorinformationOutput {" << std::endl;
         ss << p << "service_id: " << service_id_.ToString(p) << std::endl;
         ss << p << "method_id: " << method_id_.ToString(p) << std::endl;
         ss << p << "payload: " << payload_.ToString(p) << std::endl;
@@ -818,7 +841,7 @@ struct StaticSchema: public ISchema
 {
     StaticSchema() = default;
 
-    std::optional<json> DecodeJson(std::string name, std::vector<std::uint8_t> data, std::string bus="default") override {
+    std::optional<json> DecodeJson(std::string name, std::vector<std::uint8_t> data, std::string bus="default") const override {
         auto buffer = Buffer{data.begin(), data.end()};
         if (name == "Temperature" && bus == "default") {
             return Temperature::Decode(buffer).DecodeJson();
@@ -829,11 +852,11 @@ struct StaticSchema: public ISchema
         if (name == "SensorReq" && bus == "default") {
             return SensorReq::Decode(buffer).DecodeJson();
         }
-        if (name == "SensorReqInput" && bus == "default") {
-            return SensorReqInput::Decode(buffer).DecodeJson();
+        if (name == "SensorreqInput" && bus == "default") {
+            return SensorreqInput::Decode(buffer).DecodeJson();
         }
-        if (name == "SensorInformationOutput" && bus == "default") {
-            return SensorInformationOutput::Decode(buffer).DecodeJson();
+        if (name == "SensorinformationOutput" && bus == "default") {
+            return SensorinformationOutput::Decode(buffer).DecodeJson();
         }
         if (name == "TemperatureOutput" && bus == "default") {
             return TemperatureOutput::Decode(buffer).DecodeJson();
@@ -842,7 +865,7 @@ struct StaticSchema: public ISchema
         return std::nullopt;
     }
 
-    std::optional<std::vector<std::uint8_t>> EncodeJson(std::string msg_name, json j) {
+    std::optional<std::vector<std::uint8_t>> EncodeJson(std::string msg_name, json j) const override {
         if (msg_name == "Temperature") {
             auto s = Temperature::FromJson(j);
             return s.Encode().GetData();
@@ -855,12 +878,12 @@ struct StaticSchema: public ISchema
             auto s = SensorReq::FromJson(j);
             return s.Encode().GetData();
         }
-        if (msg_name == "SensorReqInput") {
-            auto s = SensorReqInput::FromJson(j);
+        if (msg_name == "SensorreqInput") {
+            auto s = SensorreqInput::FromJson(j);
             return s.Encode().GetData();
         }
-        if (msg_name == "SensorInformationOutput") {
-            auto s = SensorInformationOutput::FromJson(j);
+        if (msg_name == "SensorinformationOutput") {
+            auto s = SensorinformationOutput::FromJson(j);
             return s.Encode().GetData();
         }
         if (msg_name == "TemperatureOutput") {

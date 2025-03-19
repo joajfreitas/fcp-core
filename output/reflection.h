@@ -1,3 +1,27 @@
+// Copyright (c) 2024 the fcp AUTHORS.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+// Generated using fcp 1.0.0 on 2025-03-19 21:51:29 by joaj@saturn
+
+// DO NOT EDIT
+
 #pragma once
 
 #include <vector>
@@ -20,9 +44,7 @@
 #include "i_schema.h"
 
 namespace fcp {
-
 namespace reflection {
-
 
 using json = nlohmann::json;
 
@@ -1472,7 +1494,7 @@ struct StaticSchema: public ISchema
 {
     StaticSchema() = default;
 
-    std::optional<json> DecodeJson(std::string name, std::vector<std::uint8_t> data, std::string bus="default") override {
+    std::optional<json> DecodeJson(std::string name, std::vector<std::uint8_t> data, std::string bus="default") const override {
         auto buffer = Buffer{data.begin(), data.end()};
         if (name == "MetaData" && bus == "default") {
             return MetaData::Decode(buffer).DecodeJson();
@@ -1514,7 +1536,7 @@ struct StaticSchema: public ISchema
         return std::nullopt;
     }
 
-    std::optional<std::vector<std::uint8_t>> EncodeJson(std::string msg_name, json j) {
+    std::optional<std::vector<std::uint8_t>> EncodeJson(std::string msg_name, json j) const override {
         if (msg_name == "MetaData") {
             auto s = MetaData::FromJson(j);
             return s.Encode().GetData();

@@ -1,3 +1,9 @@
 #pragma once
 
-{'name': 'SensorService', 'id': 0, 'methods': [{'name': 'RequestState', 'id': 0, 'input': 'SensorReq', 'output': 'SensorInformation'}, {'name': 'GetTemperature', 'id': 1, 'input': 'SensorReq', 'output': 'Temperature'}]}
+namespace fcp {
+class ISensorService {
+    public:
+        virtual SensorInformation RequestState(SensorReq& input) = 0;
+        virtual Temperature GetTemperature(SensorReq& input) = 0;
+};
+}
