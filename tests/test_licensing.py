@@ -51,3 +51,15 @@ def test_jinja_templates_license_notice_is_present(filename: Path):
     check_license(
         re.compile(r"^\/\/ Copyright \(c\) 20\d\d the fcp AUTHORS\.\n"), filename
     )
+
+
+@pytest.mark.parametrize(
+    "filename",
+    list(recursively_search_files("cpp", "plugins/fcp_cpp"))
+    + list(recursively_search_files("h", "plugins/fcp_cpp")),
+    ids=param_name,
+)
+def test_cpp_license_notice_is_present(filename: Path):
+    check_license(
+        re.compile(r"^\/\/ Copyright \(c\) 20\d\d the fcp AUTHORS\.\n"), filename
+    )
