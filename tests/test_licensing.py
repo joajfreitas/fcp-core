@@ -43,3 +43,11 @@ def test_python_license_notice_is_present(filename: Path) -> None:
         re.compile(r"^# Copyright \(c\) 20\d\d the fcp AUTHORS\.\n"), filename
     )
 
+
+@pytest.mark.parametrize(
+    "filename", list(recursively_search_files("j2", ".")), ids=param_name
+)
+def test_jinja_templates_license_notice_is_present(filename: Path):
+    check_license(
+        re.compile(r"^\/\/ Copyright \(c\) 20\d\d the fcp AUTHORS\.\n"), filename
+    )
