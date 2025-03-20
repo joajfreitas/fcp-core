@@ -75,7 +75,7 @@ class Impl:
                 {"name": key, "value": str(value)} for key, value in self.fields.items()
             ],
             "signals": [signal.refection() for signal in self.signals],
-            "meta": self.meta.reflection(),
+            "meta": self.meta.reflection() if self.meta else None,
         }
 
     def __repr__(self) -> str:
