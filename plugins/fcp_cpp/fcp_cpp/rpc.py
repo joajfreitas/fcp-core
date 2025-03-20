@@ -94,21 +94,24 @@ def _create_rpc_output_data(service: Service, payload: Struct) -> Struct:
     return (s, i)
 
 
-def generate_rpc(
-    fcp: FcpV2,
-) -> FcpV2:
-
+def generate_rpc(fcp: FcpV2) -> FcpV2:
     method_inputs = {}
     method_outputs = {}
-
     service_methods_enum = {}
 
     for service in fcp.services:
         for method in service.methods:
             input_struct = fcp.get_struct(method.input).unwrap()
             output_struct = fcp.get_struct(method.output).unwrap()
-            method_inputs.add(method.input)
-            method_outputs.add(method.output)
+            input_struct = fcp.get_struct(method.input).unwrap()
+            method_inputs[method.input] = _create_rpc_input_data(
+                service, input_struct
+            )
+            output_struct = fcp.get_struct(method.output).unwrap()
+            method_outputs[method.output] = _create_rpc_output_data(
+                service, output_struct
+            )
+            service_methods_enum[service.name].append((method.name, method.id))
 
     for method_input in method_inputs:
         input_struct = fcp.get_struct(method_input).unwrap()
@@ -148,10 +151,12 @@ def generate_rpc(
         )
         m = max([e.value for e in enum.enumeration])
         if m > 255:
-            raise ValueError(service_name + "MethodId must not be larger than 8 bit")
+            raise ValueError(
+                service_name + "MethodId must not be larger than 8 bit"
+            )
         elif m != 255:
             enum.enumeration.append(Enumeration("Max", 255, None))
 
         fcp.enums.append(enum)
 
-        return fcp
+    return fcp
