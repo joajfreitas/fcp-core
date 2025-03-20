@@ -37,7 +37,11 @@ class Enumeration:
 
     def reflection(self) -> Dict[str, Any]:
         """Reflection."""
-        return {"name": self.name, "value": self.value, "meta": self.meta.reflection()}
+        return {
+            "name": self.name,
+            "value": self.value,
+            "meta": self.meta.reflection() if self.meta else None,
+        }
 
 
 @serde(type_check=strict)
