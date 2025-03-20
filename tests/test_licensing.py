@@ -23,7 +23,7 @@ def param_name(path: Path) -> str:
     return str(path)
 
 
-def check_license(license_regex, filename):
+def check_license(license_regex: re.Pattern, filename: Path) -> None:
     with open(filename) as f:
         contents = f.read()
 
@@ -46,8 +46,8 @@ def test_python_license_notice_is_present(filename: Path) -> None:
 
 @pytest.mark.parametrize(
     "filename", list(recursively_search_files("j2", ".")), ids=param_name
-)
-def test_jinja_templates_license_notice_is_present(filename: Path):
+)  # type: ignore
+def test_jinja_templates_license_notice_is_present(filename: Path) -> None:
     check_license(
         re.compile(r"^\/\/ Copyright \(c\) 20\d\d the fcp AUTHORS\.\n"), filename
     )
@@ -58,8 +58,8 @@ def test_jinja_templates_license_notice_is_present(filename: Path):
     list(recursively_search_files("cpp", "plugins/fcp_cpp"))
     + list(recursively_search_files("h", "plugins/fcp_cpp")),
     ids=param_name,
-)
-def test_cpp_license_notice_is_present(filename: Path):
+)  # type: ignore
+def test_cpp_license_notice_is_present(filename: Path) -> None:
     check_license(
         re.compile(r"^\/\/ Copyright \(c\) 20\d\d the fcp AUTHORS\.\n"), filename
     )
