@@ -15,7 +15,7 @@ def recursively_search_files(
     for filename in root.rglob("*." + extension):
         if filename.name in excluded:
             continue
-        if filename.is_file() and filename.suffix == "." + extension:
+        if filename.is_file() and "".join(filename.suffixes) == "." + extension:
             yield filename
 
 
@@ -45,7 +45,10 @@ def test_python_license_notice_is_present(filename: Path) -> None:
 
 
 @pytest.mark.parametrize(
-    "filename", list(recursively_search_files("j2", ".")), ids=param_name
+    "filename",
+    list(recursively_search_files("h.j2", "plugins/fcp_cpp"))
+    + list(recursively_search_files("cpp.j2", "plugins/fcp_cpp")),
+    ids=param_name,
 )  # type: ignore
 def test_jinja_templates_license_notice_is_present(filename: Path) -> None:
     check_license(
