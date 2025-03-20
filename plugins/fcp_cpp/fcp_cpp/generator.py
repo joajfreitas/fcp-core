@@ -112,6 +112,28 @@ def to_snake_case(name: str) -> str:
     )
 
 
+def create_template_environment(output):
+    def get_template(self, filename: str) -> str:
+        return (
+            (Path(os.path.dirname(os.path.abspath(__file__))) / filename).open().read()
+        )
+
+    loader = jinja2.DictLoader(
+        {
+            template_name: get_template(template_name)
+            for template_name in set([template_name for _, template_name, _ in output])
+        }
+    )
+
+    env = jinja2.Environment(loader=loader)
+    env.globals["to_wrapper_cpp_type"] = to_wrapper_cpp_type
+    env.globals["get_matching_impls"] = get_matching_impls
+    env.globals["get_struct_from_type"] = get_struct_from_type
+    env.filters["to_pascal_case"] = to_pascal_case
+
+    return env
+
+
 class OutputBuilder:
     def __init__(self, metadata):
         self.metadata = metadata
@@ -196,11 +218,6 @@ class Generator(CodeGenerator):
             meta=None,
         )
         return (s, i)
-
-    def _get_template(self, filename: str) -> str:
-        return (
-            (Path(os.path.dirname(os.path.abspath(__file__))) / filename).open().read()
-        )
 
     def generate(self, fcp: FcpV2, ctx: Any) -> List[Dict[str, Union[str, Path]]]:
         """Generate cpp files."""
@@ -319,20 +336,7 @@ class Generator(CodeGenerator):
                 {"fcp": fcp, "service": service},
             )
 
-        loader = jinja2.DictLoader(
-            {
-                template_name: self._get_template(template_name)
-                for template_name in set(
-                    [template_name for _, template_name, _ in output_builder.output]
-                )
-            }
-        )
-
-        env = jinja2.Environment(loader=loader)
-        env.globals["to_wrapper_cpp_type"] = to_wrapper_cpp_type
-        env.globals["get_matching_impls"] = get_matching_impls
-        env.globals["get_struct_from_type"] = get_struct_from_type
-        env.filters["to_pascal_case"] = to_pascal_case
+        env = create_template_environment(output_builder.output)
 
         return [
             {
