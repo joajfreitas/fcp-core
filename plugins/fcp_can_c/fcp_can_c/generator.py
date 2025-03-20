@@ -117,11 +117,14 @@ class Generator(CodeGenerator):
                 )
             else:
                 return Ok(())
-            
-class CanNode: 
+
+
+class CanNode:
     """Represents a device node with RPC compatibility."""
 
-    def __init__(self, dev_name: str, rpc_get: "Union[int, None]", rpc_ans: "Union[int, None]"):
+    def __init__(
+        self, dev_name: str, rpc_get: "Union[int, None]", rpc_ans: "Union[int, None]"
+    ):
         self.dev_name = dev_name
         self.rpc_get = rpc_get
         self.rpc_ans = rpc_ans
