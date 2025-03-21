@@ -1,6 +1,6 @@
 ![](https://github.com/joajfreitas/fcp-core/actions/workflows/ci.yml/badge.svg)
 
-# FST Communication Protocol
+# FCP
 
 FCP is an interface description language to exchange information independently of language and platform.
 
