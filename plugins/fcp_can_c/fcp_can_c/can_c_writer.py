@@ -315,6 +315,8 @@ class CanCWriter:
         self.templates = {
             "device_can_h": self.env.get_template("can_device_h.jinja"),
             "device_can_c": self.env.get_template("can_device_c.jinja"),
+            "device_rpc_h": self.env.get_template("rpc_device_h.jinja"),
+            "device_rpc_c": self.env.get_template("rpc_device_c.jinja"),
         }
         self.device_messages = map_messages_to_devices(self.messages)
 
@@ -357,6 +359,17 @@ class CanCWriter:
                 ),
             )
 
+            if hasattr(device, "rpc_get") and hasattr(device, "rpc_ans"):
+                yield (
+                    device_name + "_rpc",
+                    self.templates["device_rpc_h"].render(
+                        device_name_pascal=snake_to_pascal(device_name),
+                        device_name_snake=pascal_to_snake(device_name),
+                        rpc_get=device.rpc_get,
+                        rpc_ans=device.rpc_ans,
+                    ),
+                )
+
     def generate_device_sources(self) -> Generator[Tuple[str, str], None, None]:
         """Generate C source files for devices.
 
@@ -373,3 +386,16 @@ class CanCWriter:
                     messages=messages,
                 ),
             )
+
+            device = next((d for d in self.devices if d.name == device_name), None)
+
+            if device and hasattr(device, "rpc_get") and hasattr(device, "rpc_ans"):
+                yield (
+                    device_name + "_rpc",
+                    self.templates["device_rpc_c"].render(
+                        device_name_pascal=snake_to_pascal(device_name),
+                        device_name_snake=pascal_to_snake(device_name),
+                        rpc_get=device.rpc_get,
+                        rpc_ans=device.rpc_ans,
+                    ),
+                )
