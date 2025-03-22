@@ -23,11 +23,10 @@
 import os
 
 from pathlib import Path
-from beartype.typing import Generator, List, Dict, Any, Optional, Tuple
+from beartype.typing import Generator, List, Dict, Any, Optional, Tuple, Union
 from math import ceil
 from cantools.database import conversion
 from jinja2 import Environment, FileSystemLoader
-from cantools.database.can.node import Node as CanNode
 from fcp.specs.struct_field import StructField
 from fcp.specs.v2 import FcpV2
 from dataclasses import dataclass
@@ -170,6 +169,17 @@ class Enum:
     values: Dict[str, int]
 
 
+class CanNode:
+    """Represents a device node with RPC compatibility."""
+
+    def __init__(
+        self, name: str, rpc_get: "Union[int, None]", rpc_ans: "Union[int, None]"
+    ):
+        self.name = name
+        self.rpc_get = rpc_get
+        self.rpc_ans = rpc_ans
+
+
 def is_signed(value: Value) -> bool:
     """Check if a value is signed.
 
@@ -258,7 +268,7 @@ def initialize_can_data(
     """
     enums = []
     messages = []
-    devices = []
+    devices: List["CanNode"] = []
     encoder = make_encoder(
         "packed", fcp, PackedEncoderContext().with_unroll_arrays(True)
     )
@@ -268,7 +278,7 @@ def initialize_can_data(
         enums.append(Enum(name=enum.name, values=values))
 
         # Enums are not tied to a specific device so they live on the global device
-        devices.append(CanNode("global"))
+        devices.append(CanNode("global", rpc_get=None, rpc_ans=None))
 
     for extension in fcp.get_matching_impls("can"):
         encoding = encoder.generate(extension)
@@ -282,7 +292,7 @@ def initialize_can_data(
         period = extension.fields.get("period", -1)
 
         if not any(node.name == device_name for node in devices):
-            devices.append(CanNode(device_name))
+            devices.append(CanNode(device_name, rpc_get=None, rpc_ans=None))
 
         messages.append(
             CanMessage(

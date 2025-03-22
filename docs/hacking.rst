@@ -20,6 +20,7 @@ Directory structure
     │   │       ├── 003_msg_scheduling  - Msg scheduling test for CAN C
     │   │       └── 004_little_endian   - Testing little endian encoding for CAN C all data types
     │   │       └── 005_big_endian      - Testing big endian encoding for CAN C all data types
+    │   │       └── 006_rpc_support     - Testing rpc support for CAN C
     │   ├── fcp_cpp                     - Example plugin
     │   │   └── fcp_cpp                 - Source for fcp_dbc
     │   ├── fcp_dbc                     - CAN DBC generator
