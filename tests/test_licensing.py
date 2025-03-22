@@ -55,7 +55,8 @@ def check_license(license_regex: re.Pattern, filename: Path) -> None:
 @pytest.mark.parametrize(
     "filename",
     list(recursively_search_files("py", "src", excluded=["result.py", "maybe.py"]))
-    + list(recursively_search_files("py", "plugins")),
+    + list(recursively_search_files("py", "plugins"))
+    + list(recursively_search_files("py", "tests")),
     ids=param_name,
 )  # type: ignore
 def test_python_license_notice_is_present(filename: Path) -> None:
