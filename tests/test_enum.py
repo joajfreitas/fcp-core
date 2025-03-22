@@ -24,21 +24,23 @@ import pytest
 
 from fcp.specs.enum import Enum, Enumeration
 
+
 @pytest.mark.parametrize(
-        "enumeration, expected",
-        [
-            ([("S1", 0), ("S2", 1), ("S3", 2)], 2),
-            ([("S1", 0)], 1),
-            ([("S1", 0), ("S2", 1)], 1),
-            ([("S1", 0), ("S2", 7)], 3),
-            ([("S1", 0), ("S2", 8)], 4),
-            ([("S1", 0), ("S2", 255)], 8),
-            ([("S1", 0), ("S2", 256)], 9),
-        ])
+    "enumeration, expected",
+    [
+        ([("S1", 0), ("S2", 1), ("S3", 2)], 2),
+        ([("S1", 0)], 1),
+        ([("S1", 0), ("S2", 1)], 1),
+        ([("S1", 0), ("S2", 7)], 3),
+        ([("S1", 0), ("S2", 8)], 4),
+        ([("S1", 0), ("S2", 255)], 8),
+        ([("S1", 0), ("S2", 256)], 9),
+    ],
+)
 def test_enum_size(enumeration, expected):
     e = Enum(
         name="E",
-        enumeration= [Enumeration(name, value, None) for name, value in enumeration],
+        enumeration=[Enumeration(name, value, None) for name, value in enumeration],
         meta=None,
     )
 
