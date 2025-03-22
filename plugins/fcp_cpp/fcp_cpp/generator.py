@@ -113,7 +113,7 @@ def to_snake_case(name: str) -> str:
 
 
 def create_template_environment(output):
-    def get_template(self, filename: str) -> str:
+    def get_template(filename: str) -> str:
         return (
             (Path(os.path.dirname(os.path.abspath(__file__))) / filename).open().read()
         )
@@ -140,7 +140,9 @@ class OutputBuilder:
         self.output = []
 
     def with_file(self, filename, template_name, template_arguments={}):
-        self.output.append((filename, template_name, template_arguments | metadata))
+        self.output.append(
+            (filename, template_name, template_arguments | self.metadata)
+        )
 
 
 class Generator(CodeGenerator):
@@ -223,12 +225,6 @@ class Generator(CodeGenerator):
         """Generate cpp files."""
         fcp_reflection, _ = get_reflection_schema().unwrap()
 
-        metadata = {
-            "version": VERSION,
-            "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "user": pwd.getpwuid(os.getuid())[0],
-            "hostname": socket.gethostname(),
-        }
         method_inputs = {}
         method_outputs = {}
 
@@ -312,10 +308,12 @@ class Generator(CodeGenerator):
 
         output_builder.with_file("can.h", "can.h", {"fcp": fcp})
         output_builder.with_file("i_can_schema.h", "i_can_schema.h")
-        output_builder.with_file("can_static_schema.h", "can_static_schema.h")
+        output_builder.with_file(
+            "can_static_schema.h", "can_static_schema.h", {"fcp": fcp}
+        )
         output_builder.with_file("can_dynamic_schema.h", "can_dynamic_schema.h")
         output_builder.with_file("i_schema.h", "i_schema.h")
-        output_builder.with_file("rpc.h", "rpc.h", {"fcp": fcp})
+        output_builder.with_file("rpc.h", "rpc.h.j2", {"fcp": fcp})
 
         for protocol in fcp.get_protocols():
             output_builder.with_file(
