@@ -18,24 +18,51 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// Generated using fcp {{version}} on {{date}} by {{user}}@{{hostname}}
+// Generated using fcp 1.0.0 on 2025-03-19 21:51:29 by joaj@saturn
 
 // DO NOT EDIT
 
 #pragma once
 
-#include <optional>
+#include <map>
+#include <any>
+#include <cstdint>
 #include <string>
+#include <optional>
+#include <cstring>
+#include <utility>
 
 #include <nlohmann/json.hpp>
 
+#include "fcp.h"
+#include "i_can_schema.h"
+
 namespace fcp {
+namespace can {
 
 using json = nlohmann::json;
 
-struct ISchema {
-    virtual std::optional<json> DecodeJson(std::string msg_name, std::vector<uint8_t> data, std::string bus = "default") const = 0;
-    virtual std::optional<std::vector<std::uint8_t>> EncodeJson(std::string msg_name, json j) const = 0;
+inline bool operator==(const frame_t& lhs, const frame_t& rhs) {
+    return lhs.bus == rhs.bus &&
+            lhs.sid == rhs.sid &&
+            lhs.dlc == rhs.dlc &&
+            lhs.data == rhs.data;
+}
+
+struct Can {
+    Can(std::shared_ptr<ICanSchema> schema): schema_{std::move(schema)} {}
+
+    std::optional<std::pair<std::string,json>> Decode(const frame_t& frame) {
+        return schema_->Decode(frame);
+    }
+
+    std::optional<frame_t> Encode(std::string msg_name, json j) {
+        return schema_->Encode(msg_name, j);
+    }
+
+  private:
+    std::shared_ptr<ICanSchema> schema_;
 };
 
+} // namesapce can
 } // namespace fcp

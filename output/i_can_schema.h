@@ -18,24 +18,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// Generated using fcp {{version}} on {{date}} by {{user}}@{{hostname}}
+// Generated using fcp 1.0.0 on 2025-03-19 21:51:29 by joaj@saturn
 
 // DO NOT EDIT
 
 #pragma once
 
-#include <optional>
-#include <string>
+namespace fcp {
+namespace can {
 
 #include <nlohmann/json.hpp>
 
-namespace fcp {
-
-using json = nlohmann::json;
-
-struct ISchema {
-    virtual std::optional<json> DecodeJson(std::string msg_name, std::vector<uint8_t> data, std::string bus = "default") const = 0;
-    virtual std::optional<std::vector<std::uint8_t>> EncodeJson(std::string msg_name, json j) const = 0;
+struct frame_t {
+    std::array<char,4> bus;
+    std::uint16_t sid;
+    std::uint8_t dlc;
+    std::array<std::uint8_t, 8> data;
 };
 
-} // namespace fcp
+class ICanSchema {
+  public:
+    virtual std::optional<std::pair<std::string, json>> Decode(const frame_t& frame) = 0;
+    virtual std::optional<frame_t> Encode(std::string msg_name, json j) = 0;
+};
+
+}
+}

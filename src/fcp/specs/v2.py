@@ -160,6 +160,11 @@ class FcpV2:
         """Get list of unique protocol names."""
         return list(set([impl.protocol for impl in self.impls]))
 
+    def get_service(self, protocol: str) -> List[Service]:
+        """Get list of services."""
+
+        return self.services
+
     def to_dict(self) -> Any:
         """Get the fcp AST as a python dictionary."""
 

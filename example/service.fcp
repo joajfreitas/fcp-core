@@ -1,0 +1,34 @@
+version: "3"
+
+mod temperature;
+
+/*this is a comment*/
+enum SensorState {
+	Off = 0,
+	On = 1,
+	Error = 2,
+}
+
+struct SensorInformation {
+    temperature @ 0: Temperature,
+    sensor_state @ 1: SensorState,
+}
+
+enum SensorId {
+    Left = 0,
+    Right = 1,
+}
+
+struct SensorReq {
+    sensor_id @0 : SensorId,
+}
+
+service SensorService @0 {
+    method RequestState(SensorReq) @0 returns SensorInformation
+    method GetTemperature(SensorReq) @1 returns Temperature
+}
+
+device ecu1 {
+    request_can_id: 10,
+    response_can_id: 11,
+}

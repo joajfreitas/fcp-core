@@ -54,9 +54,9 @@ using json = nlohmann::json;
 class {{enum.name}} {
 public:
     using UnderlyingType = std::uint8_t;
-    {% for enumeration in enum.enumeration %}
+    {%- for enumeration in enum.enumeration %}
     static constexpr UnderlyingType {{enumeration.name}} = {{enumeration.value}};
-    {% endfor %}
+    {%- endfor %}
 
     {{enum.name}}(): data_{} {}
     {{enum.name}}(UnderlyingType value): data_{value} {}
@@ -100,10 +100,10 @@ public:
         std::stringstream ss{};
 
         switch(GetData()) {
-        {% for enumeration in enum.enumeration %}
-            case {{enum.name}}::{{enumeration.name}}:
+        {%- for enumeration in enum.enumeration %}
+        case {{enum.name}}::{{enumeration.name}}:
             return "{{enumeration.name}}";
-        {% endfor %}
+        {%- endfor %}
         default:
             return "DecodingError";
         }
@@ -159,7 +159,9 @@ struct {{struct.name}} {
         {% for signal in struct.fields -%}
         j["{{signal.name}}"] = {{signal.name}}_.DecodeJson();
         {% endfor -%}
-
+        {%- if impl._is_method_input -%}
+        j["__is_method_input"] = true;
+        {% endif -%}
         return j;
     }
 
@@ -174,17 +176,17 @@ struct {{struct.name}} {
         {{signal.name}}_.Encode(buffer, endianess);
     {%- endfor %}
     }
-    {% for signal in struct.fields %}
+    {%- for signal in struct.fields %}
     {{signal.name | to_pascal_case}}Type Get{{signal.name | to_pascal_case}}() const {
         return {{signal.name}}_;
     }
-    {% endfor -%}
+    {%- endfor -%}
 
-    {% for signal in struct.fields %}
+    {%- for signal in struct.fields %}
     {{signal.name | to_pascal_case}}Type& View{{signal.name | to_pascal_case}}() {
         return {{signal.name}}_;
     }
-    {% endfor %}
+    {%- endfor %}
     inline bool operator==(const {{struct.name}}& rhs) const {
         return  {% for signal in struct.fields %}{{signal.name}}_ == rhs.Get{{signal.name | to_pascal_case}}(){% if not loop.last %}
         {{'\t'}}&& {% endif %}{% endfor %};
@@ -213,11 +215,11 @@ struct StaticSchema: public ISchema
 {
     StaticSchema() = default;
 
-    std::optional<json> DecodeJson(std::string name, std::vector<std::uint8_t> data, std::string bus="default") override {
+    std::optional<json> DecodeJson(std::string msg_name, std::vector<std::uint8_t> data, std::string bus="default") const override {
         auto buffer = Buffer{data.begin(), data.end()};
-        {% for impl in get_matching_impls(fcp, protocol) %}
+        {%- for impl in get_matching_impls(fcp, protocol) -%}
         {% set struct = get_struct_from_type(fcp, impl.type) %}
-        if (name == "{{struct.name}}" && bus == "{{impl.fields.get('bus', 'default')}}") {
+        if (msg_name == "{{struct.name}}" && bus == "{{impl.fields.get('bus', 'default')}}") {
             return {{struct.name}}::Decode(buffer).DecodeJson();
         }
         {%- endfor %}
@@ -225,8 +227,8 @@ struct StaticSchema: public ISchema
         return std::nullopt;
     }
 
-    std::optional<std::vector<std::uint8_t>> EncodeJson(std::string msg_name, json j) {
-        {% for impl in get_matching_impls(fcp, protocol) %}
+    std::optional<std::vector<std::uint8_t>> EncodeJson(std::string msg_name, json j) const override {
+        {%- for impl in get_matching_impls(fcp, protocol) -%}
         {% set struct = get_struct_from_type(fcp, impl.type) %}
         if (msg_name == "{{impl.name}}") {
             auto s = {{struct.name}}::FromJson(j);

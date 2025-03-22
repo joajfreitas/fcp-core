@@ -18,38 +18,30 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Struct field."""
+# ruff: noqa: D103 D100
 
-from beartype.typing import Any, Optional, Union, Dict
-from serde import serde, strict, field
+import pytest
 
-from .type import Type
-from .metadata import MetaData
+from fcp.specs.enum import Enum, Enumeration
 
 
-@serde(type_check=strict)
-class StructField:
-    """StructField node."""
+@pytest.mark.parametrize(
+    "enumeration, expected",
+    [
+        ([("S1", 0), ("S2", 1), ("S3", 2)], 2),
+        ([("S1", 0)], 1),
+        ([("S1", 0), ("S2", 1)], 1),
+        ([("S1", 0), ("S2", 7)], 3),
+        ([("S1", 0), ("S2", 8)], 4),
+        ([("S1", 0), ("S2", 255)], 8),
+        ([("S1", 0), ("S2", 256)], 9),
+    ],
+)
+def test_enum_size(enumeration, expected):
+    e = Enum(
+        name="E",
+        enumeration=[Enumeration(name, value, None) for name, value in enumeration],
+        meta=None,
+    )
 
-    name: str
-    field_id: int
-    type: Type
-    unit: Optional[str] = None
-    min_value: Optional[float] = None
-    max_value: Optional[float] = None
-    meta: Optional[MetaData] = field(skip=True, default=None)
-
-    def reflection(self) -> Dict[str, Any]:
-        """Reflection."""
-        return {
-            "name": self.name,
-            "field_id": self.field_id,
-            "type": self.type.reflection(),
-            "unit": self.unit,
-            "min_value": self.min_value,
-            "max_value": self.max_value,
-            "meta": self.meta.reflection() if self.meta else None,
-        }
-
-    def __repr__(self) -> str:
-        return f"<Signal name={self.name} type={self.type}>"
+    assert e.get_packed_size() == expected

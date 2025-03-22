@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// Generated using fcp {{version}} on {{date}} by {{user}}@{{hostname}}
+// Generated using fcp 1.0.0 on 2025-03-19 21:51:29 by joaj@saturn
 
 // DO NOT EDIT
 
