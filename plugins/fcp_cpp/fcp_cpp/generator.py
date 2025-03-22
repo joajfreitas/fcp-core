@@ -20,7 +20,7 @@
 
 """Cpp generator."""
 
-from beartype.typing import Any, Dict, Union, List
+from beartype.typing import Any, Dict, Union, List, Tuple
 from typing_extensions import NoReturn
 from pathlib import Path
 import jinja2
@@ -35,6 +35,7 @@ from fcp.codegen import CodeGenerator
 from fcp.verifier import Verifier
 from fcp.specs.v2 import FcpV2
 from fcp.specs.struct import Struct
+from fcp.specs.service import Service
 from fcp.specs.type import (
     Type,
     ComposedTypeCategory,
@@ -127,7 +128,11 @@ def to_snake_case(name: str) -> str:
     )
 
 
-def create_template_environment(output):
+def create_template_environment(
+    output: List[Tuple[str, str, Dict[str, Any]]],
+) -> jinja2.Environment:
+    """Create jinja2 template environment."""
+
     def get_template(filename: str) -> str:
         return (
             (Path(os.path.dirname(os.path.abspath(__file__))) / filename).open().read()
@@ -150,11 +155,16 @@ def create_template_environment(output):
 
 
 class OutputBuilder:
-    def __init__(self, metadata):
-        self.metadata = metadata
-        self.output = []
+    """Builder for output file list."""
 
-    def with_file(self, filename, template_name, template_arguments={}):
+    def __init__(self, metadata: Dict[str, str]) -> None:
+        self.metadata = metadata
+        self.output: List[Tuple[str, str, Dict[str, Any]]] = []
+
+    def with_file(
+        self, filename: str, template_name: str, template_arguments: Dict[str, Any] = {}
+    ) -> None:
+        """Add file to output list."""
         self.output.append(
             (filename, template_name, {**template_arguments, **self.metadata})
         )

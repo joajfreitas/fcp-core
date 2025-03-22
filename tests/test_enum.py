@@ -21,6 +21,7 @@
 # ruff: noqa: D103 D100
 
 import pytest
+from beartype.typing import List, Tuple
 
 from fcp.specs.enum import Enum, Enumeration
 
@@ -36,8 +37,8 @@ from fcp.specs.enum import Enum, Enumeration
         ([("S1", 0), ("S2", 255)], 8),
         ([("S1", 0), ("S2", 256)], 9),
     ],
-)
-def test_enum_size(enumeration, expected):
+)  # type: ignore
+def test_enum_size(enumeration: List[Tuple[str, int]], expected: int) -> None:
     e = Enum(
         name="E",
         enumeration=[Enumeration(name, value, None) for name, value in enumeration],
