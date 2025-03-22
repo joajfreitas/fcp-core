@@ -84,6 +84,7 @@ class {{service.name}}Broker {
                 return std::nullopt;
             }
 
+
             if (!decoded.value().contains("__is_method_input")) {
                 return std::nullopt;
             }
