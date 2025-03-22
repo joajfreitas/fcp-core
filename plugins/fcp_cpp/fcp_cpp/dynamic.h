@@ -214,11 +214,11 @@ class DynamicSchema : public ISchema {
         }
 
 
-        std::optional<json> DecodeStruct(std::string name, Buffer& buffer) {
+        std::optional<json> DecodeStruct(std::string name, Buffer& buffer) const {
             if (structs.find(name) == structs.end()) {
                 return std::nullopt;
             }
-            auto s = structs[name];
+            auto s = structs.at(name);
 
             auto struct_json = json{};
 
@@ -234,8 +234,8 @@ class DynamicSchema : public ISchema {
         }
 
 
-        json DecodeEnum(std::string name, Buffer& buffer) {
-            auto e = enums[name];
+        json DecodeEnum(std::string name, Buffer& buffer) const {
+            auto e = enums.at(name);
 
             auto max_value = std::max_element(e.enumeration.begin(), e.enumeration.end(),
                     [](const auto& a, const auto& b) {
@@ -252,17 +252,17 @@ class DynamicSchema : public ISchema {
                     })->first;
         }
 
-        json DecodeUnsigned(Type type, Buffer& buffer) {
+        json DecodeUnsigned(Type type, Buffer& buffer) const {
             auto size = std::stoi(type.name.substr(1));
             return buffer.GetWord(size);
         }
 
-        json DecodeSigned(Type type, Buffer& buffer) {
+        json DecodeSigned(Type type, Buffer& buffer) const {
             auto size = std::stoi(type.name.substr(1));
             return buffer.GetWord(size, true);
         }
 
-        json DecodeFloat32(Type type, Buffer& buffer) {
+        json DecodeFloat32(Type type, Buffer& buffer) const {
             float data;
             auto word = buffer.GetWord(32);
             std::memcpy(&data, &word, sizeof(data));
@@ -270,7 +270,7 @@ class DynamicSchema : public ISchema {
             return data;
         }
 
-        json DecodeFloat64(Type type, Buffer& buffer) {
+        json DecodeFloat64(Type type, Buffer& buffer) const {
             double data;
             auto word = buffer.GetWord(64);
             std::memcpy(&data, &word, sizeof(data));
@@ -278,7 +278,7 @@ class DynamicSchema : public ISchema {
             return data;
         }
 
-        json DecodeString(Type type, Buffer& buffer) {
+        json DecodeString(Type type, Buffer& buffer) const {
             auto length = buffer.GetWord(32);
             std::vector<std::uint8_t> data{};
             for (std::size_t i=0; i<length; i++) {
@@ -287,7 +287,7 @@ class DynamicSchema : public ISchema {
             return std::string{data.begin(), data.end()};
         }
 
-        std::optional<json> DecodeArray(Type type, Buffer& buffer) {
+        std::optional<json> DecodeArray(Type type, Buffer& buffer) const {
             std::vector<json> data;
             for (unsigned i=0; i<type.size; i++) {
                 auto decoded = _Decode(*type.underlying_type, buffer);
@@ -300,7 +300,7 @@ class DynamicSchema : public ISchema {
             return data;
         }
 
-        std::optional<json> DecodeDynamicArray(Type type, Buffer& buffer) {
+        std::optional<json> DecodeDynamicArray(Type type, Buffer& buffer) const{
             auto length = buffer.GetWord(32);
             std::vector<json> data;
             for (unsigned i=0; i<length; i++) {
@@ -314,7 +314,7 @@ class DynamicSchema : public ISchema {
             return data;
         }
 
-        std::optional<json> DecodeOptional(Type type, Buffer& buffer) {
+        std::optional<json> DecodeOptional(Type type, Buffer& buffer) const {
             auto is_value = buffer.GetWord(8);
             json data{};
 
@@ -328,7 +328,7 @@ class DynamicSchema : public ISchema {
             return data;
         }
 
-        std::optional<json> _Decode(Type type, Buffer& buffer) {
+        std::optional<json> _Decode(Type type, Buffer& buffer) const {
             if (type.type == "Builtin") {
                 if (type.name[0] == 'u') {
                     return DecodeUnsigned(type, buffer);
@@ -364,17 +364,17 @@ class DynamicSchema : public ISchema {
             throw std::runtime_error("Unknown type" + type.type);
         }
 
-        std::optional<json> DecodeJson(std::string name, std::vector<uint8_t> data, std::string bus = "default") override {
+        std::optional<json> DecodeJson(std::string name, std::vector<uint8_t> data, std::string bus = "default") const override {
             std::ignore = bus;
             auto buffer = Buffer{data.begin(), data.end()};
             return DecodeStruct(name, buffer);
         }
 
-        std::optional<std::vector<std::uint8_t>> EncodeStruct(std::string name, json j) {
+        std::optional<std::vector<std::uint8_t>> EncodeStruct(std::string name, json j) const {
             if (structs.find(name) == structs.end()) {
                 return std::nullopt;
             }
-            auto s = structs[name];
+            auto s = structs.at(name);
 
             auto buffer = Buffer{0};
 
@@ -389,11 +389,11 @@ class DynamicSchema : public ISchema {
             return buffer.GetData();
         }
 
-        std::optional<std::vector<std::uint8_t>> EncodeEnum(std::string name, json j) {
+        std::optional<std::vector<std::uint8_t>> EncodeEnum(std::string name, json j) const {
             if (enums.find(name) == enums.end()) {
                 return std::nullopt;
             }
-            auto e = enums[name];
+            auto e = enums.at(name);
 
             auto max_value = std::max_element(e.enumeration.begin(), e.enumeration.end(),
                     [](const auto& a, const auto& b) {
@@ -413,21 +413,21 @@ class DynamicSchema : public ISchema {
             return buffer.GetData();
         }
 
-        std::optional<std::vector<std::uint8_t>> EncodeUnsigned(Type type, json j) {
+        std::optional<std::vector<std::uint8_t>> EncodeUnsigned(Type type, json j) const {
             auto size = std::stoi(type.name.substr(1));
             auto buffer = Buffer{0};
             buffer.PushWord(j.get<std::uint64_t>(), size);
             return buffer.GetData();
         }
 
-        std::optional<std::vector<std::uint8_t>> EncodeSigned(Type type, json j) {
+        std::optional<std::vector<std::uint8_t>> EncodeSigned(Type type, json j) const {
             auto size = std::stoi(type.name.substr(1));
             auto buffer = Buffer{0};
             buffer.PushWord(j.get<std::int64_t>(), size);
             return buffer.GetData();
         }
 
-        std::optional<std::vector<std::uint8_t>> EncodeFloat(Type type, json j) {
+        std::optional<std::vector<std::uint8_t>> EncodeFloat(Type type, json j) const {
             auto buffer = Buffer{0};
             float data = j.get<float>();
             std::uint32_t word;
@@ -436,7 +436,7 @@ class DynamicSchema : public ISchema {
             return buffer.GetData();
         }
 
-        std::optional<std::vector<std::uint8_t>> EncodeDouble(Type type, json j) {
+        std::optional<std::vector<std::uint8_t>> EncodeDouble(Type type, json j) const {
             auto buffer = Buffer{0};
             double data = j.get<double>();
             std::uint64_t word;
@@ -445,7 +445,7 @@ class DynamicSchema : public ISchema {
             return buffer.GetData();
         }
 
-        std::optional<std::vector<std::uint8_t>> EncodeString(Type type, json j) {
+        std::optional<std::vector<std::uint8_t>> EncodeString(Type type, json j) const {
             auto buffer = Buffer{0};
             auto data = j.get<std::string>();
             buffer.PushWord(data.size(), 32);
@@ -455,7 +455,7 @@ class DynamicSchema : public ISchema {
             return buffer.GetData();
         }
 
-        std::optional<std::vector<std::uint8_t>> EncodeArray(Type type, json j) {
+        std::optional<std::vector<std::uint8_t>> EncodeArray(Type type, json j) const {
             auto buffer = Buffer{0};
             for (unsigned i=0; i<type.size; i++) {
                 auto encoded = _Encode(*type.underlying_type, j[i]);
@@ -467,7 +467,7 @@ class DynamicSchema : public ISchema {
             return buffer.GetData();
         }
 
-        std::optional<std::vector<std::uint8_t>> EncodeDynamicArray(Type type, json j) {
+        std::optional<std::vector<std::uint8_t>> EncodeDynamicArray(Type type, json j) const {
             auto buffer = Buffer{0};
             buffer.PushWord(j.size(), 32);
             for (const auto& x: j) {
@@ -481,7 +481,7 @@ class DynamicSchema : public ISchema {
             return buffer.GetData();
         }
 
-        std::optional<std::vector<std::uint8_t>> EncodeOptional(Type type, json j) {
+        std::optional<std::vector<std::uint8_t>> EncodeOptional(Type type, json j) const {
             auto buffer = Buffer{0};
             if (j.empty()) {
                 buffer.PushWord(0, 8);
@@ -497,7 +497,7 @@ class DynamicSchema : public ISchema {
             return buffer.GetData();
         }
 
-        std::optional<std::vector<std::uint8_t>> _Encode(Type type, json j){
+        std::optional<std::vector<std::uint8_t>> _Encode(Type type, json j) const {
             if (type.type == "Builtin") {
                 if (type.name[0] == 'u') {
                     return EncodeUnsigned(type, j);
@@ -533,7 +533,7 @@ class DynamicSchema : public ISchema {
             throw std::runtime_error("Unknown type" + type.type);
         }
 
-        std::optional<std::vector<std::uint8_t>> EncodeJson(std::string name, json j) override {
+        std::optional<std::vector<std::uint8_t>> EncodeJson(std::string name, json j) const override {
             return EncodeStruct(name, j);
         }
 
