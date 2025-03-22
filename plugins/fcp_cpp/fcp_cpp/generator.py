@@ -251,39 +251,40 @@ class Generator(CodeGenerator):
             fcp.structs.append(rpc_output_struct)
             fcp.impls.append(rpc_output_impl)
 
-        service_id = Enum(
-            name="ServiceId",
-            enumeration=[
-                Enumeration(service.name, service.id, None) for service in fcp.services
-            ],
-            meta=None,
-        )
-        m = max([e.value for e in service_id.enumeration])
-        if m > 255:
-            raise ValueError("ServiceId must not be larger than 8 bit")
-        elif m != 255:
-            service_id.enumeration.append(Enumeration("Max", 255, None))
-
-        fcp.enums.append(service_id)
-
-        for service_name, service_method_enum in self.service_methods_enum.items():
-            enum = Enum(
-                name=service_name + "MethodId",
+        if len(fcp.services) != 0:
+            service_id = Enum(
+                name="ServiceId",
                 enumeration=[
-                    Enumeration(method_name, id, None)
-                    for method_name, id in service_method_enum
+                    Enumeration(service.name, service.id, None) for service in fcp.services
                 ],
                 meta=None,
             )
-            m = max([e.value for e in enum.enumeration])
+            m = max([e.value for e in service_id.enumeration], default=0)
             if m > 255:
-                raise ValueError(
-                    service_name + "MethodId must not be larger than 8 bit"
-                )
+                raise ValueError("ServiceId must not be larger than 8 bit")
             elif m != 255:
-                enum.enumeration.append(Enumeration("Max", 255, None))
+                service_id.enumeration.append(Enumeration("Max", 255, None))
 
-            fcp.enums.append(enum)
+            fcp.enums.append(service_id)
+
+            for service_name, service_method_enum in self.service_methods_enum.items():
+                enum = Enum(
+                    name=service_name + "MethodId",
+                    enumeration=[
+                        Enumeration(method_name, id, None)
+                        for method_name, id in service_method_enum
+                    ],
+                    meta=None,
+                )
+                m = max([e.value for e in enum.enumeration])
+                if m > 255:
+                    raise ValueError(
+                        service_name + "MethodId must not be larger than 8 bit"
+                    )
+                elif m != 255:
+                    enum.enumeration.append(Enumeration("Max", 255, None))
+
+                fcp.enums.append(enum)
 
         output_builder = OutputBuilder(
             {
