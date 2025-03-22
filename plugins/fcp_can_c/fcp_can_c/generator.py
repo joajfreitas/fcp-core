@@ -75,13 +75,9 @@ class Generator(CodeGenerator):
 
         for filename, contents in writer.generate_device_headers():
             files.append(to_dict("file", f"{base_dir}/{filename}_can.h", contents))
-            if filename.endswith("_rpc"):
-                files.append(to_dict("file", f"{base_dir}/{filename}_rpc.h", contents))
 
         for filename, contents in writer.generate_device_sources():
             files.append(to_dict("file", f"{base_dir}/{filename}_can.c", contents))
-            if filename.endswith("_rpc"):
-                files.append(to_dict("file", f"{base_dir}/{filename}_rpc.c", contents))
 
         return files
 
