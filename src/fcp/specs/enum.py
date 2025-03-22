@@ -55,14 +55,22 @@ class Enum:
     enumeration: List[Enumeration]
     meta: Optional[MetaData] = field(default=None, skip=True)
 
+    def __init__(
+        self, name: str, enumeration: List[Enumeration], meta: Optional[MetaData] = None
+    ):
+        assert len(enumeration) != 0, f"Enum {name} as no values"
+        self.name = name
+        self.enumeration = enumeration
+        self.meta = meta
+
     def get_packed_size(self) -> int:
         """Get packed enum size."""
         m = max([x.value for x in self.enumeration])
         if m == 1 or m == 0:
             return 1
         else:
-            l = math.log2(max(m, 1.0))
-            s = math.ceil(l)
+            l = math.log2(m) + 1
+            s = math.floor(l)
             return s
 
     def reflection(self) -> Dict[str, Any]:
