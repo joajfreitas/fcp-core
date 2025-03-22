@@ -32,7 +32,7 @@ from fcp.specs.v2 import FcpV2
 from fcp.error import FcpError
 from fcp.types import Nil
 
-from .can_c_writer import CanCWriter
+from .can_c_writer import CanCWriter, CanNode
 
 
 class Generator(CodeGenerator):
@@ -121,14 +121,3 @@ class Generator(CodeGenerator):
                 )
             else:
                 return Ok(())
-
-
-class CanNode:
-    """Represents a device node with RPC compatibility."""
-
-    def __init__(
-        self, dev_name: str, rpc_get: "Union[int, None]", rpc_ans: "Union[int, None]"
-    ):
-        self.dev_name = dev_name
-        self.rpc_get = rpc_get
-        self.rpc_ans = rpc_ans

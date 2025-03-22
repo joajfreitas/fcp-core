@@ -23,11 +23,10 @@
 import os
 
 from pathlib import Path
-from beartype.typing import Generator, List, Dict, Any, Optional, Tuple
+from beartype.typing import Generator, List, Dict, Any, Optional, Tuple, Union
 from math import ceil
 from cantools.database import conversion
 from jinja2 import Environment, FileSystemLoader
-from .generator import CanNode
 from fcp.specs.struct_field import StructField
 from fcp.specs.v2 import FcpV2
 from dataclasses import dataclass
@@ -170,6 +169,17 @@ class Enum:
     values: Dict[str, int]
 
 
+class CanNode:
+    """Represents a device node with RPC compatibility."""
+
+    def __init__(
+        self, name: str, rpc_get: "Union[int, None]", rpc_ans: "Union[int, None]"
+    ):
+        self.name = name
+        self.rpc_get = rpc_get
+        self.rpc_ans = rpc_ans
+
+
 def is_signed(value: Value) -> bool:
     """Check if a value is signed.
 
@@ -281,7 +291,7 @@ def initialize_can_data(
         device_name = extension.fields.get("device", "global")
         period = extension.fields.get("period", -1)
 
-        if not any(node.dev_name == device_name for node in devices):
+        if not any(node.name == device_name for node in devices):
             devices.append(CanNode(device_name, rpc_get=None, rpc_ans=None))
 
         messages.append(
