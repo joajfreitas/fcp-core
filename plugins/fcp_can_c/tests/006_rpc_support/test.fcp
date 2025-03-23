@@ -12,5 +12,5 @@ impl can for Msg {
 
 device ecu {
     rpc_get_id: 1025,
-    rpc_ans_id: 1026
+    rpc_ans_id: 1026,
 }
