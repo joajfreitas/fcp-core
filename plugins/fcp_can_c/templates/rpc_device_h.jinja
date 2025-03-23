@@ -1,0 +1,25 @@
+#ifndef {{ device_name_snake | upper }}_RPC_H
+#define {{ device_name_snake | upper }}_RPC_H
+
+#include <stdint.h>
+#include <stdbool.h>
+#include "can_frame.h"
+
+#define RPC_GET_ID {{ rpc_get }}
+#define RPC_ANS_ID {{ rpc_ans }}
+
+/* RPC Call structure */
+typedef struct {
+    uint8_t service_id;
+    uint8_t method_id;
+    uint8_t args[6];
+}RpcCall;
+
+/* RPC Response structure */
+typedef struct {
+    uint8_t service_id;
+    uint8_t method_id;
+    uint8_t args[6];
+}RpcResponse;
+
+#endif // {{ device_name_snake | upper }}_RPC_H
