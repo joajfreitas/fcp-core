@@ -22,4 +22,7 @@ typedef struct {
     uint8_t args[6];
 }RpcResponse;
 
+/* Function for RPC requests handling */
+bool can_handle_{{ device_name_snake }}_rpc_requests(const CanFrame *frame, CanFrame *response);
+
 #endif // {{ device_name_snake | upper }}_RPC_H
