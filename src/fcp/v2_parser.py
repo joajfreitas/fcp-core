@@ -152,11 +152,42 @@ class ParserContext:
         return {name: source for name, source in self.modules.items()}
 
 
+class IFileSystemProxy:
+    def __init__(self):
+        pass
+
+    def read(self, filename: pathlib.Path) -> str:
+        """Read file."""
+        pass
+
+
+class FileSystemProxy(IFileSystemProxy):
+    def __init__(self):
+        pass
+
+    def read(self, filename: pathlib.Path) -> str:
+        """Read file from the filesystem."""
+        with open(filename) as f:
+            return f.read()
+
+
+class InMemoryFileSystemProxy(IFileSystemProxy):
+    def __init__(self, files):
+        self.files = files
+
+    def read(self, filename: pathlib.Path) -> str:
+        """Read file from the in-memory filesystem.""""
+        return self.files[filename]
+
+
 class FcpV2Transformer(Transformer):  # type: ignore
     """Transformer for the Lark AST into the FCP AST."""
 
     def __init__(
-        self, filename: Union[str, pathlib.Path], parser_context: ParserContext
+        self,
+        filename: Union[str, pathlib.Path],
+        parser_context: ParserContext,
+        filesystem_proxy: IFileSystemProxy,
     ) -> None:
         self.filename = pathlib.Path(filename)
         self.path = self.filename.parent
@@ -315,7 +346,9 @@ class FcpV2Transformer(Transformer):  # type: ignore
             with open(filename) as f:
                 source = f.read()
                 fcp = (
-                    FcpV2Transformer(filename, self.parser_context)
+                    FcpV2Transformer(
+                        filename, self.parser_context, self.filesystem_proxy
+                    )
                     .transform(fcp_parser.parse(source))
                     .attempt()
                 )
@@ -449,5 +482,29 @@ def get_fcp(
             return Err(error_logger.log_lark_unexpected_characters(fcp_filename, e))
 
     parser_context = ParserContext()
-    fcp = FcpV2Transformer(fcp_filename, parser_context).transform(fcp_ast).attempt()
+    filesystem_proxy = FileSystemProxy()
+    fcp = (
+        FcpV2Transformer(fcp_filename, parser_context, filesystem_proxy)
+        .transform(fcp_ast)
+        .attempt()
+    )
+    return Ok((fcp, parser_context.get_sources()))
+
+
+def get_fcp_from_string(
+    source: str, error_logger: ErrorLogger = ErrorLogger({})
+) -> Result[Tuple[v2.FcpV2, Dict[str, str]], str]:
+    """Build a fcp AST from the source code of an fcp schema."""
+    try:
+        fcp_ast = fcp_parser.parse(source)
+    except UnexpectedCharacters as e:
+        return Err(error_logger.log_lark_unexpected_characters("source", e))
+
+    parser_context = ParserContext()
+    filesystem_proxy = InMemoryFileSystemProxy({pathlib.Path("main.fcp"): source})
+    fcp = (
+        FcpV2Transformer("main.fcp", parser_context, filesystem_proxy)
+        .transform(fcp_ast)
+        .attempt()
+    )
     return Ok((fcp, parser_context.get_sources()))

@@ -117,7 +117,7 @@ private:
 {% set struct = get_struct_from_type(fcp,impl.type) %}
 struct {{struct.name}} {
     {%- for signal in struct.fields %}
-    using {{signal.name | to_pascal_case}}Type = {{to_wrapper_cpp_type(signal.type)}};
+    using {{signal.name | to_pascal_case}}Type = {{to_wrapper_cpp_type(fcp, signal.type)}};
     {%- endfor %}
 
     {{struct.name}}():
