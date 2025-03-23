@@ -170,9 +170,7 @@ class Enum:
 class CanNode:
     """Represents a device node with RPC compatibility."""
 
-    def __init__(
-        self, name: str, rpc_get: "Union[int, None]", rpc_ans: "Union[int, None]"
-    ):
+    def __init__(self, name: str, rpc_get: Union[int, None], rpc_ans: Union[int, None]):
         self.name = name
         self.rpc_get = rpc_get
         self.rpc_ans = rpc_ans
@@ -326,6 +324,8 @@ class CanCWriter:
         self.templates = {
             "device_can_h": self.env.get_template("can_device_h.jinja"),
             "device_can_c": self.env.get_template("can_device_c.jinja"),
+            "device_rpc_h": self.env.get_template("rpc_device_h.jinja"),
+            "device_rpc_c": self.env.get_template("rpc_device_c.jinja"),
         }
         self.device_messages = map_messages_to_devices(self.messages)
 
@@ -379,6 +379,44 @@ class CanCWriter:
             yield (
                 pascal_to_snake(device_name),
                 self.templates["device_can_c"].render(
+                    device_name_pascal=snake_to_pascal(device_name),
+                    device_name_snake=pascal_to_snake(device_name),
+                    messages=messages,
+                ),
+            )
+
+    def generate_rpc_headers(self) -> Generator[Tuple[str, str], None, None]:
+        """Generate C header files for devices with RPC.
+
+        Returns:
+            Generator: Tuple containing the device name and the file content.
+
+        """
+        for device in self.devices:
+            device_name = device.name
+            messages = self.device_messages.get(device_name, [])
+
+            yield (
+                device_name,
+                self.templates["device_rpc_h"].render(
+                    device_name_pascal=snake_to_pascal(device_name),
+                    device_name_snake=pascal_to_snake(device_name),
+                    messages=messages,
+                    enums=self.enums if device_name == "global" else [],
+                ),
+            )
+
+    def generate_rpc_sources(self) -> Generator[Tuple[str, str], None, None]:
+        """Generate C source files for devices with RPC.
+
+        Returns:
+            Generator: Tuple containing the device name and the file content.
+
+        """
+        for device_name, messages in self.device_messages.items():
+            yield (
+                pascal_to_snake(device_name),
+                self.templates["device_rpc_c"].render(
                     device_name_pascal=snake_to_pascal(device_name),
                     device_name_snake=pascal_to_snake(device_name),
                     messages=messages,
