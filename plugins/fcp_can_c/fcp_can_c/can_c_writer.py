@@ -170,10 +170,12 @@ class Enum:
 class CanNode:
     """Represents a device node with RPC compatibility."""
 
-    def __init__(self, name: str, rpc_get: Union[int, None], rpc_ans: Union[int, None]):
+    def __init__(
+        self, name: str, rpc_get_id: Union[int, None], rpc_ans_id: Union[int, None]
+    ):
         self.name = name
-        self.rpc_get = rpc_get
-        self.rpc_ans = rpc_ans
+        self.rpc_get_id = rpc_get_id
+        self.rpc_ans_id = rpc_ans_id
 
 
 def is_signed(value: Value) -> bool:
@@ -274,7 +276,7 @@ def initialize_can_data(
         enums.append(Enum(name=enum.name, values=values))
 
         # Enums are not tied to a specific device so they live on the global device
-        devices.append(CanNode("global", rpc_get=None, rpc_ans=None))
+        devices.append(CanNode("global", rpc_get_id=None, rpc_ans_id=None))
 
     for extension in fcp.get_matching_impls("can"):
         encoding = encoder.generate(extension)
@@ -288,7 +290,11 @@ def initialize_can_data(
         period = extension.fields.get("period", -1)
 
         if not any(node.name == device_name for node in devices):
-            devices.append(CanNode(device_name, rpc_get=None, rpc_ans=None))
+            rpc_get_id = extension.fields.get("rpc_get_id")
+            rpc_ans_id = extension.fields.get("rpc_ans_id")
+            devices.append(
+                CanNode(device_name, rpc_get_id=rpc_get_id, rpc_ans_id=rpc_ans_id)
+            )
 
         messages.append(
             CanMessage(
@@ -395,6 +401,8 @@ class CanCWriter:
         for device in self.devices:
             device_name = device.name
             messages = self.device_messages.get(device_name, [])
+            rpc_get_id = device.rpc_get_id if device.rpc_get_id is not None else 0
+            rpc_ans_id = device.rpc_ans_id if device.rpc_ans_id is not None else 0
 
             yield (
                 device_name,
@@ -402,7 +410,8 @@ class CanCWriter:
                     device_name_pascal=snake_to_pascal(device_name),
                     device_name_snake=pascal_to_snake(device_name),
                     messages=messages,
-                    enums=self.enums if device_name == "global" else [],
+                    rpc_get_id=rpc_get_id,
+                    rpc_ans_id=rpc_ans_id,
                 ),
             )
 
@@ -413,12 +422,19 @@ class CanCWriter:
             Generator: Tuple containing the device name and the file content.
 
         """
-        for device_name, messages in self.device_messages.items():
+        for device in self.devices:
+            device_name = device.name
+            messages = self.device_messages.get(device_name, [])
+            rpc_get_id = device.rpc_get_id if device.rpc_get_id is not None else 0
+            rpc_ans_id = device.rpc_ans_id if device.rpc_ans_id is not None else 0
+
             yield (
                 pascal_to_snake(device_name),
                 self.templates["device_rpc_c"].render(
                     device_name_pascal=snake_to_pascal(device_name),
                     device_name_snake=pascal_to_snake(device_name),
                     messages=messages,
+                    rpc_get_id=rpc_get_id,
+                    rpc_ans_id=rpc_ans_id,
                 ),
             )
