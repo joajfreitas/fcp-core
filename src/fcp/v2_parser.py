@@ -153,16 +153,20 @@ class ParserContext:
 
 
 class IFileSystemProxy:
-    def __init__(self):
+    """Filesystem proxy interface."""
+
+    def __init__(self) -> None:
         pass
 
     def read(self, filename: pathlib.Path) -> str:
         """Read file."""
-        pass
+        raise NotImplementedError
 
 
 class FileSystemProxy(IFileSystemProxy):
-    def __init__(self):
+    """Filesystem proxy."""
+
+    def __init__(self) -> None:
         pass
 
     def read(self, filename: pathlib.Path) -> str:
@@ -172,12 +176,14 @@ class FileSystemProxy(IFileSystemProxy):
 
 
 class InMemoryFileSystemProxy(IFileSystemProxy):
-    def __init__(self, files):
+    """In-memory filesystem proxy."""
+
+    def __init__(self, files: Dict[pathlib.Path, str]) -> None:
         self.files = files
 
     def read(self, filename: pathlib.Path) -> str:
-        """Read file from the in-memory filesystem.""""
-        return self.files[filename]
+        """Read file from the in-memory filesystem."""
+        return str(self.files[filename])
 
 
 class FcpV2Transformer(Transformer):  # type: ignore
@@ -494,7 +500,6 @@ def get_fcp(
 def get_fcp_from_string(
     source: str, error_logger: ErrorLogger = ErrorLogger({})
 ) -> Result[Tuple[v2.FcpV2, Dict[str, str]], str]:
-    fcp = FcpV2Transformer(fcp_filename, parser_context).transform(fcp_ast).attempt()
     """Build a fcp AST from the source code of an fcp schema."""
     try:
         fcp_ast = fcp_parser.parse(source)

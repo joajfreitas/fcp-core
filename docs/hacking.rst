@@ -69,6 +69,7 @@ Directory structure
     │   ├── type.py          - Type object
     │   └── v2.py            - Fcp v2 root
     ├── types.py             - python typing helpers
+    ├── type_visitor.py      - Visitor for the fcp type hierarchy
     ├── v2_parser.py         - Fcp v2 parser
     ├── verifier.py          - Post parsing error analysis
     ├── version.py           - fcp version
