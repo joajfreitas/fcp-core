@@ -37,16 +37,10 @@ from fcp.specs.v2 import FcpV2
 from fcp.specs.struct import Struct
 from fcp.specs.type import (
     Type,
-    BuiltinType,
-    ArrayType,
     ComposedTypeCategory,
     ComposedType,
-    DynamicArrayType,
-    OptionalType,
 )
-from fcp.specs.struct_field import StructField
-from fcp.specs.metadata import MetaData
-from fcp.specs.enum import Enum, Enumeration
+from fcp.specs import type
 from fcp.version import VERSION
 from fcp.type_visitor import TypeVisitor
 from fcp.reflection import get_reflection_schema
@@ -59,54 +53,54 @@ def _to_highest_power_of_two(n: int) -> int:
 class ToCpp(TypeVisitor):
     """Fcp type to cpp convertion."""
 
-    def struct(self, t: type.ComposedType, fields):
+    def struct(self, t: type.ComposedType, fields: List[type.Type]) -> str:
         """Convert struct to cpp."""
         return str(t.name)
 
-    def enum(self, t: type.ComposedType):
+    def enum(self, t: type.ComposedType) -> str:
         """Convert enum to cpp."""
         return str(t.name)
 
-    def unsigned(self, t: type.BuiltinType):
+    def unsigned(self, t: type.BuiltinType) -> str:
         """Convert unsigned to cpp."""
         size = t.get_length()
         cpp_size = _to_highest_power_of_two(size)
         return f"Unsigned<std::uint{cpp_size}_t, {size}>"
 
-    def signed(self, t: type.BuiltinType):
+    def signed(self, t: type.BuiltinType) -> str:
         """Convert signed to cpp."""
         size = t.get_length()
         cpp_size = _to_highest_power_of_two(size)
         return f"Signed<std::int{cpp_size}_t, {size}>"
 
-    def float(self, t: type.BuiltinType):
+    def float(self, t: type.BuiltinType) -> str:
         """Convert float to cpp."""
         return "Float"
 
-    def double(self, t: type.BuiltinType):
+    def double(self, t: type.BuiltinType) -> str:
         """Convert double to cpp."""
         return "Double"
 
-    def string(self, t: type.BuiltinType):
+    def string(self, t: type.BuiltinType) -> str:
         """Convert string to cpp."""
         return "String"
 
-    def array(self, t: type.ArrayType, inner):
+    def array(self, t: type.ArrayType, inner: type.Type) -> str:
         """Convert array to cpp."""
         return f"Array<{inner}, {t.size}>"
 
-    def dynamic_array(self, t: type.DynamicArrayType, inner):
+    def dynamic_array(self, t: type.DynamicArrayType, inner: type.Type) -> str:
         """Convert dynamic array to cpp."""
         return f"DynamicArray<{inner}>"
 
-    def optional(self, t: type.OptionalType, inner):
+    def optional(self, t: type.OptionalType, inner: type.Type) -> str:
         """Convert optional to cpp."""
         return f"Optional<{inner}>"
 
 
 def to_wrapper_cpp_type(fcp: FcpV2, input: Type) -> str:
     """Convert fcp type to wrapper C++ type."""
-    return ToCpp(fcp).visit(input)
+    return str(ToCpp(fcp).visit(input))
 
 
 def get_matching_impls(fcp: FcpV2, protocol: str) -> List[Impl]:

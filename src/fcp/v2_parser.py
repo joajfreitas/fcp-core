@@ -192,10 +192,10 @@ class FcpV2Transformer(Transformer):  # type: ignore
         self.filename = pathlib.Path(filename)
         self.path = self.filename.parent
         self.parser_context = parser_context
+        self.filesystem_proxy = filesystem_proxy
         self.fcp = v2.FcpV2()
 
-        with open(self.filename) as f:
-            self.source = f.read()
+        self.source = self.filesystem_proxy.read(self.filename)
 
         self.parser_context.set_module(self.filename.name, self.source)
         self.error_logger = ErrorLogger({self.filename.name: self.source})
@@ -494,6 +494,7 @@ def get_fcp(
 def get_fcp_from_string(
     source: str, error_logger: ErrorLogger = ErrorLogger({})
 ) -> Result[Tuple[v2.FcpV2, Dict[str, str]], str]:
+    fcp = FcpV2Transformer(fcp_filename, parser_context).transform(fcp_ast).attempt()
     """Build a fcp AST from the source code of an fcp schema."""
     try:
         fcp_ast = fcp_parser.parse(source)
