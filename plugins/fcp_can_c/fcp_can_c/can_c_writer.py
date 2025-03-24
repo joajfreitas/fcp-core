@@ -278,6 +278,13 @@ def initialize_can_data(
         # Enums are not tied to a specific device so they live on the global device
         devices.append(CanNode("global", rpc_get_id=None, rpc_ans_id=None))
 
+        device_rpc_info = {}
+        for dev in getattr(fcp, "devices", []):
+            device_rpc_info[dev.name] = {
+                "rpc_get_id": dev.fields.get("rpc_get_id"),
+                "rpc_ans_id": dev.fields.get("rpc_ans_id"),
+            }
+
     for extension in fcp.get_matching_impls("can"):
         encoding = encoder.generate(extension)
         signals, dlc = create_can_signals(encoding)
@@ -290,10 +297,19 @@ def initialize_can_data(
         period = extension.fields.get("period", -1)
 
         if not any(node.name == device_name for node in devices):
-            rpc_get_id = extension.fields.get("rpc_get_id")
-            rpc_ans_id = extension.fields.get("rpc_ans_id")
+            rpc_get_id = None
+            rpc_ans_id = None
+            for dev in getattr(fcp, "devices", []):
+                if dev.name == device_name:
+                    rpc_get_id = dev.fields.get("rpc_get_id")
+                    rpc_ans_id = dev.fields.get("rpc_ans_id")
+                    break
             devices.append(
-                CanNode(device_name, rpc_get_id=rpc_get_id, rpc_ans_id=rpc_ans_id)
+                CanNode(
+                    device_name,
+                    rpc_get_id=rpc_get_id,
+                    rpc_ans_id=rpc_ans_id,
+                )
             )
 
         messages.append(
