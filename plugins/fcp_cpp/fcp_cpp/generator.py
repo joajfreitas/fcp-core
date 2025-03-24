@@ -35,7 +35,6 @@ from fcp.codegen import CodeGenerator
 from fcp.verifier import Verifier
 from fcp.specs.v2 import FcpV2
 from fcp.specs.struct import Struct
-from fcp.specs.service import Service
 from fcp.specs.type import (
     Type,
     ComposedTypeCategory,

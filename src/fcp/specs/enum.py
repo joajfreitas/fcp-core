@@ -65,13 +65,15 @@ class Enum:
 
     def get_packed_size(self) -> int:
         """Get packed enum size."""
-        m = max([x.value for x in self.enumeration])
+        m = self.max()
         if m == 1 or m == 0:
             return 1
         else:
-            l = math.log2(m) + 1
-            s = math.floor(l)
-            return s
+            return math.floor(math.log2(m) + 1)
+
+    def max(self) -> int:
+        """Get max enum value."""
+        return max(map(lambda e: e.value, self.enumeration), default=0)
 
     def reflection(self) -> Dict[str, Any]:
         """Reflection."""

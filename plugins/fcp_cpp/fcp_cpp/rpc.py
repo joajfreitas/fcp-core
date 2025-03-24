@@ -1,4 +1,4 @@
-# Copyright (c) 2024 the fcp AUTHORS.
+# Copyright (c) 2025 the fcp AUTHORS.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,75 +20,57 @@
 
 """Generation of rpc types."""
 
+import math
+from beartype.typing import Tuple, Dict
+
 from fcp.specs.v2 import FcpV2
-from fcp.specs.struct import Struct, StructField
-from fcp.specs.type import BuiltinType, ComposedType, ComposedTypeCategory
 from fcp.specs.impl import Impl
-from fcp.specs.metadata import MetaData
+from fcp.specs.struct import Struct
+from fcp.specs.struct_field import StructField
+from fcp.specs.enum import Enum, Enumeration
+from fcp.specs.service import Service
+from fcp.specs.type import ComposedType, ComposedTypeCategory
 
 
-def _create_rpc_input_data(service: Service, payload: Struct) -> Struct:
-    """Create rpc input argument struct."""
+def _create_service_id_field() -> StructField:
+    return StructField(
+        name="service_id",
+        field_id=0,
+        type=ComposedType("ServiceId", ComposedTypeCategory.Enum),
+    )
+
+
+def _create_method_id_field(service: Service) -> StructField:
+    return StructField(
+        name="method_id",
+        field_id=1,
+        type=ComposedType(service.name + "MethodId", ComposedTypeCategory.Enum),
+    )
+
+
+def _create_payload(payload: Struct) -> StructField:
+    return StructField(
+        name="payload",
+        field_id=2,
+        type=ComposedType(payload.name, ComposedTypeCategory.Struct),
+    )
+
+
+def _rpc_input_struct(service: Service, payload: Struct) -> Struct:
     payload_type_name = payload.name + "Input"
-    s = Struct(
+    return Struct(
         name=payload_type_name,
         fields=[
-            StructField(
-                name="service_id",
-                field_id=0,
-                type=ComposedType("ServiceId", ComposedTypeCategory.Enum),
-            ),
-            StructField(
-                name="method_id",
-                field_id=1,
-                type=ComposedType(
-                    service.name + "MethodId", ComposedTypeCategory.Enum
-                ),
-            ),
-            StructField(
-                name="payload",
-                field_id=2,
-                type=ComposedType(payload.name, ComposedTypeCategory.Struct),
-            ),
+            _create_service_id_field(),
+            _create_method_id_field(service),
+            _create_payload(payload),
         ],
     )
-    i = Impl(
-        name=payload_type_name,
-        protocol="default",
-        type=payload_type_name,
-        fields={},
-        signals=[],
-        meta=MetaData(0, 0, 0, 0, 0, 0, ""),
-    )
-    i._is_method_input = True
-    return (s, i)
 
-def _create_rpc_output_data(service: Service, payload: Struct) -> Struct:
-    """Create rpc output argument struct."""
-    payload_type_name = payload.name + "Output"
-    s = Struct(
-        name=payload_type_name,
-        fields=[
-            StructField(
-                name="service_id",
-                field_id=0,
-                type=ComposedType("ServiceId", ComposedTypeCategory.Enum),
-            ),
-            StructField(
-                name="method_id",
-                field_id=1,
-                type=ComposedType(
-                    service.name + "MethodId", ComposedTypeCategory.Enum
-                ),
-            ),
-            StructField(
-                name="payload",
-                field_id=2,
-                type=ComposedType(payload.name, ComposedTypeCategory.Struct),
-            ),
-        ],
-    )
-    i = Impl(
+
+def _rpc_input_impl(payload: Struct) -> Impl:
+    payload_type_name = payload.name + "Input"
+    impl = Impl(
         name=payload_type_name,
         protocol="default",
         type=payload_type_name,
@@ -96,74 +78,112 @@ def _create_rpc_output_data(service: Service, payload: Struct) -> Struct:
         signals=[],
         meta=None,
     )
-    return (s, i)
+
+    impl._is_method_input = True
+    return impl
+
+
+def _rpc_input_data(service: Service, payload: Struct) -> Struct:
+    return _rpc_input_struct(service, payload), _rpc_input_impl(payload)
+
+
+def _rpc_output_struct(service: Service, payload: Struct) -> Struct:
+    payload_type_name = payload.name + "Output"
+    return Struct(
+        name=payload_type_name,
+        fields=[
+            _create_service_id_field(),
+            _create_method_id_field(service),
+            _create_payload(payload),
+        ],
+    )
+
+
+def _rpc_output_impl(payload: Struct) -> Impl:
+    payload_type_name = payload.name + "Output"
+    return Impl(
+        name=payload_type_name,
+        protocol="default",
+        type=payload_type_name,
+        fields={},
+        signals=[],
+        meta=None,
+    )
+
+
+def _rpc_output_data(service: Service, payload: Struct) -> Struct:
+    return _rpc_output_struct(service, payload), _rpc_output_impl(payload)
+
+
+def _set_bitsize(enum: Enum, bitsize: int) -> Enum:
+    m = max([e.value for e in enum.enumeration])
+
+    size = 2**bitsize - 1
+    if m > size:
+        raise ValueError(f"{enum.name} must fit in {bitsize} bits")
+    elif m < size:
+        enum.enumeration.append(Enumeration("Size", size, None))
+
+    return enum
+
+
+def _create_service_id_enum(fcp: FcpV2) -> Enum:
+    return _set_bitsize(
+        Enum(
+            name="ServiceId",
+            enumeration=[
+                Enumeration(service.name, service.id, None) for service in fcp.services
+            ],
+            meta=None,
+        ),
+        bitsize=8,
+    )
+
+
+def _create_method_id_enum(
+    service_name: str, service_method_enum: Tuple[str, int]
+) -> Enum:
+    return _set_bitsize(
+        Enum(
+            name=service_name + "MethodId",
+            enumeration=[
+                Enumeration(method_name, id, None)
+                for method_name, id in service_method_enum
+            ],
+            meta=None,
+        ),
+        bitsize=8,
+    )
+
+
+def _generate_enums(fcp: FcpV2, service_methods_enum: Tuple[str, int]) -> FcpV2:
+    if len(fcp.services) != 0:
+        fcp.enums.append(_create_service_id_enum(fcp))
+
+        for service_name, service_method_enum in service_methods_enum.items():
+            fcp.enums.append(_create_method_id_enum(service_name, service_method_enum))
+
+    return fcp
+
 
 def generate_rpc(fcp: FcpV2) -> FcpV2:
-    """Generate rpc structs and enums."""
-    method_inputs = {}
-    method_outputs = {}
-    service_methods_enum = {}
+    """Generate rpc types."""
+    method_data: Dict[str, Tuple[Struct, Impl]] = {}
+    service_methods_enum: Dict[str, Tuple[str, int]] = {}
 
     for service in fcp.services:
+        service_methods_enum[service.name] = []
         for method in service.methods:
-            input_struct = fcp.get_struct(method.input).unwrap()
-            output_struct = fcp.get_struct(method.output).unwrap()
-            input_struct = fcp.get_struct(method.input).unwrap()
-            method_inputs[method.input] = _create_rpc_input_data(
-                service, input_struct
+            method_data[method.input] = _rpc_input_data(
+                service, fcp.get_struct(method.input).unwrap()
             )
-            output_struct = fcp.get_struct(method.output).unwrap()
-            method_outputs[method.output] = _create_rpc_output_data(
-                service, output_struct
+            method_data[method.output] = _rpc_output_data(
+                service, fcp.get_struct(method.output).unwrap()
             )
             service_methods_enum[service.name].append((method.name, method.id))
 
-    for method_input in method_inputs:
-        input_struct = fcp.get_struct(method_input).unwrap()
-        rpc_input_struct, rpc_input_impl = create_rpc_input_data(input_struct)
+    for rpc_input_struct, rpc_input_impl in method_data.values():
         fcp.structs.append(rpc_input_struct)
         fcp.impls.append(rpc_input_impl)
 
-    for method_output in method_outputs:
-        output_struct = fcp.get_struct(method_output).unwrap()
-        rpc_output_struct, rpc_output_impl = create_rpc_output_data(output_struct)
-        fcp.structs.append(rpc_output_struct)
-        fcp.impls.append(rpc_output_impl)
-
-    if len(fcp.services) != 0:
-        service_id = Enum(
-            name="ServiceId",
-            enumeration=[
-                Enumeration(service.name, service.id, None)
-                for service in fcp.services
-            ],
-            meta=None,
-        )
-        m = max([e.value for e in service_id.enumeration], default=0)
-        if m > 255:
-            raise ValueError("ServiceId must not be larger than 8 bit")
-        elif m != 255:
-            service_id.enumeration.append(Enumeration("Max", 255, None))
-
-        fcp.enums.append(service_id)
-
-        for service_name, service_method_enum in service_methods_enum.items():
-            enum = Enum(
-                name=service_name + "MethodId",
-                enumeration=[
-                    Enumeration(method_name, id, None)
-                    for method_name, id in service_method_enum
-                ],
-                meta=None,
-            )
-            m = max([e.value for e in enum.enumeration])
-            if m > 255:
-                raise ValueError(
-                    service_name + "MethodId must not be larger than 8 bit"
-                )
-            elif m != 255:
-                enum.enumeration.append(Enumeration("Max", 255, None))
-
-            fcp.enums.append(enum)
-
-    return fcp
+    return _generate_enums(fcp, service_methods_enum)
