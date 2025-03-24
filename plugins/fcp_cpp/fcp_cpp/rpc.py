@@ -20,9 +20,9 @@
 
 """Generation of rpc types."""
 
-import math
 from beartype.typing import Tuple, Dict
 
+from fcp.utils import to_pascal_case
 from fcp.specs.v2 import FcpV2
 from fcp.specs.impl import Impl
 from fcp.specs.struct import Struct
@@ -44,7 +44,9 @@ def _create_method_id_field(service: Service) -> StructField:
     return StructField(
         name="method_id",
         field_id=1,
-        type=ComposedType(service.name + "MethodId", ComposedTypeCategory.Enum),
+        type=ComposedType(
+            to_pascal_case(service.name) + "MethodId", ComposedTypeCategory.Enum
+        ),
     )
 
 
@@ -57,7 +59,7 @@ def _create_payload(payload: Struct) -> StructField:
 
 
 def _rpc_input_struct(service: Service, payload: Struct) -> Struct:
-    payload_type_name = payload.name + "Input"
+    payload_type_name = to_pascal_case(payload.name) + "Input"
     return Struct(
         name=payload_type_name,
         fields=[
@@ -69,7 +71,7 @@ def _rpc_input_struct(service: Service, payload: Struct) -> Struct:
 
 
 def _rpc_input_impl(payload: Struct) -> Impl:
-    payload_type_name = payload.name + "Input"
+    payload_type_name = to_pascal_case(payload.name) + "Input"
     impl = Impl(
         name=payload_type_name,
         protocol="default",
@@ -88,7 +90,7 @@ def _rpc_input_data(service: Service, payload: Struct) -> Struct:
 
 
 def _rpc_output_struct(service: Service, payload: Struct) -> Struct:
-    payload_type_name = payload.name + "Output"
+    payload_type_name = to_pascal_case(payload.name) + "Output"
     return Struct(
         name=payload_type_name,
         fields=[
@@ -100,7 +102,7 @@ def _rpc_output_struct(service: Service, payload: Struct) -> Struct:
 
 
 def _rpc_output_impl(payload: Struct) -> Impl:
-    payload_type_name = payload.name + "Output"
+    payload_type_name = to_pascal_case(payload.name) + "Output"
     return Impl(
         name=payload_type_name,
         protocol="default",

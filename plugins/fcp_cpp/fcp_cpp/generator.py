@@ -30,6 +30,7 @@ import pwd
 import socket
 import datetime
 
+from fcp.utils import to_pascal_case, to_snake_case
 from fcp.specs.impl import Impl
 from fcp.codegen import CodeGenerator
 from fcp.verifier import Verifier
@@ -113,18 +114,6 @@ def get_matching_impls(fcp: FcpV2, protocol: str) -> List[Impl]:
 def get_struct_from_type(fcp: FcpV2, type: str) -> Struct:
     """Get struct from type name."""
     return fcp.get_type(ComposedType(type, ComposedTypeCategory.Struct)).unwrap()
-
-
-def to_pascal_case(name: str) -> str:
-    """Convert snake case to pascal case."""
-    return "".join([n.capitalize() for n in name.split("_")])
-
-
-def to_snake_case(name: str) -> str:
-    """Convert pascal case to snake case."""
-    return name[:1].lower() + "".join(
-        "_" + c.lower() if c.isupper() else c for c in name[1:]
-    )
 
 
 def create_template_environment(
