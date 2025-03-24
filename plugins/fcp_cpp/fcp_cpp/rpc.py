@@ -41,7 +41,9 @@ def _create_rpc_input_data(service: Service, payload: Struct) -> Struct:
             StructField(
                 name="method_id",
                 field_id=1,
-                type=ComposedType(service.name + "MethodId", ComposedTypeCategory.Enum),
+                type=ComposedType(
+                    service.name + "MethodId", ComposedTypeCategory.Enum
+                ),
             ),
             StructField(
                 name="payload",
@@ -61,7 +63,6 @@ def _create_rpc_input_data(service: Service, payload: Struct) -> Struct:
     i._is_method_input = True
     return (s, i)
 
-
 def _create_rpc_output_data(service: Service, payload: Struct) -> Struct:
     """Create rpc output argument struct."""
     payload_type_name = payload.name + "Output"
@@ -76,7 +77,9 @@ def _create_rpc_output_data(service: Service, payload: Struct) -> Struct:
             StructField(
                 name="method_id",
                 field_id=1,
-                type=ComposedType(service.name + "MethodId", ComposedTypeCategory.Enum),
+                type=ComposedType(
+                    service.name + "MethodId", ComposedTypeCategory.Enum
+                ),
             ),
             StructField(
                 name="payload",
@@ -95,8 +98,8 @@ def _create_rpc_output_data(service: Service, payload: Struct) -> Struct:
     )
     return (s, i)
 
-
 def generate_rpc(fcp: FcpV2) -> FcpV2:
+    """Generate rpc structs and enums."""
     method_inputs = {}
     method_outputs = {}
     service_methods_enum = {}
@@ -106,7 +109,9 @@ def generate_rpc(fcp: FcpV2) -> FcpV2:
             input_struct = fcp.get_struct(method.input).unwrap()
             output_struct = fcp.get_struct(method.output).unwrap()
             input_struct = fcp.get_struct(method.input).unwrap()
-            method_inputs[method.input] = _create_rpc_input_data(service, input_struct)
+            method_inputs[method.input] = _create_rpc_input_data(
+                service, input_struct
+            )
             output_struct = fcp.get_struct(method.output).unwrap()
             method_outputs[method.output] = _create_rpc_output_data(
                 service, output_struct
@@ -129,7 +134,8 @@ def generate_rpc(fcp: FcpV2) -> FcpV2:
         service_id = Enum(
             name="ServiceId",
             enumeration=[
-                Enumeration(service.name, service.id, None) for service in fcp.services
+                Enumeration(service.name, service.id, None)
+                for service in fcp.services
             ],
             meta=None,
         )
