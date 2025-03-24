@@ -78,7 +78,7 @@ fcp_parser = Lark(
     signal_block: "signal" identifier "{" extension_field+ "}" ","
     extension_field: identifier ":" value ","
 
-    service: "service" identifier "@" number "{" method* "}"
+    service: "service" identifier "@" number "{" method+ "}"
     method: "method" identifier "(" identifier ")" "@" number "returns" identifier
 
     device: "device" identifier "{" extension_field+ "}"
