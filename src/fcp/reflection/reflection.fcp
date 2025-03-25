@@ -64,17 +64,19 @@ struct Impl {
     meta @6: Optional[MetaData],
 }
 
-struct Rpc {
+struct Method {
     name @0: str,
-    input @1: str,
-    output @2: str,
-    meta @3: Optional[MetaData],
+    id @1: u32,
+    input @2: str,
+    output @3: str,
+    meta @4: Optional[MetaData],
 }
 
 struct Service {
     name @0: str,
-    rpcs @1: [Rpc],
-    meta @2: Optional[MetaData],
+    id @1: u32,
+    methods @2: [Method],
+    meta @3: Optional[MetaData],
 }
 
 struct Fcp {
