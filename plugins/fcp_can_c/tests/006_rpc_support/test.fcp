@@ -1,0 +1,16 @@
+version: "3"
+
+struct Msg {
+    s1 @ 0: u8,
+    s2 @ 1: u16,
+}
+
+impl can for Msg {
+    id: 10,
+    device: "ecu",
+}
+
+device ecu {
+    rpc_get_id: 1025,
+    rpc_ans_id: 1026,
+}
