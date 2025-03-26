@@ -37,7 +37,11 @@ class Enumeration:
 
     def reflection(self) -> Dict[str, Any]:
         """Reflection."""
-        return {"name": self.name, "value": self.value, "meta": self.meta.reflection()}
+        return {
+            "name": self.name,
+            "value": self.value,
+            "meta": self.meta.reflection() if self.meta else None,
+        }
 
 
 @serde(type_check=strict)
@@ -51,9 +55,25 @@ class Enum:
     enumeration: List[Enumeration]
     meta: Optional[MetaData] = field(default=None, skip=True)
 
+    def __init__(
+        self, name: str, enumeration: List[Enumeration], meta: Optional[MetaData] = None
+    ):
+        assert len(enumeration) != 0, f"Enum {name} as no values"
+        self.name = name
+        self.enumeration = enumeration
+        self.meta = meta
+
     def get_packed_size(self) -> int:
         """Get packed enum size."""
-        return math.ceil(math.log2(max([x.value for x in self.enumeration])) + 1)
+        m = self.max()
+        if m == 1 or m == 0:
+            return 1
+        else:
+            return math.floor(math.log2(m) + 1)
+
+    def max(self) -> int:
+        """Get max enum value."""
+        return max(map(lambda e: e.value, self.enumeration), default=0)
 
     def reflection(self) -> Dict[str, Any]:
         """Reflection."""

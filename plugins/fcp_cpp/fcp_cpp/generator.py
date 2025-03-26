@@ -20,7 +20,7 @@
 
 """Cpp generator."""
 
-from beartype.typing import Any, Dict, Union, List
+from beartype.typing import Any, Dict, Union, List, Tuple
 from typing_extensions import NoReturn
 from pathlib import Path
 import jinja2
@@ -30,6 +30,7 @@ import pwd
 import socket
 import datetime
 
+from fcp.utils import to_pascal_case, to_snake_case
 from fcp.specs.impl import Impl
 from fcp.codegen import CodeGenerator
 from fcp.verifier import Verifier
@@ -44,6 +45,8 @@ from fcp.specs import type
 from fcp.version import VERSION
 from fcp.type_visitor import TypeVisitor
 from fcp.reflection import get_reflection_schema
+
+from .rpc import generate_rpc
 
 
 def _to_highest_power_of_two(n: int) -> int:
@@ -113,16 +116,46 @@ def get_struct_from_type(fcp: FcpV2, type: str) -> Struct:
     return fcp.get_type(ComposedType(type, ComposedTypeCategory.Struct)).unwrap()
 
 
-def to_pascal_case(name: str) -> str:
-    """Convert snake case to pascal case."""
-    return "".join([n.capitalize() for n in name.split("_")])
+def create_template_environment(
+    output: List[Tuple[str, str, Dict[str, Any]]],
+) -> jinja2.Environment:
+    """Create jinja2 template environment."""
 
+    def get_template(filename: str) -> str:
+        return (
+            (Path(os.path.dirname(os.path.abspath(__file__))) / filename).open().read()
+        )
 
-def to_snake_case(name: str) -> str:
-    """Convert pascal case to snake case."""
-    return name[:1].lower() + "".join(
-        "_" + c.lower() if c.isupper() else c for c in name[1:]
+    loader = jinja2.DictLoader(
+        {
+            template_name: get_template(template_name)
+            for template_name in set([template_name for _, template_name, _ in output])
+        }
     )
+
+    env = jinja2.Environment(loader=loader)
+    env.globals["to_wrapper_cpp_type"] = to_wrapper_cpp_type
+    env.globals["get_matching_impls"] = get_matching_impls
+    env.globals["get_struct_from_type"] = get_struct_from_type
+    env.filters["to_pascal_case"] = to_pascal_case
+
+    return env
+
+
+class OutputBuilder:
+    """Builder for output file list."""
+
+    def __init__(self, metadata: Dict[str, str]) -> None:
+        self.metadata = metadata
+        self.output: List[Tuple[str, str, Dict[str, Any]]] = []
+
+    def with_file(
+        self, filename: str, template_name: str, template_arguments: Dict[str, Any] = {}
+    ) -> None:
+        """Add file to output list."""
+        self.output.append(
+            (filename, template_name, {**template_arguments, **self.metadata})
+        )
 
 
 class Generator(CodeGenerator):
@@ -131,113 +164,61 @@ class Generator(CodeGenerator):
     def __init__(self) -> None:
         pass
 
-    def _get_template(self, filename: str) -> str:
-        return (
-            (Path(os.path.dirname(os.path.abspath(__file__))) / filename).open().read()
-        )
-
     def generate(self, fcp: FcpV2, ctx: Any) -> List[Dict[str, Union[str, Path]]]:
         """Generate cpp files."""
         fcp_reflection, _ = get_reflection_schema().unwrap()
+        fcp = generate_rpc(fcp)
 
-        metadata = {
-            "version": VERSION,
-            "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "user": pwd.getpwuid(os.getuid())[0],
-            "hostname": socket.gethostname(),
-        }
-        output_files = (
-            [
-                (
-                    "fcp.h.j2",
-                    "fcp.h",
-                    {
-                        "fcp": fcp,
-                        "namespace": None,
-                        "protocol": "default",
-                        **metadata,
-                    },
-                ),
-                ("buffer.h", "buffer.h", {**metadata}),
-                ("decoders.h", "decoders.h", {**metadata}),
-                ("dynamic.h", "dynamic.h", {**metadata}),
-                (
-                    "fcp.h.j2",
-                    "reflection.h",
-                    {
-                        **metadata,
-                        "fcp": fcp_reflection,
-                        "namespace": "reflection",
-                        "protocol": "default",
-                    },
-                ),
-                (
-                    "can.h",
-                    "can.h",
-                    {
-                        **metadata,
-                        "fcp": fcp,
-                    },
-                ),
-                ("i_can_schema.h", "i_can_schema.h", {**metadata}),
-                (
-                    "can_static_schema.h",
-                    "can_static_schema.h",
-                    {**metadata, "fcp": fcp},
-                ),
-                ("can_dynamic_schema.h", "can_dynamic_schema.h", {**metadata}),
-                ("i_schema.h", "i_schema.h", {**metadata}),
-                (
-                    "rpc.h.j2",
-                    "rpc.h",
-                    {**metadata, "fcp": fcp},
-                ),
-            ]
-            + [
-                (
-                    "fcp.h.j2",
-                    "fcp_" + protocol + ".h",
-                    {
-                        **metadata,
-                        "fcp": fcp,
-                        "namespace": protocol,
-                        "protocol": protocol,
-                    },
-                )
-                for protocol in fcp.get_protocols()
-            ]
-            + [
-                (
-                    "service_server.h.j2",
-                    to_snake_case(service.name) + "_server.h",
-                    {**metadata, "fcp": fcp, "service": service},
-                )
-                for service in fcp.services
-            ]
-            + [
-                (
-                    "service_client.h.j2",
-                    to_snake_case(service.name) + "_client.h",
-                    {**metadata, "fcp": fcp, "service": service},
-                )
-                for service in fcp.services
-            ]
-        )
-
-        loader = jinja2.DictLoader(
+        output_builder = OutputBuilder(
             {
-                template_name: self._get_template(template_name)
-                for template_name in set(
-                    [template_name for template_name, _, _ in output_files]
-                )
+                "version": VERSION,
+                "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "user": pwd.getpwuid(os.getuid())[0],
+                "hostname": socket.gethostname(),
             }
         )
 
-        env = jinja2.Environment(loader=loader)
-        env.globals["to_wrapper_cpp_type"] = to_wrapper_cpp_type
-        env.globals["get_matching_impls"] = get_matching_impls
-        env.globals["get_struct_from_type"] = get_struct_from_type
-        env.filters["to_pascal_case"] = to_pascal_case
+        output_builder.with_file(
+            "fcp.h", "fcp.h.j2", {"fcp": fcp, "namespace": None, "protocol": "default"}
+        )
+        output_builder.with_file("buffer.h", "buffer.h")
+        output_builder.with_file("decoders.h", "decoders.h")
+        output_builder.with_file("dynamic.h", "dynamic.h")
+        output_builder.with_file(
+            "reflection.h",
+            "fcp.h.j2",
+            {"fcp": fcp_reflection, "namespace": "reflection", "protocol": "default"},
+        )
+
+        output_builder.with_file("can.h", "can.h", {"fcp": fcp})
+        output_builder.with_file("i_can_schema.h", "i_can_schema.h")
+        output_builder.with_file(
+            "can_static_schema.h", "can_static_schema.h", {"fcp": fcp}
+        )
+        output_builder.with_file("can_dynamic_schema.h", "can_dynamic_schema.h")
+        output_builder.with_file("i_schema.h", "i_schema.h")
+        output_builder.with_file("rpc.h", "rpc.h.j2", {"fcp": fcp})
+
+        for protocol in fcp.get_protocols():
+            output_builder.with_file(
+                "fcp_" + protocol + ".h",
+                "fcp.h.j2",
+                {"fcp": fcp, "namespace": protocol, "protocol": protocol},
+            )
+
+        for service in fcp.services:
+            output_builder.with_file(
+                to_snake_case(service.name) + "_server.h",
+                "service_server.h.j2",
+                {"fcp": fcp, "service": service},
+            )
+            output_builder.with_file(
+                to_snake_case(service.name) + "_client.h",
+                "service_client.h.j2",
+                {"fcp": fcp, "service": service},
+            )
+
+        env = create_template_environment(output_builder.output)
 
         return [
             {
@@ -245,7 +226,7 @@ class Generator(CodeGenerator):
                 "path": Path(ctx.get("output")) / output_file,
                 "contents": env.get_template(template_name).render(template_arguments),
             }
-            for template_name, output_file, template_arguments in output_files
+            for output_file, template_name, template_arguments in output_builder.output
         ]
 
     def register_checks(self, verifier: Verifier) -> NoReturn:  # type: ignore

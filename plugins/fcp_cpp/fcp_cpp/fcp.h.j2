@@ -159,7 +159,9 @@ struct {{struct.name}} {
         {% for signal in struct.fields -%}
         j["{{signal.name}}"] = {{signal.name}}_.DecodeJson();
         {% endfor -%}
-
+        {%- if impl._is_method_input -%}
+        j["__is_method_input"] = true;
+        {% endif -%}
         return j;
     }
 
@@ -201,6 +203,10 @@ struct {{struct.name}} {
         return ss.str();
     }
 
+    static constexpr const char* GetTypeName() {
+        return "{{struct.name}}";
+    }
+
 private:
 
     {%- for signal in struct.fields %}
@@ -225,7 +231,7 @@ struct StaticSchema: public ISchema
         return std::nullopt;
     }
 
-    std::optional<std::vector<std::uint8_t>> EncodeJson(std::string msg_name, json j)  const override{
+    std::optional<std::vector<std::uint8_t>> EncodeJson(std::string msg_name, json j) const override {
         {%- for impl in get_matching_impls(fcp, protocol) -%}
         {% set struct = get_struct_from_type(fcp, impl.type) %}
         if (msg_name == "{{impl.name}}") {
