@@ -62,7 +62,7 @@ class Enum:
             "enumeration": [
                 enumeration.reflection() for enumeration in self.enumeration
             ],
-            "meta": self.meta.reflection(),
+            "meta": self.meta.reflection() if self.meta else None,
         }
 
     def __repr__(self) -> str:

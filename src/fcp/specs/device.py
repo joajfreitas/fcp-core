@@ -20,7 +20,7 @@
 
 """Device."""
 
-from beartype.typing import Any, Dict, List
+from beartype.typing import Any, Dict, Optional
 import serde
 from .metadata import MetaData
 
@@ -31,7 +31,7 @@ class Device:
 
     name: str
     fields: Dict[str, Any]
-    meta: MetaData = serde.field(skip=True)
+    meta: Optional[MetaData] = serde.field(skip=True)
 
     def reflection(self) -> Dict[str, Any]:
         """Reflection."""

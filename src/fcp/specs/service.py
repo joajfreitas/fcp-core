@@ -20,7 +20,7 @@
 
 """Service."""
 
-from beartype.typing import List, Dict, Any
+from beartype.typing import List, Dict, Any, Optional
 from serde import serde, strict, to_dict, field
 
 from .method import Method
@@ -34,7 +34,7 @@ class Service:
     name: str
     id: int
     methods: List[Method]
-    meta: MetaData = field(skip=True)
+    meta: Optional[MetaData] = field(skip=True)
 
     def reflection(self) -> Dict[str, Any]:
         """Reflection."""
@@ -42,7 +42,7 @@ class Service:
             "name": self.name,
             "id": self.id,
             "methods": [method.reflection() for method in self.methods],
-            "meta": self.meta.reflection(),
+            "meta": self.meta.reflection() if self.meta else None,
         }
 
     def __repr__(self) -> str:

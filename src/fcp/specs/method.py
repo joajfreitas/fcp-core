@@ -21,7 +21,7 @@
 """Method."""
 
 from serde import serde, strict, to_dict, field
-from beartype.typing import Dict, Any
+from beartype.typing import Dict, Any, Optional
 from .metadata import MetaData
 
 
@@ -33,7 +33,7 @@ class Method:
     id: int
     input: str
     output: str
-    meta: MetaData = field(skip=True)
+    meta: Optional[MetaData] = field(skip=True)
 
     def reflection(self) -> Dict[str, Any]:
         """Reflection."""
@@ -42,7 +42,7 @@ class Method:
             "id": self.id,
             "input": self.input,
             "output": self.output,
-            "meta": self.meta.reflection(),
+            "meta": self.meta.reflection() if self.meta else None,
         }
 
     def __repr__(self) -> str:

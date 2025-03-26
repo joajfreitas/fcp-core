@@ -48,7 +48,7 @@ class Struct:
         return {
             "name": self.name,
             "fields": [struct_field.reflection() for struct_field in self.fields],
-            "meta": self.meta.reflection(),
+            "meta": self.meta.reflection() if self.meta else None,
         }
 
     def __repr__(self) -> str:

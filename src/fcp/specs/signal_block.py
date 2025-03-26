@@ -42,7 +42,7 @@ class SignalBlock:
                 {"name": name, "value": str(value)}
                 for name, value in self.fields.items()
             ],
-            "meta": self.meta.reflection(),
+            "meta": self.meta.reflection() if self.meta else None,
         }
 
     def __repr__(self) -> str:
