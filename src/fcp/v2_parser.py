@@ -457,8 +457,9 @@ class FcpV2Transformer(Transformer):  # type: ignore
     def value(self, args: List[str]) -> Any:
         """Parse a value node of the fcp AST."""
         return args[0]
-        
+
     def array(self, args: List[Any]) -> List[Any]:
+        """Parse an array node of the fcp AST."""
         return args
 
     @v_args(tree=True)  # type: ignore
@@ -477,8 +478,6 @@ class FcpV2Transformer(Transformer):  # type: ignore
             if arg.is_err():
                 return arg  # type: ignore
         return Ok(self.fcp)
-
-
 
 
 @catch
