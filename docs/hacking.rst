@@ -43,6 +43,7 @@ Directory structure
 .. code-block:: bash
 
     src/fcp
+    ├── describe.py          - Describe fcp object tree
     ├── codegen.py           - Support for codegenerator plugins
     ├── colors.py            - Color for terminal output
     ├── encoding.py          - Convert fcp object tree into an encodeable structure
