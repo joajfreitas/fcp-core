@@ -62,7 +62,7 @@ fcp_parser = Lark(
     struct: "struct" identifier "{" struct_field+ "}"
     struct_field: identifier "@" number ":" type param* ","
     type: (base_type | array_type | composed_type | dynamic_array_type | optional_type) "|"?
-    base_type: /u\d\d|u\d|i\d\d|i\d|f32|f64|str/
+    base_type: /u\\d\\d|u\\d|i\\d\\d|i\\d|f32|f64|str/
     array_type: "[" type "," number "]"
     dynamic_array_type: "[" type "]"
     composed_type: identifier
@@ -88,7 +88,8 @@ fcp_parser = Lark(
     identifier: CNAME
     string: ESCAPED_STRING
     number: SIGNED_NUMBER
-    value : identifier | number | string
+    value : array | identifier | number | string
+    array : "[" [value ("," value)*] "]"
 
     COMMENT: C_COMMENT | CPP_COMMENT
 
@@ -452,6 +453,14 @@ class FcpV2Transformer(Transformer):  # type: ignore
     def string(self, args: List[str]) -> str:
         """Parse a string node of the fcp AST."""
         return args[0].value[1:-1]  # type: ignore
+
+    def value(self, args: List[str]) -> Any:
+        """Parse a value node of the fcp AST."""
+        return args[0]
+
+    def array(self, args: List[Any]) -> List[Any]:
+        """Parse an array node of the fcp AST."""
+        return args
 
     @v_args(tree=True)  # type: ignore
     def device(self, tree: ParseTree) -> Result[Nil, str]:
