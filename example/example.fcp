@@ -28,6 +28,8 @@ service SensorService @0 {
     method GetTemperature(SensorReq) @1 returns Temperature
 }
 
-device ecu1 {
-    some_config: 10,
+device ecu {
+    rpc_get_id: 1025,
+    rpc_ans_id: 1026,
+    services: [SensorService],
 }
