@@ -76,7 +76,11 @@ class TypeVisitor:
         """Visits the hierarchy of an fcp type."""
         if isinstance(t, type.StructType):
             fields = [
-                self.visit(field.type) for field in self.fcp.get_type(t).unwrap().fields
+                self.visit(field.type)
+                for field in sorted(
+                    self.fcp.get_type(t).unwrap().fields,
+                    key=lambda field: field.field_id,
+                )
             ]
             return self.struct(t, fields)
         elif isinstance(t, type.EnumType):

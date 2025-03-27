@@ -33,6 +33,8 @@ from .codegen import GeneratorManager
 from .verifier import make_general_verifier
 from .error import Logger
 from .serde import encode as serde_encode
+from .describe import describe
+from .specs.type import ComposedType, ComposedTypeCategory
 
 
 def setup_logging() -> None:
@@ -106,6 +108,14 @@ def encode(fcp_schema: str, fcp_data: str, output: str) -> None:
         f.write(bytearray)
 
 
+@click.command("describe")  # type: ignore
+@click.argument("fcp")  # type: ignore
+@click.argument("type")  # type: ignore
+def _describe(fcp: str, type: str) -> None:
+    fcp, _ = get_fcp(fcp).unwrap()
+    print(describe(fcp, ComposedType(type, ComposedTypeCategory.Struct)))  # type: ignore
+
+
 @click.group(invoke_without_command=True)  # type: ignore
 @click.option("--version", is_flag=True, default=False)  # type: ignore
 def main(version: str) -> None:
@@ -119,6 +129,7 @@ def main(version: str) -> None:
 main.add_command(generate_cmd)
 main.add_command(show)
 main.add_command(encode)
+main.add_command(_describe)
 
 if __name__ == "__main__":
     setup_logging()
