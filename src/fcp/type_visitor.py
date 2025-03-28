@@ -32,11 +32,11 @@ class TypeVisitor:
     def __init__(self, fcp: FcpV2) -> None:
         self.fcp = fcp
 
-    def struct(self, t: type.ComposedType, fields: List[Any]) -> Any:
+    def struct(self, t: type.StructType, fields: List[Any]) -> Any:
         """Visit a struct type."""
         return None
 
-    def enum(self, t: type.ComposedType) -> Any:
+    def enum(self, t: type.EnumType) -> Any:
         """Visit an enum type."""
         return None
 
@@ -74,18 +74,12 @@ class TypeVisitor:
 
     def visit(self, t: type.Type) -> Any:
         """Visits the hierarchy of an fcp type."""
-        if (
-            isinstance(t, type.ComposedType)
-            and t.type == type.ComposedTypeCategory.Struct
-        ):
+        if isinstance(t, type.StructType):
             fields = [
                 self.visit(field.type) for field in self.fcp.get_type(t).unwrap().fields
             ]
             return self.struct(t, fields)
-        elif (
-            isinstance(t, type.ComposedType)
-            and t.type == type.ComposedTypeCategory.Enum
-        ):
+        elif isinstance(t, type.EnumType):
             return self.enum(t)
         elif isinstance(t, type.BuiltinType):
             if t.is_unsigned():

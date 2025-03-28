@@ -89,37 +89,49 @@ class BuiltinType(Type):
         ]
 
 
-class ComposedTypeCategory(Enum):
-    """Category of composed types."""
-
-    Enum = "Enum"
-    Struct = "Struct"
-
-
 @serde(type_check=strict)
-class ComposedType(Type):
-    """fcp type for user defined types such as structs and enums."""
+class EnumType(Type):
+    """Type of enum fields."""
 
     name: str
-    type: ComposedTypeCategory
+    type: str
 
-    def __init__(self, name: str, type: ComposedTypeCategory):
+    def __init__(self, name: str):
         self.name = name
-        self.type = type
+        self.type = "Enum"
 
     def is_signed(self) -> bool:
-        """Check that type is signed."""
-        if self.type == ComposedTypeCategory.Enum:
-            return False
-        else:
-            raise ValueError("Signess of struct is meaningless")
+        """Signess of enum types."""
+        return False
 
-    def reflection(self) -> List[Dict[str, str]]:
+    def reflection(self) -> List[Dict[str, Any]]:
         """Reflection."""
         return [
             {
                 "name": self.name,
-                "type": str(self.type).split(".")[1],
+                "type": "Enum",
+                "size": 1,
+            }
+        ]
+
+
+@serde(type_check=strict)
+class StructType(Type):
+    """Type of struct fields."""
+
+    name: str
+    type: str
+
+    def __init__(self, name: str):
+        self.name = name
+        self.type = "Struct"
+
+    def reflection(self) -> List[Dict[str, Any]]:
+        """Reflection."""
+        return [
+            {
+                "name": self.name,
+                "type": "Struct",
                 "size": 1,
             }
         ]

@@ -30,10 +30,9 @@ from .specs.type import (
     Type,
     BuiltinType,
     ArrayType,
-    ComposedType,
+    StructType,
     DynamicArrayType,
     OptionalType,
-    ComposedTypeCategory,
 )
 
 from .encoding import make_encoder, EncoderContext
@@ -163,9 +162,8 @@ def _encode(
             _encode_str(buffer, fcp, type, data)
         else:
             raise ValueError(f"Unexpected field type {type}")
-    elif isinstance(type, ComposedType):
-        if type.type == ComposedTypeCategory.Struct:
-            _encode_struct(buffer, fcp, type.name, data)
+    elif isinstance(type, StructType):
+        _encode_struct(buffer, fcp, type.name, data)
     elif isinstance(type, ArrayType):
         _encode_array(buffer, fcp, type, data)
     elif isinstance(type, DynamicArrayType):
@@ -263,9 +261,8 @@ def _decode(buffer: _Buffer, fcp: FcpV2, type: Type) -> Dict[str, Any]:
             return _decode_str(buffer, type)
         else:
             raise ValueError(f"Unexpected field type {type}")
-    elif isinstance(type, ComposedType):
-        if type.type == ComposedTypeCategory.Struct:
-            return _decode_struct(buffer, fcp, type.name)
+    elif isinstance(type, StructType):
+        return _decode_struct(buffer, fcp, type.name)
     elif isinstance(type, ArrayType):
         return _decode_array(buffer, fcp, type)
     elif isinstance(type, DynamicArrayType):

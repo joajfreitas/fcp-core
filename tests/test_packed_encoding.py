@@ -29,7 +29,7 @@ from fcp.specs.struct import Struct
 from fcp.specs.impl import Impl
 from fcp.specs.struct_field import StructField
 from fcp.specs.metadata import MetaData
-from fcp.specs.type import BuiltinType, ComposedType, ComposedTypeCategory
+from fcp.specs.type import BuiltinType, StructType
 from fcp.specs.v2 import FcpV2
 
 
@@ -93,7 +93,7 @@ def test_struct(example_struct: Struct) -> NoReturn:
             StructField(
                 name="s1",
                 field_id=0,
-                type=ComposedType("A", ComposedTypeCategory.Struct),
+                type=StructType("A"),
             ),
             StructField(name="s2", field_id=1, type=BuiltinType("u8")),
         ],

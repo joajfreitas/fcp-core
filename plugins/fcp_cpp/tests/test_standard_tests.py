@@ -24,10 +24,6 @@ import os
 import json
 import jinja2
 from pathlib import Path
-import tempfile
-import shutil
-import subprocess
-import functools
 import pytest
 from beartype.typing import List, Dict, Any
 
@@ -38,11 +34,10 @@ from fcp.v2_parser import get_fcp
 from fcp.specs.type import (
     Type,
     BuiltinType,
-    ComposedType,
-    ComposedTypeCategory,
     ArrayType,
     DynamicArrayType,
     OptionalType,
+    EnumType,
 )
 from fcp.xpath import Xpath
 
@@ -89,7 +84,7 @@ def to_constant(fcp: FcpV2, type: Type, value: Any) -> str:
             return str('"' + value + '"')
         else:
             return str(value)
-    elif isinstance(type, ComposedType) and type.type == ComposedTypeCategory.Enum:
+    elif isinstance(type, EnumType):
         return str("fcp::" + type.name + "::" + value)
     elif isinstance(type, ArrayType) or isinstance(type, DynamicArrayType):
         return str(
