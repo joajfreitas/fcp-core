@@ -26,7 +26,7 @@ import pytest
 
 from fcp.xpath import Xpath
 from fcp.specs.v2 import FcpV2
-from fcp.specs.type import ComposedType, BuiltinType, ComposedTypeCategory
+from fcp.specs.type import BuiltinType, StructType
 
 from .fcp_builder import FcpV2Builder, StructBuilder, StructFieldBuilder
 
@@ -93,10 +93,7 @@ def fcp_sample() -> FcpV2:
             StructBuilder()
             .with_name("S1")
             .with_field(
-                StructFieldBuilder()
-                .with_name("s1")
-                .with_type(ComposedType("S2", ComposedTypeCategory.Struct))
-                .build()
+                StructFieldBuilder().with_name("s1").with_type(StructType("S2")).build()
             )
             .with_field(
                 StructFieldBuilder()

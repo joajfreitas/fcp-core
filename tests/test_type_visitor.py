@@ -32,11 +32,11 @@ from .fcp_builder import FcpV2Builder, StructBuilder, StructFieldBuilder
 class TestTypeVisitor(TypeVisitor):
     """Test type visitor."""
 
-    def struct(self, t: type.ComposedType, fields: List[type.Type]) -> str:
+    def struct(self, t: type.StructType, fields: List[type.Type]) -> str:
         """Visit a struct type."""
         return "struct: " + " ".join(fields)
 
-    def enum(self, t: type.ComposedType) -> str:
+    def enum(self, t: type.EnumType) -> str:
         """Visit an enum type."""
         return "enum"
 
@@ -87,7 +87,4 @@ struct S1 {
 
     test_visitor = TestTypeVisitor(fcp)
 
-    assert (
-        test_visitor.visit(type.ComposedType("S1", type.ComposedTypeCategory.Struct))
-        == "struct: unsigned signed"
-    )
+    assert test_visitor.visit(type.StructType("S1")) == "struct: unsigned signed"

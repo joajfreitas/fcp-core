@@ -40,8 +40,8 @@ from .specs import device
 from .specs.type import (
     BuiltinType,
     ArrayType,
-    ComposedTypeCategory,
-    ComposedType,
+    StructType,
+    EnumType,
     DynamicArrayType,
     OptionalType,
     Type,
@@ -242,18 +242,16 @@ class FcpV2Transformer(Transformer):  # type: ignore
         """Parse an array_type node of the fcp AST."""
         return ArrayType(args[0], int(args[1]))  # type: ignore
 
-    def composed_type(self, args: List[str]) -> ComposedType:
+    def composed_type(self, args: List[str]) -> Union[StructType, EnumType]:
         """Parse a compound_type node of the fcp AST."""
         typename = args[0]
 
         if self.fcp.get_struct(typename).is_some():
-            type_category = ComposedTypeCategory.Struct
+            return StructType(typename)
         elif self.fcp.get_enum(typename).is_some():
-            type_category = ComposedTypeCategory.Enum
+            return EnumType(typename)
         else:
             raise ValueError(f"Type '{typename}' cannot be found.")
-
-        return ComposedType(typename, type_category)  # type: ignore
 
     def optional_type(self, args: List[str]) -> OptionalType:
         """Parse a option node of the fcp AST."""

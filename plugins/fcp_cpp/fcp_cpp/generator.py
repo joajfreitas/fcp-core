@@ -36,11 +36,7 @@ from fcp.codegen import CodeGenerator
 from fcp.verifier import Verifier
 from fcp.specs.v2 import FcpV2
 from fcp.specs.struct import Struct
-from fcp.specs.type import (
-    Type,
-    ComposedTypeCategory,
-    ComposedType,
-)
+from fcp.specs.type import Type, StructType
 from fcp.specs import type
 from fcp.version import VERSION
 from fcp.type_visitor import TypeVisitor
@@ -56,11 +52,11 @@ def _to_highest_power_of_two(n: int) -> int:
 class ToCpp(TypeVisitor):
     """Fcp type to cpp convertion."""
 
-    def struct(self, t: type.ComposedType, fields: List[type.Type]) -> str:
+    def struct(self, t: type.StructType, fields: List[type.Type]) -> str:
         """Convert struct to cpp."""
         return str(t.name)
 
-    def enum(self, t: type.ComposedType) -> str:
+    def enum(self, t: type.EnumType) -> str:
         """Convert enum to cpp."""
         return str(t.name)
 
@@ -113,7 +109,7 @@ def get_matching_impls(fcp: FcpV2, protocol: str) -> List[Impl]:
 
 def get_struct_from_type(fcp: FcpV2, type: str) -> Struct:
     """Get struct from type name."""
-    return fcp.get_type(ComposedType(type, ComposedTypeCategory.Struct)).unwrap()
+    return fcp.get_type(StructType(type)).unwrap()
 
 
 def create_template_environment(

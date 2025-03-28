@@ -33,7 +33,7 @@ from .struct import Struct
 from .impl import Impl
 from .service import Service
 from .device import Device
-from .type import Type, BuiltinType, ComposedType
+from .type import Type, BuiltinType, StructType, EnumType
 
 
 def _flatten(xss: List[List[Any]]) -> List[Any]:
@@ -60,7 +60,9 @@ class FcpV2:
     def get_type(self, type: Type) -> Maybe[Union[Enum, Struct]]:
         """Get node corresponding to type."""
         for type_ in self.structs + self.enums:
-            if isinstance(type, ComposedType) and type.name == type_.name:
+            if (
+                isinstance(type, StructType) or isinstance(type, EnumType)
+            ) and type.name == type_.name:
                 return Some(type_)
 
         if isinstance(type, BuiltinType):
