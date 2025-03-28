@@ -34,7 +34,6 @@ from .verifier import make_general_verifier
 from .error import Logger
 from .serde import encode as serde_encode
 from .describe import describe
-from .specs.type import ComposedType, ComposedTypeCategory
 
 
 def setup_logging() -> None:

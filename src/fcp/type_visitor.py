@@ -60,23 +60,25 @@ class TypeVisitor:
         """Visit a string type."""
         return None
 
-    def array(self, t: type.ArrayType, inner: type.Type) -> Any:
+    def array(self, t: type.ArrayType, inner: type.Type, name: str) -> Any:
         """Visit an array type."""
         return None
 
-    def dynamic_array(self, t: type.DynamicArrayType, inner: type.Type) -> Any:
+    def dynamic_array(
+        self, t: type.DynamicArrayType, inner: type.Type, name: str
+    ) -> Any:
         """Visit a dynamic array type."""
         return None
 
-    def optional(self, t: type.OptionalType, inner: type.Type) -> Any:
+    def optional(self, t: type.OptionalType, inner: type.Type, name: str) -> Any:
         """Visit an optional type."""
         return None
 
-    def visit(self, t: type.Type) -> Any:
+    def visit(self, t: type.Type, name: str = "") -> Any:
         """Visits the hierarchy of an fcp type."""
         if isinstance(t, type.StructType):
             fields = [
-                self.visit(field.type)
+                self.visit(field.type, field.name)
                 for field in sorted(
                     self.fcp.get_type(t).unwrap().fields,
                     key=lambda field: field.field_id,
@@ -96,10 +98,10 @@ class TypeVisitor:
         elif isinstance(t, type.StringType):
             return self.string(t)
         elif isinstance(t, type.ArrayType):
-            return self.array(t, self.visit(t.underlying_type))
+            return self.array(t, self.visit(t.underlying_type), name)
         elif isinstance(t, type.DynamicArrayType):
-            return self.dynamic_array(t, self.visit(t.underlying_type))
+            return self.dynamic_array(t, self.visit(t.underlying_type), name)
         elif isinstance(t, type.OptionalType):
-            return self.optional(t, self.visit(t.underlying_type))
+            return self.optional(t, self.visit(t.underlying_type), name)
 
         raise ValueError("Unexpected type: " + str(t))
