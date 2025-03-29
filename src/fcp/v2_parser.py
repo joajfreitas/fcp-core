@@ -38,7 +38,6 @@ from .specs import service
 from .specs import method
 from .specs import device
 from .specs.type import (
-    BuiltinType,
     ArrayType,
     StructType,
     EnumType,
@@ -47,6 +46,8 @@ from .specs.type import (
     StringType,
     UnsignedType,
     SignedType,
+    FloatType,
+    DoubleType,
     Type,
 )
 from .specs import v2
@@ -64,11 +65,12 @@ fcp_parser = Lark(
 
     struct: "struct" identifier "{" struct_field+ "}"
     struct_field: identifier "@" number ":" type param* ","
-    type: (base_type | unsigned_type | signed_type | str_type | array_type | composed_type | dynamic_array_type | optional_type) "|"?
-    base_type: /f32|f64/
+    type: (unsigned_type | signed_type | float_type | double_type | str_type | array_type | composed_type | dynamic_array_type | optional_type) "|"?
     str_type: "str"
     unsigned_type: /u\\d\\d|u\\d/
     signed_type: /i\\d\\d|i\\d/
+    float_type: "f32"
+    double_type: "f64"
     array_type: "[" type "," number "]"
     dynamic_array_type: "[" type "]"
     composed_type: identifier
@@ -240,10 +242,6 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
         raise ValueError("Expected type")
 
-    def base_type(self, args: List[str]) -> BuiltinType:
-        """Parse a base_type node of the fcp AST."""
-        return BuiltinType(str(args[0]))  # type: ignore
-
     def unsigned_type(self, args: List[str]) -> UnsignedType:
         """Parse an unsigned type."""
         return UnsignedType(str(args[0]))  # type: ignore
@@ -251,6 +249,14 @@ class FcpV2Transformer(Transformer):  # type: ignore
     def signed_type(self, args: List[str]) -> UnsignedType:
         """Parse an signed type."""
         return SignedType(str(args[0]))  # type: ignore
+
+    def float_type(self, args: List[str]) -> FloatType:
+        """Parse an signed type."""
+        return FloatType()  # type: ignore
+
+    def double_type(self, args: List[str]) -> FloatType:
+        """Parse an signed type."""
+        return DoubleType()  # type: ignore
 
     def str_type(self, args: List[str]) -> StringType:
         """Parse a str type."""

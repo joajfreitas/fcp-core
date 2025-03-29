@@ -110,7 +110,7 @@
           "field_id": 8,
           "type": {
               "name": "f32",
-              "type": "Builtin"
+              "type": "float"
           }
         },
         {
@@ -118,7 +118,7 @@
           "field_id": 9,
           "type": {
               "name": "f64",
-              "type": "Builtin"
+              "type": "double"
           }
         },
         {
@@ -147,8 +147,8 @@
     {
         "name": "S4",
         "fields": [
-            {"name": "s0", "field_id": 0, "type": {"name": "f32", "type": "Builtin"}},
-            {"name": "s1", "field_id": 1, "type": {"name": "f64", "type": "Builtin"}}
+            {"name": "s0", "field_id": 0, "type": {"name": "f32", "type": "float"}},
+            {"name": "s1", "field_id": 1, "type": {"name": "f64", "type": "double"}}
         ]
     },
     {
