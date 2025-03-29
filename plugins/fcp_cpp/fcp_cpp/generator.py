@@ -50,7 +50,7 @@ def _to_highest_power_of_two(n: int) -> int:
 
 
 class ToCpp(TypeVisitor):
-    """Fcp type to cpp convertion."""
+    """Fcp type to cpp conversion."""
 
     def struct(self, t: type.StructType, fields: List[type.Type]) -> str:
         """Convert struct to cpp."""

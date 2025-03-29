@@ -91,7 +91,6 @@ class StringType(Type):
 
     def __init__(self) -> None:
         self.type = "str"
-        pass
 
     def reflection(self) -> List[Dict[str, str]]:
         """Reflection."""

@@ -223,7 +223,7 @@ class PackedEncoder:
         if isinstance(type, StructType) or isinstance(type, EnumType):
             self._generate_compound_type(type, extension, prefix)
         else:
-            raise ValueError("Expected ComposeType")
+            raise ValueError("Expected StructType or EnumType")
 
     def generate(self, impl: Impl) -> List[EncodeablePiece]:
         """Generate encoding instructions."""
