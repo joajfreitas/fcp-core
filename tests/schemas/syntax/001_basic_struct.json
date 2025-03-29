@@ -125,8 +125,7 @@
           "name": "s10",
           "field_id": 10,
           "type": {
-              "name": "str",
-              "type": "Builtin"
+              "type": "str"
           }
         }
       ]
@@ -155,7 +154,7 @@
     {
         "name": "S5",
         "fields": [
-            {"name": "s0", "field_id": 0, "type": {"name": "str", "type": "Builtin"}}
+            {"name": "s0", "field_id": 0, "type": {"type": "str"}}
         ]
     }
   ],

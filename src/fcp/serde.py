@@ -33,6 +33,7 @@ from .specs.type import (
     StructType,
     DynamicArrayType,
     OptionalType,
+    StringType,
 )
 
 from .encoding import make_encoder, EncoderContext
@@ -107,7 +108,7 @@ def _encode_builtin_double(buffer: _Buffer, type: BuiltinType, data: Any) -> Non
     buffer.push_bytes(list(v))
 
 
-def _encode_str(buffer: _Buffer, fcp: FcpV2, type: BuiltinType, data: Any) -> None:
+def _encode_str(buffer: _Buffer, fcp: FcpV2, type: StringType, data: Any) -> None:
     _encode_builtin_unsigned(buffer, BuiltinType("u32"), len(data))
     for x in data:
         _encode(buffer, fcp, BuiltinType("u8"), ord(x))
@@ -158,10 +159,10 @@ def _encode(
             _encode_builtin_float(buffer, type, data)
         elif type.is_double():
             _encode_builtin_double(buffer, type, data)
-        elif type.is_str():
-            _encode_str(buffer, fcp, type, data)
         else:
             raise ValueError(f"Unexpected field type {type}")
+    elif isinstance(type, StringType):
+        _encode_str(buffer, fcp, type, data)
     elif isinstance(type, StructType):
         _encode_struct(buffer, fcp, type.name, data)
     elif isinstance(type, ArrayType):
@@ -205,7 +206,7 @@ def _decode_builtin_double(buffer: _Buffer) -> float:
     return float(struct.unpack("d", bytearray(buffer.read_bytes(8)))[0])
 
 
-def _decode_str(buffer: _Buffer, type: BuiltinType) -> str:
+def _decode_str(buffer: _Buffer, type: StringType) -> str:
     len = _decode_builtin_unsigned(buffer, BuiltinType("u32"))
     return bytearray(buffer.read_bytes(len)).decode("ascii")
 
@@ -257,10 +258,10 @@ def _decode(buffer: _Buffer, fcp: FcpV2, type: Type) -> Dict[str, Any]:
             return _decode_builtin_float(buffer)
         elif type.is_double():
             return _decode_builtin_double(buffer)
-        elif type.is_str():
-            return _decode_str(buffer, type)
         else:
             raise ValueError(f"Unexpected field type {type}")
+    elif isinstance(type, StringType):
+        return _decode_str(buffer, type)
     elif isinstance(type, StructType):
         return _decode_struct(buffer, fcp, type.name)
     elif isinstance(type, ArrayType):

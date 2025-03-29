@@ -342,9 +342,9 @@ class DynamicSchema : public ISchema {
                 else if (type.name == "f64") {
                     return DecodeFloat64(type, buffer);
                 }
-                else if (type.name == "str") {
-                    return DecodeString(type, buffer);
-                }
+            }
+            else if (type.type == "str") {
+                return DecodeString(type, buffer);
             }
             else if (type.type == "Struct") {
                 return DecodeStruct(type.name, buffer);
@@ -361,7 +361,7 @@ class DynamicSchema : public ISchema {
             else if (type.type == "Optional") {
                 return DecodeOptional(type, buffer);
             }
-            throw std::runtime_error("Unknown type" + type.type);
+            throw std::runtime_error("Unknown type " + type.type);
         }
 
         std::optional<json> DecodeJson(std::string name, std::vector<uint8_t> data, std::string bus = "default") const override {
@@ -511,9 +511,9 @@ class DynamicSchema : public ISchema {
                 else if (type.name == "f64") {
                     return EncodeDouble(type, j);
                 }
-                else if (type.name == "str") {
-                    return EncodeString(type, j);
-                }
+            }
+            else if (type.type == "str") {
+                return EncodeString(type, j);
             }
             else if (type.type == "Struct") {
                 return EncodeStruct(type.name, j);
@@ -530,7 +530,7 @@ class DynamicSchema : public ISchema {
             else if (type.type == "Optional") {
                 return EncodeOptional(type, j);
             }
-            throw std::runtime_error("Unknown type" + type.type);
+            throw std::runtime_error("Unknown type " + type.type);
         }
 
         std::optional<std::vector<std::uint8_t>> EncodeJson(std::string name, json j) const override {

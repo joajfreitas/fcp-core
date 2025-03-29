@@ -38,6 +38,7 @@ from fcp.specs.type import (
     DynamicArrayType,
     OptionalType,
     EnumType,
+    StringType,
 )
 from fcp.xpath import Xpath
 
@@ -80,10 +81,10 @@ def to_constant(fcp: FcpV2, type: Type, value: Any) -> str:
                 return str(value) + "ULL"
             else:
                 return str(value)
-        elif type.is_str():
-            return str('"' + value + '"')
         else:
             return str(value)
+    elif isinstance(type, StringType):
+        return str('"' + value + '"')
     elif isinstance(type, EnumType):
         return str("fcp::" + type.name + "::" + value)
     elif isinstance(type, ArrayType) or isinstance(type, DynamicArrayType):

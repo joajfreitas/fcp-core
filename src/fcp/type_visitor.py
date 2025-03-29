@@ -56,7 +56,7 @@ class TypeVisitor:
         """Visit a double type."""
         return None
 
-    def string(self, t: type.BuiltinType) -> Any:
+    def string(self, t: type.StringType) -> Any:
         """Visit a string type."""
         return None
 
@@ -90,8 +90,8 @@ class TypeVisitor:
                 return self.float(t)
             elif t.is_double():
                 return self.double(t)
-            elif t.is_str():
-                return self.string(t)
+        elif isinstance(t, type.StringType):
+            return self.string(t)
         elif isinstance(t, type.ArrayType):
             return self.array(t, self.visit(t.underlying_type))
         elif isinstance(t, type.DynamicArrayType):
