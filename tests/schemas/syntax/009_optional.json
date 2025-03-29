@@ -20,7 +20,7 @@
                 "type": {
                     "underlying_type": {
                         "name":"u8",
-                        "type": "Builtin"
+                        "type": "unsigned"
                         },
                     "type": "Optional"
                 }

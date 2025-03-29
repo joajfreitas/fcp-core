@@ -60,10 +60,6 @@ class BuiltinType(Type):
         """Check that type is signed."""
         return self.name[0] == "i"
 
-    def is_unsigned(self) -> bool:
-        """Check that type is unsigned."""
-        return self.name[0] == "u"
-
     def is_float(self) -> bool:
         """Check that type is a float."""
         return self.name[0] == "f" and int(self.name[1:]) == 32
@@ -71,6 +67,36 @@ class BuiltinType(Type):
     def is_double(self) -> bool:
         """Check that type is a double."""
         return self.name[0] == "f" and int(self.name[1:]) == 64
+
+    def reflection(self) -> List[Dict[str, str]]:
+        """Reflection."""
+        return [
+            {
+                "name": self.name,
+                "type": self.type,
+                "size": 1,
+            }
+        ]
+
+
+@serde(type_check=strict)
+class UnsignedType(Type):
+    """Type of unsigned fields."""
+
+    name: str
+    type: str
+
+    def __init__(self, name: str):
+        self.name = name
+        self.type = "unsigned"
+
+    def get_length(self) -> int:
+        """Type length in bits."""
+        return int(self.name[1:])
+
+    def is_signed(self) -> bool:
+        """Check that type is signed."""
+        return False
 
     def reflection(self) -> List[Dict[str, str]]:
         """Reflection."""
