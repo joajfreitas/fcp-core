@@ -39,6 +39,7 @@ from fcp.specs.type import (
     OptionalType,
     EnumType,
     StringType,
+    UnsignedType,
 )
 from fcp.xpath import Xpath
 
@@ -76,11 +77,11 @@ def to_constant(fcp: FcpV2, type: Type, value: Any) -> str:
                 return str(value)
             else:
                 return str(value) + "LL"
-        elif type.is_unsigned():
-            if value[0].isdigit() or value[0] == "-":
-                return str(value) + "ULL"
-            else:
-                return str(value)
+        else:
+            return str(value)
+    elif isinstance(type, UnsignedType):
+        if value[0].isdigit() or value[0] == "-":
+            return str(value) + "ULL"
         else:
             return str(value)
     elif isinstance(type, StringType):

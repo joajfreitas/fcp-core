@@ -330,10 +330,7 @@ class DynamicSchema : public ISchema {
 
         std::optional<json> _Decode(Type type, Buffer& buffer) const {
             if (type.type == "Builtin") {
-                if (type.name[0] == 'u') {
-                    return DecodeUnsigned(type, buffer);
-                }
-                else if (type.name[0] == 'i') {
+                if (type.name[0] == 'i') {
                     return DecodeSigned(type, buffer);
                 }
                 else if (type.name == "f32") {
@@ -342,6 +339,9 @@ class DynamicSchema : public ISchema {
                 else if (type.name == "f64") {
                     return DecodeFloat64(type, buffer);
                 }
+            }
+            else if (type.type == "unsigned") {
+                return DecodeUnsigned(type, buffer);
             }
             else if (type.type == "str") {
                 return DecodeString(type, buffer);
@@ -499,10 +499,7 @@ class DynamicSchema : public ISchema {
 
         std::optional<std::vector<std::uint8_t>> _Encode(Type type, json j) const {
             if (type.type == "Builtin") {
-                if (type.name[0] == 'u') {
-                    return EncodeUnsigned(type, j);
-                }
-                else if (type.name[0] == 'i') {
+                if (type.name[0] == 'i') {
                     return EncodeSigned(type, j);
                 }
                 else if (type.name == "f32") {
@@ -511,6 +508,9 @@ class DynamicSchema : public ISchema {
                 else if (type.name == "f64") {
                     return EncodeDouble(type, j);
                 }
+            }
+            else if (type.type == "unsigned") {
+                return EncodeUnsigned(type, j);
             }
             else if (type.type == "str") {
                 return EncodeString(type, j);

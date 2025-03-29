@@ -45,6 +45,7 @@ from .specs.type import (
     DynamicArrayType,
     OptionalType,
     StringType,
+    UnsignedType,
     Type,
 )
 from .specs import v2
@@ -62,9 +63,10 @@ fcp_parser = Lark(
 
     struct: "struct" identifier "{" struct_field+ "}"
     struct_field: identifier "@" number ":" type param* ","
-    type: (base_type | str_type | array_type | composed_type | dynamic_array_type | optional_type) "|"?
-    base_type: /u\\d\\d|u\\d|i\\d\\d|i\\d|f32|f64/
+    type: (base_type | unsigned_type | str_type | array_type | composed_type | dynamic_array_type | optional_type) "|"?
+    base_type: /i\\d\\d|i\\d|f32|f64/
     str_type: "str"
+    unsigned_type: /u\\d\\d|u\\d/
     array_type: "[" type "," number "]"
     dynamic_array_type: "[" type "]"
     composed_type: identifier
@@ -239,6 +241,10 @@ class FcpV2Transformer(Transformer):  # type: ignore
     def base_type(self, args: List[str]) -> BuiltinType:
         """Parse a base_type node of the fcp AST."""
         return BuiltinType(str(args[0]))  # type: ignore
+
+    def unsigned_type(self, args: List[str]) -> UnsignedType:
+        """Parse an unsigned type."""
+        return UnsignedType(str(args[0]))  # type: ignore
 
     def str_type(self, args: List[str]) -> StringType:
         """Parse a str type."""

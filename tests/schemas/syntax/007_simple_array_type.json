@@ -20,7 +20,7 @@
                 "type": {
                     "type": "Array",
                     "underlying_type": {
-                        "type": "Builtin",
+                        "type": "unsigned",
                         "name":"u8"
                     },
                     "size": 4

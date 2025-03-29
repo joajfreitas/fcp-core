@@ -40,7 +40,7 @@ class TypeVisitor:
         """Visit an enum type."""
         return None
 
-    def unsigned(self, t: type.BuiltinType) -> Any:
+    def unsigned(self, t: type.UnsignedType) -> Any:
         """Visit an unsigned type."""
         return None
 
@@ -82,14 +82,14 @@ class TypeVisitor:
         elif isinstance(t, type.EnumType):
             return self.enum(t)
         elif isinstance(t, type.BuiltinType):
-            if t.is_unsigned():
-                return self.unsigned(t)
-            elif t.is_signed():
+            if t.is_signed():
                 return self.signed(t)
             elif t.is_float():
                 return self.float(t)
             elif t.is_double():
                 return self.double(t)
+        elif isinstance(t, type.UnsignedType):
+            return self.unsigned(t)
         elif isinstance(t, type.StringType):
             return self.string(t)
         elif isinstance(t, type.ArrayType):

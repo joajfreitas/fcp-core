@@ -23,12 +23,12 @@
         {
           "name": "var1",
           "field_id": 0,
-          "type": {"name": "u8", "type": "Builtin"}
+          "type": {"name": "u8", "type": "unsigned"}
         },
         {
           "name": "var2",
           "field_id": 1,
-          "type": {"name": "u8", "type": "Builtin"}
+          "type": {"name": "u8", "type": "unsigned"}
         }
       ]
     },

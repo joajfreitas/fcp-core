@@ -16,7 +16,7 @@
         {
           "name": "bar",
           "field_id": 0,
-          "type": {"name": "u8", "type": "Builtin"}
+          "type": {"name": "u8", "type": "unsigned"}
         }
       ]
     }
