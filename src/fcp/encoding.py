@@ -54,6 +54,8 @@ from .specs.type import (
     EnumType,
     UnsignedType,
     SignedType,
+    FloatType,
+    DoubleType,
 )
 from .specs.v2 import FcpV2
 from .specs.impl import Impl
@@ -132,7 +134,12 @@ class PackedEncoder:
     def _get_type_length(self, fcp: FcpV2, type: Type) -> int:
         if isinstance(type, BuiltinType):
             return type.get_length()
-        elif isinstance(type, UnsignedType) or isinstance(type, SignedType):
+        elif (
+            isinstance(type, UnsignedType)
+            or isinstance(type, SignedType)
+            or isinstance(type, FloatType)
+            or isinstance(type, DoubleType)
+        ):
             return type.get_length()
         elif isinstance(type, ArrayType):
             return int(type.size * self._get_type_length(fcp, type.underlying_type))
@@ -141,7 +148,7 @@ class PackedEncoder:
                 2 ** ceil(log2(fcp.get_enum(type.name).unwrap().get_packed_size()))
             )
         else:
-            raise ValueError("Error computing type length")
+            raise ValueError("Error computing type length for type " + str(type))
 
     def _generate_struct(
         self, struct: Struct, extension: Impl, prefix: str = ""

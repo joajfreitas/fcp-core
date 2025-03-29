@@ -329,19 +329,17 @@ class DynamicSchema : public ISchema {
         }
 
         std::optional<json> _Decode(Type type, Buffer& buffer) const {
-            if (type.type == "Builtin") {
-                if (type.name == "f32") {
-                    return DecodeFloat32(type, buffer);
-                }
-                else if (type.name == "f64") {
-                    return DecodeFloat64(type, buffer);
-                }
-            }
-            else if (type.type == "unsigned") {
+            if (type.type == "unsigned") {
                 return DecodeUnsigned(type, buffer);
             }
             else if (type.type == "signed") {
                 return DecodeSigned(type, buffer);
+            }
+            else if (type.type == "float") {
+                return DecodeFloat32(type, buffer);
+            }
+            else if (type.type == "double") {
+                return DecodeFloat64(type, buffer);
             }
             else if (type.type == "str") {
                 return DecodeString(type, buffer);
@@ -498,19 +496,17 @@ class DynamicSchema : public ISchema {
         }
 
         std::optional<std::vector<std::uint8_t>> _Encode(Type type, json j) const {
-            if (type.type == "Builtin") {
-                if (type.name == "f32") {
-                    return EncodeFloat(type, j);
-                }
-                else if (type.name == "f64") {
-                    return EncodeDouble(type, j);
-                }
-            }
-            else if (type.type == "unsigned") {
+            if (type.type == "unsigned") {
                 return EncodeUnsigned(type, j);
             }
             else if (type.type == "signed") {
                 return EncodeSigned(type, j);
+            }
+            else if (type.type == "float") {
+                return EncodeFloat(type, j);
+            }
+            else if (type.type == "double") {
+                return EncodeDouble(type, j);
             }
             else if (type.type == "str") {
                 return EncodeString(type, j);

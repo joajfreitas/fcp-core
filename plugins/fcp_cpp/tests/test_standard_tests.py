@@ -33,7 +33,6 @@ from fcp_cpp import Generator
 from fcp.v2_parser import get_fcp
 from fcp.specs.type import (
     Type,
-    BuiltinType,
     ArrayType,
     DynamicArrayType,
     OptionalType,
@@ -41,6 +40,8 @@ from fcp.specs.type import (
     StringType,
     UnsignedType,
     SignedType,
+    FloatType,
+    DoubleType,
 )
 from fcp.xpath import Xpath
 
@@ -72,9 +73,7 @@ def handle_result(result: Dict[str, str]) -> List[Source]:
 
 def to_constant(fcp: FcpV2, type: Type, value: Any) -> str:
     """Convert a value to a constant."""
-    if isinstance(type, BuiltinType):
-        return str(value)
-    elif isinstance(type, UnsignedType):
+    if isinstance(type, UnsignedType):
         if value[0].isdigit() or value[0] == "-":
             return str(value) + "ULL"
         else:
@@ -84,6 +83,10 @@ def to_constant(fcp: FcpV2, type: Type, value: Any) -> str:
             return str(value)
         else:
             return str(value) + "LL"
+    elif isinstance(type, FloatType):
+        return str(value)
+    elif isinstance(type, DoubleType):
+        return str(value)
     elif isinstance(type, StringType):
         return str('"' + value + '"')
     elif isinstance(type, EnumType):

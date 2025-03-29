@@ -48,11 +48,11 @@ class TypeVisitor:
         """Visit a signed type."""
         return None
 
-    def float(self, t: type.BuiltinType) -> Any:
+    def float(self, t: type.FloatType) -> Any:
         """Visit a float type."""
         return None
 
-    def double(self, t: type.BuiltinType) -> Any:
+    def double(self, t: type.DoubleType) -> Any:
         """Visit a double type."""
         return None
 
@@ -81,15 +81,14 @@ class TypeVisitor:
             return self.struct(t, fields)
         elif isinstance(t, type.EnumType):
             return self.enum(t)
-        elif isinstance(t, type.BuiltinType):
-            if t.is_float():
-                return self.float(t)
-            elif t.is_double():
-                return self.double(t)
         elif isinstance(t, type.UnsignedType):
             return self.unsigned(t)
         elif isinstance(t, type.SignedType):
             return self.signed(t)
+        elif isinstance(t, type.FloatType):
+            return self.float(t)
+        elif isinstance(t, type.DoubleType):
+            return self.double(t)
         elif isinstance(t, type.StringType):
             return self.string(t)
         elif isinstance(t, type.ArrayType):

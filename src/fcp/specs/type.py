@@ -135,6 +135,30 @@ class SignedType(NumericType):
 
 
 @serde(type_check=strict)
+class FloatType(NumericType):
+    """Type of float fields."""
+
+    name: str
+    type: str
+
+    def __init__(self) -> None:
+        self.name = "f32"
+        self.type = "float"
+
+
+@serde(type_check=strict)
+class DoubleType(NumericType):
+    """Type of float fields."""
+
+    name: str
+    type: str
+
+    def __init__(self) -> None:
+        self.name = "f64"
+        self.type = "double"
+
+
+@serde(type_check=strict)
 class StringType(Type):
     """Type of string fields."""
 
