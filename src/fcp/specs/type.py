@@ -23,9 +23,7 @@
 from __future__ import annotations
 
 from serde import serde, strict
-from beartype.typing import Union, Dict, List, Any
-from typing_extensions import Self, TypeAlias
-from enum import Enum
+from beartype.typing import Dict, List, Any
 
 
 @serde(type_check=strict)
@@ -79,24 +77,27 @@ class BuiltinType(Type):
         ]
 
 
-@serde(type_check=strict)
-class UnsignedType(Type):
-    """Type of unsigned fields."""
+class NumericType(Type):
+    """Numeric type."""
 
     name: str
     type: str
 
-    def __init__(self, name: str):
-        self.name = name
-        self.type = "unsigned"
+    def is_signed(self) -> bool:
+        """Check that type is signed."""
+        return self.name[0] == "i"
+
+    def is_float(self) -> bool:
+        """Check that type is a float."""
+        return self.name[0] == "f" and self.get_length() == 32
+
+    def is_double(self) -> bool:
+        """Check that type is a double."""
+        return self.name[0] == "f" and self.get_length() == 64
 
     def get_length(self) -> int:
         """Type length in bits."""
         return int(self.name[1:])
-
-    def is_signed(self) -> bool:
-        """Check that type is signed."""
-        return False
 
     def reflection(self) -> List[Dict[str, str]]:
         """Reflection."""
@@ -107,6 +108,18 @@ class UnsignedType(Type):
                 "size": 1,
             }
         ]
+
+
+@serde(type_check=strict)
+class UnsignedType(NumericType):
+    """Type of unsigned fields."""
+
+    name: str
+    type: str
+
+    def __init__(self, name: str):
+        self.name = name
+        self.type = "unsigned"
 
 
 @serde(type_check=strict)
