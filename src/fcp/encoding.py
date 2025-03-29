@@ -46,7 +46,15 @@ from copy import copy
 from .specs.struct import Struct
 from .specs.enum import Enum
 from .specs.struct_field import StructField
-from .specs.type import Type, BuiltinType, ArrayType, StructType, EnumType, UnsignedType
+from .specs.type import (
+    Type,
+    BuiltinType,
+    ArrayType,
+    StructType,
+    EnumType,
+    UnsignedType,
+    SignedType,
+)
 from .specs.v2 import FcpV2
 from .specs.impl import Impl
 from .maybe import Some, Nothing
@@ -124,7 +132,7 @@ class PackedEncoder:
     def _get_type_length(self, fcp: FcpV2, type: Type) -> int:
         if isinstance(type, BuiltinType):
             return type.get_length()
-        elif isinstance(type, UnsignedType):
+        elif isinstance(type, UnsignedType) or isinstance(type, SignedType):
             return type.get_length()
         elif isinstance(type, ArrayType):
             return int(type.size * self._get_type_length(fcp, type.underlying_type))
