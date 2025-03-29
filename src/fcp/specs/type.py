@@ -54,8 +54,6 @@ class BuiltinType(Type):
 
     def get_length(self) -> int:
         """Type length in bits."""
-        if self.is_str():
-            raise ValueError("No length for dynamic strings")
         return int(self.name[1:])
 
     def is_signed(self) -> bool:
@@ -74,16 +72,33 @@ class BuiltinType(Type):
         """Check that type is a double."""
         return self.name[0] == "f" and int(self.name[1:]) == 64
 
-    def is_str(self) -> bool:
-        """Check that type is a string."""
-        return self.name == "str"
-
     def reflection(self) -> List[Dict[str, str]]:
         """Reflection."""
         return [
             {
                 "name": self.name,
                 "type": self.type,
+                "size": 1,
+            }
+        ]
+
+
+@serde(type_check=strict)
+class StringType(Type):
+    """Type of string fields."""
+
+    type: str
+
+    def __init__(self) -> None:
+        self.type = "str"
+        pass
+
+    def reflection(self) -> List[Dict[str, str]]:
+        """Reflection."""
+        return [
+            {
+                "name": "str",
+                "type": "str",
                 "size": 1,
             }
         ]
