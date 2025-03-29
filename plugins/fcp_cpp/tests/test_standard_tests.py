@@ -24,10 +24,6 @@ import os
 import json
 import jinja2
 from pathlib import Path
-import tempfile
-import shutil
-import subprocess
-import functools
 import pytest
 from beartype.typing import List, Dict, Any
 
@@ -37,12 +33,15 @@ from fcp_cpp import Generator
 from fcp.v2_parser import get_fcp
 from fcp.specs.type import (
     Type,
-    BuiltinType,
-    ComposedType,
-    ComposedTypeCategory,
     ArrayType,
     DynamicArrayType,
     OptionalType,
+    EnumType,
+    StringType,
+    UnsignedType,
+    SignedType,
+    FloatType,
+    DoubleType,
 )
 from fcp.xpath import Xpath
 
@@ -74,22 +73,23 @@ def handle_result(result: Dict[str, str]) -> List[Source]:
 
 def to_constant(fcp: FcpV2, type: Type, value: Any) -> str:
     """Convert a value to a constant."""
-    if isinstance(type, BuiltinType):
-        if type.is_signed():
-            if not value[0].isdigit():
-                return str(value)
-            else:
-                return str(value) + "LL"
-        elif type.is_unsigned():
-            if value[0].isdigit() or value[0] == "-":
-                return str(value) + "ULL"
-            else:
-                return str(value)
-        elif type.is_str():
-            return str('"' + value + '"')
+    if isinstance(type, UnsignedType):
+        if value[0].isdigit() or value[0] == "-":
+            return str(value) + "ULL"
         else:
             return str(value)
-    elif isinstance(type, ComposedType) and type.type == ComposedTypeCategory.Enum:
+    elif isinstance(type, SignedType):
+        if not value[0].isdigit():
+            return str(value)
+        else:
+            return str(value) + "LL"
+    elif isinstance(type, FloatType):
+        return str(value)
+    elif isinstance(type, DoubleType):
+        return str(value)
+    elif isinstance(type, StringType):
+        return str('"' + value + '"')
+    elif isinstance(type, EnumType):
         return str("fcp::" + type.name + "::" + value)
     elif isinstance(type, ArrayType) or isinstance(type, DynamicArrayType):
         return str(

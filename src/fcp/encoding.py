@@ -46,7 +46,16 @@ from copy import copy
 from .specs.struct import Struct
 from .specs.enum import Enum
 from .specs.struct_field import StructField
-from .specs.type import Type, ComposedTypeCategory, ComposedType, BuiltinType, ArrayType
+from .specs.type import (
+    Type,
+    ArrayType,
+    StructType,
+    EnumType,
+    UnsignedType,
+    SignedType,
+    FloatType,
+    DoubleType,
+)
 from .specs.v2 import FcpV2
 from .specs.impl import Impl
 from .maybe import Some, Nothing
@@ -122,16 +131,21 @@ class PackedEncoder:
         self.bitstart = 0
 
     def _get_type_length(self, fcp: FcpV2, type: Type) -> int:
-        if isinstance(type, BuiltinType):
+        if (
+            isinstance(type, UnsignedType)
+            or isinstance(type, SignedType)
+            or isinstance(type, FloatType)
+            or isinstance(type, DoubleType)
+        ):
             return type.get_length()
         elif isinstance(type, ArrayType):
             return int(type.size * self._get_type_length(fcp, type.underlying_type))
-        elif isinstance(type, ComposedType) and type.type == ComposedTypeCategory.Enum:
+        elif isinstance(type, EnumType):
             return int(
                 2 ** ceil(log2(fcp.get_enum(type.name).unwrap().get_packed_size()))
             )
         else:
-            raise ValueError("Error computing type length")
+            raise ValueError("Error computing type length for type " + str(type))
 
     def _generate_struct(
         self, struct: Struct, extension: Impl, prefix: str = ""
@@ -148,7 +162,7 @@ class PackedEncoder:
             .unwrap_or({})
         )
 
-        if isinstance(field.type, ComposedType):
+        if isinstance(field.type, StructType):
             self._generate(
                 field.type,
                 extension,
@@ -176,7 +190,7 @@ class PackedEncoder:
         self.bitstart += type_length
 
     def _generate_enum(
-        self, type: ComposedType, enum: Enum, extension: Impl, prefix: str
+        self, type: EnumType, enum: Enum, extension: Impl, prefix: str
     ) -> NoReturn:
         type_length = ceil(
             log2(max([enumeration.value for enumeration in enum.enumeration]) + 1)
@@ -197,7 +211,7 @@ class PackedEncoder:
         self.bitstart += type_length
 
     def _generate_compound_type(
-        self, type: ComposedType, extension: Impl, prefix: str = ""
+        self, type: Union[StructType, EnumType], extension: Impl, prefix: str = ""
     ) -> NoReturn:
         concrete_type = self.fcp.get_type(type).unwrap()
         if isinstance(concrete_type, Struct):
@@ -205,7 +219,7 @@ class PackedEncoder:
         elif isinstance(concrete_type, StructField):
             self._generate_signal(concrete_type, extension, prefix)
         elif isinstance(concrete_type, Enum):
-            self._generate_enum(type, concrete_type, extension, prefix)
+            self._generate_enum(type, concrete_type, extension, prefix)  # type: ignore
         else:
             raise KeyError(f"Invalid type {type}")
 
@@ -220,10 +234,10 @@ class PackedEncoder:
             self._generate_signal(derived_field, extension, prefix)
 
     def _generate(self, type: Type, extension: Impl, prefix: str = "") -> NoReturn:
-        if isinstance(type, ComposedType):
+        if isinstance(type, StructType) or isinstance(type, EnumType):
             self._generate_compound_type(type, extension, prefix)
         else:
-            raise ValueError("Expected ComposeType")
+            raise ValueError("Expected StructType or EnumType")
 
     def generate(self, impl: Impl) -> List[EncodeablePiece]:
         """Generate encoding instructions."""
@@ -231,7 +245,7 @@ class PackedEncoder:
         self.bitstart = 0
 
         self._generate(
-            ComposedType(impl.type, ComposedTypeCategory.Struct),  # type: ignore
+            StructType(impl.type),  # type: ignore
             impl,
         )
         return self.encoding

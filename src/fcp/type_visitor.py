@@ -32,31 +32,31 @@ class TypeVisitor:
     def __init__(self, fcp: FcpV2) -> None:
         self.fcp = fcp
 
-    def struct(self, t: type.ComposedType, fields: List[Any]) -> Any:
+    def struct(self, t: type.StructType, fields: List[Any]) -> Any:
         """Visit a struct type."""
         return None
 
-    def enum(self, t: type.ComposedType) -> Any:
+    def enum(self, t: type.EnumType) -> Any:
         """Visit an enum type."""
         return None
 
-    def unsigned(self, t: type.BuiltinType) -> Any:
+    def unsigned(self, t: type.UnsignedType) -> Any:
         """Visit an unsigned type."""
         return None
 
-    def signed(self, t: type.BuiltinType) -> Any:
+    def signed(self, t: type.SignedType) -> Any:
         """Visit a signed type."""
         return None
 
-    def float(self, t: type.BuiltinType) -> Any:
+    def float(self, t: type.FloatType) -> Any:
         """Visit a float type."""
         return None
 
-    def double(self, t: type.BuiltinType) -> Any:
+    def double(self, t: type.DoubleType) -> Any:
         """Visit a double type."""
         return None
 
-    def string(self, t: type.BuiltinType) -> Any:
+    def string(self, t: type.StringType) -> Any:
         """Visit a string type."""
         return None
 
@@ -74,30 +74,23 @@ class TypeVisitor:
 
     def visit(self, t: type.Type) -> Any:
         """Visits the hierarchy of an fcp type."""
-        if (
-            isinstance(t, type.ComposedType)
-            and t.type == type.ComposedTypeCategory.Struct
-        ):
+        if isinstance(t, type.StructType):
             fields = [
                 self.visit(field.type) for field in self.fcp.get_type(t).unwrap().fields
             ]
             return self.struct(t, fields)
-        elif (
-            isinstance(t, type.ComposedType)
-            and t.type == type.ComposedTypeCategory.Enum
-        ):
+        elif isinstance(t, type.EnumType):
             return self.enum(t)
-        elif isinstance(t, type.BuiltinType):
-            if t.is_unsigned():
-                return self.unsigned(t)
-            elif t.is_signed():
-                return self.signed(t)
-            elif t.is_float():
-                return self.float(t)
-            elif t.is_double():
-                return self.double(t)
-            elif t.is_str():
-                return self.string(t)
+        elif isinstance(t, type.UnsignedType):
+            return self.unsigned(t)
+        elif isinstance(t, type.SignedType):
+            return self.signed(t)
+        elif isinstance(t, type.FloatType):
+            return self.float(t)
+        elif isinstance(t, type.DoubleType):
+            return self.double(t)
+        elif isinstance(t, type.StringType):
+            return self.string(t)
         elif isinstance(t, type.ArrayType):
             return self.array(t, self.visit(t.underlying_type))
         elif isinstance(t, type.DynamicArrayType):

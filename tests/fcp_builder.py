@@ -25,14 +25,14 @@ from typing_extensions import Self
 from fcp.specs.v2 import FcpV2
 from fcp.specs.struct import Struct
 from fcp.specs.struct_field import StructField
-from fcp.specs.type import BuiltinType, Type
+from fcp.specs.type import Type, UnsignedType
 
 
 class StructFieldBuilder:
     """Builder for StructField."""
 
     def __init__(self) -> None:
-        self.struct_field = StructField("", 0, BuiltinType("u8"))
+        self.struct_field = StructField("", 0, UnsignedType("u8"))
 
     def with_name(self, name: str) -> Self:
         """Set the name of the field."""

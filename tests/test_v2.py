@@ -26,7 +26,7 @@ import pytest
 
 from fcp.xpath import Xpath
 from fcp.specs.v2 import FcpV2
-from fcp.specs.type import ComposedType, BuiltinType, ComposedTypeCategory
+from fcp.specs.type import StructType, UnsignedType
 
 from .fcp_builder import FcpV2Builder, StructBuilder, StructFieldBuilder
 
@@ -93,15 +93,12 @@ def fcp_sample() -> FcpV2:
             StructBuilder()
             .with_name("S1")
             .with_field(
-                StructFieldBuilder()
-                .with_name("s1")
-                .with_type(ComposedType("S2", ComposedTypeCategory.Struct))
-                .build()
+                StructFieldBuilder().with_name("s1").with_type(StructType("S2")).build()
             )
             .with_field(
                 StructFieldBuilder()
                 .with_name("s2")
-                .with_type(BuiltinType("u8"))
+                .with_type(UnsignedType("u8"))
                 .build()
             )
             .build()
@@ -112,7 +109,7 @@ def fcp_sample() -> FcpV2:
             .with_field(
                 StructFieldBuilder()
                 .with_name("s1")
-                .with_type(BuiltinType("u8"))
+                .with_type(UnsignedType("u8"))
                 .build()
             )
             .build()
@@ -126,7 +123,7 @@ def test_xpath(fcp_sample: FcpV2) -> None:
 
     assert r.is_ok()
     assert r.unwrap().name == "s1"
-    assert r.unwrap().type == BuiltinType("u8")
+    assert r.unwrap().type == UnsignedType("u8")
 
 
 def test_shallow_xpath(fcp_sample: FcpV2) -> None:
@@ -134,7 +131,7 @@ def test_shallow_xpath(fcp_sample: FcpV2) -> None:
 
     assert r.is_ok()
     assert r.unwrap().name == "s2"
-    assert r.unwrap().type == BuiltinType("u8")
+    assert r.unwrap().type == UnsignedType("u8")
 
 
 def test_wrong_xpath(fcp_sample: FcpV2) -> None:

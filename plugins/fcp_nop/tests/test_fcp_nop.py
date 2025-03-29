@@ -69,13 +69,13 @@ struct SensorInformation {
                     {
                         "name": "temperature",
                         "field_id": 0,
-                        "type": {"name": "u32", "type": "Builtin"},
+                        "type": {"name": "u32", "type": "unsigned"},
                         "unit": "C",
                     },
                     {
                         "name": "timestamp",
                         "field_id": 1,
-                        "type": {"name": "u32", "type": "Builtin"},
+                        "type": {"name": "u32", "type": "unsigned"},
                         "unit": "s",
                     },
                 ],

@@ -23,9 +23,7 @@
 from __future__ import annotations
 
 from serde import serde, strict
-from beartype.typing import Union, Dict, List, Any
-from typing_extensions import Self, TypeAlias
-from enum import Enum
+from beartype.typing import Dict, List, Any
 
 
 @serde(type_check=strict)
@@ -41,42 +39,27 @@ class Type:
         raise ValueError("Don't use Type directly")
 
 
-@serde(type_check=strict)
-class BuiltinType(Type):
-    """fcp builtin types."""
+class NumericType(Type):
+    """Numeric type."""
 
     name: str
     type: str
-
-    def __init__(self, name: str):
-        self.name = name
-        self.type = "Builtin"
-
-    def get_length(self) -> int:
-        """Type length in bits."""
-        if self.is_str():
-            raise ValueError("No length for dynamic strings")
-        return int(self.name[1:])
 
     def is_signed(self) -> bool:
         """Check that type is signed."""
         return self.name[0] == "i"
 
-    def is_unsigned(self) -> bool:
-        """Check that type is unsigned."""
-        return self.name[0] == "u"
-
     def is_float(self) -> bool:
         """Check that type is a float."""
-        return self.name[0] == "f" and int(self.name[1:]) == 32
+        return self.name[0] == "f" and self.get_length() == 32
 
     def is_double(self) -> bool:
         """Check that type is a double."""
-        return self.name[0] == "f" and int(self.name[1:]) == 64
+        return self.name[0] == "f" and self.get_length() == 64
 
-    def is_str(self) -> bool:
-        """Check that type is a string."""
-        return self.name == "str"
+    def get_length(self) -> int:
+        """Type length in bits."""
+        return int(self.name[1:])
 
     def reflection(self) -> List[Dict[str, str]]:
         """Reflection."""
@@ -89,37 +72,117 @@ class BuiltinType(Type):
         ]
 
 
-class ComposedTypeCategory(Enum):
-    """Category of composed types."""
+@serde(type_check=strict)
+class UnsignedType(NumericType):
+    """Type of unsigned fields."""
 
-    Enum = "Enum"
-    Struct = "Struct"
+    name: str
+    type: str
+
+    def __init__(self, name: str):
+        self.name = name
+        self.type = "unsigned"
 
 
 @serde(type_check=strict)
-class ComposedType(Type):
-    """fcp type for user defined types such as structs and enums."""
+class SignedType(NumericType):
+    """Type of signed fields."""
 
     name: str
-    type: ComposedTypeCategory
+    type: str
 
-    def __init__(self, name: str, type: ComposedTypeCategory):
+    def __init__(self, name: str):
         self.name = name
-        self.type = type
+        self.type = "signed"
 
-    def is_signed(self) -> bool:
-        """Check that type is signed."""
-        if self.type == ComposedTypeCategory.Enum:
-            return False
-        else:
-            raise ValueError("Signess of struct is meaningless")
+
+@serde(type_check=strict)
+class FloatType(NumericType):
+    """Type of float fields."""
+
+    name: str
+    type: str
+
+    def __init__(self) -> None:
+        self.name = "f32"
+        self.type = "float"
+
+
+@serde(type_check=strict)
+class DoubleType(NumericType):
+    """Type of float fields."""
+
+    name: str
+    type: str
+
+    def __init__(self) -> None:
+        self.name = "f64"
+        self.type = "double"
+
+
+@serde(type_check=strict)
+class StringType(Type):
+    """Type of string fields."""
+
+    type: str
+
+    def __init__(self) -> None:
+        self.type = "str"
 
     def reflection(self) -> List[Dict[str, str]]:
         """Reflection."""
         return [
             {
+                "name": "str",
+                "type": "str",
+                "size": 1,
+            }
+        ]
+
+
+@serde(type_check=strict)
+class EnumType(Type):
+    """Type of enum fields."""
+
+    name: str
+    type: str
+
+    def __init__(self, name: str):
+        self.name = name
+        self.type = "Enum"
+
+    def is_signed(self) -> bool:
+        """Signess of enum types."""
+        return False
+
+    def reflection(self) -> List[Dict[str, Any]]:
+        """Reflection."""
+        return [
+            {
                 "name": self.name,
-                "type": str(self.type).split(".")[1],
+                "type": "Enum",
+                "size": 1,
+            }
+        ]
+
+
+@serde(type_check=strict)
+class StructType(Type):
+    """Type of struct fields."""
+
+    name: str
+    type: str
+
+    def __init__(self, name: str):
+        self.name = name
+        self.type = "Struct"
+
+    def reflection(self) -> List[Dict[str, Any]]:
+        """Reflection."""
+        return [
+            {
+                "name": self.name,
+                "type": "Struct",
                 "size": 1,
             }
         ]

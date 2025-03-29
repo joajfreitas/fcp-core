@@ -32,31 +32,31 @@ from .fcp_builder import FcpV2Builder, StructBuilder, StructFieldBuilder
 class TestTypeVisitor(TypeVisitor):
     """Test type visitor."""
 
-    def struct(self, t: type.ComposedType, fields: List[type.Type]) -> str:
+    def struct(self, t: type.StructType, fields: List[type.Type]) -> str:
         """Visit a struct type."""
         return "struct: " + " ".join(fields)
 
-    def enum(self, t: type.ComposedType) -> str:
+    def enum(self, t: type.EnumType) -> str:
         """Visit an enum type."""
         return "enum"
 
-    def unsigned(self, t: type.BuiltinType) -> str:
+    def unsigned(self, t: type.UnsignedType) -> str:
         """Visit an unsigned type."""
         return "unsigned"
 
-    def signed(self, t: type.BuiltinType) -> str:
+    def signed(self, t: type.SignedType) -> str:
         """Visit a signed type."""
         return "signed"
 
-    def float(self, t: type.BuiltinType) -> str:
+    def float(self, t: type.FloatType) -> str:
         """Visit a float type."""
         return "float"
 
-    def double(self, t: type.BuiltinType) -> str:
+    def double(self, t: type.DoubleType) -> str:
         """Visit a double type."""
         return "double"
 
-    def string(self, t: type.BuiltinType) -> str:
+    def string(self, t: type.StringType) -> str:
         """Visit a string type."""
         return "string"
 
@@ -87,7 +87,4 @@ struct S1 {
 
     test_visitor = TestTypeVisitor(fcp)
 
-    assert (
-        test_visitor.visit(type.ComposedType("S1", type.ComposedTypeCategory.Struct))
-        == "struct: unsigned signed"
-    )
+    assert test_visitor.visit(type.StructType("S1")) == "struct: unsigned signed"

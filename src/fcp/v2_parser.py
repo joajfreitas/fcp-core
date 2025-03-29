@@ -38,12 +38,16 @@ from .specs import service
 from .specs import method
 from .specs import device
 from .specs.type import (
-    BuiltinType,
     ArrayType,
-    ComposedTypeCategory,
-    ComposedType,
+    StructType,
+    EnumType,
     DynamicArrayType,
     OptionalType,
+    StringType,
+    UnsignedType,
+    SignedType,
+    FloatType,
+    DoubleType,
     Type,
 )
 from .specs import v2
@@ -61,8 +65,12 @@ fcp_parser = Lark(
 
     struct: "struct" identifier "{" struct_field+ "}"
     struct_field: identifier "@" number ":" type param* ","
-    type: (base_type | array_type | composed_type | dynamic_array_type | optional_type) "|"?
-    base_type: /u\d\d|u\d|i\d\d|i\d|f32|f64|str/
+    type: (unsigned_type | signed_type | float_type | double_type | str_type | array_type | composed_type | dynamic_array_type | optional_type) "|"?
+    str_type: "str"
+    unsigned_type: /u\d\d|u\d/
+    signed_type: /i\d\d|i\d/
+    float_type: "f32"
+    double_type: "f64"
     array_type: "[" type "," number "]"
     dynamic_array_type: "[" type "]"
     composed_type: identifier
@@ -232,26 +240,40 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
         raise ValueError("Expected type")
 
-    def base_type(self, args: List[str]) -> BuiltinType:
-        """Parse a base_type node of the fcp AST."""
-        return BuiltinType(str(args[0]))  # type: ignore
+    def unsigned_type(self, args: List[str]) -> UnsignedType:
+        """Parse an unsigned type."""
+        return UnsignedType(str(args[0]))  # type: ignore
+
+    def signed_type(self, args: List[str]) -> SignedType:
+        """Parse a signed type."""
+        return SignedType(str(args[0]))  # type: ignore
+
+    def float_type(self, args: List[str]) -> FloatType:
+        """Parse a float type."""
+        return FloatType()  # type: ignore
+
+    def double_type(self, args: List[str]) -> DoubleType:
+        """Parse a double type."""
+        return DoubleType()  # type: ignore
+
+    def str_type(self, args: List[str]) -> StringType:
+        """Parse a str type."""
+        return StringType()
 
     def array_type(self, args: List[str]) -> ArrayType:
         """Parse an array_type node of the fcp AST."""
         return ArrayType(args[0], int(args[1]))  # type: ignore
 
-    def composed_type(self, args: List[str]) -> ComposedType:
+    def composed_type(self, args: List[str]) -> Union[StructType, EnumType]:
         """Parse a compound_type node of the fcp AST."""
         typename = args[0]
 
         if self.fcp.get_struct(typename).is_some():
-            type_category = ComposedTypeCategory.Struct
+            return StructType(typename)
         elif self.fcp.get_enum(typename).is_some():
-            type_category = ComposedTypeCategory.Enum
+            return EnumType(typename)
         else:
             raise ValueError(f"Type '{typename}' cannot be found.")
-
-        return ComposedType(typename, type_category)  # type: ignore
 
     def optional_type(self, args: List[str]) -> OptionalType:
         """Parse a option node of the fcp AST."""
