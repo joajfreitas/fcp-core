@@ -123,6 +123,18 @@ class UnsignedType(NumericType):
 
 
 @serde(type_check=strict)
+class SignedType(NumericType):
+    """Type of signed fields."""
+
+    name: str
+    type: str
+
+    def __init__(self, name: str):
+        self.name = name
+        self.type = "signed"
+
+
+@serde(type_check=strict)
 class StringType(Type):
     """Type of string fields."""
 

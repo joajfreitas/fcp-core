@@ -54,7 +54,7 @@
           "field_id": 1,
           "type": {
               "name": "i8",
-              "type": "Builtin"
+              "type": "signed"
           }
         },
         {
@@ -70,7 +70,7 @@
           "field_id": 3,
           "type": {
               "name": "i16",
-              "type": "Builtin"
+              "type": "signed"
           }
         },
         {
@@ -86,7 +86,7 @@
           "field_id": 5,
           "type": {
               "name": "i32",
-              "type": "Builtin"
+              "type": "signed"
           }
         },
         {
@@ -102,7 +102,7 @@
           "field_id": 7,
           "type": {
               "name": "i64",
-              "type": "Builtin"
+              "type": "signed"
           }
         },
         {
@@ -134,14 +134,14 @@
         "name": "S2",
         "fields": [
             {"name": "s0", "field_id": 0, "type": {"name": "u8", "type": "unsigned"}},
-            {"name": "s1", "field_id": 1, "type": {"name": "i8", "type": "Builtin"}}
+            {"name": "s1", "field_id": 1, "type": {"name": "i8", "type": "signed"}}
         ]
     },
     {
         "name": "S3",
         "fields": [
             {"name": "s0", "field_id": 0, "type": {"name": "u64", "type": "unsigned"}},
-            {"name": "s1", "field_id": 1, "type": {"name": "i64", "type": "Builtin"}}
+            {"name": "s1", "field_id": 1, "type": {"name": "i64", "type": "signed"}}
         ]
     },
     {

@@ -35,6 +35,7 @@ from .specs.type import (
     OptionalType,
     StringType,
     UnsignedType,
+    SignedType,
 )
 
 from .encoding import make_encoder, EncoderContext
@@ -94,7 +95,7 @@ def _encode_builtin_unsigned(buffer: _Buffer, type: UnsignedType, data: Any) -> 
     buffer.push_word(data, length)
 
 
-def _encode_builtin_signed(buffer: _Buffer, type: BuiltinType, data: Any) -> None:
+def _encode_builtin_signed(buffer: _Buffer, type: SignedType, data: Any) -> None:
     length = type.get_length()
     buffer.push_word(data, length)
 
@@ -153,9 +154,7 @@ def _encode(
 ) -> None:
 
     if isinstance(type, BuiltinType):
-        if type.is_signed():
-            _encode_builtin_signed(buffer, type, data)
-        elif type.is_float():
+        if type.is_float():
             _encode_builtin_float(buffer, type, data)
         elif type.is_double():
             _encode_builtin_double(buffer, type, data)
@@ -163,6 +162,8 @@ def _encode(
             raise ValueError(f"Unexpected field type {type}")
     elif isinstance(type, UnsignedType):
         _encode_builtin_unsigned(buffer, type, data)
+    elif isinstance(type, SignedType):
+        _encode_builtin_signed(buffer, type, data)
     elif isinstance(type, StringType):
         _encode_str(buffer, fcp, type, data)
     elif isinstance(type, StructType):
@@ -189,7 +190,7 @@ def _decode_builtin_unsigned(buffer: _Buffer, type: UnsignedType) -> int:
     return buffer.read_word(length)
 
 
-def _decode_builtin_signed(buffer: _Buffer, type: BuiltinType) -> int:
+def _decode_builtin_signed(buffer: _Buffer, type: SignedType) -> int:
     length = type.get_length()
     word = buffer.read_word(length)
 
@@ -252,16 +253,16 @@ def _decode_struct(buffer: _Buffer, fcp: FcpV2, name: str) -> Dict[str, Any]:
 
 def _decode(buffer: _Buffer, fcp: FcpV2, type: Type) -> Dict[str, Any]:
     if isinstance(type, BuiltinType):
-        if type.is_signed():
-            return _decode_builtin_signed(buffer, type)
-        elif type.is_float():
+        if type.is_float():
             return _decode_builtin_float(buffer)
         elif type.is_double():
             return _decode_builtin_double(buffer)
         else:
             raise ValueError(f"Unexpected field type {type}")
-    if isinstance(type, UnsignedType):
+    elif isinstance(type, UnsignedType):
         return _decode_builtin_unsigned(buffer, type)
+    elif isinstance(type, SignedType):
+        return _decode_builtin_signed(buffer, type)
     elif isinstance(type, StringType):
         return _decode_str(buffer, type)
     elif isinstance(type, StructType):
