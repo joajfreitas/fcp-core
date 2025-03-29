@@ -246,16 +246,16 @@ class FcpV2Transformer(Transformer):  # type: ignore
         """Parse an unsigned type."""
         return UnsignedType(str(args[0]))  # type: ignore
 
-    def signed_type(self, args: List[str]) -> UnsignedType:
-        """Parse an signed type."""
+    def signed_type(self, args: List[str]) -> SignedType:
+        """Parse a signed type."""
         return SignedType(str(args[0]))  # type: ignore
 
     def float_type(self, args: List[str]) -> FloatType:
-        """Parse an signed type."""
+        """Parse a float type."""
         return FloatType()  # type: ignore
 
-    def double_type(self, args: List[str]) -> FloatType:
-        """Parse an signed type."""
+    def double_type(self, args: List[str]) -> DoubleType:
+        """Parse a double type."""
         return DoubleType()  # type: ignore
 
     def str_type(self, args: List[str]) -> StringType:
