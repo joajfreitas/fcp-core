@@ -33,7 +33,7 @@ from .struct import Struct
 from .impl import Impl
 from .service import Service
 from .device import Device
-from .type import Type, BuiltinType, StructType, EnumType
+from .type import Type, StructType, EnumType
 
 
 def _flatten(xss: List[List[Any]]) -> List[Any]:
@@ -64,9 +64,6 @@ class FcpV2:
                 isinstance(type, StructType) or isinstance(type, EnumType)
             ) and type.name == type_.name:
                 return Some(type_)
-
-        if isinstance(type, BuiltinType):
-            return Some(type)
 
         return Nothing()
 

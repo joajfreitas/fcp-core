@@ -48,7 +48,6 @@ from .specs.enum import Enum
 from .specs.struct_field import StructField
 from .specs.type import (
     Type,
-    BuiltinType,
     ArrayType,
     StructType,
     EnumType,
@@ -132,9 +131,7 @@ class PackedEncoder:
         self.bitstart = 0
 
     def _get_type_length(self, fcp: FcpV2, type: Type) -> int:
-        if isinstance(type, BuiltinType):
-            return type.get_length()
-        elif (
+        if (
             isinstance(type, UnsignedType)
             or isinstance(type, SignedType)
             or isinstance(type, FloatType)

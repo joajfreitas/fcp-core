@@ -40,23 +40,23 @@ class TestTypeVisitor(TypeVisitor):
         """Visit an enum type."""
         return "enum"
 
-    def unsigned(self, t: type.BuiltinType) -> str:
+    def unsigned(self, t: type.UnsignedType) -> str:
         """Visit an unsigned type."""
         return "unsigned"
 
-    def signed(self, t: type.BuiltinType) -> str:
+    def signed(self, t: type.SignedType) -> str:
         """Visit a signed type."""
         return "signed"
 
-    def float(self, t: type.BuiltinType) -> str:
+    def float(self, t: type.FloatType) -> str:
         """Visit a float type."""
         return "float"
 
-    def double(self, t: type.BuiltinType) -> str:
+    def double(self, t: type.DoubleType) -> str:
         """Visit a double type."""
         return "double"
 
-    def string(self, t: type.BuiltinType) -> str:
+    def string(self, t: type.StringType) -> str:
         """Visit a string type."""
         return "string"
 

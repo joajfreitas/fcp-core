@@ -29,7 +29,7 @@ from fcp.specs.struct import Struct
 from fcp.specs.impl import Impl
 from fcp.specs.struct_field import StructField
 from fcp.specs.metadata import MetaData
-from fcp.specs.type import BuiltinType, StructType
+from fcp.specs.type import StructType, UnsignedType
 from fcp.specs.v2 import FcpV2
 
 
@@ -53,12 +53,12 @@ def example_struct() -> Struct:
             StructField(
                 name="s1",
                 field_id=0,
-                type=BuiltinType("u32"),
+                type=UnsignedType("u32"),
             ),
             StructField(
                 name="s2",
                 field_id=1,
-                type=BuiltinType("u16"),
+                type=UnsignedType("u16"),
             ),
         ],
     )
@@ -81,8 +81,8 @@ def test_packed_encoding(example_struct: Struct) -> NoReturn:
 
     packed_encoding = PackedEncoder(fcp, PackedEncoderContext())
     assert packed_encoding.generate(example_extension) == [
-        Value("s1", BuiltinType("u32"), bitstart=0, bitlength=32),
-        Value("s2", BuiltinType("u16"), bitstart=32, bitlength=16),
+        Value("s1", UnsignedType("u32"), bitstart=0, bitlength=32),
+        Value("s2", UnsignedType("u16"), bitstart=32, bitlength=16),
     ]
 
 
@@ -95,7 +95,7 @@ def test_struct(example_struct: Struct) -> NoReturn:
                 field_id=0,
                 type=StructType("A"),
             ),
-            StructField(name="s2", field_id=1, type=BuiltinType("u8")),
+            StructField(name="s2", field_id=1, type=UnsignedType("u8")),
         ],
     )
     example_extension = make_example_extension("B")
@@ -104,7 +104,7 @@ def test_struct(example_struct: Struct) -> NoReturn:
     packed_encoding = PackedEncoder(fcp, PackedEncoderContext)
 
     assert packed_encoding.generate(example_extension) == [
-        Value("s1::s1", BuiltinType("u32"), bitstart=0, bitlength=32),
-        Value("s1::s2", BuiltinType("u16"), bitstart=32, bitlength=16),
-        Value("s2", BuiltinType("u8"), bitstart=48, bitlength=8),
+        Value("s1::s1", UnsignedType("u32"), bitstart=0, bitlength=32),
+        Value("s1::s2", UnsignedType("u16"), bitstart=32, bitlength=16),
+        Value("s2", UnsignedType("u8"), bitstart=48, bitlength=8),
     ]
