@@ -60,27 +60,27 @@ class ToCpp(TypeVisitor):
         """Convert enum to cpp."""
         return str(t.name)
 
-    def unsigned(self, t: type.BuiltinType) -> str:
+    def unsigned(self, t: type.UnsignedType) -> str:
         """Convert unsigned to cpp."""
         size = t.get_length()
         cpp_size = _to_highest_power_of_two(size)
         return f"Unsigned<std::uint{cpp_size}_t, {size}>"
 
-    def signed(self, t: type.BuiltinType) -> str:
+    def signed(self, t: type.SignedType) -> str:
         """Convert signed to cpp."""
         size = t.get_length()
         cpp_size = _to_highest_power_of_two(size)
         return f"Signed<std::int{cpp_size}_t, {size}>"
 
-    def float(self, t: type.BuiltinType) -> str:
+    def float(self, t: type.FloatType) -> str:
         """Convert float to cpp."""
         return "Float"
 
-    def double(self, t: type.BuiltinType) -> str:
+    def double(self, t: type.DoubleType) -> str:
         """Convert double to cpp."""
         return "Double"
 
-    def string(self, t: type.BuiltinType) -> str:
+    def string(self, t: type.StringType) -> str:
         """Convert string to cpp."""
         return "String"
 
