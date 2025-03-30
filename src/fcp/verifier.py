@@ -30,6 +30,7 @@ from .specs.impl import Impl
 from .specs.struct_field import StructField
 from .specs.struct import Struct
 from .specs.enum import Enum
+from .specs.device import Device
 
 
 class Verifier:
@@ -47,6 +48,7 @@ class Verifier:
             "impl",
             "signal_block",
             "type",
+            "device",
             "uncategorized",
         ]
         self.checks: Dict[str, Callable] = {
@@ -64,6 +66,7 @@ class Verifier:
         * impl
         * signal_block
         * type
+        * device
 
         """
         if category is None:
@@ -78,6 +81,8 @@ class Verifier:
     def run_checks(self, category: str, fcp: FcpV2) -> Result[Nil, FcpError]:
         """Run check for a category."""
         for check in self.checks.get(category) or []:
+
+            
             for node in fcp.get(category).attempt():
                 check(fcp, fcp, node).attempt()
 
@@ -106,6 +111,7 @@ def register(verifier: Verifier, category: Optional[str] = None) -> Callable:
         * impl
         * signal_block
         * type
+        * device
 
     Each category correspondes to a fcp node type. Exception for 'type' which is an union of 'struct' and 'enum' categories.
 
@@ -190,4 +196,27 @@ def make_general_verifier() -> Verifier:
 
         return Ok(())
 
+    @register(general_verifier, "device")  # type: ignore
+    def check_device_contains_services(
+        self: Any, fcp: FcpV2, device: Device
+    ) -> Result[Nil, FcpError]:
+        fcp_services = [s.name for s in fcp.get("service").unwrap()]
+    
+
+        for device in fcp.get("device").unwrap():
+            device_services = device.fields.get("services")
+
+            # Skip check if current device doesn't have services
+            if device_services is None:
+                continue
+
+            # Check if all services referenced by device exist in fcp
+            for service in device_services:
+                if service not in fcp_services:
+                    breakpoint()
+                    return Err(FcpError(f"Service \"{service}\" referenced by device \"{device.name}\" doesn't exist", node=device))
+
+        return Ok(())
+
     return general_verifier
+
