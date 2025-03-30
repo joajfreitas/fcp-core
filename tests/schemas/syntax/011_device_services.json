@@ -1,0 +1,71 @@
+{
+    "devices": [
+        {
+            "fields": {
+                "services": ["Service"]
+            },
+            "name": "ecu"
+        }
+    ],
+    "impls": [
+        {
+            "fields": {},
+            "name": "A",
+            "protocol": "default",
+            "signals": [],
+            "type": "A"
+        },
+        {
+            "fields": {},
+            "name": "B",
+            "protocol": "default",
+            "signals": [],
+            "type": "B"
+        }
+    ],
+    "structs": [
+      {
+        "name": "A",
+        "fields": [
+          {
+            "name": "field1",
+            "field_id": 0,
+            "type": {
+              "name": "u8",
+              "type": "Builtin"
+            }
+          }
+        ]
+      },
+      {
+        "name": "B",
+        "fields": [
+          {
+            "name": "field1",
+            "field_id": 0,
+            "type": {
+                "name": "u16",
+                "type": "Builtin"
+            }
+          }
+        ]
+      }
+    ],
+    "enums": [],
+    "services": [
+        {
+            "id": 0,
+            "name": "Service",
+            "methods": [
+                {
+                    "id": 0,
+                    "name": "Foo",
+                    "input": "A",
+                    "output": "B"
+                }
+            ]
+        }
+    ],
+    "version": "3.0"
+  }
+  
