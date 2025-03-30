@@ -69,7 +69,7 @@ def get_result_txt(scope: str, name: str) -> str:
         "008_dynamic_array",
         "009_optional",
         "010_device",
-        "011_device_services"
+        "011_device_services",
     ],
 )  # type: ignore
 def test_parser(test_name: str) -> NoReturn:
