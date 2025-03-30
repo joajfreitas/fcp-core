@@ -1,0 +1,17 @@
+version: "3"
+
+struct A {
+    field1 @0: u8,
+}
+
+struct B {
+    field1 @0: u16,
+}
+
+service Service @0 {
+    method Foo(A) @0 returns B
+}
+
+device ecu {
+    services: [Service],
+}
