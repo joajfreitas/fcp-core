@@ -1,1 +1,2 @@
-Expected IDL version 3
+Expected IDL version 3 at v2_parser.py:223
+	-> Failed to parse 002_wrong_version.fcp at v2_parser.py:518

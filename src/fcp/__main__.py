@@ -69,8 +69,7 @@ def generate_cmd(
     )
 
     if result.is_err():
-        error_logger = ErrorLogger(sources)
-        print(error_logger.log_fcp_error(result.err()))
+        print(r.err().results_in("Failed to generate fcp"))
 
 
 @click.command()  # type: ignore

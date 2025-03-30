@@ -222,7 +222,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         if args[0] == "3":
             return Ok(())
         else:
-            return Err(FcpError("Expected IDL version 3\n"))
+            return Err(FcpError("Expected IDL version 3"))
 
     def dot(self, args: List[str]) -> str:
         """Parse an dot node of the fcp AST."""
@@ -238,13 +238,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
     def type(self, args: List[str]) -> Result[Type, FcpError]:
         """Parse a type node of the fcp AST."""
-
-        if args[0].is_err():
-            return Err(args[0].err().results_in("Error parsing type"))
-        if isinstance(args[0].unwrap(), Type):
-            return Ok(args[0].unwrap())
-
-        return Err(FcpError("Expected type"))
+        return args[0]  # type: ignore
 
     def unsigned_type(self, args: List[str]) -> Result[UnsignedType, FcpError]:
         """Parse an unsigned type."""
@@ -266,11 +260,21 @@ class FcpV2Transformer(Transformer):  # type: ignore
         """Parse a str type."""
         return Ok(StringType())
 
+    @catch
     def array_type(self, args: List[str]) -> Result[ArrayType, FcpError]:
         """Parse an array_type node of the fcp AST."""
-        return Ok(ArrayType(args[0], int(args[1])))  # type: ignore
+        return Ok(
+            ArrayType(
+                args[0]
+                .map_err(lambda err: err.results_in("Error parsing array type"))
+                .attempt(),
+                int(args[1]),
+            )
+        )
 
-    def composed_type(self, args: List[str]) -> Result[Union[StructType, EnumType], FcpError]:
+    def composed_type(
+        self, args: List[str]
+    ) -> Result[Union[StructType, EnumType], FcpError]:
         """Parse a compound_type node of the fcp AST."""
         typename = args[0]
 
@@ -343,24 +347,29 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
         return Ok(())
 
+    @catch
     @v_args(tree=True)  # type: ignore
-    def struct_field(self, tree: ParseTree) -> Result[struct_field.StructField, FcpError]:
+    def struct_field(
+        self, tree: ParseTree
+    ) -> Result[struct_field.StructField, FcpError]:
         """Parse a struct_field node of the fcp AST."""
         name, field_id, type, *values = tree.children
-        if (type.is_err()):
-            return Err(type.err().results_in("Error parsing struct field type"))
 
         params = {name: value for name, *value in values}  # type: ignore
         params = _convert_params(params)  # type: ignore
 
         meta = _get_meta(tree, self)  # type: ignore
-        return Ok(struct_field.StructField(
-            name=name,  # type: ignore
-            field_id=field_id,  # type: ignore
-            type=type.unwrap(),
-            meta=meta,
-            **params,
-        ))
+        return Ok(
+            struct_field.StructField(
+                name=name,  # type: ignore
+                field_id=field_id,  # type: ignore
+                type=type.map_err(
+                    lambda err: err.results_in("Error parsing type in struct field")
+                ).attempt(),
+                meta=meta,
+                **params,
+            )
+        )
 
     @v_args(tree=True)  # type: ignore
     def enum_field(self, tree: ParseTree) -> enum.Enumeration:
@@ -402,7 +411,9 @@ class FcpV2Transformer(Transformer):  # type: ignore
                 self.fcp.merge(fcp)
 
         except Exception as e:
-            return Err(FcpError(self.error_logger.error(f"Could not import {filename}")))
+            return Err(
+                FcpError(self.error_logger.error(f"Could not import {filename}"))
+            )
 
         return Ok(())
 
@@ -509,7 +520,9 @@ class FcpV2Transformer(Transformer):  # type: ignore
         """Parse the start node of the fcp AST."""
         for arg in args:
             if arg.is_err():
-                return Err(arg.err().results_in(f"Failed to parse {self.filename.name}"))
+                return Err(
+                    arg.err().results_in(f"Failed to parse {self.filename.name}")
+                )
         return Ok(self.fcp)
 
 
@@ -527,21 +540,19 @@ def get_fcp(
         try:
             fcp_ast = fcp_parser.parse(source)
         except UnexpectedCharacters as e:
-            return Err(FcpError(error_logger.log_lark_unexpected_characters(fcp_filename, e)))
+            return Err(
+                FcpError(error_logger.log_lark_unexpected_characters(fcp_filename, e))
+            )
 
     parser_context = ParserContext()
     filesystem_proxy = FileSystemProxy()
     try:
-        r = (
-            FcpV2Transformer(fcp_filename, parser_context, filesystem_proxy)
-            .transform(fcp_ast)
-        )
-        if r.is_err():
-            return r
-        fcp = r.unwrap()
+        fcp = FcpV2Transformer(
+            fcp_filename, parser_context, filesystem_proxy
+        ).transform(fcp_ast)
     except Exception as e:
         return Err(FcpError("Global parsing failure").results_in(str(e)))
-    return Ok((fcp, parser_context.get_sources()))
+    return Ok((fcp.attempt(), parser_context.get_sources()))
 
 
 def get_fcp_from_string(
@@ -551,7 +562,7 @@ def get_fcp_from_string(
     try:
         fcp_ast = fcp_parser.parse(source)
     except UnexpectedCharacters as e:
-        return Err(error_logger.log_lark_unexpected_characters("source", e))
+        return Err(FcpError(error_logger.log_lark_unexpected_characters("source", e)))
 
     parser_context = ParserContext()
     filesystem_proxy = InMemoryFileSystemProxy({pathlib.Path("main.fcp"): source})

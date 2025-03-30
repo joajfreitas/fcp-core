@@ -20,9 +20,8 @@
 
 """Error."""
 
-from beartype.typing import Any
+from beartype.typing import Any, Self
 from enum import Enum
-import traceback
 from inspect import getframeinfo, stack
 from pathlib import Path
 
@@ -39,13 +38,19 @@ class Level(Enum):
 class FcpError:
     """Fcp error."""
 
-    def __init__(self, msg: str):
+    def __init__(self, msg: str, node: Any = None):
         caller = getframeinfo(stack()[1][0])
-        self.msg = [msg + " at " + Path(caller.filename).name + ":" + str(caller.lineno)]
+        self.msg = [
+            msg + " at " + Path(caller.filename).name + ":" + str(caller.lineno)
+        ]
+        self.node = node
 
-    def results_in(self, msg: str):
+    def results_in(self, msg: str) -> Self:
+        """Appends error message to the current error."""
         caller = getframeinfo(stack()[1][0])
-        self.msg.append(msg + " at " + Path(caller.filename).name + ":" + str(caller.lineno))
+        self.msg.append(
+            msg + " at " + Path(caller.filename).name + ":" + str(caller.lineno)
+        )
         return self
 
     def __repr__(self) -> str:

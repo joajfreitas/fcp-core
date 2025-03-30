@@ -186,36 +186,8 @@ class ErrorLogger:
         self, filename: str, exception: UnexpectedCharacters
     ) -> str:
         """Log a lark unexpected characters exception."""
-        return (
-            ErrorLogBuilder(self.enable_file_paths)
-            .with_line(Color.boldwhite(f"Unexpected character '{exception.char}'"))
-            .with_line(" -> ")
-            .with_location(Path(filename), exception.line, exception.column)
-            .with_newline(amount=2)
-            .with_line("Expected one of:")
-            .with_newline()
-            .with_list(exception.allowed, transform=lambda x: "* " + x)
-            .with_newline(amount=2)
-            .with_surrounding(
-                self.sources[filename], exception.line - 1, exception.column - 1
-            )
-            .error()
-        )
-
-    def log_fcp_error(self, fcp_error: FcpError) -> str:
-        """Log a fcp error."""
-        meta = fcp_error.node.meta
-        return (
-            ErrorLogBuilder(self.enable_file_paths)
-            .with_log_level(fcp_error.level)
-            .with_line(fcp_error.msg)
-            .with_newline()
-            .with_surrounding(
-                self.sources[meta.filename],
-                meta.line,
-                meta.column,
-            )
-            .error()
+        return f"Unexpected character '{exception.char}', excepted one of: " + str(
+            [x.lower() for x in exception.allowed]
         )
 
     def error(self, error: str) -> str:

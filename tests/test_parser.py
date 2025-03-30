@@ -91,14 +91,10 @@ def test_parsing_errors(test_name: str) -> NoReturn:
     error_logger = ErrorLogger({}, enable_file_paths=False)
     fcp_config = Path(get_fcp_config("error", test_name))
     fcp = get_fcp(fcp_config, error_logger)
-    result = (
-        get_result_txt("error", test_name)
-        .replace("    ", "\t")
-        .replace("{filename}", fcp_config.name)
-    )
+    result = get_result_txt("error", test_name)
 
     assert fcp.is_err()
-    assert fcp.err() == result
+    assert str(fcp.err()) == result[:-1]
 
 
 def test_verifier_no_error() -> NoReturn:
