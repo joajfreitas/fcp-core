@@ -93,6 +93,10 @@ class FcpV2:
             return Some(_flatten([extension.signals for extension in self.impls]))
         elif category == "type":
             return Some(self.get_types())
+        elif category == "service":
+            return Some(self.services)
+        elif category == "device":
+            return Some(self.devices)
         else:
             return Nothing()
 

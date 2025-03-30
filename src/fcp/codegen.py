@@ -152,6 +152,7 @@ class GeneratorManager:
         """Generate code."""
         generator = self._get_generator(generator_name).Generator()
         generator.register_checks(self.verifier)
+        
         self.verifier.verify(fcp).attempt()
 
         templates = self._get_templates(template_dir)
