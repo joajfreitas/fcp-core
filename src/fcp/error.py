@@ -21,7 +21,10 @@
 """Error."""
 
 from beartype.typing import Any
+from typing_extensions import Self
 from enum import Enum
+from inspect import getframeinfo, stack
+from pathlib import Path
 
 
 class Level(Enum):
@@ -36,10 +39,20 @@ class Level(Enum):
 class FcpError:
     """Fcp error."""
 
-    def __init__(self, msg: str, node: Any = None, level: Level = Level.Error):
-        self.msg = msg
-        self.level = level
+    def __init__(self, msg: str, node: Any = None):
+        caller = getframeinfo(stack()[1][0])
+        self.msg = [
+            msg + " at " + Path(caller.filename).name + ":" + str(caller.lineno)
+        ]
         self.node = node
 
+    def results_in(self, msg: str) -> Self:
+        """Appends error message to the current error."""
+        caller = getframeinfo(stack()[1][0])
+        self.msg.append(
+            msg + " at " + Path(caller.filename).name + ":" + str(caller.lineno)
+        )
+        return self
+
     def __repr__(self) -> str:
-        return self.msg
+        return "\n\t-> ".join(self.msg)

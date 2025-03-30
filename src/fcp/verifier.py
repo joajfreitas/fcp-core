@@ -190,7 +190,7 @@ def make_general_verifier() -> Verifier:
         enumeration_names = [enumeration.value for enumeration in enum.enumeration]
         for enumeration in enum.enumeration:
             if enumeration_names.count(enumeration.value) > 1:
-                return Err(FcpError("Duplicated enumration name", node=enumeration))
+                return Err(FcpError("Duplicated enumeration name", node=enumeration))
 
         return Ok(())
 
