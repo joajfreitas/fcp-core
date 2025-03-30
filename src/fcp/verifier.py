@@ -82,7 +82,6 @@ class Verifier:
         """Run check for a category."""
         for check in self.checks.get(category) or []:
 
-            
             for node in fcp.get(category).attempt():
                 check(fcp, fcp, node).attempt()
 
@@ -201,7 +200,6 @@ def make_general_verifier() -> Verifier:
         self: Any, fcp: FcpV2, device: Device
     ) -> Result[Nil, FcpError]:
         fcp_services = [s.name for s in fcp.get("service").unwrap()]
-    
 
         for device in fcp.get("device").unwrap():
             device_services = device.fields.get("services")
@@ -213,9 +211,13 @@ def make_general_verifier() -> Verifier:
             # Check if all services referenced by device exist in fcp
             for service in device_services:
                 if service not in fcp_services:
-                    return Err(FcpError(f"Service \"{service}\" referenced by device \"{device.name}\" doesn't exist", node=device))
+                    return Err(
+                        FcpError(
+                            f'Service "{service}" referenced by device "{device.name}" doesn\'t exist',
+                            node=device,
+                        )
+                    )
 
         return Ok(())
 
     return general_verifier
-
