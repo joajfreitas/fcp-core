@@ -213,7 +213,6 @@ def make_general_verifier() -> Verifier:
             # Check if all services referenced by device exist in fcp
             for service in device_services:
                 if service not in fcp_services:
-                    breakpoint()
                     return Err(FcpError(f"Service \"{service}\" referenced by device \"{device.name}\" doesn't exist", node=device))
 
         return Ok(())
