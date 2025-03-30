@@ -89,7 +89,8 @@ fcp_parser = Lark(
     string: ESCAPED_STRING
     number: SIGNED_NUMBER
     value : array | identifier | number | string
-    array : "[" [value ("," value)*] "]"
+    array: "[" value ("," value)* "]"
+
 
     COMMENT: C_COMMENT | CPP_COMMENT
 
@@ -453,10 +454,6 @@ class FcpV2Transformer(Transformer):  # type: ignore
     def string(self, args: List[str]) -> str:
         """Parse a string node of the fcp AST."""
         return args[0].value[1:-1]  # type: ignore
-
-    def value(self, args: List[str]) -> Any:
-        """Parse a value node of the fcp AST."""
-        return args[0]
 
     def array(self, args: List[Any]) -> List[Any]:
         """Parse an array node of the fcp AST."""
