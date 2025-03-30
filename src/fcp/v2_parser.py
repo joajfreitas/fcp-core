@@ -25,7 +25,7 @@ import pathlib
 import traceback
 import logging
 
-from lark import Lark, Transformer, v_args, UnexpectedCharacters, ParseTree
+from lark import Lark, Transformer, v_args, UnexpectedCharacters, UnexpectedEOF, ParseTree
 
 from .types import Nil, Never
 
@@ -131,8 +131,15 @@ def _get_meta(tree: ParseTree, parser: Lark) -> MetaData:
         end_column=tree.meta.end_column,
         start_pos=tree.meta.start_pos,
         end_pos=tree.meta.end_pos,
-        filename=parser.filename.name,  # type: ignore
+        filename=str(parser.filename),  # type: ignore
     )
+
+
+class Token:
+    """Metadata stub for any token."""
+
+    def __init__(self, meta: MetaData):
+        self.meta = meta
 
 
 def _convert_params(params: Dict[str, Callable]) -> Dict[str, Any]:
@@ -205,32 +212,27 @@ class FcpV2Transformer(Transformer):  # type: ignore
         filename: Union[str, pathlib.Path],
         parser_context: ParserContext,
         filesystem_proxy: IFileSystemProxy,
+        error_logger: ErrorLogger = ErrorLogger({}),
     ) -> None:
         self.filename = pathlib.Path(filename)
         self.path = self.filename.parent
         self.parser_context = parser_context
+        self.error_logger = error_logger
         self.filesystem_proxy = filesystem_proxy
         self.fcp = v2.FcpV2()
 
         self.source = self.filesystem_proxy.read(self.filename)
+        self.error_logger.add_source(self.filename.name, self.source)
 
         self.parser_context.set_module(self.filename.name, self.source)
-        self.error_logger = ErrorLogger({self.filename.name: self.source})
 
-    def preamble(self, args: List[str]) -> Result[Nil, FcpError]:
+    @v_args(tree=True)  # type: ignore
+    def preamble(self, tree: ParseTree) -> Result[Nil, FcpError]:
         """Parse an preamble node of the fcp AST."""
-        if args[0] == "3":
+        if tree.children[0] == "3":
             return Ok(())
         else:
-            return Err(FcpError("Expected IDL version 3"))
-
-    def dot(self, args: List[str]) -> str:
-        """Parse an dot node of the fcp AST."""
-        return "."
-
-    def underscore(self, args: List[str]) -> str:
-        """Parse an underscore node of the fcp AST."""
-        return "_"
+            return Err(FcpError("Expected IDL version 3", Token(_get_meta(tree, self))))
 
     def identifier(self, args: List[Any]) -> str:
         """Parse an identifier node of the fcp AST."""
@@ -272,18 +274,23 @@ class FcpV2Transformer(Transformer):  # type: ignore
             )
         )
 
+    @v_args(tree=True)  # type: ignore
     def composed_type(
-        self, args: List[str]
+        self, tree: ParseTree
     ) -> Result[Union[StructType, EnumType], FcpError]:
         """Parse a compound_type node of the fcp AST."""
-        typename = args[0]
+        typename = tree.children[0]
 
         if self.fcp.get_struct(typename).is_some():
             return Ok(StructType(typename))
         elif self.fcp.get_enum(typename).is_some():
             return Ok(EnumType(typename))
         else:
-            return Err(FcpError(f"Type '{typename}' cannot be found."))
+            return Err(
+                FcpError(
+                    f"Type '{typename}' cannot be found.", Token(_get_meta(tree, self))
+                )
+            )
 
     def optional_type(self, args: List[str]) -> Result[OptionalType, FcpError]:
         """Parse a option node of the fcp AST."""
@@ -313,23 +320,25 @@ class FcpV2Transformer(Transformer):  # type: ignore
         """Parse a field_id node of the fcp AST."""
         return args[0]
 
+    @catch
     @v_args(tree=True)  # type: ignore
     def struct(self, tree: ParseTree) -> Result[Nil, FcpError]:
         """Parse a struct node of the fcp AST."""
         name, *fields = tree.children
 
-        fields_ = []
-        for field in fields:
-            if field.is_err():
-                return Err(field.err().results_in("Error parsing struct field"))
-            fields_.append(field.unwrap())
-
-        meta = _get_meta(tree, self)  # type: ignore
+        meta = _get_meta(tree, self)
 
         self.fcp.structs.append(
             struct.Struct(
                 name=name,
-                fields=fields_,
+                fields=[
+                    field.map_err(
+                        lambda err: err.results_in(
+                            f"Failed to parse field in struct {name}"
+                        )
+                    ).attempt()
+                    for field in fields
+                ],
                 meta=meta,
             )  # type:ignore
         )
@@ -393,27 +402,31 @@ class FcpV2Transformer(Transformer):  # type: ignore
         return Ok(())
 
     @catch
-    def mod_expr(self, args: List[str]) -> Result[Nil, FcpError]:
+    @v_args(tree=True)  # type: ignore
+    def mod_expr(self, tree: ParseTree) -> Result[Nil, FcpError]:
         """Parse a mod_expr node of the fcp AST."""
-        filename = self.path / (".".join(args).replace(".", "/") + ".fcp")
+        filename = self.path / (".".join(tree.children).replace(".", "/") + ".fcp")
+
+        with open(filename) as f:
+            source = f.read()
 
         try:
-            with open(filename) as f:
-                source = f.read()
-                fcp = (
-                    FcpV2Transformer(
-                        filename, self.parser_context, self.filesystem_proxy
-                    )
-                    .transform(fcp_parser.parse(source))
-                    .attempt()
-                )
-
-                self.fcp.merge(fcp)
-
+            fcp_ast = fcp_parser.parse(source)
         except Exception as e:
             return Err(
-                FcpError(self.error_logger.error(f"Could not import {filename}"))
+                FcpError(
+                    self.error_logger.log_lark(filename.name, e), Token(_get_meta(tree, self))
+                )
             )
+
+        fcp = FcpV2Transformer(
+            pathlib.Path(filename).resolve(),
+            self.parser_context,
+            self.filesystem_proxy,
+            self.error_logger,
+        ).transform(fcp_ast)
+
+        self.fcp.merge(fcp.attempt())
 
         return Ok(())
 
@@ -536,22 +549,20 @@ def get_fcp(
     """
     with open(fcp_filename) as f:
         source = f.read()
-        error_logger.add_source(fcp_filename, source)
         try:
             fcp_ast = fcp_parser.parse(source)
-        except UnexpectedCharacters as e:
+        except Exception as e:
             return Err(
-                FcpError(error_logger.log_lark_unexpected_characters(fcp_filename, e))
+                FcpError(error_logger.log_lark(fcp_filename, e))
             )
 
     parser_context = ParserContext()
     filesystem_proxy = FileSystemProxy()
-    try:
-        fcp = FcpV2Transformer(
-            fcp_filename, parser_context, filesystem_proxy
-        ).transform(fcp_ast)
-    except Exception as e:
-        return Err(FcpError("Global parsing failure").results_in(str(e)))
+
+    fcp = FcpV2Transformer(
+        fcp_filename, parser_context, filesystem_proxy, error_logger
+    ).transform(fcp_ast)
+
     return Ok((fcp.attempt(), parser_context.get_sources()))
 
 

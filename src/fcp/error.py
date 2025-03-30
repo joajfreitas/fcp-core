@@ -20,7 +20,8 @@
 
 """Error."""
 
-from beartype.typing import Any, Self, Tuple
+from beartype.typing import Any, Tuple
+from typing_extensions import Self
 from enum import Enum
 from inspect import getframeinfo, stack
 from pathlib import Path
@@ -40,22 +41,22 @@ class FcpError:
 
     def __init__(self, msg: str, node: Any = None):
         caller = getframeinfo(stack()[1][0])
-        self.msg = [(msg, Path(caller.filename).name + ":" + str(caller.lineno))]
-        self.node = node
+        self.msg = [(msg, node, (Path(caller.filename), caller.lineno))]
 
-    def results_in(self, msg: str) -> Self:
+    def results_in(self, msg: str, node: Any = None) -> Self:
         """Appends error message to the current error."""
         caller = getframeinfo(stack()[1][0])
-        self.msg.append((msg, Path(caller.filename).name + ":" + str(caller.lineno)))
+        self.msg.append((msg, node, (Path(caller.filename), caller.lineno)))
         return self
 
     def to_str(self, source_file_tag: bool = True) -> str:
         """Returns the error message as a string."""
 
-        def format_msg(msg: Tuple[str, str]) -> str:
+        def format_msg(msg: Tuple[str, Tuple[str, str]]) -> str:
+            msg, node, (source_file, line_number) = msg
             if source_file_tag:
-                return f"{msg[0]} [{msg[1]}]"
-            return str(msg[0])
+                return f"{msg} [{source_file.name}:{line_number}]"
+            return str(msg)
 
         return "\n\t-> ".join(map(format_msg, self.msg))
 

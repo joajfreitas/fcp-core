@@ -20,8 +20,8 @@
 
 """Error logger."""
 
-from beartype.typing import Callable, List, Dict, Any
-from lark import UnexpectedCharacters
+from beartype.typing import Callable, List, Dict, Any, Tuple
+from lark import UnexpectedCharacters, UnexpectedEOF
 from pathlib import Path
 
 from typing_extensions import Self
@@ -164,13 +164,14 @@ class ErrorLogger:
 
     def log_node(self, node: Any, error: str = "") -> str:
         """Log fcp node."""
-        source = self.sources[node.meta.filename]
+        source = self.sources[Path(node.meta.filename).name]
+        lines = source.split("\n")
         return self.log_location(
             error,
             node.meta.filename,
             node.meta.line,
             node.meta.column,
-            source[node.meta.start_pos : node.meta.end_pos],
+            lines[node.meta.line - 1],
         )
 
     def log_duplicates(self, error: str, duplicates: List[Any]) -> str:
@@ -190,6 +191,25 @@ class ErrorLogger:
             [x.lower() for x in exception.allowed]
         )
 
-    def error(self, error: str) -> str:
+    def log_lark(self, filename: str, exception: Exception) -> str:
+        if isinstance(exception, UnexpectedCharacters):
+            return self.log_lark_unexpected_characters(filename, exception)
+        else:
+            return "Unexpected EOF in file " + filename
+
+    def error(self, error: FcpError) -> str:
         """Log an error."""
-        return Color.boldred("Error: ") + Color.boldwhite(error)
+
+        def format_msg(msg: Tuple[str, Tuple[str, str]]) -> str:
+            msg, _, (source_file, line_number) = msg
+            if self.enable_file_paths:
+                return f"\t-> {msg} [{source_file.name}:{line_number}]"
+            return str(msg)
+
+        ss = ""
+        for msg, node, (source_file, line_number) in error.msg:
+            ss += format_msg((msg, node, (source_file, line_number))) + "\n"
+            if node is not None:
+                ss += self.log_node(node)
+
+        return ss

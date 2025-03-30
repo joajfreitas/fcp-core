@@ -58,18 +58,20 @@ def generate_cmd(
     skel: str,
 ) -> None:
     """Run generator."""
-    r = get_fcp(fcp)
+    error_logger = ErrorLogger({})
+    r = get_fcp(fcp, error_logger)
     if r.is_err():
-        print(r.err().results_in("Failed to generate fcp"))
+        print(error_logger.error(r.err().results_in("Failed to generate fcp")))
         return
     fcp_v2, sources = r.unwrap()
+
     generator_manager = GeneratorManager(make_general_verifier())
     result = generator_manager.generate(
         generator, templates, skel, fcp_v2, sources, output
     )
 
     if result.is_err():
-        print(r.err().results_in("Failed to generate fcp"))
+        print(error_logger.error(r.err().results_in("Failed to generate fcp")))
 
 
 @click.command()  # type: ignore
