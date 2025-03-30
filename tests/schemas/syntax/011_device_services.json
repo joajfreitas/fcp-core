@@ -32,7 +32,7 @@
             "field_id": 0,
             "type": {
               "name": "u8",
-              "type": "Builtin"
+              "type": "unsigned"
             }
           }
         ]
@@ -45,7 +45,7 @@
             "field_id": 0,
             "type": {
                 "name": "u16",
-                "type": "Builtin"
+                "type": "unsigned"
             }
           }
         ]
@@ -68,4 +68,3 @@
     ],
     "version": "3.0"
   }
-  

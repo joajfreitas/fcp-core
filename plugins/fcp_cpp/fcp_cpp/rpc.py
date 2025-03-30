@@ -29,14 +29,14 @@ from fcp.specs.struct import Struct
 from fcp.specs.struct_field import StructField
 from fcp.specs.enum import Enum, Enumeration
 from fcp.specs.service import Service
-from fcp.specs.type import ComposedType, ComposedTypeCategory
+from fcp.specs.type import StructType, EnumType
 
 
 def _create_service_id_field() -> StructField:
     return StructField(
         name="service_id",
         field_id=0,
-        type=ComposedType("ServiceId", ComposedTypeCategory.Enum),
+        type=EnumType("ServiceId"),
     )
 
 
@@ -44,9 +44,7 @@ def _create_method_id_field(service: Service) -> StructField:
     return StructField(
         name="method_id",
         field_id=1,
-        type=ComposedType(
-            to_pascal_case(service.name) + "MethodId", ComposedTypeCategory.Enum
-        ),
+        type=EnumType(to_pascal_case(service.name) + "MethodId"),
     )
 
 
@@ -54,7 +52,7 @@ def _create_payload(payload: Struct) -> StructField:
     return StructField(
         name="payload",
         field_id=2,
-        type=ComposedType(payload.name, ComposedTypeCategory.Struct),
+        type=StructType(payload.name),
     )
 
 
