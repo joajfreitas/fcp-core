@@ -58,7 +58,11 @@ def generate_cmd(
     skel: str,
 ) -> None:
     """Run generator."""
-    fcp_v2, sources = get_fcp(fcp).unwrap()
+    r = get_fcp(fcp)
+    if r.is_err():
+        print(r.err().results_in("Failed to generate fcp"))
+        return
+    fcp_v2, sources = r.unwrap()
     generator_manager = GeneratorManager(make_general_verifier())
     result = generator_manager.generate(
         generator, templates, skel, fcp_v2, sources, output
