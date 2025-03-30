@@ -81,7 +81,6 @@ class Verifier:
     def run_checks(self, category: str, fcp: FcpV2) -> Result[Nil, FcpError]:
         """Run check for a category."""
         for check in self.checks.get(category) or []:
-
             for node in fcp.get(category).attempt():
                 check(fcp, fcp, node).attempt()
 
