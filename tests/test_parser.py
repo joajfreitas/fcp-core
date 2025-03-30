@@ -94,7 +94,7 @@ def test_parsing_errors(test_name: str) -> NoReturn:
     result = get_result_txt("error", test_name)
 
     assert fcp.is_err()
-    assert str(fcp.err()) == result[:-1]
+    assert fcp.err().to_str(source_file_tag=False) == result[:-1]
 
 
 def test_verifier_no_error() -> NoReturn:

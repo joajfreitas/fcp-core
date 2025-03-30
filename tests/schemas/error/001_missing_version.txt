@@ -1,1 +1,1 @@
-Unexpected character 's', excepted one of: ['version'] at parser.py:540
+Unexpected character 's', excepted one of: ['version']
