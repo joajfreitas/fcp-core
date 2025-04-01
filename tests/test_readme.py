@@ -52,3 +52,11 @@ def test_readme(filename: str, fcp_code_block: str) -> None:
         fp.write(fcp_code_block)
 
     fcp_v2, _ = get_fcp(Path(tmp_name)).unwrap()
+
+def test_example():
+    fcp_v2, _ = get_fcp(Path("example/example.fcp")).unwrap()
+
+
+def test_example():
+    fcp_v2, _ = get_fcp(Path("example/example.fcp")).unwrap()
+>>>>>>> c21cb98 (Improve error descriptions)
