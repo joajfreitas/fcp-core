@@ -1,1 +1,1 @@
-Unexpected character 's', excepted one of: ['version']
+Unexpected character 's', excepted one of: ['preamble']
