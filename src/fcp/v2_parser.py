@@ -549,6 +549,28 @@ class FcpV2Transformer(Transformer):  # type: ignore
         return Ok(self.fcp)
 
 
+def _get_fcp(
+    filename: pathlib.Path,
+    filesystem_proxy: IFileSystemProxy,
+    error_logger: ErrorLogger,
+):
+    source = filesystem_proxy.read(filename)
+
+    try:
+        fcp_ast = fcp_parser.parse(source)
+    except UnexpectedCharacters as e:
+        return Err(FcpError(error_logger.log_lark(filename.name, e)))
+
+    error_logger.add_source(filename.name, source)
+    parser_context = ParserContext()
+
+    fcp = FcpV2Transformer(
+        filename, parser_context, filesystem_proxy, error_logger
+    ).transform(fcp_ast)
+
+    return Ok((fcp.attempt(), parser_context.get_sources()))
+
+
 @catch
 def get_fcp(
     fcp_filename: str, error_logger: ErrorLogger = ErrorLogger({})
@@ -557,41 +579,14 @@ def get_fcp(
 
     Returns the Fcp AST and source code information for debugging.
     """
-    with open(fcp_filename) as f:
-        source = f.read()
-        try:
-            fcp_ast = fcp_parser.parse(source)
-        except Exception as e:
-            return Err(
-                FcpError(error_logger.log_lark(fcp_filename, e))
-            )
-
-    error_logger.add_source(fcp_filename, source)
-    parser_context = ParserContext()
     filesystem_proxy = FileSystemProxy()
-
-    fcp = FcpV2Transformer(
-        fcp_filename, parser_context, filesystem_proxy, error_logger
-    ).transform(fcp_ast)
-
-    return Ok((fcp.attempt(), parser_context.get_sources()))
+    return _get_fcp(pathlib.Path(fcp_filename), filesystem_proxy, error_logger)
 
 
 def get_fcp_from_string(
     source: str, error_logger: ErrorLogger = ErrorLogger({})
 ) -> Result[Tuple[v2.FcpV2, Dict[str, str]], FcpError]:
     """Build a fcp AST from the source code of an fcp schema."""
-    try:
-        fcp_ast = fcp_parser.parse(source)
-    except UnexpectedCharacters as e:
-        return Err(FcpError(error_logger.log_lark_unexpected_characters("source", e)))
-
-    error_logger.add_source("main.fcp", source)
-    parser_context = ParserContext()
     filesystem_proxy = InMemoryFileSystemProxy({pathlib.Path("main.fcp"): source})
-    fcp = (
-        FcpV2Transformer("main.fcp", parser_context, filesystem_proxy)
-        .transform(fcp_ast)
-        .attempt()
-    )
-    return Ok((fcp, parser_context.get_sources()))
+
+    return _get_fcp(pathlib.Path("main.fcp"), filesystem_proxy, error_logger)
