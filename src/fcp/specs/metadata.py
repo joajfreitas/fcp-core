@@ -36,6 +36,24 @@ class MetaData:
     end_pos: int
     filename: str
 
+    def __init__(
+        self,
+        line: int,
+        end_line: int,
+        column: int,
+        end_column: int,
+        start_pos: int,
+        end_pos: int,
+        filename: str,
+    ):
+        self.line = line
+        self.end_line = end_line
+        self.column = column
+        self.end_column = end_column
+        self.start_pos = start_pos
+        self.end_pos = end_pos
+        self.filename = filename
+
     def reflection(self) -> Dict[str, Any]:
         """Reflection."""
         return {

@@ -201,7 +201,7 @@ class ErrorLogger:
     def error(self, error: FcpError) -> str:
         """Log an error."""
 
-        def format_msg(msg: Tuple[str, Tuple[str, str]]) -> str:
+        def format_msg(msg: Tuple[str, Any, Tuple[str, int]]) -> str:
             msg, _, (source_file, line_number) = msg
             if self.enable_file_paths:
                 return f"\t-> {msg} [{source_file.name}:{line_number}]"

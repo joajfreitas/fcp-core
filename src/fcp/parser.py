@@ -418,11 +418,15 @@ class FcpV2Transformer(Transformer):  # type: ignore
         try:
             self.error_logger.add_source(filename.name, source)
             fcp_ast = fcp_parser.parse(source)
-        except Exception as e:
+        except UnexpectedCharacters as e:
             return Err(
                 FcpError(
                     self.error_logger.log_lark(filename.name, e),
-                    Token(_get_meta(tree, self)),
+                    Token(
+                        MetaData(
+                            e.line, e.line, e.column, e.column, 0, 0, str(filename)
+                        )
+                    ),
                 )
             )
 
@@ -433,7 +437,13 @@ class FcpV2Transformer(Transformer):  # type: ignore
             self.error_logger,
         ).transform(fcp_ast)
 
-        self.fcp.merge(fcp.attempt())
+        self.fcp.merge(
+            fcp.map_err(
+                lambda err: err.results_in(
+                    f"Failed to import {filename}", Token(_get_meta(tree, self))
+                )
+            ).attempt()
+        )
 
         return Ok(())
 
@@ -536,13 +546,14 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
         return Ok(())
 
+    @catch
     def start(self, args: List[Result[Nil, str]]) -> Result[v2.FcpV2, FcpError]:
         """Parse the start node of the fcp AST."""
         for arg in args:
-            if arg.is_err():
-                return Err(
-                    arg.err().results_in(f"Failed to parse {self.filename.name}")
-                )
+            arg.map_err(
+                lambda err: err.results_in(f"Failed to parse {self.filename.name}")
+            ).attempt()
+
         return Ok(self.fcp)
 
 
@@ -558,7 +569,7 @@ def _get_fcp(
     except Exception as e:
         return Err(FcpError(error_logger.log_lark(filename.name, e)))
 
-    error_logger.add_source(filename, source)
+    error_logger.add_source(filename.name, source)
     parser_context = ParserContext()
 
     fcp = FcpV2Transformer(
