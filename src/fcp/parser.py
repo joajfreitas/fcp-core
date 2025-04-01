@@ -229,8 +229,6 @@ class FcpV2Transformer(Transformer):  # type: ignore
         self.fcp = v2.FcpV2()
 
         self.source = self.filesystem_proxy.read(self.filename)
-        self.error_logger.add_source(self.filename.name, self.source)
-
         self.parser_context.set_module(self.filename.name, self.source)
 
     @v_args(tree=True)  # type: ignore
@@ -418,6 +416,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
             source = f.read()
 
         try:
+            self.error_logger.add_source(filename.name, source)
             fcp_ast = fcp_parser.parse(source)
         except Exception as e:
             return Err(
@@ -559,6 +558,7 @@ def _get_fcp(
     except Exception as e:
         return Err(FcpError(error_logger.log_lark(filename.name, e)))
 
+    error_logger.add_source(filename, source)
     parser_context = ParserContext()
 
     fcp = FcpV2Transformer(
