@@ -188,7 +188,9 @@ class ErrorLogger:
     ) -> str:
         """Log a lark unexpected characters exception."""
         return f"Unexpected character '{exception.char}', excepted one of: " + str(
-            [x.lower() for x in exception.allowed]
+            list(
+                set([str(rule.rule.origin.name) for rule in exception.considered_rules])
+            )
         )
 
     def log_lark(self, filename: str, exception: Exception) -> str:

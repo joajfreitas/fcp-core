@@ -68,8 +68,8 @@ fcp_parser = Lark(
     struct_field: identifier "@" number ":" type "|"? param* ","
     type: (unsigned_type | signed_type | float_type | double_type | str_type | array_type | composed_type | dynamic_array_type | optional_type)
     str_type: "str"
-    unsigned_type: /u\\d\\d|u\\d/
-    signed_type: /i\\d\\d|i\\d/
+    unsigned_type: "u" (DIGIT | DIGIT DIGIT)
+    signed_type: "i" (DIGIT | DIGIT DIGIT)
     float_type: "f32"
     double_type: "f64"
     array_type: "[" type "," number "]"
@@ -99,7 +99,6 @@ fcp_parser = Lark(
     number: SIGNED_NUMBER
     value : array | identifier | number | string
     array: "[" value ("," value)* "]"
-
 
     COMMENT: C_COMMENT | CPP_COMMENT
 
@@ -242,11 +241,11 @@ class FcpV2Transformer(Transformer):  # type: ignore
 
     def unsigned_type(self, args: List[str]) -> Result[UnsignedType, FcpError]:
         """Parse an unsigned type."""
-        return Ok(UnsignedType(str(args[0])))  # type: ignore
+        return Ok(UnsignedType("u" + "".join(args)))  # type: ignore
 
     def signed_type(self, args: List[str]) -> Result[SignedType, FcpError]:
         """Parse a signed type."""
-        return Ok(SignedType(str(args[0])))  # type: ignore
+        return Ok(SignedType("i" + "".join(args)))  # type: ignore
 
     def float_type(self, args: List[str]) -> Result[FloatType, FcpError]:
         """Parse a float type."""
