@@ -36,7 +36,7 @@ class Level(Enum):
 class FcpError:
     """Fcp error."""
 
-    def __init__(self, msg: str, node: Any, level: Level = Level.Error):
+    def __init__(self, msg: str, node: Any = None, level: Level = Level.Error):
         self.msg = msg
         self.level = level
         self.node = node
