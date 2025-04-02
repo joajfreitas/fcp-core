@@ -404,8 +404,11 @@ class FcpV2Transformer(Transformer):  # type: ignore
         """Parse a mod_expr node of the fcp AST."""
         filename = self.path / (".".join(tree.children).replace(".", "/") + ".fcp")
 
-        with open(filename) as f:
-            source = f.read()
+        try:
+            with open(filename) as f:
+                source = f.read()
+        except FileNotFoundError as e:
+            return Err(FcpError(f"File not found: {pathlib.Path(e.filename).name}"))
 
         try:
             self.error_logger.add_source(filename.name, source)

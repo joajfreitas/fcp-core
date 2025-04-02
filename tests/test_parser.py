@@ -95,6 +95,7 @@ def test_parser(test_name: str) -> NoReturn:
         "010_missing_impl_protocol",
         "011_missing_service_name",
         "012_missing_device_name",
+        "013_missing_file_in_mod",
     ],
 )  # type: ignore
 def test_parsing_errors(test_name: str) -> NoReturn:
