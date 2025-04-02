@@ -1,0 +1,5 @@
+version: "3"
+
+service @0 {
+    method Foo(S1) @0 -> S2
+}
