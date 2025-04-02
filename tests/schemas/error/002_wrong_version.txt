@@ -1,2 +1,2 @@
-Expected IDL version 3
-	-> Failed to parse 002_wrong_version.fcp
+ -> Expected IDL version 3
+ -> Failed to parse 002_wrong_version.fcp

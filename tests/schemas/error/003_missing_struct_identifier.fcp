@@ -1,0 +1,5 @@
+version: "3"
+
+struct {
+    field1 @0: u8,
+}
