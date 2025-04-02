@@ -187,7 +187,7 @@ class ErrorLogger:
         self, filename: str, exception: UnexpectedCharacters
     ) -> str:
         """Log a lark unexpected characters exception."""
-        return f"Unexpected character '{exception.char}', excepted one of: " + str(
+        return f"Unexpected character '{exception.char}', expected one of: " + str(
             list(
                 set([str(rule.rule.origin.name) for rule in exception.considered_rules])
             )
@@ -207,7 +207,8 @@ class ErrorLogger:
             msg, _, (source_file, line_number) = msg
             if self.enable_file_paths:
                 return f" -> {msg} [{source_file.name}:{line_number}]"
-            return str(msg)
+            else:
+                return f" -> {msg}"
 
         ss = ""
         for msg, node, (source_file, line_number) in error.msg:

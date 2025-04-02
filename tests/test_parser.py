@@ -85,6 +85,7 @@ def test_parser(test_name: str) -> NoReturn:
     [
         "001_missing_version",
         "002_wrong_version",
+        "003_missing_struct_identifier",
     ],
 )  # type: ignore
 def test_parsing_errors(test_name: str) -> NoReturn:
@@ -93,7 +94,7 @@ def test_parsing_errors(test_name: str) -> NoReturn:
     fcp = get_fcp(fcp_config, error_logger)
     result = get_result_txt("error", test_name)
     assert fcp.is_err()
-    assert fcp.err().to_str(source_file_tag=False) == result[:-1]
+    assert error_logger.error(fcp.err()) == result
 
 
 def test_verifier_no_error() -> NoReturn:

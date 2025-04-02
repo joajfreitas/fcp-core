@@ -1,1 +1,1 @@
-Unexpected character 's', excepted one of: ['preamble']
+ -> Unexpected character 's', expected one of: ['preamble']
