@@ -173,7 +173,7 @@ class ParserContext:
 
     def get_sources(self) -> Dict[str, str]:
         """Get all the parsed source code modules."""
-        return {name: source for name, source in self.modules.items()}
+        return self.modules
 
 
 class IFileSystemProxy:
