@@ -86,6 +86,7 @@ def test_parser(test_name: str) -> NoReturn:
         "001_missing_version",
         "002_wrong_version",
         "003_missing_struct_identifier",
+        "004_missing_struct_field_tag",
     ],
 )  # type: ignore
 def test_parsing_errors(test_name: str) -> NoReturn:
