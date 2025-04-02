@@ -1,0 +1,5 @@
+ -> Type 'MissingType' cannot be found.
+ -> Error parsing array type
+ -> Error parsing type in struct field
+ -> Failed to parse field in struct S1
+ -> Failed to parse 007_missing_array_inner_type.fcp
