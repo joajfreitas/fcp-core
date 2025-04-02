@@ -205,7 +205,7 @@ class ErrorLogger:
         def format_msg(msg: Tuple[str, Tuple[str, str]]) -> str:
             msg, _, (source_file, line_number) = msg
             if self.enable_file_paths:
-                return f"\t-> {msg} [{source_file.name}:{line_number}]"
+                return f" -> {msg} [{source_file.name}:{line_number}]"
             return str(msg)
 
         ss = ""
