@@ -92,6 +92,7 @@ def test_parser(test_name: str) -> NoReturn:
         "007_missing_array_inner_type",
         "008_missing_optional_inner_type",
         "009_missing_enum_name",
+        "010_missing_impl_protocol",
     ],
 )  # type: ignore
 def test_parsing_errors(test_name: str) -> NoReturn:
