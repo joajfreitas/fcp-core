@@ -194,6 +194,7 @@ class ErrorLogger:
         )
 
     def log_lark(self, filename: str, exception: Exception) -> str:
+        """Log lark errors."""
         if isinstance(exception, UnexpectedCharacters):
             return self.log_lark_unexpected_characters(filename, exception)
         else:

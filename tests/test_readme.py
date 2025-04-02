@@ -57,5 +57,5 @@ def test_example():
     fcp_v2, _ = get_fcp(Path("example/example.fcp")).unwrap()
 
 
-def test_example():
+def test_example() -> None:
     get_fcp(Path("example/example.fcp")).unwrap()

@@ -410,7 +410,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         try:
             self.error_logger.add_source(filename.name, source)
             fcp_ast = fcp_parser.parse(source)
-        except Exception as e:
+        except UnexpectedCharacters as e:
             return Err(
                 FcpError(
                     self.error_logger.log_lark(filename.name, e),
@@ -553,7 +553,7 @@ def _get_fcp(
     filename: pathlib.Path,
     filesystem_proxy: IFileSystemProxy,
     error_logger: ErrorLogger,
-):
+) -> Result[Tuple[v2.FcpV2, Dict[str, str]], FcpError]:
     source = filesystem_proxy.read(filename)
 
     try:
