@@ -1,4 +1,4 @@
- -> Error: Unexpected character 's', expected one of: ['preamble']
+  → Error: Unexpected character 's', expected one of: ['preamble']
   |
 1 | struct A {
   | ~~~~~~~~~~

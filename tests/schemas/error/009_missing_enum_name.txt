@@ -1,4 +1,4 @@
- -> Error: Unexpected character '{', expected one of: ['identifier']
+  → Error: Unexpected character '{', expected one of: ['identifier']
   |
 3 | enum {
   | ~~~~~~

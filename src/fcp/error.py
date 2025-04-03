@@ -48,17 +48,3 @@ class FcpError:
         caller = getframeinfo(stack()[1][0])
         self.msg.append((msg, node, (Path(caller.filename), caller.lineno)))
         return self
-
-    def to_str(self, source_file_tag: bool = True) -> str:
-        """Returns the error message as a string."""
-
-        def format_msg(msg: Tuple[str, Tuple[str, str]]) -> str:
-            msg, node, (source_file, line_number) = msg
-            if source_file_tag:
-                return f"{msg} [{source_file.name}:{line_number}]"
-            return str(msg)
-
-        return "\n\t-> ".join(map(format_msg, self.msg))
-
-    def __repr__(self) -> str:
-        return self.to_str()

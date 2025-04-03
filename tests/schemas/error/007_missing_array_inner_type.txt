@@ -1,8 +1,8 @@
- -> Error: Type 'MissingType' cannot be found.
+  → Error: Type 'MissingType' cannot be found.
   |
 4 |     field1 @0 : [MissingType, 4],
   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- -> Error parsing array type
- -> Error parsing type in struct field
- -> Failed to parse field in struct S1
- -> Failed to parse 007_missing_array_inner_type.fcp
+  ↳ Error parsing array type
+  ↳ Error parsing type in struct field
+  ↳ Failed to parse field in struct S1
+  ↳ Failed to parse 007_missing_array_inner_type.fcp
