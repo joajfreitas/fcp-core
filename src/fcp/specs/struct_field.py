@@ -34,10 +34,28 @@ class StructField:
     name: str
     field_id: int
     type: Type
-    unit: Optional[str] = None
-    min_value: Optional[float] = None
-    max_value: Optional[float] = None
+    unit: Optional[str] = field(default=None)
+    min_value: Optional[float] = field(default=None)
+    max_value: Optional[float] = field(default=None)
     meta: Optional[MetaData] = field(skip=True, default=None)
+
+    def __init__(
+        self,
+        name: str,
+        field_id: int,
+        type: Type,
+        unit: Optional[str] = None,
+        min_value: Optional[float] = None,
+        max_value: Optional[float] = None,
+        meta: Optional[MetaData] = None,
+    ) -> None:
+        self.name = name
+        self.field_id = field_id
+        self.type = type
+        self.unit = unit
+        self.min_value = min_value
+        self.max_value = max_value
+        self.meta = meta
 
     def reflection(self) -> Dict[str, Any]:
         """Reflection."""

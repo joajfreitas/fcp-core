@@ -130,7 +130,7 @@ def _get_meta(tree: ParseTree, parser: Lark) -> MetaData:
         end_column=tree.meta.end_column,
         start_pos=tree.meta.start_pos,
         end_pos=tree.meta.end_pos,
-        filename=str(parser.filename),  # type: ignore
+        filename=str(parser.filename),
     )
 
 
@@ -149,7 +149,7 @@ def _convert_params(params: Dict[str, Callable]) -> Dict[str, Any]:
 
     values: Dict[str, Callable] = {}
     for name, value in params.items():
-        values.update(conversion_table[name](value))  # type: ignore
+        values.update(conversion_table[name](value))
 
     return values
 
@@ -203,7 +203,7 @@ class InMemoryFileSystemProxy(IFileSystemProxy):
         return str(self.files[filename])
 
 
-class FcpV2Transformer(Transformer):  # type: ignore
+class FcpV2Transformer(Transformer):
     """Transformer for the Lark AST into the FCP AST."""
 
     def __init__(
@@ -235,25 +235,25 @@ class FcpV2Transformer(Transformer):  # type: ignore
         """Parse an identifier node of the fcp AST."""
         return str(args[0].value)
 
-    def type(self, args: List[str]) -> Result[Type, FcpError]:
+    def type(self, args: List[Result[Type, FcpError]]) -> Result[Type, FcpError]:
         """Parse a type node of the fcp AST."""
         return args[0]  # type: ignore
 
     def unsigned_type(self, args: List[str]) -> Result[UnsignedType, FcpError]:
         """Parse an unsigned type."""
-        return Ok(UnsignedType("u" + "".join(args)))  # type: ignore
+        return Ok(UnsignedType("u" + "".join(args)))
 
     def signed_type(self, args: List[str]) -> Result[SignedType, FcpError]:
         """Parse a signed type."""
-        return Ok(SignedType("i" + "".join(args)))  # type: ignore
+        return Ok(SignedType("i" + "".join(args)))
 
     def float_type(self, args: List[str]) -> Result[FloatType, FcpError]:
         """Parse a float type."""
-        return Ok(FloatType())  # type: ignore
+        return Ok(FloatType())
 
     def double_type(self, args: List[str]) -> Result[DoubleType, FcpError]:
         """Parse a double type."""
-        return Ok(DoubleType())  # type: ignore
+        return Ok(DoubleType())
 
     def str_type(self, args: List[str]) -> Result[StringType, FcpError]:
         """Parse a str type."""
@@ -295,7 +295,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         if typename.is_err():
             return Err(typename.err().results_in("Error parsing optional type"))
 
-        return Ok(OptionalType(typename.unwrap()))  # type: ignore
+        return Ok(OptionalType(typename.unwrap()))
 
     def dynamic_array_type(self, args: List[str]) -> Result[DynamicArrayType, FcpError]:
         """Parse a dynamic_array_type of the fcp AST."""
@@ -303,7 +303,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         if typename.is_err():
             return Err(typename.err().results_in("Error parsing dynamic array type"))
 
-        return Ok(DynamicArrayType(typename.unwrap()))  # type: ignore
+        return Ok(DynamicArrayType(typename.unwrap()))
 
     def param(self, args: List[str]) -> Tuple[str, ...]:
         """Parse a param node of the fcp AST."""
@@ -348,7 +348,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
                 fields={},
                 signals=[],
                 meta=meta,
-            )  # type: ignore
+            )
         )
 
         return Ok(())
@@ -361,14 +361,14 @@ class FcpV2Transformer(Transformer):  # type: ignore
         """Parse a struct_field node of the fcp AST."""
         name, field_id, type, *values = tree.children
 
-        params = {name: value for name, *value in values}  # type: ignore
-        params = _convert_params(params)  # type: ignore
+        params = {name: value for name, *value in values}
+        params = _convert_params(params)
 
-        meta = _get_meta(tree, self)  # type: ignore
+        meta = _get_meta(tree, self)
         return Ok(
             struct_field.StructField(
-                name=name,  # type: ignore
-                field_id=field_id,  # type: ignore
+                name=name,
+                field_id=field_id,
                 type=type.map_err(
                     lambda err: err.results_in("Error parsing type in struct field")
                 ).attempt(),
@@ -382,19 +382,17 @@ class FcpV2Transformer(Transformer):  # type: ignore
         """Parse an enum_field node of the fcp AST."""
         name, value = tree.children
 
-        meta = _get_meta(tree, self)  # type: ignore
+        meta = _get_meta(tree, self)
 
-        return enum.Enumeration(name=name, value=value, meta=meta)  # type: ignore
+        return enum.Enumeration(name=name, value=value, meta=meta)
 
     @v_args(tree=True)  # type: ignore
     def enum(self, tree: ParseTree) -> Result[Nil, FcpError]:
         """Parse an enum node of the fcp AST."""
         name, *fields = tree.children
 
-        meta = _get_meta(tree, self)  # type: ignore
-        self.fcp.enums.append(
-            enum.Enum(name=name, enumeration=fields, meta=meta)  # type: ignore
-        )
+        meta = _get_meta(tree, self)
+        self.fcp.enums.append(enum.Enum(name=name, enumeration=fields, meta=meta))
 
         return Ok(())
 
@@ -413,7 +411,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         try:
             self.error_logger.add_source(filename.name, source)
             fcp_ast = fcp_parser.parse(source)
-        except UnexpectedCharacters as e:
+        except (UnexpectedCharacters, UnexpectedEOF) as e:
             return Err(
                 FcpError(
                     self.error_logger.log_lark(filename.name, e),
@@ -473,7 +471,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
                 fields=dict(fields),
                 signals=signal_blocks,
                 meta=_get_meta(tree, self),
-            )  # type: ignore
+            )
         )
 
         return Ok(())
@@ -488,24 +486,27 @@ class FcpV2Transformer(Transformer):  # type: ignore
         """Parse a signal_block node of the fcp AST."""
         name, *fields = tree.children
 
-        fields: Dict[str, Any] = {field[0]: field[1] for field in fields}  # type: ignore[no-redef]
         return signal_block.SignalBlock(
-            name=name, fields=fields, meta=_get_meta(tree, self)
-        )  # type: ignore
+            name=name,
+            fields={field[0]: field[1] for field in fields},
+            meta=_get_meta(tree, self),
+        )
 
     @v_args(tree=True)  # type: ignore
     def service(self, tree: ParseTree) -> Result[Nil, FcpError]:
         """Parse a service node of the fcp AST."""
         name, id, *methods = tree.children
-        self.fcp.services.append(service.Service(name, id, methods, meta=_get_meta(tree, self)))  # type: ignore
+        self.fcp.services.append(
+            service.Service(name, id, methods, meta=_get_meta(tree, self))
+        )
 
         return Ok(())
 
     @v_args(tree=True)  # type: ignore
-    def method(self, tree: ParseTree) -> str:
+    def method(self, tree: ParseTree) -> method.Method:
         """Parse a method node of the fcp AST."""
         name, input, id, output = tree.children
-        return method.Method(name, id, input, output, meta=_get_meta(tree, self))  # type: ignore
+        return method.Method(name, id, input, output, meta=_get_meta(tree, self))
 
     def signal_field(self, args: List[Any]) -> Tuple[str, Any]:
         """Parse a signal_field node of the fcp AST."""
@@ -519,13 +520,13 @@ class FcpV2Transformer(Transformer):  # type: ignore
     def number(self, args: List[str]) -> Union[int, float]:
         """Parse a number node of the fcp AST."""
         try:
-            return int(args[0].value)  # type: ignore
+            return int(args[0].value)
         except ValueError:
-            return float(args[0].value)  # type: ignore
+            return float(args[0].value)
 
     def string(self, args: List[str]) -> str:
         """Parse a string node of the fcp AST."""
-        return args[0].value[1:-1]  # type: ignore
+        return str(args[0].value[1:-1])
 
     def array(self, args: List[Any]) -> List[Any]:
         """Parse an array node of the fcp AST."""
@@ -536,7 +537,7 @@ class FcpV2Transformer(Transformer):  # type: ignore
         """Parse a device node of the fcp AST."""
         name, *fields = tree.children
         self.fcp.devices.append(
-            device.Device(name, {k: v for k, v in fields}, _get_meta(tree, self))  # type: ignore
+            device.Device(name, {k: v for k, v in fields}, _get_meta(tree, self))
         )
 
         return Ok(())

@@ -41,6 +41,22 @@ class Impl:
     signals: List[SignalBlock]
     meta: Optional[MetaData] = field(skip=True)
 
+    def __init__(
+        self,
+        name: str,
+        protocol: str,
+        type: str,
+        fields: Dict[str, Any],
+        signals: List[SignalBlock],
+        meta: Optional[MetaData] = None,
+    ) -> None:
+        self.name = name
+        self.protocol = protocol
+        self.type = type
+        self.fields = fields
+        self.signals = signals
+        self.meta = meta
+
     def get_signal(self, name: str) -> Maybe[SignalBlock]:
         """Get impl signal."""
         for signal in self.signals:

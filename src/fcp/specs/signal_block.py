@@ -34,6 +34,11 @@ class SignalBlock:
     fields: Dict[str, Any]
     meta: MetaData
 
+    def __init__(self, name: str, fields: Dict[str, Any], meta: MetaData) -> None:
+        self.name = name
+        self.fields = fields
+        self.meta = meta
+
     def reflection(self) -> Dict[str, Any]:
         """Reflection."""
         return {

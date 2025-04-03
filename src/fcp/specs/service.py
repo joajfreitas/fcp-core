@@ -34,7 +34,15 @@ class Service:
     name: str
     id: int
     methods: List[Method]
-    meta: Optional[MetaData] = field(skip=True)
+    meta: Optional[MetaData] = field(skip=True, default=None)
+
+    def __init__(
+        self, name: str, id: int, methods: List[Method], meta: Optional[MetaData] = None
+    ) -> None:
+        self.name = name
+        self.id = id
+        self.methods = methods
+        self.meta = meta
 
     def reflection(self) -> Dict[str, Any]:
         """Reflection."""
