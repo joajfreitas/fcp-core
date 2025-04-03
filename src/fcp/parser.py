@@ -566,7 +566,14 @@ def _get_fcp(
     try:
         fcp_ast = fcp_parser.parse(source)
     except UnexpectedCharacters as e:
-        return Err(FcpError(error_logger.log_lark(filename.name, e)))
+        return Err(
+            FcpError(
+                error_logger.log_lark(filename.name, e),
+                Token(
+                    MetaData(e.line, e.line, e.column, e.column, 0, 0, str(filename))
+                ),
+            )
+        )
 
     parser_context = ParserContext()
 

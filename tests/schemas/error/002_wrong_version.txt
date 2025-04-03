@@ -1,2 +1,6 @@
  -> Expected IDL version 3
+ --->
+  |
+1 | version: "4"
+  | ~~~~~~~~~~~~
  -> Failed to parse 002_wrong_version.fcp

@@ -127,9 +127,9 @@ class ErrorLogger:
         ss = ""
         for i, line in enumerate(source.split("\n")):
             prefix = prefix_with_line if i == 0 else prefix_without_line
-            ss += prefix + line + "\n"
+            ss += prefix + " " + line + "\n"
             line = line.replace("\t", "    ")
-            ss += prefix_without_line + Color.boldred("~" * len(line)) + "\n"
+            ss += prefix_without_line + " " + Color.boldred("~" * len(line)) + "\n"
 
         return ss
 
@@ -137,25 +137,27 @@ class ErrorLogger:
         self, error: str, filename: str, line: int, column: int, source: str
     ) -> str:
         """Log source code location."""
-        if not self.enable_file_paths:
-            return ""
-
         line_len = len(str(line))
 
-        prefix_with_line = Color.boldblue(f"{line} | ")
-        prefix_without_line = Color.boldblue(" " * line_len + " | ")
+        prefix_with_line = Color.boldblue(f"{line} |")
+        prefix_without_line = Color.boldblue(" " * line_len + " |")
 
         ss = (
             ""
             if error == ""
             else Color.boldred("error: ") + Color.boldwhite(error) + "\n"
         )
-        ss += (
-            " " * line_len
-            + Color.boldblue("---> ")
-            + f"{filename}:{line}:{column}"
-            + "\n"
-        )
+
+        if self.enable_file_paths:
+            ss += (
+                " " * line_len
+                + Color.boldblue("---> ")
+                + f"{filename}:{line}:{column}"
+                + "\n"
+            )
+        else:
+            ss += " " * line_len + Color.boldblue("--->") + "\n"
+
         ss += prefix_without_line + "\n"
 
         ss += self._highlight(source, prefix_with_line, prefix_without_line)
@@ -211,9 +213,9 @@ class ErrorLogger:
                 return f" -> {msg}"
 
         ss = ""
+
         for msg, node, (source_file, line_number) in error.msg:
             ss += format_msg((msg, node, (source_file, line_number))) + "\n"
             if node is not None:
                 ss += self.log_node(node)
-
         return ss
