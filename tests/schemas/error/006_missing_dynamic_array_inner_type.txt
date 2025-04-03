@@ -1,8 +1,8 @@
- -> Error: Type 'MissingType' cannot be found.
+  → Error: Type 'MissingType' cannot be found.
   |
 4 |     field1 @0 : [MissingType],
   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- -> Error parsing dynamic array type
- -> Error parsing type in struct field
- -> Failed to parse field in struct S1
- -> Failed to parse 006_missing_dynamic_array_inner_type.fcp
+  ↳ Error parsing dynamic array type
+  ↳ Error parsing type in struct field
+  ↳ Failed to parse field in struct S1
+  ↳ Failed to parse 006_missing_dynamic_array_inner_type.fcp

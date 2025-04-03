@@ -1,4 +1,4 @@
- -> Error: Unexpected character ':', expected one of: ['struct_field']
+  → Error: Unexpected character ':', expected one of: ['struct_field']
   |
 4 |     field1 : u32,
   | ~~~~~~~~~~~~~~~~~

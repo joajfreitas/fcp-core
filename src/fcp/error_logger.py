@@ -188,31 +188,40 @@ class ErrorLogger:
     def error(self, error: FcpError) -> str:
         """Log an error."""
 
-        def format_msg(msg: Tuple[str, Tuple[str, str]], prefix: str = "") -> str:
+        def format_msg(
+            msg: Tuple[str, Tuple[str, str]], prefix: str, arrow: str
+        ) -> str:
             msg, node, (source_file, line_number) = msg
             if self.enable_file_paths:
                 if node is not None:
                     node_position = (
-                        f" [{Path(node.meta.filename).name}:{node.meta.line}]"
+                        f"\n   ↳ [{Path(node.meta.filename).name}:{node.meta.line}]"
                     )
                 else:
                     node_position = ""
 
                 return (
-                    f" -> {prefix}{msg} [{source_file.name}:{line_number}]"
+                    f"{arrow} {prefix}{msg}"
+                    + "\n"
+                    + f"   ↳ [{source_file.name}:{line_number}]"
                     + node_position
                 )
             else:
-                return f" -> {prefix}{msg}"
+                return f"{arrow} {prefix}{msg}"
 
         ss = ""
 
         for i, (msg, node, (source_file, line_number)) in enumerate(error.msg):
             if i == 0:
                 prefix = Color.boldred("Error:") + " "
+                arrow = "  →"
             else:
                 prefix = ""
-            ss += format_msg((msg, node, (source_file, line_number)), prefix) + "\n"
+                arrow = "  ↳"
+            ss += (
+                format_msg((msg, node, (source_file, line_number)), prefix, arrow)
+                + "\n"
+            )
             if node is not None:
                 ss += self.log_node(node)
         return ss
