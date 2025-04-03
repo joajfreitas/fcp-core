@@ -21,9 +21,9 @@
 """Verifier."""
 
 from beartype.typing import Callable, NoReturn, Dict, Optional, Any, Tuple
-from .result import Ok, Result, Err
+from .result import Ok, Result
 from .maybe import catch
-from .error import FcpError
+from .error import FcpError, error
 from .types import Nil
 from .specs.v2 import FcpV2
 from .specs.impl import Impl
@@ -138,7 +138,7 @@ def make_general_verifier() -> Verifier:
         type_names = [type.name for type in fcp.get_types()]
 
         if type_names.count(type.name) > 1:
-            return Err(FcpError("Duplicate type names", node=type))
+            return error("Duplicate type names", node=type)
         else:
             return Ok(())
 
@@ -148,7 +148,7 @@ def make_general_verifier() -> Verifier:
     ) -> Result[Nil, FcpError]:
         impls = [(impl.name, impl.protocol) for impl in fcp.impls]
         if impls.count((left.name, left.protocol)) > 1:
-            return Err(FcpError("Duplicate impls", node=left))
+            return error("Duplicate impls", node=left)
         else:
             return Ok(())
 
@@ -159,7 +159,7 @@ def make_general_verifier() -> Verifier:
         struct, left_signal = left
         signal_names = [field.name for field in struct.fields]
         if signal_names.count(left_signal.name) > 1:
-            return Err(FcpError("Duplicate fields", node=left_signal))
+            return error("Duplicate fields", node=left_signal)
         else:
             return Ok(())
 
@@ -168,7 +168,7 @@ def make_general_verifier() -> Verifier:
         self: Any, fcp: FcpV2, struct: Struct
     ) -> Result[Nil, FcpError]:
         if len(struct.fields) == 0:
-            return Err(FcpError("Struct has no signal", node=struct))
+            return error("Struct has no signal", node=struct)
         else:
             return Ok(())
 
@@ -179,7 +179,7 @@ def make_general_verifier() -> Verifier:
         enumeration_names = [enumeration.name for enumeration in enum.enumeration]
         for enumeration in enum.enumeration:
             if enumeration_names.count(enumeration.name) > 1:
-                return Err(FcpError("Duplicated enumration name", node=enumeration))
+                return error("Duplicated enumration name", node=enumeration)
 
         return Ok(())
 
@@ -190,7 +190,7 @@ def make_general_verifier() -> Verifier:
         enumeration_names = [enumeration.value for enumeration in enum.enumeration]
         for enumeration in enum.enumeration:
             if enumeration_names.count(enumeration.value) > 1:
-                return Err(FcpError("Duplicated enumeration name", node=enumeration))
+                return error("Duplicated enumeration name", node=enumeration)
 
         return Ok(())
 
@@ -210,11 +210,9 @@ def make_general_verifier() -> Verifier:
             # Check if all services referenced by device exist in fcp
             for service in device_services:
                 if service not in fcp_services:
-                    return Err(
-                        FcpError(
-                            f'Service "{service}" referenced by device "{device.name}" doesn\'t exist',
-                            node=device,
-                        )
+                    return error(
+                        f'Service "{service}" referenced by device "{device.name}" doesn\'t exist',
+                        node=device,
                     )
 
         return Ok(())

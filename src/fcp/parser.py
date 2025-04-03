@@ -59,7 +59,7 @@ from .specs import v2
 from .result import Result, Ok, Err
 from .maybe import catch
 from .specs.metadata import MetaData
-from .error import Logger, FcpError
+from .error import Logger, FcpError, error
 
 
 fcp_parser = Lark(
@@ -233,7 +233,7 @@ class FcpV2Transformer(Transformer):
         if tree.children[0] == "3":
             return Ok(())
         else:
-            return Err(FcpError("Expected IDL version 3", Token(_get_meta(tree, self))))
+            return error("Expected IDL version 3", Token(_get_meta(tree, self)))
 
     def identifier(self, args: List[Any]) -> str:
         """Parse an identifier node of the fcp AST."""
@@ -287,10 +287,8 @@ class FcpV2Transformer(Transformer):
         elif self.fcp.get_enum(typename).is_some():
             return Ok(EnumType(typename))
         else:
-            return Err(
-                FcpError(
-                    f"Type '{typename}' cannot be found.", Token(_get_meta(tree, self))
-                )
+            return error(
+                f"Type '{typename}' cannot be found.", Token(_get_meta(tree, self))
             )
 
     def optional_type(self, args: List[str]) -> Result[OptionalType, FcpError]:
@@ -410,21 +408,17 @@ class FcpV2Transformer(Transformer):
             with open(filename) as f:
                 source = f.read()
         except FileNotFoundError as e:
-            return Err(FcpError(f"File not found: {pathlib.Path(e.filename).name}"))
+            return error(f"File not found: {pathlib.Path(e.filename).name}")
 
         try:
             self.error_logger.add_source(filename.name, source)
             fcp_ast = fcp_parser.parse(source)
         except (UnexpectedCharacters, UnexpectedEOF) as e:
-            return Err(
-                FcpError(
-                    self.error_logger.log_lark(filename.name, e),
-                    Token(
-                        MetaData(
-                            e.line, e.line, e.column, e.column, 0, 0, str(filename)
-                        )
-                    ),
-                )
+            return error(
+                self.error_logger.log_lark(filename.name, e),
+                Token(
+                    MetaData(e.line, e.line, e.column, e.column, 0, 0, str(filename))
+                ),
             )
 
         fcp = FcpV2Transformer(
@@ -567,13 +561,9 @@ def _get_fcp(
     try:
         fcp_ast = fcp_parser.parse(source)
     except UnexpectedCharacters as e:
-        return Err(
-            FcpError(
-                logger.log_lark(filename.name, e),
-                Token(
-                    MetaData(e.line, e.line, e.column, e.column, 0, 0, str(filename))
-                ),
-            )
+        return error(
+            error_logger.log_lark(filename.name, e),
+            Token(MetaData(e.line, e.line, e.column, e.column, 0, 0, str(filename))),
         )
 
     parser_context = ParserContext()
