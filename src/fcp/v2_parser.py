@@ -559,12 +559,19 @@ def _get_fcp(
 ) -> Result[Tuple[v2.FcpV2, Dict[str, str]], FcpError]:
     source = filesystem_proxy.read(filename)
 
+    error_logger.add_source(filename.name, source)
     try:
         fcp_ast = fcp_parser.parse(source)
     except UnexpectedCharacters as e:
-        return Err(FcpError(error_logger.log_lark(filename.name, e)))
+        return Err(
+            FcpError(
+                error_logger.log_lark(filename.name, e),
+                Token(
+                    MetaData(e.line, e.line, e.column, e.column, 0, 0, str(filename))
+                ),
+            )
+        )
 
-    error_logger.add_source(filename.name, source)
     parser_context = ParserContext()
 
     fcp = FcpV2Transformer(

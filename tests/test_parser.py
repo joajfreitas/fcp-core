@@ -103,6 +103,7 @@ def test_parsing_errors(test_name: str) -> NoReturn:
     fcp_config = Path(get_fcp_config("error", test_name))
     fcp = get_fcp(fcp_config, error_logger)
     result = get_result_txt("error", test_name)
+
     assert fcp.is_err()
     assert error_logger.error(fcp.err()) == result
 
