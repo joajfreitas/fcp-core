@@ -20,94 +20,12 @@
 
 """Error logger."""
 
-from beartype.typing import Callable, List, Dict, Any, Tuple
+from beartype.typing import List, Dict, Any, Tuple
 from lark import UnexpectedCharacters
 from pathlib import Path
 
-from typing_extensions import Self
-
 from .colors import Color
-from .error import FcpError, Level
-
-
-def _highlight(source: str, prefix_with_line: str, prefix_without_line: str) -> str:
-    """Highligh source code."""
-    ss = ""
-    for i, line in enumerate(source.split("\n")):
-        prefix = prefix_with_line if i == 0 else prefix_without_line
-        ss += prefix + line + "\n"
-        line = line.replace("\t", "    ")
-        ss += prefix_without_line + Color.boldred("~" * len(line)) + "\n"
-
-    return ss
-
-
-class ErrorLogBuilder:
-    """Builder for error logs."""
-
-    def __init__(self, enable_file_paths: bool) -> None:
-        self.enable_file_paths = enable_file_paths
-        self.buffer = Color.boldred("Error: ")
-
-    def with_newline(self, amount: int = 1) -> Self:
-        """Add a new line."""
-        self.buffer += amount * "\n"
-        return self
-
-    def with_list(
-        self, list: List[str], transform: Callable[[str], str] = lambda x: x
-    ) -> Self:
-        """Add a list."""
-        self.buffer += "\n".join(["\t" + transform(x) for x in list])
-        return self
-
-    def with_line(self, line: str) -> Self:
-        """Add a line."""
-        self.buffer += line
-        return self
-
-    def with_location(self, filepath: Path, line: int, column: int) -> Self:
-        """Add code location."""
-        if not self.enable_file_paths:
-            filename = filepath.name
-        else:
-            filename = str(filepath)
-
-        self.buffer += f"{filename}:{line}:{column}"
-
-        return self
-
-    def with_surrounding(self, source: str, line: int, column: int) -> Self:
-        """Add source code context."""
-        lines = source.split("\n")
-        starting_line = line - 2 if line > 0 else 0
-        ending_line = line + 1 if line < len(lines) else len(lines)
-
-        prefix_with_line = Color.boldblue(f"{starting_line+1} | ")
-        prefix_without_line = Color.boldblue(" " * len(str(line)) + " | ")
-
-        source = "\n".join(lines[starting_line:ending_line])
-
-        ss = _highlight(source, prefix_with_line, prefix_without_line)
-
-        self.buffer += ss
-
-        return self
-
-    def with_log_level(self, level: Level) -> Self:
-        """Add a log level marker."""
-        if level == Level.Error:
-            self.buffer += Color.red("Error: ")
-        elif level == Level.Warn:
-            self.buffer += Color.yellow("Warning: ")
-        elif level == Level.Info:
-            self.buffer += Color.blue("Info: ")
-
-        return self
-
-    def error(self) -> str:
-        """Build error."""
-        return self.buffer
+from .error import FcpError
 
 
 class ErrorLogger:
@@ -133,9 +51,7 @@ class ErrorLogger:
 
         return ss
 
-    def log_location(
-        self, error: str, filename: str, line: int, column: int, source: str
-    ) -> str:
+    def log_location(self, line: int, source: str) -> str:
         """Log source code location."""
         line_len = len(str(line))
 
@@ -147,15 +63,12 @@ class ErrorLogger:
 
         return ss
 
-    def log_node(self, node: Any, error: str = "") -> str:
+    def log_node(self, node: Any) -> str:
         """Log fcp node."""
         source = self.sources[Path(node.meta.filename).name]
         lines = source.split("\n")
         return self.log_location(
-            error,
-            node.meta.filename,
             node.meta.line,
-            node.meta.column,
             lines[node.meta.line - 1],
         )
 
@@ -168,9 +81,7 @@ class ErrorLogger:
             + "\n".join(map(lambda x: self.log_node(x), duplicates))
         )
 
-    def log_lark_unexpected_characters(
-        self, filename: str, exception: UnexpectedCharacters
-    ) -> str:
+    def log_lark_unexpected_characters(self, exception: UnexpectedCharacters) -> str:
         """Log a lark unexpected characters exception."""
         return f"Unexpected character '{exception.char}', expected one of: " + str(
             list(

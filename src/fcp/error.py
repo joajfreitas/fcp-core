@@ -20,7 +20,7 @@
 
 """Error."""
 
-from beartype.typing import Any, Tuple
+from beartype.typing import Any
 from typing_extensions import Self
 from enum import Enum
 from inspect import getframeinfo, stack
