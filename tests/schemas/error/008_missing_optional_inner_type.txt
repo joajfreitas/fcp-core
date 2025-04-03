@@ -1,4 +1,4 @@
- -> Type 'MissingType' cannot be found.
+ -> Error: Type 'MissingType' cannot be found.
  --->
   |
 4 |     field1 @0 : Optional[MissingType],

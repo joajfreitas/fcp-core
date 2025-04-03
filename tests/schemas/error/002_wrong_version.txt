@@ -1,4 +1,4 @@
- -> Expected IDL version 3
+ -> Error: Expected IDL version 3
  --->
   |
 1 | version: "4"
