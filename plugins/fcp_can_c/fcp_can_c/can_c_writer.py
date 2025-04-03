@@ -22,17 +22,14 @@
 
 import os
 
-from pathlib import Path
-from beartype.typing import Generator, List, Dict, Any, Optional, Tuple
+from beartype.typing import Generator, List, Dict, Optional, Tuple
 from math import ceil
-from cantools.database import conversion
 from jinja2 import Environment, FileSystemLoader
 from cantools.database.can.node import Node as CanNode
 from fcp.specs.struct_field import StructField
 from fcp.specs.v2 import FcpV2
 from dataclasses import dataclass
-from fcp.result import Result, Ok, Err
-from fcp.maybe import catch, Nothing
+from fcp.result import Err
 from fcp.encoding import make_encoder, EncodeablePiece, Value, PackedEncoderContext
 
 

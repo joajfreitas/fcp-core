@@ -22,7 +22,7 @@
 
 import os
 
-from beartype.typing import Any, Union, NoReturn, Dict, List
+from beartype.typing import Any, Union, Dict, List
 from pathlib import Path
 
 from fcp.codegen import CodeGenerator

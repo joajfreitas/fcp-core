@@ -22,12 +22,12 @@
 
 import os
 from pathlib import Path
+from beartype.typing import List
 from hypothesis import given, settings
 from hypothesis.strategies import (
     text,
     integers,
     floats,
-    text,
     characters,
     lists,
     booleans,
@@ -128,7 +128,7 @@ def test_encoding_struct_composition() -> None:
 def test_encoding_simple_array_type() -> None:
     fcp_v2, _ = get_fcp(get_fcp_config("syntax", "007_simple_array_type")).unwrap()
 
-    encoded = encode(fcp_v2, "A", {"field1": [1, 2, 3, 4]})
+    encoded = encode(fcp_v2, "S1", {"field1": [1, 2, 3, 4]})
 
     assert encoded == bytearray([0x01, 0x02, 0x03, 0x04])
 
@@ -247,7 +247,7 @@ def test_decoding_simple_array_type() -> None:
 
     decoded = decode(
         fcp_v2,
-        "A",
+        "S1",
         bytearray([0x01, 0x02, 0x03, 0x04]),
     )
 
@@ -354,18 +354,18 @@ def test_roundtrip_decoding_str(t: str) -> None:
 
 @settings(max_examples=20)  # type: ignore
 @given(lists(integers(min_value=0, max_value=255), min_size=4, max_size=4))  # type: ignore
-def test_roundtrip_decoding_simple_array_type(array) -> None:
+def test_roundtrip_decoding_simple_array_type(array: List[int]) -> None:
     fcp_v2, _ = get_fcp(get_fcp_config("syntax", "007_simple_array_type")).unwrap()
 
     data = {"field1": array}
-    encoded = encode(fcp_v2, "A", {"field1": [1, 2, 3, 4]})
+    encoded = encode(fcp_v2, "S1", data)
 
     assert decode(fcp_v2, "S1", encoded) == data
 
 
 @settings(max_examples=20)  # type: ignore
 @given(lists(integers(min_value=0, max_value=255), max_size=4092))  # type: ignore
-def test_roundtrip_decoding_simple_array_type(array) -> None:
+def test_roundtrip_decoding_simple_dynamic_array_type(array: List[int]) -> None:
     fcp_v2, _ = get_fcp(get_fcp_config("syntax", "008_dynamic_array")).unwrap()
 
     data = {"field1": array}

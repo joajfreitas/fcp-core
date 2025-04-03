@@ -28,7 +28,6 @@ import pytest
 from beartype.typing import List, Dict, Any
 
 from fcp.specs.v2 import FcpV2
-from fcp.codegen import handle_result
 from fcp_cpp import Generator
 from fcp.parser import get_fcp
 from fcp.specs.type import (
@@ -45,7 +44,7 @@ from fcp.specs.type import (
 )
 from fcp.xpath import Xpath
 
-from .cc_binary import cc_binary, InMemoryFile, File, Source
+from .cc_binary import cc_binary, InMemoryFile, Source
 
 THIS_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 ROOT_DIR = THIS_DIR.parent.parent.parent
@@ -170,7 +169,7 @@ def test_standardized_tests(test_suite: Dict[Any, Any]) -> None:
     for result in generator.generate(fcp_v2, {"output": "/tmp/fcp"}):
         fcp_sources += handle_result(result)
 
-    binary_path = cc_binary(
+    cc_binary(
         name="standardized_test",
         srcs=[
             InMemoryFile(

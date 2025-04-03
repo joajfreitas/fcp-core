@@ -20,7 +20,7 @@
 
 """Struct."""
 
-from beartype.typing import Optional, List, Tuple, Any, Dict
+from beartype.typing import Optional, List, Any, Dict
 import serde
 
 from .struct_field import StructField
