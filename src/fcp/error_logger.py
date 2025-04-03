@@ -21,7 +21,7 @@
 """Error logger."""
 
 from beartype.typing import List, Dict, Any, Tuple
-from lark import UnexpectedCharacters
+from lark import UnexpectedInput, UnexpectedCharacters, UnexpectedEOF
 from pathlib import Path
 
 from .colors import Color
@@ -93,7 +93,7 @@ class ErrorLogger:
         """Log a lark unexpected EOF exception."""
         return "Unexpected EOF"
 
-    def log_lark(self, filename: str, exception: Exception) -> str:
+    def log_lark(self, filename: str, exception: UnexpectedInput) -> str:
         """Log lark errors."""
         if isinstance(exception, UnexpectedCharacters):
             return self.log_lark_unexpected_characters(exception)
