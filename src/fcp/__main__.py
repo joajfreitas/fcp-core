@@ -71,7 +71,7 @@ def generate_cmd(
     )
 
     if result.is_err():
-        print(error_logger.error(r.err().results_in("Failed to generate fcp")))
+        print(error_logger.error(result.err().results_in("Failed to generate fcp")))
 
 
 @click.command()  # type: ignore
