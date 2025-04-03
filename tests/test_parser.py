@@ -29,7 +29,7 @@ from fcp.parser import get_fcp
 from fcp.specs.v2 import FcpV2
 from fcp.verifier import make_general_verifier
 from fcp.types import NoReturn
-from fcp.error_logger import ErrorLogger
+from fcp.error import ErrorLogger
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 

@@ -31,7 +31,7 @@ from .version import VERSION
 from .parser import get_fcp
 from .codegen import GeneratorManager
 from .verifier import make_general_verifier
-from .error_logger import ErrorLogger
+from .error import ErrorLogger
 from .serde import encode as serde_encode
 
 

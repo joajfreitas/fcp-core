@@ -59,8 +59,7 @@ from .specs import v2
 from .result import Result, Ok, Err
 from .maybe import catch
 from .specs.metadata import MetaData
-from .error_logger import ErrorLogger
-from .error import FcpError
+from .error import ErrorLogger, FcpError
 
 
 fcp_parser = Lark(
