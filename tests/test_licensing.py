@@ -23,7 +23,6 @@
 import re
 import pytest
 from pathlib import Path
-import os
 
 from beartype.typing import List, Generator
 

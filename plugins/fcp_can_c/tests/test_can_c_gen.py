@@ -52,10 +52,10 @@ def test_can_c_gen(test_name: str) -> None:
 
     # Use test_name in the output path for generated files
     output_path = get_path(test_name) + "/generated_code"
-    results = generator.gen(fcp_v2, None, None, os.path.join("tests", output_path))
+    generator.gen(fcp_v2, None, None, os.path.join("tests", output_path))
 
     # List contents of the directory before running make
-    for root, dirs, files in os.walk(output_path):
+    for root, _, files in os.walk(output_path):
         for name in files:
             print(os.path.join(root, name))
 

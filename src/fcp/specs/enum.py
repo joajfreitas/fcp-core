@@ -21,7 +21,7 @@
 """Enum."""
 
 from serde import serde, strict, field
-from beartype.typing import Optional, List, Tuple, Dict, Any
+from beartype.typing import Optional, List, Dict, Any
 import math
 
 from .metadata import MetaData

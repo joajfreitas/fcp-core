@@ -24,8 +24,6 @@ from beartype.typing import Dict, Any, Union, List
 import struct
 
 from .specs.v2 import FcpV2
-from .specs.metadata import MetaData
-from .specs.impl import Impl
 from .specs.type import (
     Type,
     ArrayType,
@@ -38,8 +36,6 @@ from .specs.type import (
     FloatType,
     DoubleType,
 )
-
-from .encoding import make_encoder, EncoderContext
 
 
 class _Buffer:

@@ -23,7 +23,6 @@
 import pytest
 import os
 import json
-import re
 from pathlib import Path
 
 from fcp.v2_parser import get_fcp

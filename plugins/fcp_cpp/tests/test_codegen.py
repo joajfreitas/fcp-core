@@ -92,7 +92,7 @@ def test_codegen() -> None:
     cc_binary(
         name="test",
         srcs=[
-            File(Path(THIS_DIR) / f"test.cpp"),
+            File(Path(THIS_DIR) / "test.cpp"),
         ],
         headers=fcp_sources,
         dynamic_libraries=["gtest_main", "gtest", "gmock"],
@@ -110,7 +110,7 @@ def test_dynamic_serialization() -> None:
     cc_binary(
         name="test_dynamic",
         srcs=[
-            File(Path(THIS_DIR) / f"test_dynamic.cpp"),
+            File(Path(THIS_DIR) / "test_dynamic.cpp"),
         ],
         headers=[
             InMemoryBinaryFile(
@@ -134,7 +134,7 @@ def test_can_codegen() -> None:
     cc_binary(
         name="test",
         srcs=[
-            File(Path(THIS_DIR) / f"test_can.cpp"),
+            File(Path(THIS_DIR) / "test_can.cpp"),
         ],
         headers=[
             InMemoryBinaryFile(

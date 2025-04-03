@@ -4,16 +4,16 @@
     "impls": [
         {
             "fields": {},
-            "name": "A",
+            "name": "S1",
             "protocol": "default",
             "signals": [],
-            "type": "A"
+            "type": "S1"
         }
     ],
     "services": [],
     "structs": [
         {
-            "name": "A",
+            "name": "S1",
             "fields": [{
                 "name": "field1",
                 "field_id": 0,

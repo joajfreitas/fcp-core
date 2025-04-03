@@ -26,8 +26,6 @@ from fcp.type_visitor import TypeVisitor
 from fcp.specs import type
 from fcp.v2_parser import get_fcp_from_string
 
-from .fcp_builder import FcpV2Builder, StructBuilder, StructFieldBuilder
-
 
 class TestTypeVisitor(TypeVisitor):
     """Test type visitor."""

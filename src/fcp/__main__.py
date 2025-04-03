@@ -33,7 +33,6 @@ from .codegen import GeneratorManager
 from .verifier import make_general_verifier
 from .error import ErrorLogger
 from .serde import encode as serde_encode
-from .serde import decode as serde_decode
 
 
 def setup_logging() -> None:
