@@ -26,8 +26,8 @@ fcp = "fcp.__main__:main"
 addopts = ["--import-mode=importlib"]
 
 [tool.ruff.lint]
-select = ["D", "F"]
-ignore = ["F402", "D105", "D107", "D401", "D404"]
+select = ["D", "F", "E"]
+ignore = ["F402", "D105", "D107", "D401", "D404", "E501"]
 
 [tool.mypy]
 disable_error_code = ["no-redef"]
