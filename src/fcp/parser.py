@@ -22,19 +22,16 @@
 
 from beartype.typing import Any, Union, Callable, Tuple, List, Dict
 import pathlib
-import traceback
-import logging
 
 from lark import (
     Lark,
     Transformer,
     v_args,
     UnexpectedCharacters,
-    UnexpectedEOF,
     ParseTree,
 )
 
-from .types import Nil, Never
+from .types import Nil
 
 from .specs import struct_field
 from .specs import struct

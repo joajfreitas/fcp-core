@@ -21,7 +21,7 @@
 """Error logger."""
 
 from beartype.typing import Callable, List, Dict, Any, Tuple
-from lark import UnexpectedCharacters, UnexpectedEOF
+from lark import UnexpectedCharacters
 from pathlib import Path
 
 from typing_extensions import Self
