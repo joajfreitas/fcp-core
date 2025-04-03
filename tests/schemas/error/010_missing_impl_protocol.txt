@@ -1,5 +1,4 @@
  -> Error: Unexpected character '{', expected one of: ['identifier']
- --->
   |
 7 | impl can for {
   | ~~~~~~~~~~~~~~

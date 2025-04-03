@@ -142,24 +142,7 @@ class ErrorLogger:
         prefix_with_line = Color.boldblue(f"{line} |")
         prefix_without_line = Color.boldblue(" " * line_len + " |")
 
-        ss = (
-            ""
-            if error == ""
-            else Color.boldred("error: ") + Color.boldwhite(error) + "\n"
-        )
-
-        if self.enable_file_paths:
-            ss += (
-                " " * line_len
-                + Color.boldblue("---> ")
-                + f"{filename}:{line}:{column}"
-                + "\n"
-            )
-        else:
-            ss += " " * line_len + Color.boldblue("--->") + "\n"
-
-        ss += prefix_without_line + "\n"
-
+        ss = prefix_without_line + "\n"
         ss += self._highlight(source, prefix_with_line, prefix_without_line)
 
         return ss
@@ -206,9 +189,19 @@ class ErrorLogger:
         """Log an error."""
 
         def format_msg(msg: Tuple[str, Any, Tuple[str, int]], prefix: str = "") -> str:
-            msg, _, (source_file, line_number) = msg
+            msg, node, (source_file, line_number) = msg
             if self.enable_file_paths:
-                return f" -> {prefix}{msg} [{source_file.name}:{line_number}]"
+                if node is not None:
+                    node_position = (
+                        f" [{Path(node.meta.filename).name}:{node.meta.line}]"
+                    )
+                else:
+                    node_position = ""
+
+                return (
+                    f" -> {prefix}{msg} [{source_file.name}:{line_number}]"
+                    + node_position
+                )
             else:
                 return f" -> {prefix}{msg}"
 
