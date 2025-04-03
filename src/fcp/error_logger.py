@@ -89,10 +89,16 @@ class ErrorLogger:
             )
         )
 
+    def log_lark_unexpected_eof(self, exception: UnexpectedEOF) -> str:
+        """Log a lark unexpected EOF exception."""
+        return "Unexpected EOF"
+
     def log_lark(self, filename: str, exception: Exception) -> str:
         """Log lark errors."""
         if isinstance(exception, UnexpectedCharacters):
-            return self.log_lark_unexpected_characters(filename, exception)
+            return self.log_lark_unexpected_characters(exception)
+        elif isinstance(exception, UnexpectedEOF):
+            return self.log_lark_unexpected_eof(exception)
         else:
             return "Unexpected EOF in file " + filename
 
