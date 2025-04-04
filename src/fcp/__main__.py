@@ -62,12 +62,10 @@ def generate_cmd(
     if r.is_err():
         print(error_logger.error(r.err().results_in("Failed to generate fcp")))
         return
-    fcp_v2, sources = r.unwrap()
+    fcp_v2 = r.unwrap()
 
     generator_manager = GeneratorManager(make_general_verifier())
-    result = generator_manager.generate(
-        generator, templates, skel, fcp_v2, sources, output
-    )
+    result = generator_manager.generate(generator, templates, skel, fcp_v2, output)
 
     if result.is_err():
         print(error_logger.error(result.err().results_in("Failed to generate fcp")))
@@ -80,7 +78,7 @@ def show(fcp: str) -> None:
     fcp_result = get_fcp(fcp)
 
     if fcp_result.is_ok():
-        fcp_v2, _ = fcp_result.unwrap()
+        fcp_v2 = fcp_result.unwrap()
         pprint(fcp_v2.to_dict())
     else:
         print(fcp_result)
@@ -92,8 +90,8 @@ def show(fcp: str) -> None:
 @click.argument("output")  # type: ignore
 def encode(fcp_schema: str, fcp_data: str, output: str) -> None:
     """Encode an .fcp according to the data in the reflection schema."""
-    fcp_schema, _ = get_fcp(fcp_schema).unwrap()
-    fcp_data, _ = get_fcp(fcp_data).unwrap()
+    fcp_schema = get_fcp(fcp_schema).unwrap()
+    fcp_data = get_fcp(fcp_data).unwrap()
     bytearray = serde_encode(fcp_schema, "Fcp", fcp_data.reflection())  # type: ignore
 
     with open(output, "wb") as f:

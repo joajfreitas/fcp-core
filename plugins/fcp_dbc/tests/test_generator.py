@@ -75,7 +75,7 @@ def get_bo(dbc: str) -> str:
     ],
 )  # type: ignore
 def test_dbc_generator(test_name: str) -> None:
-    fcp_v2, _ = get_fcp(Path(get_fcp_config("generator", test_name))).unwrap()
+    fcp_v2 = get_fcp(Path(get_fcp_config("generator", test_name))).unwrap()
     generator = Generator()
 
     results = generator.generate(
@@ -91,7 +91,7 @@ def test_dbc_generator(test_name: str) -> None:
 
 
 def test_verifier_no_error() -> None:
-    fcp_v2, _ = get_fcp(Path(get_fcp_config("verifier", "000_no_error"))).unwrap()
+    fcp_v2 = get_fcp(Path(get_fcp_config("verifier", "000_no_error"))).unwrap()
 
     verifier = make_general_verifier()
     generator = Generator()
@@ -107,7 +107,7 @@ def test_verifier_no_error() -> None:
     ],
 )  # type: ignore
 def test_verifier(test_name: str) -> None:
-    fcp_v2, _ = get_fcp(Path(get_fcp_config("verifier", test_name))).unwrap()
+    fcp_v2 = get_fcp(Path(get_fcp_config("verifier", test_name))).unwrap()
 
     verifier = make_general_verifier()
     generator = Generator()
@@ -134,7 +134,7 @@ impl can for Foo {
 }"""
         )
 
-    fcp_v2, _ = get_fcp(tmp.name).unwrap()
+    fcp_v2 = get_fcp(tmp.name).unwrap()
     generator = Generator()
 
     with pytest.raises(ValueError):

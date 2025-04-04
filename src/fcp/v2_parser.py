@@ -548,7 +548,7 @@ def _get_fcp(
     filename: pathlib.Path,
     filesystem_proxy: IFileSystemProxy,
     error_logger: ErrorLogger,
-) -> Result[Tuple[v2.FcpV2, Dict[str, str]], FcpError]:
+) -> Result[v2.FcpV2, FcpError]:
     source = filesystem_proxy.read(filename)
 
     error_logger.add_source(filename.name, source)
@@ -566,13 +566,13 @@ def _get_fcp(
         filename, parser_context, filesystem_proxy, error_logger
     ).transform(fcp_ast)
 
-    return Ok((fcp.attempt(), parser_context.get_sources()))
+    return Ok(fcp.attempt())
 
 
 @catch
 def get_fcp(
     fcp_filename: str, error_logger: ErrorLogger = ErrorLogger({})
-) -> Result[Tuple[v2.FcpV2, Dict[str, str]], FcpError]:
+) -> Result[v2.FcpV2, FcpError]:
     """Build a fcp AST from the filename of an fcp schema.
 
     Returns the Fcp AST and source code information for debugging.
@@ -583,8 +583,7 @@ def get_fcp(
 
 def get_fcp_from_string(
     source: str, error_logger: ErrorLogger = ErrorLogger({})
-) -> Result[Tuple[v2.FcpV2, Dict[str, str]], FcpError]:
+) -> Result[v2.FcpV2, FcpError]:
     """Build a fcp AST from the source code of an fcp schema."""
     filesystem_proxy = InMemoryFileSystemProxy({pathlib.Path("main.fcp"): source})
-
     return _get_fcp(pathlib.Path("main.fcp"), filesystem_proxy, error_logger)

@@ -146,7 +146,6 @@ class GeneratorManager:
         template_dir: str,
         skel_dir: str,
         fcp: Any,
-        sources: Any,
         output_path: str,
     ) -> Result[Nil, str]:
         """Generate code."""
