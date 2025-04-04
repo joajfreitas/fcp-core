@@ -78,11 +78,11 @@ def get_fcp_config(name: str) -> str:
 
 
 def get_fcp_reflection() -> FcpV2:
-    return get_reflection_schema().unwrap()[0]
+    return get_reflection_schema().unwrap()
 
 
 def test_codegen() -> None:
-    fcp_v2, _ = get_fcp(Path(get_fcp_config("test"))).unwrap()
+    fcp_v2 = get_fcp(Path(get_fcp_config("test"))).unwrap()
     generator = Generator()
 
     fcp_sources = []
@@ -100,7 +100,7 @@ def test_codegen() -> None:
 
 
 def test_dynamic_serialization() -> None:
-    fcp_v2, _ = get_fcp(Path(get_fcp_config("test"))).unwrap()
+    fcp_v2 = get_fcp(Path(get_fcp_config("test"))).unwrap()
     generator = Generator()
 
     fcp_sources = []
@@ -124,7 +124,7 @@ def test_dynamic_serialization() -> None:
 
 
 def test_can_codegen() -> None:
-    fcp_v2, _ = get_fcp(Path(get_fcp_config("test"))).unwrap()
+    fcp_v2 = get_fcp(Path(get_fcp_config("test"))).unwrap()
     generator = Generator()
 
     fcp_sources = []

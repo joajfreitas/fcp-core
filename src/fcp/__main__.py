@@ -62,12 +62,10 @@ def generate_cmd(
     if r.is_err():
         print(logger.error(r.err().results_in("Failed to generate fcp")))
         return
-    fcp_v2, sources = r.unwrap()
+    fcp_v2 = r.unwrap()
 
     generator_manager = GeneratorManager(make_general_verifier())
-    result = generator_manager.generate(
-        generator, templates, skel, fcp_v2, sources, output
-    )
+    result = generator_manager.generate(generator, templates, skel, fcp_v2, output)
 
     if result.is_err():
         print(logger.error(result.err().results_in("Failed to generate fcp")))

@@ -562,7 +562,7 @@ def _get_fcp(
         fcp_ast = fcp_parser.parse(source)
     except UnexpectedCharacters as e:
         return error(
-            error_logger.log_lark(filename.name, e),
+            logger.log_lark(filename.name, e),
             Token(MetaData(e.line, e.line, e.column, e.column, 0, 0, str(filename))),
         )
 
@@ -572,7 +572,7 @@ def _get_fcp(
         filename, parser_context, filesystem_proxy, logger
     ).transform(fcp_ast)
 
-    return Ok((fcp.attempt(), parser_context.get_sources()))
+    return Ok(fcp.attempt())
 
 
 @catch

@@ -45,7 +45,7 @@ def get_fcp_config(scope: str, name: str) -> Path:
 
 
 def test_encoding_single_byte_types() -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
 
     encoded = encode(
         fcp_v2,
@@ -60,7 +60,7 @@ def test_encoding_single_byte_types() -> None:
 
 
 def test_encoding_8_byte_types() -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
 
     encoded = encode(
         fcp_v2,
@@ -82,7 +82,7 @@ def test_encoding_8_byte_types() -> None:
 
 
 def test_encoding_floating_point_types() -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
 
     encoded = encode(
         fcp_v2,
@@ -99,7 +99,7 @@ def test_encoding_floating_point_types() -> None:
 
 
 def test_encoding_str() -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
 
     encoded = encode(fcp_v2, "S5", {"s0": "hello"})
 
@@ -109,7 +109,7 @@ def test_encoding_str() -> None:
 
 
 def test_encoding_struct_composition() -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "004_struct_composition")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "004_struct_composition")).unwrap()
 
     encoded = encode(
         fcp_v2,
@@ -126,7 +126,7 @@ def test_encoding_struct_composition() -> None:
 
 
 def test_encoding_simple_array_type() -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "007_simple_array_type")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "007_simple_array_type")).unwrap()
 
     encoded = encode(fcp_v2, "S1", {"field1": [1, 2, 3, 4]})
 
@@ -134,7 +134,7 @@ def test_encoding_simple_array_type() -> None:
 
 
 def test_encoding_dynamic_array() -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "008_dynamic_array")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "008_dynamic_array")).unwrap()
 
     encoded = encode(fcp_v2, "S1", {"field1": [1, 2, 3]})
 
@@ -142,7 +142,7 @@ def test_encoding_dynamic_array() -> None:
 
 
 def test_encoding_optional_with_value() -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "009_optional")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "009_optional")).unwrap()
 
     encoded = encode(fcp_v2, "S1", {"field1": 1})
 
@@ -150,7 +150,7 @@ def test_encoding_optional_with_value() -> None:
 
 
 def test_encoding_optional_with_none() -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "009_optional")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "009_optional")).unwrap()
 
     encoded = encode(fcp_v2, "S1", {"field1": None})
 
@@ -158,7 +158,7 @@ def test_encoding_optional_with_none() -> None:
 
 
 def test_decoding_single_byte_types() -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
 
     decoded = decode(
         fcp_v2,
@@ -173,7 +173,7 @@ def test_decoding_single_byte_types() -> None:
 
 
 def test_decoding_8_byte_types() -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
 
     decoded = decode(
         fcp_v2,
@@ -195,7 +195,7 @@ def test_decoding_8_byte_types() -> None:
 
 
 def test_decoding_floating_point_types() -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
 
     decoded = decode(
         fcp_v2,
@@ -212,7 +212,7 @@ def test_decoding_floating_point_types() -> None:
 
 
 def test_decoding_str() -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
 
     decoded = decode(
         fcp_v2,
@@ -226,7 +226,7 @@ def test_decoding_str() -> None:
 
 
 def test_decoding_struct_composition() -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "004_struct_composition")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "004_struct_composition")).unwrap()
 
     decoded = decode(
         fcp_v2,
@@ -243,7 +243,7 @@ def test_decoding_struct_composition() -> None:
 
 
 def test_decoding_simple_array_type() -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "007_simple_array_type")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "007_simple_array_type")).unwrap()
 
     decoded = decode(
         fcp_v2,
@@ -255,7 +255,7 @@ def test_decoding_simple_array_type() -> None:
 
 
 def test_decoding_dynamic_array() -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "008_dynamic_array")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "008_dynamic_array")).unwrap()
 
     decoded = decode(
         fcp_v2,
@@ -267,7 +267,7 @@ def test_decoding_dynamic_array() -> None:
 
 
 def test_decoding_optional_with_value() -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "009_optional")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "009_optional")).unwrap()
 
     decoded = decode(
         fcp_v2,
@@ -279,7 +279,7 @@ def test_decoding_optional_with_value() -> None:
 
 
 def test_decoding_optional_with_none() -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "009_optional")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "009_optional")).unwrap()
 
     decoded = decode(
         fcp_v2,
@@ -293,7 +293,7 @@ def test_decoding_optional_with_none() -> None:
 @settings(max_examples=20)  # type: ignore
 @given(integers(min_value=0, max_value=255))  # type: ignore
 def test_roundtrip_decoding_single_byte_types(integer: int) -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
 
     data = {
         "s0": integer,
@@ -312,7 +312,7 @@ def test_roundtrip_decoding_single_byte_types(integer: int) -> None:
     integer2=integers(min_value=-(2**63 - 1), max_value=2**63),
 )  # type: ignore
 def test_roundtrip_decoding_8_byte_types(integer1: int, integer2: int) -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
 
     data = {
         "s0": integer1,
@@ -328,7 +328,7 @@ def test_roundtrip_decoding_8_byte_types(integer1: int, integer2: int) -> None:
 @settings(max_examples=20)  # type: ignore
 @given(f1=floats(width=32, allow_nan=False), f2=floats(width=64, allow_nan=False))  # type: ignore
 def test_roundtrip_decoding_floating_point_types(f1: float, f2: float) -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
 
     data = {
         "s0": f1,
@@ -343,7 +343,7 @@ def test_roundtrip_decoding_floating_point_types(f1: float, f2: float) -> None:
 @settings(max_examples=20)  # type: ignore
 @given(text(alphabet=characters(codec="ascii"), max_size=4096))  # type: ignore
 def test_roundtrip_decoding_str(t: str) -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "001_basic_struct")).unwrap()
 
     data = {"s0": t}
     encoded = encode(fcp_v2, "S5", data)
@@ -355,7 +355,7 @@ def test_roundtrip_decoding_str(t: str) -> None:
 @settings(max_examples=20)  # type: ignore
 @given(lists(integers(min_value=0, max_value=255), min_size=4, max_size=4))  # type: ignore
 def test_roundtrip_decoding_simple_array_type(array: List[int]) -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "007_simple_array_type")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "007_simple_array_type")).unwrap()
 
     data = {"field1": array}
     encoded = encode(fcp_v2, "S1", data)
@@ -366,7 +366,7 @@ def test_roundtrip_decoding_simple_array_type(array: List[int]) -> None:
 @settings(max_examples=20)  # type: ignore
 @given(lists(integers(min_value=0, max_value=255), max_size=4092))  # type: ignore
 def test_roundtrip_decoding_simple_dynamic_array_type(array: List[int]) -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "008_dynamic_array")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "008_dynamic_array")).unwrap()
 
     data = {"field1": array}
     encoded = encode(fcp_v2, "S1", data)
@@ -377,7 +377,7 @@ def test_roundtrip_decoding_simple_dynamic_array_type(array: List[int]) -> None:
 @settings(max_examples=20)  # type: ignore
 @given(integers(min_value=0, max_value=255), booleans())  # type: ignore
 def test_roundtrip_decoding_optional(value: int, is_some: bool) -> None:
-    fcp_v2, _ = get_fcp(get_fcp_config("syntax", "009_optional")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("syntax", "009_optional")).unwrap()
 
     data = {"field1": value if is_some else None}
     encoded = encode(fcp_v2, "S1", data)

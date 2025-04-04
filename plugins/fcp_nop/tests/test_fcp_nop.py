@@ -56,7 +56,7 @@ struct SensorInformation {
     with open(tmp.name, "w") as fp:
         fp.write(fcp_config)
 
-    fcp_v2, _ = get_fcp(Path(tmp.name)).unwrap()
+    fcp_v2 = get_fcp(Path(tmp.name)).unwrap()
 
     generator = Generator()
     results = generator.generate(fcp_v2, {"output": "output.dbc"})

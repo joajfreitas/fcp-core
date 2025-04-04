@@ -162,7 +162,7 @@ class Generator(CodeGenerator):
 
     def generate(self, fcp: FcpV2, ctx: Any) -> List[Dict[str, Union[str, Path]]]:
         """Generate cpp files."""
-        fcp_reflection, _ = get_reflection_schema().unwrap()
+        fcp_reflection = get_reflection_schema().unwrap()
         fcp = generate_rpc(fcp)
 
         output_builder = OutputBuilder(

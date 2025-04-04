@@ -72,7 +72,7 @@ class TestTypeVisitor(TypeVisitor):
 
 
 def test_type_visitor() -> None:
-    fcp, _ = get_fcp_from_string(
+    fcp = get_fcp_from_string(
         """
 version: "3"
 
