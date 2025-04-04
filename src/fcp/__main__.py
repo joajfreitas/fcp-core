@@ -57,10 +57,10 @@ def generate_cmd(
     skel: str,
 ) -> None:
     """Run generator."""
-    error_logger = Logger({})
-    r = get_fcp(fcp, error_logger)
+    logger = Logger({})
+    r = get_fcp(fcp, logger)
     if r.is_err():
-        print(error_logger.error(r.err().results_in("Failed to generate fcp")))
+        print(logger.error(r.err().results_in("Failed to generate fcp")))
         return
     fcp_v2 = r.unwrap()
 
@@ -68,20 +68,20 @@ def generate_cmd(
     result = generator_manager.generate(generator, templates, skel, fcp_v2, output)
 
     if result.is_err():
-        print(error_logger.error(result.err().results_in("Failed to generate fcp")))
+        print(logger.error(result.err().results_in("Failed to generate fcp")))
 
 
 @click.command()  # type: ignore
 @click.argument("fcp")  # type: ignore
 def show(fcp: str) -> None:
     """Show fcp schema as dictionary."""
-    fcp_result = get_fcp(fcp)
+    logger = Logger({})
+    fcp_v2 = get_fcp(fcp, logger)
 
-    if fcp_result.is_ok():
-        fcp_v2 = fcp_result.unwrap()
-        pprint(fcp_v2.to_dict())
-    else:
-        print(fcp_result)
+    if fcp_v2.is_err():
+        print(logger.error(fcp_v2.err()))
+        return
+    pprint(fcp_v2.unwrap().to_dict())
 
 
 @click.command()  # type: ignore
@@ -90,9 +90,17 @@ def show(fcp: str) -> None:
 @click.argument("output")  # type: ignore
 def encode(fcp_schema: str, fcp_data: str, output: str) -> None:
     """Encode an .fcp according to the data in the reflection schema."""
-    fcp_schema = get_fcp(fcp_schema).unwrap()
-    fcp_data = get_fcp(fcp_data).unwrap()
-    bytearray = serde_encode(fcp_schema, "Fcp", fcp_data.reflection())  # type: ignore
+    logger = Logger({})
+    fcp_schema_ = get_fcp(fcp_schema, logger)
+    if fcp_schema_.is_err():
+        print(logger.error(fcp_schema_.err()))
+        return
+
+    fcp_data_ = get_fcp(fcp_data, logger)
+    if fcp_data_.is_err():
+        print(logger.error(fcp_data_.err()))
+        return
+    bytearray = serde_encode(fcp_schema_.unwrap(), "Fcp", fcp_data_.unwrap().reflection())  # type: ignore
 
     with open(output, "wb") as f:
         f.write(bytearray)

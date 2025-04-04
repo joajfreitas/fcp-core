@@ -20,7 +20,7 @@
 
 """Error."""
 
-from beartype.typing import List, Dict, Any, Tuple
+from beartype.typing import Dict, Any, Tuple
 from typing_extensions import Self
 from lark import UnexpectedInput, UnexpectedCharacters, UnexpectedEOF
 from pathlib import Path
