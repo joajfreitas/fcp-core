@@ -59,7 +59,7 @@ from .specs import v2
 from .result import Result, Ok, Err
 from .maybe import catch
 from .specs.metadata import MetaData
-from .error import ErrorLogger, FcpError
+from .error import Logger, FcpError
 
 
 fcp_parser = Lark(
@@ -215,7 +215,7 @@ class FcpV2Transformer(Transformer):
         filename: Union[str, pathlib.Path],
         parser_context: ParserContext,
         filesystem_proxy: IFileSystemProxy,
-        error_logger: ErrorLogger = ErrorLogger({}),
+        error_logger: Logger = Logger({}),
     ) -> None:
         self.filename = pathlib.Path(filename)
         self.path = self.filename.parent
@@ -560,16 +560,16 @@ class FcpV2Transformer(Transformer):
 def _get_fcp(
     filename: pathlib.Path,
     filesystem_proxy: IFileSystemProxy,
-    error_logger: ErrorLogger,
-) -> Result[Tuple[v2.FcpV2, Dict[str, str]], FcpError]:
+    logger: Logger,
+) -> Result[v2.FcpV2, FcpError]:
     source = filesystem_proxy.read(filename)
-    error_logger.add_source(filename.name, source)
+    logger.add_source(filename.name, source)
     try:
         fcp_ast = fcp_parser.parse(source)
     except UnexpectedCharacters as e:
         return Err(
             FcpError(
-                error_logger.log_lark(filename.name, e),
+                logger.log_lark(filename.name, e),
                 Token(
                     MetaData(e.line, e.line, e.column, e.column, 0, 0, str(filename))
                 ),
@@ -579,7 +579,7 @@ def _get_fcp(
     parser_context = ParserContext()
 
     fcp = FcpV2Transformer(
-        filename, parser_context, filesystem_proxy, error_logger
+        filename, parser_context, filesystem_proxy, logger
     ).transform(fcp_ast)
 
     return Ok((fcp.attempt(), parser_context.get_sources()))
@@ -587,20 +587,20 @@ def _get_fcp(
 
 @catch
 def get_fcp(
-    fcp_filename: str, error_logger: ErrorLogger = ErrorLogger({})
-) -> Result[Tuple[v2.FcpV2, Dict[str, str]], FcpError]:
+    fcp_filename: str, logger: Logger = Logger({})
+) -> Result[v2.FcpV2, FcpError]:
     """Build a fcp AST from the filename of an fcp schema.
 
     Returns the Fcp AST and source code information for debugging.
     """
     filesystem_proxy = FileSystemProxy()
-    return _get_fcp(pathlib.Path(fcp_filename), filesystem_proxy, error_logger)
+    return _get_fcp(pathlib.Path(fcp_filename), filesystem_proxy, logger)
 
 
 @catch
 def get_fcp_from_string(
-    source: str, error_logger: ErrorLogger = ErrorLogger({})
-) -> Result[Tuple[v2.FcpV2, Dict[str, str]], FcpError]:
+    source: str, logger: Logger = Logger({})
+) -> Result[v2.FcpV2, FcpError]:
     """Build a fcp AST from the source code of an fcp schema."""
     filesystem_proxy = InMemoryFileSystemProxy({pathlib.Path("main.fcp"): source})
-    return _get_fcp(pathlib.Path("main.fcp"), filesystem_proxy, error_logger)
+    return _get_fcp(pathlib.Path("main.fcp"), filesystem_proxy, logger)

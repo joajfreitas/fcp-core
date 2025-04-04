@@ -27,6 +27,7 @@ from pathlib import Path
 from inspect import getframeinfo, stack
 
 from .colors import Color
+from .result import Err
 
 
 class FcpError:
@@ -43,7 +44,12 @@ class FcpError:
         return self
 
 
-class ErrorLogger:
+def error(msg: str, node: Any = None) -> Err[FcpError]:
+    """Create an error."""
+    return Err(FcpError(msg, node))
+
+
+class Logger:
     """Logger for errors."""
 
     def __init__(self, sources: Dict[str, str], enable_file_paths: bool = True) -> None:
