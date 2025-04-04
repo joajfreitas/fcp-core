@@ -28,7 +28,7 @@ from pprint import pprint
 import click
 
 from .version import VERSION
-from .v2_parser import get_fcp
+from .parser import get_fcp
 from .codegen import GeneratorManager
 from .verifier import make_general_verifier
 from .error_logger import ErrorLogger

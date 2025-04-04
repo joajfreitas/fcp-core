@@ -30,7 +30,7 @@ from beartype.typing import List, Dict, Any
 from fcp.specs.v2 import FcpV2
 from fcp.codegen import handle_result
 from fcp_cpp import Generator
-from fcp.v2_parser import get_fcp
+from fcp.parser import get_fcp
 from fcp.specs.type import (
     Type,
     ArrayType,

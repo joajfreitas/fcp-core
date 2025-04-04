@@ -24,7 +24,7 @@ import os
 from pathlib import Path
 from beartype.typing import List, Dict, Any
 
-from fcp.v2_parser import get_fcp
+from fcp.parser import get_fcp
 from fcp.specs.v2 import FcpV2
 from fcp_cpp import Generator
 from fcp.maybe import Some, Nothing, Maybe

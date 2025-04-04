@@ -25,7 +25,7 @@ import json
 from pathlib import Path
 from beartype.typing import NoReturn
 
-from fcp.v2_parser import get_fcp
+from fcp.parser import get_fcp
 
 from fcp_nop import Generator
 

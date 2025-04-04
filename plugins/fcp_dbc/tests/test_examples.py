@@ -21,7 +21,7 @@
 # ruff: noqa: D103 D100
 
 import pytest
-from fcp.v2_parser import get_fcp
+from fcp.parser import get_fcp
 
 
 @pytest.mark.parametrize("test_path", ["plugins/fcp_dbc/example/example.fcp"])  # type: ignore

@@ -25,7 +25,7 @@ import os
 import subprocess
 from pathlib import Path
 from fcp_can_c import Generator
-from fcp.v2_parser import get_fcp
+from fcp.parser import get_fcp
 
 
 base_dir = os.path.abspath(__file__).replace("/test_can_c_gen.py", "")

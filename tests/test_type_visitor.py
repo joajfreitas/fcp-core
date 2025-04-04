@@ -24,7 +24,7 @@ from beartype.typing import List
 
 from fcp.type_visitor import TypeVisitor
 from fcp.specs import type
-from fcp.v2_parser import get_fcp_from_string
+from fcp.parser import get_fcp_from_string
 
 from .fcp_builder import FcpV2Builder, StructBuilder, StructFieldBuilder
 

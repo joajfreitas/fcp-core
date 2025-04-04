@@ -26,7 +26,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 from fcp_dbc import Generator
-from fcp.v2_parser import get_fcp
+from fcp.parser import get_fcp
 from fcp.verifier import make_general_verifier
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))

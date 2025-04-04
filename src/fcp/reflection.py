@@ -23,7 +23,7 @@
 from pathlib import Path
 from beartype.typing import Tuple, Dict
 
-from .v2_parser import get_fcp
+from .parser import get_fcp
 from .specs.v2 import FcpV2
 from .result import Result
 

@@ -30,7 +30,7 @@ import itertools
 
 from docutils.core import publish_doctree  # type: ignore
 
-from fcp.v2_parser import get_fcp
+from fcp.parser import get_fcp
 
 
 def get_markdown_fcp_code_blocks(filename: str) -> List[str]:

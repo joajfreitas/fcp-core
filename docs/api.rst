@@ -114,7 +114,7 @@ V2
 V2 parser
 =========
 
-.. automodule:: fcp.v2_parser
+.. automodule:: fcp.parser
    :members:
 
 Verifier

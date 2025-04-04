@@ -34,7 +34,7 @@ from hypothesis.strategies import (
 )
 
 from fcp.serde import encode, decode
-from fcp.v2_parser import get_fcp
+from fcp.parser import get_fcp
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 

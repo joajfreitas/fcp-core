@@ -26,7 +26,7 @@ from marko.block import FencedCode
 import pytest
 from pathlib import Path
 
-from fcp.v2_parser import get_fcp
+from fcp.parser import get_fcp
 
 
 def get_fcp_code_blocks(filename: str) -> List[str]:
