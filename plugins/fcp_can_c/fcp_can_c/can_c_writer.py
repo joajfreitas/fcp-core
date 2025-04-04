@@ -23,11 +23,10 @@
 import os
 
 from pathlib import Path
-from beartype.typing import Generator, List, Dict, Any, Optional, Tuple
+from beartype.typing import Generator, List, Dict, Any, Optional, Tuple, Union
 from math import ceil
 from cantools.database import conversion
 from jinja2 import Environment, FileSystemLoader
-from cantools.database.can.node import Node as CanNode
 from fcp.specs.struct_field import StructField
 from fcp.specs.v2 import FcpV2
 from dataclasses import dataclass
@@ -170,6 +169,17 @@ class Enum:
     values: Dict[str, int]
 
 
+class CanNode:
+    """Represents a device node with RPC compatibility."""
+
+    def __init__(
+        self, name: str, rpc_get_id: Union[int, None], rpc_ans_id: Union[int, None]
+    ):
+        self.name = name
+        self.rpc_get_id = rpc_get_id
+        self.rpc_ans_id = rpc_ans_id
+
+
 def is_signed(value: Value) -> bool:
     """Check if a value is signed.
 
@@ -258,7 +268,7 @@ def initialize_can_data(
     """
     enums = []
     messages = []
-    devices = []
+    devices: List["CanNode"] = []
     encoder = make_encoder(
         "packed", fcp, PackedEncoderContext().with_unroll_arrays(True)
     )
@@ -268,7 +278,14 @@ def initialize_can_data(
         enums.append(Enum(name=enum.name, values=values))
 
         # Enums are not tied to a specific device so they live on the global device
-        devices.append(CanNode("global"))
+        devices.append(CanNode("global", rpc_get_id=None, rpc_ans_id=None))
+
+        device_rpc_info = {}
+        for dev in getattr(fcp, "devices", []):
+            device_rpc_info[dev.name] = {
+                "rpc_get_id": dev.fields.get("rpc_get_id"),
+                "rpc_ans_id": dev.fields.get("rpc_ans_id"),
+            }
 
     for extension in fcp.get_matching_impls("can"):
         encoding = encoder.generate(extension)
@@ -282,7 +299,20 @@ def initialize_can_data(
         period = extension.fields.get("period", -1)
 
         if not any(node.name == device_name for node in devices):
-            devices.append(CanNode(device_name))
+            rpc_get_id = None
+            rpc_ans_id = None
+            for dev in getattr(fcp, "devices", []):
+                if dev.name == device_name:
+                    rpc_get_id = dev.fields.get("rpc_get_id")
+                    rpc_ans_id = dev.fields.get("rpc_ans_id")
+                    break
+            devices.append(
+                CanNode(
+                    device_name,
+                    rpc_get_id=rpc_get_id,
+                    rpc_ans_id=rpc_ans_id,
+                )
+            )
 
         messages.append(
             CanMessage(
@@ -318,6 +348,8 @@ class CanCWriter:
         self.templates = {
             "device_can_h": self.env.get_template("can_device_h.jinja"),
             "device_can_c": self.env.get_template("can_device_c.jinja"),
+            "device_rpc_h": self.env.get_template("rpc_device_h.jinja"),
+            "device_rpc_c": self.env.get_template("rpc_device_c.jinja"),
         }
         self.device_messages = map_messages_to_devices(self.messages)
 
@@ -374,5 +406,53 @@ class CanCWriter:
                     device_name_pascal=snake_to_pascal(device_name),
                     device_name_snake=pascal_to_snake(device_name),
                     messages=messages,
+                ),
+            )
+
+    def generate_rpc_headers(self) -> Generator[Tuple[str, str], None, None]:
+        """Generate C header files for devices with RPC.
+
+        Returns:
+            Generator: Tuple containing the device name and the file content.
+
+        """
+        for device in self.devices:
+            device_name = device.name
+            messages = self.device_messages.get(device_name, [])
+            rpc_get_id = device.rpc_get_id if device.rpc_get_id is not None else 0
+            rpc_ans_id = device.rpc_ans_id if device.rpc_ans_id is not None else 0
+
+            yield (
+                device_name,
+                self.templates["device_rpc_h"].render(
+                    device_name_pascal=snake_to_pascal(device_name),
+                    device_name_snake=pascal_to_snake(device_name),
+                    messages=messages,
+                    rpc_get_id=rpc_get_id,
+                    rpc_ans_id=rpc_ans_id,
+                ),
+            )
+
+    def generate_rpc_sources(self) -> Generator[Tuple[str, str], None, None]:
+        """Generate C source files for devices with RPC.
+
+        Returns:
+            Generator: Tuple containing the device name and the file content.
+
+        """
+        for device in self.devices:
+            device_name = device.name
+            messages = self.device_messages.get(device_name, [])
+            rpc_get_id = device.rpc_get_id if device.rpc_get_id is not None else 0
+            rpc_ans_id = device.rpc_ans_id if device.rpc_ans_id is not None else 0
+
+            yield (
+                pascal_to_snake(device_name),
+                self.templates["device_rpc_c"].render(
+                    device_name_pascal=snake_to_pascal(device_name),
+                    device_name_snake=pascal_to_snake(device_name),
+                    messages=messages,
+                    rpc_get_id=rpc_get_id,
+                    rpc_ans_id=rpc_ans_id,
                 ),
             )
