@@ -52,7 +52,7 @@ from .specs import v2
 from .result import Result, Ok, Err
 from .maybe import catch
 from .specs.metadata import MetaData
-from .error import ErrorLogger, FcpError, error
+from .error import Logger, FcpError, error
 
 
 fcp_parser = Lark(
@@ -208,7 +208,7 @@ class FcpV2Transformer(Transformer):
         filename: Union[str, pathlib.Path],
         parser_context: ParserContext,
         filesystem_proxy: IFileSystemProxy,
-        error_logger: ErrorLogger = ErrorLogger({}),
+        error_logger: Logger = Logger({}),
     ) -> None:
         self.filename = pathlib.Path(filename)
         self.path = self.filename.parent
@@ -547,7 +547,7 @@ class FcpV2Transformer(Transformer):
 def _get_fcp(
     filename: pathlib.Path,
     filesystem_proxy: IFileSystemProxy,
-    error_logger: ErrorLogger,
+    error_logger: Logger,
 ) -> Result[v2.FcpV2, FcpError]:
     source = filesystem_proxy.read(filename)
 
@@ -571,7 +571,7 @@ def _get_fcp(
 
 @catch
 def get_fcp(
-    fcp_filename: str, error_logger: ErrorLogger = ErrorLogger({})
+    fcp_filename: str, error_logger: Logger = Logger({})
 ) -> Result[v2.FcpV2, FcpError]:
     """Build a fcp AST from the filename of an fcp schema.
 
@@ -582,7 +582,7 @@ def get_fcp(
 
 
 def get_fcp_from_string(
-    source: str, error_logger: ErrorLogger = ErrorLogger({})
+    source: str, error_logger: Logger = Logger({})
 ) -> Result[v2.FcpV2, FcpError]:
     """Build a fcp AST from the source code of an fcp schema."""
     filesystem_proxy = InMemoryFileSystemProxy({pathlib.Path("main.fcp"): source})

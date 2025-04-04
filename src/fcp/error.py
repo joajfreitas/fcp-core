@@ -49,7 +49,7 @@ def error(msg: str, node: Any = None) -> Err[FcpError]:
     return Err(FcpError(msg, node))
 
 
-class ErrorLogger:
+class Logger:
     """Logger for errors."""
 
     def __init__(self, sources: Dict[str, str], enable_file_paths: bool = True) -> None:

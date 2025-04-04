@@ -31,7 +31,7 @@ from .version import VERSION
 from .v2_parser import get_fcp
 from .codegen import GeneratorManager
 from .verifier import make_general_verifier
-from .error import ErrorLogger
+from .error import Logger
 from .serde import encode as serde_encode
 
 
@@ -57,7 +57,7 @@ def generate_cmd(
     skel: str,
 ) -> None:
     """Run generator."""
-    error_logger = ErrorLogger({})
+    error_logger = Logger({})
     r = get_fcp(fcp, error_logger)
     if r.is_err():
         print(error_logger.error(r.err().results_in("Failed to generate fcp")))

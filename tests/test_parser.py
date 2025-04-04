@@ -29,7 +29,7 @@ from fcp.v2_parser import get_fcp
 from fcp.specs.v2 import FcpV2
 from fcp.verifier import make_general_verifier
 from fcp.types import NoReturn
-from fcp.error import ErrorLogger
+from fcp.error import Logger
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -98,7 +98,7 @@ def test_parser(test_name: str) -> NoReturn:
     ],
 )  # type: ignore
 def test_parsing_errors(test_name: str) -> NoReturn:
-    error_logger = ErrorLogger({}, enable_file_paths=False)
+    error_logger = Logger({}, enable_file_paths=False)
     fcp_config = Path(get_fcp_config("error", test_name))
     fcp = get_fcp(fcp_config, error_logger)
     result = get_result_txt("error", test_name)
