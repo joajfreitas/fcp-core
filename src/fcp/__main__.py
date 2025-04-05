@@ -31,7 +31,7 @@ from .version import VERSION
 from .parser import get_fcp
 from .codegen import GeneratorManager
 from .verifier import make_general_verifier
-from .error_logger import ErrorLogger
+from .error import Logger
 from .serde import encode as serde_encode
 
 
@@ -57,27 +57,25 @@ def generate_cmd(
     skel: str,
 ) -> None:
     """Run generator."""
-    logger = ErrorLogger({})
+    logger = Logger({})
     r = get_fcp(fcp, logger)
     if r.is_err():
         print(logger.error(r.err().results_in("Failed to generate fcp")))
         return
-    fcp_v2, sources = r.unwrap()
+    fcp_v2 = r.unwrap()
 
     generator_manager = GeneratorManager(make_general_verifier())
-    result = generator_manager.generate(
-        generator, templates, skel, fcp_v2, sources, output
-    )
+    result = generator_manager.generate(generator, templates, skel, fcp_v2, output)
 
     if result.is_err():
-        print(logger.error(r.err().results_in("Failed to generate fcp")))
+        print(logger.error(result.err().results_in("Failed to generate fcp")))
 
 
 @click.command()  # type: ignore
 @click.argument("fcp")  # type: ignore
 def show(fcp: str) -> None:
     """Show fcp schema as dictionary."""
-    logger = ErrorLogger({})
+    logger = Logger({})
     fcp_v2 = get_fcp(fcp, logger)
 
     if fcp_v2.is_err():
@@ -92,7 +90,7 @@ def show(fcp: str) -> None:
 @click.argument("output")  # type: ignore
 def encode(fcp_schema: str, fcp_data: str, output: str) -> None:
     """Encode an .fcp according to the data in the reflection schema."""
-    logger = ErrorLogger({})
+    logger = Logger({})
     fcp_schema_ = get_fcp(fcp_schema, logger)
     if fcp_schema_.is_err():
         print(logger.error(fcp_schema_.err()))

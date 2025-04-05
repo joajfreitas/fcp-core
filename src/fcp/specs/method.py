@@ -35,6 +35,15 @@ class Method:
     output: str
     meta: Optional[MetaData] = field(skip=True)
 
+    def __init__(
+        self, name: str, id: int, input: str, output: str, meta: Optional[MetaData]
+    ) -> None:
+        self.name = name
+        self.id = id
+        self.input = input
+        self.output = output
+        self.meta = meta
+
     def reflection(self) -> Dict[str, Any]:
         """Reflection."""
         return {

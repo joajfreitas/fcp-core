@@ -29,7 +29,7 @@ from fcp.parser import get_fcp
 from fcp.specs.v2 import FcpV2
 from fcp.verifier import make_general_verifier
 from fcp.types import NoReturn
-from fcp.error_logger import ErrorLogger
+from fcp.error import Logger
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -72,7 +72,7 @@ def get_result_txt(scope: str, name: str) -> str:
     ],
 )  # type: ignore
 def test_parser(test_name: str) -> NoReturn:
-    fcp_v2, _ = get_fcp(Path(get_fcp_config("syntax", test_name))).unwrap()
+    fcp_v2 = get_fcp(Path(get_fcp_config("syntax", test_name))).unwrap()
     fcp_json_dict = fcp_v2.to_dict()
     expected_result_dict = get_result_json("syntax", test_name)
 
@@ -98,16 +98,17 @@ def test_parser(test_name: str) -> NoReturn:
     ],
 )  # type: ignore
 def test_parsing_errors(test_name: str) -> NoReturn:
-    error_logger = ErrorLogger({}, enable_file_paths=False)
+    error_logger = Logger({}, enable_file_paths=False)
     fcp_config = Path(get_fcp_config("error", test_name))
     fcp = get_fcp(fcp_config, error_logger)
     result = get_result_txt("error", test_name)
+
     assert fcp.is_err()
     assert error_logger.error(fcp.err()) == result
 
 
 def test_verifier_no_error() -> NoReturn:
-    fcp_v2, _ = get_fcp(get_fcp_config("verifier", "000_no_error")).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("verifier", "000_no_error")).unwrap()
 
     verifier = make_general_verifier()
     result = verifier.verify(fcp_v2)
@@ -125,7 +126,7 @@ def test_verifier_no_error() -> NoReturn:
     ],
 )  # type: ignore
 def test_verifier_errors(test_name: str) -> NoReturn:
-    fcp_v2, _ = get_fcp(get_fcp_config("verifier", test_name)).unwrap()
+    fcp_v2 = get_fcp(get_fcp_config("verifier", test_name)).unwrap()
 
     verifier = make_general_verifier()
     assert verifier.verify(fcp_v2).is_err()

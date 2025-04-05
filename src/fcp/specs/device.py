@@ -33,6 +33,13 @@ class Device:
     fields: Dict[str, Any]
     meta: Optional[MetaData] = serde.field(skip=True)
 
+    def __init__(
+        self, name: str, fields: Dict[str, Any], meta: Optional[MetaData] = None
+    ) -> None:
+        self.name = name
+        self.fields = fields
+        self.meta = meta
+
     def reflection(self) -> Dict[str, Any]:
         """Reflection."""
         return {

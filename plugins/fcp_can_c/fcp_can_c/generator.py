@@ -27,9 +27,9 @@ from pathlib import Path
 
 from fcp.codegen import CodeGenerator
 from fcp.verifier import register, Verifier
-from fcp.result import Result, Err, Ok
+from fcp.result import Result, Ok
 from fcp.specs.v2 import FcpV2
-from fcp.error import FcpError
+from fcp.error import FcpError, error
 from fcp.types import Nil
 
 from .can_c_writer import CanCWriter
@@ -96,11 +96,9 @@ class Generator(CodeGenerator):
             """Check if extension has a valid type."""
             struct = fcp.get_struct(extension.type)
             if struct.is_nothing():
-                return Err(
-                    FcpError(
-                        f"No matching type for extension {extension.name}",
-                        node=extension,
-                    )
+                return error(
+                    f"No matching type for extension {extension.name}",
+                    node=extension,
                 )
             else:
                 return Ok(())
@@ -113,11 +111,9 @@ class Generator(CodeGenerator):
             struct = fcp.get_struct(extension.type)
             size = sum([field.type.get_length() for field in struct.unwrap().fields])
             if size > 64:
-                return Err(
-                    FcpError(
-                        f"Impl {extension.name} is way too big at {size} bits",
-                        node=extension,
-                    )
+                return error(
+                    f"Impl {extension.name} is way too big at {size} bits",
+                    node=extension,
                 )
             else:
                 return Ok(())

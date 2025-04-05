@@ -25,9 +25,9 @@ from pathlib import Path
 
 from fcp.codegen import CodeGenerator
 from fcp.verifier import register, Verifier
-from fcp.result import Result, Err, Ok
+from fcp.result import Result, Ok
 from fcp.specs.v2 import FcpV2
-from fcp.error import FcpError
+from fcp.error import FcpError, error
 from fcp.types import Nil
 from fcp.specs.impl import Impl
 
@@ -61,11 +61,9 @@ class Generator(CodeGenerator):
         ) -> Result[Nil, FcpError]:
             struct = fcp.get_struct(impl.type)
             if struct.is_nothing():
-                return Err(
-                    FcpError(
-                        f"No matching type for impl {impl.name}",
-                        node=impl,
-                    )
+                return error(
+                    f"No matching type for impl {impl.name}",
+                    node=impl,
                 )
             else:
                 return Ok(())
@@ -76,6 +74,6 @@ class Generator(CodeGenerator):
         ) -> Result[Nil, FcpError]:
             impl_ids = [impl.fields.get("id") for impl in fcp.impls]
             if impl_ids.count(impl.fields.get("id")) > 1:
-                return Err(FcpError("Duplicate ids", node=impl))
+                return error("Duplicate ids", node=impl)
             else:
                 return Ok(())
