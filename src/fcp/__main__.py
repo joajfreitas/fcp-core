@@ -34,6 +34,7 @@ from .verifier import make_general_verifier
 from .error import Logger
 from .serde import encode as serde_encode
 from .describe import describe
+from .specs.type import StructType
 
 
 def setup_logging() -> None:
@@ -111,8 +112,13 @@ def encode(fcp_schema: str, fcp_data: str, output: str) -> None:
 @click.argument("fcp")  # type: ignore
 @click.argument("type")  # type: ignore
 def _describe(fcp: str, type: str) -> None:
-    fcp, _ = get_fcp(fcp).unwrap()
-    print(describe(fcp, ComposedType(type, ComposedTypeCategory.Struct)))  # type: ignore
+    logger = Logger({})
+    fcp_schema = get_fcp(fcp, logger)
+
+    if fcp_schema.is_err():
+        print(logger.error(fcp_schema.err()))
+        return
+    print(describe(fcp_schema.unwrap(), StructType(type)))  # type: ignore
 
 
 @click.group(invoke_without_command=True)  # type: ignore
