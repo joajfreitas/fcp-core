@@ -93,15 +93,6 @@ class Logger:
             lines[node.meta.line - 1],
         )
 
-    def log_duplicates(self, error: str, duplicates: List[Any]) -> str:
-        """Log duplicated values error."""
-        return (
-            Color.boldblue("error: ")
-            + Color.boldwhite(error)
-            + "\n"
-            + "\n".join(map(lambda x: self.log_node(x), duplicates))
-        )
-
     def log_lark_unexpected_characters(self, exception: UnexpectedCharacters) -> str:
         """Log a lark unexpected characters exception."""
         return f"Unexpected character '{exception.char}', expected one of: " + str(
