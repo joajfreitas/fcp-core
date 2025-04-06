@@ -30,34 +30,7 @@ from fcp.specs.v2 import FcpV2
 from dataclasses import dataclass
 from fcp.result import Err
 from fcp.encoding import make_encoder, EncodeablePiece, Value, PackedEncoderContext
-
-
-def snake_to_pascal(snake_str: str) -> str:
-    """Convert a snake_case string to PascalCase.
-
-    Args:
-        snake_str: The snake_case string to convert.
-
-    Returns:
-        The PascalCase string.
-
-    """
-    return "".join(x.capitalize() for x in snake_str.split("_"))
-
-
-def pascal_to_snake(pascal_str: str) -> str:
-    """Convert a PascalCase string to snake_case.
-
-    Args:
-        pascal_str: The PascalCase string to convert.
-
-    Returns:
-        The snake_case string.
-
-    """
-    return "".join(["_" + c.lower() if c.isupper() else c for c in pascal_str]).lstrip(
-        "_"
-    )
+from fcp.utils import to_pascal_case, to_snake_case
 
 
 def ceil_to_power_of_2(x: int) -> int:
@@ -150,11 +123,11 @@ class CanMessage:
     name_snake: str = ""
 
     def __post_init__(self) -> None:
-        self.name_snake = pascal_to_snake(self.name_pascal)
+        self.name_snake = to_snake_case(self.name_pascal)
 
         for signal in self.signals:
             if signal.is_multiplexer:
-                self.multiplexer_signal = pascal_to_snake(signal.multiplexer_signal)
+                self.multiplexer_signal = to_snake_case(signal.multiplexer_signal)
                 self.is_multiplexer = True
 
 
@@ -380,8 +353,8 @@ class CanCWriter:
             yield (
                 device_name,
                 self.templates["device_can_h"].render(
-                    device_name_pascal=snake_to_pascal(device_name),
-                    device_name_snake=pascal_to_snake(device_name),
+                    device_name_pascal=to_pascal_case(device_name),
+                    device_name_snake=to_snake_case(device_name),
                     messages=messages,
                     include_global=device_name != "global" and global_device_exists,
                     is_global_device=device_name == "global",
@@ -398,10 +371,10 @@ class CanCWriter:
         """
         for device_name, messages in self.device_messages.items():
             yield (
-                pascal_to_snake(device_name),
+                to_snake_case(device_name),
                 self.templates["device_can_c"].render(
-                    device_name_pascal=snake_to_pascal(device_name),
-                    device_name_snake=pascal_to_snake(device_name),
+                    device_name_pascal=to_pascal_case(device_name),
+                    device_name_snake=to_snake_case(device_name),
                     messages=messages,
                 ),
             )
@@ -422,8 +395,8 @@ class CanCWriter:
             yield (
                 device_name,
                 self.templates["device_rpc_h"].render(
-                    device_name_pascal=snake_to_pascal(device_name),
-                    device_name_snake=pascal_to_snake(device_name),
+                    device_name_pascal=to_pascal_case(device_name),
+                    device_name_snake=to_snake_case(device_name),
                     messages=messages,
                     rpc_get_id=rpc_get_id,
                     rpc_ans_id=rpc_ans_id,
@@ -444,10 +417,10 @@ class CanCWriter:
             rpc_ans_id = device.rpc_ans_id if device.rpc_ans_id is not None else 0
 
             yield (
-                pascal_to_snake(device_name),
+                to_snake_case(device_name),
                 self.templates["device_rpc_c"].render(
-                    device_name_pascal=snake_to_pascal(device_name),
-                    device_name_snake=pascal_to_snake(device_name),
+                    device_name_pascal=to_pascal_case(device_name),
+                    device_name_snake=to_snake_case(device_name),
                     messages=messages,
                     rpc_get_id=rpc_get_id,
                     rpc_ans_id=rpc_ans_id,
