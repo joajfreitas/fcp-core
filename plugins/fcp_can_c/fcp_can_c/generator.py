@@ -32,7 +32,7 @@ from fcp.specs.v2 import FcpV2
 from fcp.error import FcpError, error
 from fcp.types import Nil
 
-from .can_c_writer import CanCWriter, CanNode
+from .can_c_writer import CanCWriter
 
 
 class Generator(CodeGenerator):

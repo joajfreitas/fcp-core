@@ -22,8 +22,7 @@
 
 import os
 
-from pathlib import Path
-from beartype.typing import Generator, List, Dict, Any, Optional, Tuple, Union
+from beartype.typing import Generator, List, Dict, Optional, Tuple, Union
 from math import ceil
 from jinja2 import Environment, FileSystemLoader
 from fcp.specs.struct_field import StructField
