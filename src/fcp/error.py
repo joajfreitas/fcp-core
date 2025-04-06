@@ -20,7 +20,7 @@
 
 """Error."""
 
-from beartype.typing import List, Dict, Any, Tuple
+from beartype.typing import Dict, Any, Tuple
 from typing_extensions import Self
 from lark import UnexpectedInput, UnexpectedCharacters, UnexpectedEOF
 from pathlib import Path
@@ -60,37 +60,22 @@ class Logger:
         """Register source files."""
         self.sources[name] = source
 
-    def _highlight(
-        self, source: str, prefix_with_line: str, prefix_without_line: str
-    ) -> str:
-        ss = ""
-        for i, line in enumerate(source.split("\n")):
-            prefix = prefix_with_line if i == 0 else prefix_without_line
-            ss += prefix + " " + line + "\n"
-            line = line.replace("\t", "    ")
-            ss += prefix_without_line + " " + Color.boldred("~" * len(line)) + "\n"
-
-        return ss
-
-    def log_location(self, line: int, source: str) -> str:
+    def log_location(self, source: str, line: int) -> str:
         """Log source code location."""
-        line_len = len(str(line))
-
         prefix_with_line = Color.boldblue(f"{line} |")
-        prefix_without_line = Color.boldblue(" " * line_len + " |")
+        prefix_without_line = Color.boldblue(" " * len(str(line)) + " |")
 
         ss = prefix_without_line + "\n"
-        ss += self._highlight(source, prefix_with_line, prefix_without_line)
-
-        return ss
+        ss += prefix_with_line + " " + source + "\n"
+        source = source.replace("\t", "    ")
+        return ss + prefix_without_line + " " + Color.boldred("~" * len(source)) + "\n"
 
     def log_node(self, node: Any) -> str:
         """Log fcp node."""
-        source = self.sources[Path(node.meta.filename).name]
-        lines = source.split("\n")
+        lines = self.sources[Path(node.meta.filename).name].split("\n")
         return self.log_location(
-            node.meta.line,
             lines[node.meta.line - 1],
+            node.meta.line,
         )
 
     def log_lark_unexpected_characters(self, exception: UnexpectedCharacters) -> str:
@@ -121,22 +106,18 @@ class Logger:
             msg: Tuple[str, Tuple[str, str]], prefix: str, arrow: str
         ) -> str:
             msg, node, (source_file, line_number) = msg
-            if self.enable_file_paths:
-                if node is not None:
-                    node_position = (
-                        f"\n   ↳ [{Path(node.meta.filename).name}:{node.meta.line}]"
-                    )
-                else:
-                    node_position = ""
 
-                return (
-                    f"{arrow} {prefix}{msg}"
-                    + "\n"
-                    + f"   ↳ [{source_file.name}:{line_number}]"
-                    + node_position
-                )
-            else:
-                return f"{arrow} {prefix}{msg}"
+            ss = f"{arrow} {prefix}{msg}"
+            if self.enable_file_paths:
+                ss += "\n" + f"   ↳ [{source_file.name}:{line_number}]"
+                if node is not None:
+                    ss += f"\n   ↳ [{Path(node.meta.filename).name}:{node.meta.line}]"
+
+            ss += "\n"
+
+            if node is not None:
+                ss += self.log_node(node)
+            return ss
 
         ss = ""
 
@@ -147,10 +128,5 @@ class Logger:
             else:
                 prefix = ""
                 arrow = "  ↳"
-            ss += (
-                format_msg((msg, node, (source_file, line_number)), prefix, arrow)
-                + "\n"
-            )
-            if node is not None:
-                ss += self.log_node(node)
+            ss += format_msg((msg, node, (source_file, line_number)), prefix, arrow)
         return ss
