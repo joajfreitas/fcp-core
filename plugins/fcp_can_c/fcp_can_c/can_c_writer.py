@@ -343,10 +343,10 @@ class CanCWriter:
         self.env = Environment(loader=FileSystemLoader(self.templates_dir))
 
         self.templates = {
-            "device_can_h": self.env.get_template("can_device_h.jinja"),
-            "device_can_c": self.env.get_template("can_device_c.jinja"),
-            "device_rpc_h": self.env.get_template("rpc_device_h.jinja"),
-            "device_rpc_c": self.env.get_template("rpc_device_c.jinja"),
+            "device_can_h": self.env.get_template("can_device_h.j2"),
+            "device_can_c": self.env.get_template("can_device_c.j2"),
+            "device_rpc_h": self.env.get_template("rpc_device_h.j2"),
+            "device_rpc_c": self.env.get_template("rpc_device_c.j2"),
         }
         self.device_messages = map_messages_to_devices(self.messages)
 
