@@ -52,47 +52,49 @@ def _to_highest_power_of_two(n: int) -> int:
 class ToCpp(TypeVisitor):
     """Fcp type to cpp conversion."""
 
-    def struct(self, t: type.StructType, fields: List[type.Type]) -> str:
+    def struct(self, t: type.StructType, fields: List[type.Type], name: str) -> str:
         """Convert struct to cpp."""
         return str(t.name)
 
-    def enum(self, t: type.EnumType) -> str:
+    def enum(self, t: type.EnumType, name: str) -> str:
         """Convert enum to cpp."""
         return str(t.name)
 
-    def unsigned(self, t: type.UnsignedType) -> str:
+    def unsigned(self, t: type.UnsignedType, name: str) -> str:
         """Convert unsigned to cpp."""
         size = t.get_length()
         cpp_size = _to_highest_power_of_two(size)
         return f"Unsigned<std::uint{cpp_size}_t, {size}>"
 
-    def signed(self, t: type.SignedType) -> str:
+    def signed(self, t: type.SignedType, name: str) -> str:
         """Convert signed to cpp."""
         size = t.get_length()
         cpp_size = _to_highest_power_of_two(size)
         return f"Signed<std::int{cpp_size}_t, {size}>"
 
-    def float(self, t: type.FloatType) -> str:
+    def float(self, t: type.FloatType, name: str) -> str:
         """Convert float to cpp."""
         return "Float"
 
-    def double(self, t: type.DoubleType) -> str:
+    def double(self, t: type.DoubleType, name: str) -> str:
         """Convert double to cpp."""
         return "Double"
 
-    def string(self, t: type.StringType) -> str:
+    def string(self, t: type.StringType, name: str) -> str:
         """Convert string to cpp."""
         return "String"
 
-    def array(self, t: type.ArrayType, inner: type.Type) -> str:
+    def array(self, t: type.ArrayType, inner: type.Type, name: str) -> str:
         """Convert array to cpp."""
         return f"Array<{inner}, {t.size}>"
 
-    def dynamic_array(self, t: type.DynamicArrayType, inner: type.Type) -> str:
+    def dynamic_array(
+        self, t: type.DynamicArrayType, inner: type.Type, name: str
+    ) -> str:
         """Convert dynamic array to cpp."""
         return f"DynamicArray<{inner}>"
 
-    def optional(self, t: type.OptionalType, inner: type.Type) -> str:
+    def optional(self, t: type.OptionalType, inner: type.Type, name: str) -> str:
         """Convert optional to cpp."""
         return f"Optional<{inner}>"
 

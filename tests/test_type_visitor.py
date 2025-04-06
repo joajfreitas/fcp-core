@@ -30,43 +30,45 @@ from fcp.parser import get_fcp_from_string
 class TestTypeVisitor(TypeVisitor):
     """Test type visitor."""
 
-    def struct(self, t: type.StructType, fields: List[type.Type]) -> str:
+    def struct(self, t: type.StructType, fields: List[type.Type], name: str) -> str:
         """Visit a struct type."""
         return "struct: " + " ".join(fields)
 
-    def enum(self, t: type.EnumType) -> str:
+    def enum(self, t: type.EnumType, name: str) -> str:
         """Visit an enum type."""
         return "enum"
 
-    def unsigned(self, t: type.UnsignedType) -> str:
+    def unsigned(self, t: type.UnsignedType, name: str) -> str:
         """Visit an unsigned type."""
         return "unsigned"
 
-    def signed(self, t: type.SignedType) -> str:
+    def signed(self, t: type.SignedType, name: str) -> str:
         """Visit a signed type."""
         return "signed"
 
-    def float(self, t: type.FloatType) -> str:
+    def float(self, t: type.FloatType, name: str) -> str:
         """Visit a float type."""
         return "float"
 
-    def double(self, t: type.DoubleType) -> str:
+    def double(self, t: type.DoubleType, name: str) -> str:
         """Visit a double type."""
         return "double"
 
-    def string(self, t: type.StringType) -> str:
+    def string(self, t: type.StringType, name: str) -> str:
         """Visit a string type."""
         return "string"
 
-    def array(self, t: type.ArrayType, inner: type.Type) -> str:
+    def array(self, t: type.ArrayType, inner: type.Type, name: str) -> str:
         """Visit an array type."""
         return "array"
 
-    def dynamic_array(self, t: type.DynamicArrayType, inner: type.Type) -> str:
+    def dynamic_array(
+        self, t: type.DynamicArrayType, inner: type.Type, name: str
+    ) -> str:
         """Visit a dynamic array type."""
         return "dynamic_array"
 
-    def optional(self, t: type.OptionalType, inner: type.Type) -> str:
+    def optional(self, t: type.OptionalType, inner: type.Type, name: str) -> str:
         """Visit an optional type."""
         return "optional"
 

@@ -32,31 +32,31 @@ class TypeVisitor:
     def __init__(self, fcp: FcpV2) -> None:
         self.fcp = fcp
 
-    def struct(self, t: type.StructType, fields: List[Any]) -> Any:
+    def struct(self, t: type.StructType, fields: List[Any], name: str) -> Any:
         """Visit a struct type."""
         return None
 
-    def enum(self, t: type.EnumType) -> Any:
+    def enum(self, t: type.EnumType, name: str) -> Any:
         """Visit an enum type."""
         return None
 
-    def unsigned(self, t: type.UnsignedType) -> Any:
+    def unsigned(self, t: type.UnsignedType, name: str) -> Any:
         """Visit an unsigned type."""
         return None
 
-    def signed(self, t: type.SignedType) -> Any:
+    def signed(self, t: type.SignedType, name: str) -> Any:
         """Visit a signed type."""
         return None
 
-    def float(self, t: type.FloatType) -> Any:
+    def float(self, t: type.FloatType, name: str) -> Any:
         """Visit a float type."""
         return None
 
-    def double(self, t: type.DoubleType) -> Any:
+    def double(self, t: type.DoubleType, name: str) -> Any:
         """Visit a double type."""
         return None
 
-    def string(self, t: type.StringType) -> Any:
+    def string(self, t: type.StringType, name: str) -> Any:
         """Visit a string type."""
         return None
 
@@ -84,19 +84,19 @@ class TypeVisitor:
                     key=lambda field: field.field_id,
                 )
             ]
-            return self.struct(t, fields)
+            return self.struct(t, fields, name)
         elif isinstance(t, type.EnumType):
-            return self.enum(t)
+            return self.enum(t, name)
         elif isinstance(t, type.UnsignedType):
-            return self.unsigned(t)
+            return self.unsigned(t, name)
         elif isinstance(t, type.SignedType):
-            return self.signed(t)
+            return self.signed(t, name)
         elif isinstance(t, type.FloatType):
-            return self.float(t)
+            return self.float(t, name)
         elif isinstance(t, type.DoubleType):
-            return self.double(t)
+            return self.double(t, name)
         elif isinstance(t, type.StringType):
-            return self.string(t)
+            return self.string(t, name)
         elif isinstance(t, type.ArrayType):
             return self.array(t, self.visit(t.underlying_type), name)
         elif isinstance(t, type.DynamicArrayType):
