@@ -148,6 +148,7 @@ class CanNode:
         self.name = name
         self.rpc_get_id = rpc_get_id
         self.rpc_ans_id = rpc_ans_id
+        self.services: List[str] = []
 
 
 def is_signed(value: Value) -> bool:
@@ -400,6 +401,7 @@ class CanCWriter:
                     messages=messages,
                     rpc_get_id=rpc_get_id,
                     rpc_ans_id=rpc_ans_id,
+                    services=device.services,
                 ),
             )
 
@@ -424,5 +426,6 @@ class CanCWriter:
                     messages=messages,
                     rpc_get_id=rpc_get_id,
                     rpc_ans_id=rpc_ans_id,
+                    services=device.services,
                 ),
             )
