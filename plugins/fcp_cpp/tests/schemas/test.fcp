@@ -83,5 +83,5 @@ struct S12 {
 }
 
 service Service1 @0 {
-    method Method1(S2) @0 returns S3
+    method Method1(S2) @0 returns S3,
 }

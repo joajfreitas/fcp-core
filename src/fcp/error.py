@@ -43,6 +43,9 @@ class FcpError:
         self.msg.append((msg, node, (Path(caller.filename), caller.lineno)))
         return self
 
+    def __repr__(self) -> str:
+        return "\n".join([msg for msg, _, _ in self.msg])
+
 
 def error(msg: str, node: Any = None) -> Err[FcpError]:
     """Create an error."""

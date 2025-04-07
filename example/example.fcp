@@ -24,8 +24,8 @@ struct SensorReq {
 }
 
 service SensorService @0 {
-    method RequestState(SensorReq) @0 returns SensorInformation
-    method GetTemperature(SensorReq) @1 returns Temperature
+    method RequestState(SensorReq) @0 returns SensorInformation,
+    method GetTemperature(SensorReq) @1 returns Temperature,
 }
 
 device ecu {

@@ -9,7 +9,7 @@ struct B {
 }
 
 service Service @0 {
-    method Foo(A) @0 returns B
+    method Foo(A) @0 returns B,
 }
 
 device ecu {
