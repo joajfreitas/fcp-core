@@ -22,6 +22,7 @@
 
 from beartype.typing import Any, Union, Callable, Tuple, List, Dict
 import pathlib
+from typing import cast
 
 from lark import (
     Lark,
@@ -241,7 +242,7 @@ class FcpV2Transformer(Transformer):
 
     def type(self, args: List[Result[Type, FcpError]]) -> Result[Type, FcpError]:
         """Parse a type node of the fcp AST."""
-        return args[0]  # type: ignore
+        return cast(Result[Type, FcpError], args[0])
 
     def unsigned_type(self, args: List[str]) -> Result[UnsignedType, FcpError]:
         """Parse an unsigned type."""
