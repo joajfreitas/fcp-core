@@ -1,0 +1,37 @@
+#ifndef {{ device_name_snake | upper }}_RPC_H
+#define {{ device_name_snake | upper }}_RPC_H
+
+#include <stdint.h>
+#include <stdbool.h>
+#include "can_frame.h"
+
+#define RPC_GET_ID {{ rpc_get_id }}
+#define RPC_ANS_ID {{ rpc_ans_id }}
+
+/* Unified 16-bit RPC ID */
+typedef union {
+    struct {
+        uint8_t service_id;
+        uint8_t method_id;
+    };
+    uint16_t rpc_id;
+} RpcId;
+
+/* RPC Message Structure */
+typedef struct {
+    RpcId id;
+    uint8_t args[6]; 
+} RpcMessage;
+
+/* RPC Service Wrapper */
+typedef struct { 
+    const RpcMessage *request;
+    RpcMessage *response;
+} CanServiceStruct;
+
+/* Dispacher function {{ device_name_pascal }} */
+bool can_service_dispatch(const CanFrame *frame, void (*send)(const CanFrame *));
+
+/* can_service_handle -> usr */
+
+#endif // {{ device_name_snake | upper }}_RPC_H
