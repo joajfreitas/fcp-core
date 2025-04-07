@@ -64,6 +64,11 @@ public:
         return GetData() == rhs.GetData();
     }
 
+    inline bool operator!=(const Unsigned& rhs) const
+    {
+        return !(*this == rhs);
+    }
+
     std::string ToString(std::string prefix = "") const {
         std::stringstream ss{};
         ss << (int) data_;
@@ -105,6 +110,11 @@ public:
     inline bool operator==(const Signed& rhs) const
     {
         return GetData() == rhs.GetData();
+    }
+
+    inline bool operator!=(const Signed& rhs) const
+    {
+        return !(*this == rhs);
     }
 
     std::string ToString(std::string prefix = "") const {
@@ -157,6 +167,11 @@ public:
         return std::fabs(GetData() - rhs.GetData()) <= std::numeric_limits<float>::epsilon();
     }
 
+    inline bool operator!=(const Float& rhs) const
+    {
+        return !(*this == rhs);
+    }
+
     std::string ToString(std::string prefix = "") const {
         std::stringstream ss{};
         ss << data_;
@@ -205,6 +220,11 @@ public:
     inline bool operator==(const Double& rhs) const
     {
         return std::fabs(GetData() - rhs.GetData()) <= std::numeric_limits<double>::epsilon();
+    }
+
+    inline bool operator!=(const Double& rhs) const
+    {
+        return !(*this == rhs);
     }
 
 
@@ -273,6 +293,11 @@ class Array {
         return GetData() == rhs.GetData();
     }
 
+    inline bool operator!=(const Array& rhs) const
+    {
+        return !(*this == rhs);
+    }
+
     std::string ToString(std::string prefix="") const {
         std::stringstream ss{};
         ss << "[";
@@ -327,6 +352,11 @@ class String {
     inline bool operator==(const String& rhs) const
     {
         return GetData() == rhs.GetData();
+    }
+
+    inline bool operator!=(const String& rhs) const
+    {
+        return !(*this == rhs);
     }
 
     std::string ToString(std::string prefix="") const {
@@ -388,6 +418,11 @@ class DynamicArray {
     inline bool operator==(const DynamicArray& rhs) const
     {
         return GetData() == rhs.GetData();
+    }
+
+    inline bool operator!=(const DynamicArray& rhs) const
+    {
+        return !(*this == rhs);
     }
 
     std::string ToString(std::string prefix="") const {
@@ -481,6 +516,11 @@ class Optional {
     inline bool operator==(const Optional& rhs) const
     {
         return GetData() == rhs.GetData();
+    }
+
+    inline bool operator!=(const Optional& rhs) const
+    {
+        return !(*this == rhs);
     }
 
     std::string ToString(std::string prefix="") const {

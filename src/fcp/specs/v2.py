@@ -40,6 +40,12 @@ def _flatten(xss: List[List[Any]]) -> List[Any]:
     return [x for xs in xss for x in xs]
 
 
+def encode_version(version: str) -> int:
+    """Encode version string to an integer."""
+    major, minor = version.split(".")
+    return int(major) * 1000 + int(minor)
+
+
 @serde.serde(type_check=serde.strict)
 class FcpV2:
     """The fcp version 2 AST."""
@@ -185,11 +191,12 @@ class FcpV2:
     def reflection(self) -> Dict[str, Any]:
         """Reflection."""
         return {
+            "tag": [0x66, 0x63, 0x70],
+            "version": encode_version(self.version),
             "structs": [struct.reflection() for struct in self.structs],
             "enums": [enum.reflection() for enum in self.enums],
             "impls": [impl.reflection() for impl in self.impls],
             "services": [service.reflection() for service in self.services],
-            "version": self.version,
         }
 
     def __repr__(self) -> str:

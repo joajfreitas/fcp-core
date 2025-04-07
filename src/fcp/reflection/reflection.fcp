@@ -80,9 +80,10 @@ struct Service {
 }
 
 struct Fcp {
-    structs @0: [Struct],
-    enums @1: [Enum],
-    impls @2: [Impl],
-    services @3: [Service],
-    version @4: str,
+    tag @0: [u8, 3],
+    version @1: u16,
+    structs @2: [Struct],
+    enums @3: [Enum],
+    impls @4: [Impl],
+    services @5: [Service],
 }

@@ -157,6 +157,9 @@ class DynamicSchema : public ISchema {
             auto buffer = fcp::Buffer(schema.begin(), schema.end());
             auto fcp = fcp::reflection::Fcp::Decode(buffer);
 
+            if (fcp.GetTag() != Array<Unsigned<std::uint8_t, 8>, 3>{'f', 'c', 'p'}) {
+                throw std::runtime_error("Invalid schema");
+            }
             for (const auto& x: fcp.GetStructs().GetData()) {
                 std::string name = x.GetName().GetData();
 

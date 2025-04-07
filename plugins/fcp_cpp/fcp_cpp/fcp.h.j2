@@ -96,6 +96,10 @@ public:
         return GetData() == rhs.GetData();
     }
 
+    inline bool operator!=(const {{enum.name}}& rhs) const {
+        return !(*this == rhs);
+    }
+
     std::string ToString(std::string prefix="") const {
         std::stringstream ss{};
 
@@ -192,6 +196,10 @@ struct {{struct.name}} {
         {{'\t'}}&& {% endif %}{% endfor %};
     }
 
+    inline bool operator!=(const {{struct.name}}&rhs) const {
+        return !(*this == rhs);
+    }
+
     std::string ToString(std::string prefix = "") const {
         std::stringstream ss{};
         auto p = prefix + "\t";
@@ -213,6 +221,7 @@ private:
     {{signal.name | to_pascal_case}}Type {{signal.name}}_;
     {%- endfor %}
 };
+
 {% endfor %}
 
 struct StaticSchema: public ISchema
