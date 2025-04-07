@@ -8,21 +8,30 @@
 #define RPC_GET_ID {{ rpc_get_id }}
 #define RPC_ANS_ID {{ rpc_ans_id }}
 
-/* RPC Call structure */
-typedef struct {
-    uint8_t service_id;
-    uint8_t method_id;
-    uint8_t result[6];
-}RpcCall;
+/* Unified 16-bit RPC ID */
+typedef union {
+    struct {
+        uint8_t service_id;
+        uint8_t method_id;
+    };
+    uint16_t rpc_id;
+} RpcId;
 
-/* RPC Response structure */
+/* RPC Message Structure */
 typedef struct {
-    uint8_t service_id;
-    uint8_t method_id;
-    uint8_t result[6];
-}RpcResponse;
+    RpcId id;
+    uint8_t args[6]; 
+} RpcMessage;
 
-/* Function for RPC requests handling */
-bool can_handle_{{ device_name_snake }}_rpc_requests(const CanFrame *frame, CanFrame *response);
+/* RPC Service Wrapper */
+typedef struct { 
+    const RpcMessage *request;
+    RpcMessage *response;
+} CanServiceStruct;
+
+/* Dispacher function {{ device_name_pascal }} */
+bool can_service_dispatch(const CanFrame *frame, void (*send)(const CanFrame *));
+
+/* can_service_handle -> usr */
 
 #endif // {{ device_name_snake | upper }}_RPC_H

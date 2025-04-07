@@ -1,36 +1,32 @@
 #include "{{ device_name_snake }}_rpc.h"
 #include <string.h>
 
-/*--------------------------- RPC Dispacher ----------------------------*/
-bool can_handle_{{ device_name_snake }}_rpc_request(const CanFrame *frame, CanFrame *response) {
-    if (frame->id != RPC_GET_ID) return false;
 
-    const RpcCall *call = (const RpcCall *) frame->data;
-    RpcResponse *res = (RpcResponse *) response->data;
-
-    response->id = RPC_ANS_ID;
-    response->dlc = 8;
-
-    res->service_id = call->service_id;
-    res->method_id = call->method_id;
-
-    switch (call->service_id) {
-        {%- for service in services %}
-        case {{ loop.index0 }}:                                 // {{ service.name }}
-            switch (call->method_id) {
-                {%- for method in service.methods %}
-                case {{ loop.index0}}:                          // {{ method }}
-                    res->result[0] = 0x00;                      // Success status
-                    memcpy(&res->result[1], call->args, 5);
-                    return true;
-                {%- endfor %}
-                default:
-                    res->result[0] = 0xFF;                      // Method not found
-                    return false;
-            }
-        {%- endfor %}
-        default:
-            res->result[0] = 0xFE;                              // Service not found
-            return false;
+{% if device_name == "global" %}
+/*---------------------------------------- RPC Dispacher -----------------------------------------*/
+bool can_service_dispatch(const CanFrame *frame, void (*send)(const CanFrame *)) {    
+    if (frame->id != RPC_GET_ID) {
+        return false;
     }
+
+    const RpcMessage *call = (const RpcMessage *) frame->data;
+
+    CanFrame response;
+    response.id = RPC_ANS_ID;
+    response.dlc = 8;
+
+    RpcMessage *res = (RpcMessage *) response.data;
+    res->id.rpc_id = call->id.rpc_id;
+
+    CanServiceStruct service = {
+        .request = call,
+        .response = res
+    };
+
+    /* TODO: implement handling logic based on service_id/method_id */
+
+    res->args[0] = 0xFE;                           /* Not handled */
+    send(&response);
+    return false;
 }
+{% endif %}
