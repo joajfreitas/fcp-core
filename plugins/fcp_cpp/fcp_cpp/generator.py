@@ -34,7 +34,7 @@ from fcp.utils import to_pascal_case, to_snake_case
 from fcp.specs.impl import Impl
 from fcp.codegen import CodeGenerator
 from fcp.verifier import Verifier
-from fcp.specs.v2 import FcpV2
+from fcp.specs.v2 import FcpV2, encode_version
 from fcp.specs.struct import Struct
 from fcp.specs.type import Type, StructType
 from fcp.specs import type
@@ -135,6 +135,7 @@ def create_template_environment(
     env.globals["to_wrapper_cpp_type"] = to_wrapper_cpp_type
     env.globals["get_matching_impls"] = get_matching_impls
     env.globals["get_struct_from_type"] = get_struct_from_type
+    env.globals["encode_version"] = encode_version
     env.filters["to_pascal_case"] = to_pascal_case
 
     return env
@@ -181,7 +182,9 @@ class Generator(CodeGenerator):
         )
         output_builder.with_file("buffer.h", "buffer.h")
         output_builder.with_file("decoders.h", "decoders.h")
-        output_builder.with_file("dynamic.h", "dynamic.h")
+        output_builder.with_file(
+            "dynamic.h", "dynamic.h.j2", {"reflection": fcp_reflection}
+        )
         output_builder.with_file(
             "reflection.h",
             "fcp.h.j2",
