@@ -59,8 +59,8 @@ struct std::hash<fcp::MethodIds> {
 namespace fcp {
 class IBusProxy {
     public:
-        virtual void Send(const std::vector<std::uint8_t>& data, std::string msg_name) = 0;
-        virtual std::optional<std::pair<std::vector<std::uint8_t>, std::string>> Recv() = 0;
+        virtual void Send(const std::string msg_name, const json& data) = 0;
+        virtual std::optional<std::pair<std::string, json>> Recv() = 0;
 };
 
 template<typename T>
