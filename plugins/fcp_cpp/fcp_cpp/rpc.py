@@ -132,7 +132,8 @@ def _create_service_id_enum(fcp: FcpV2) -> Enum:
         Enum(
             name="ServiceId",
             enumeration=[
-                Enumeration(service.name, service.id, None) for service in fcp.services
+                Enumeration(to_pascal_case(service.name), service.id, None)
+                for service in fcp.services
             ],
             meta=None,
         ),
@@ -145,7 +146,7 @@ def _create_method_id_enum(
 ) -> Enum:
     return _set_bitsize(
         Enum(
-            name=service_name + "MethodId",
+            name=to_pascal_case(service_name) + "MethodId",
             enumeration=[
                 Enumeration(method_name, id, None)
                 for method_name, id in service_method_enum

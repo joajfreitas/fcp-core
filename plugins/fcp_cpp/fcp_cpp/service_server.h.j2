@@ -46,7 +46,7 @@ class {{service.name}}Broker {
         {}
 
         void Step() {
-            auto decoded_ = GetDecodedMethod(bus_proxy_.Recv());
+            auto decoded_ = bus_proxy_.Recv();
 
             if (!decoded_.has_value()) {
                 return;
@@ -54,8 +54,8 @@ class {{service.name}}Broker {
 
             auto decoded = decoded_.value();
 
-            auto service_id = decoded["service_id"]. template get<std::uint8_t>();
-            auto method_id = decoded["method_id"]. template get<std::uint8_t>();
+            auto service_id = decoded.second["service_id"]. template get<std::uint8_t>();
+            auto method_id = decoded.second["method_id"]. template get<std::uint8_t>();
 
             if (service_id != service_id_) {
                 return;
@@ -63,35 +63,16 @@ class {{service.name}}Broker {
 
             {% for method in service.methods -%}
             if (method_id == {{service.name}}MethodId::{{method.name}}) {
-                auto input = {{method.input}}::FromJson(decoded["payload"]);
+                auto input = {{method.input}}::FromJson(decoded.second["payload"]);
                 auto response_payload = service_impl_.{{method.name}}(input);
                 auto response = {{method.output}}Output{service_id_, method_id, response_payload};
-                bus_proxy_.Send(response.Encode().GetData(), "{{method.output}}Output");
+                bus_proxy_.Send("{{method.output}}Output", response.DecodeJson());
                 return;
             }
             {% endfor -%}
         }
 
     private:
-        std::optional<json> GetDecodedMethod(std::optional<std::pair<std::vector<std::uint8_t>, std::string>> msg) {
-            if (!msg.has_value()) {
-                return std::nullopt;
-            }
-
-            auto [data, msg_name] = msg.value();
-            auto decoded = schema_.DecodeJson(msg_name, data);
-            if (!decoded.has_value()) {
-                return std::nullopt;
-            }
-
-
-            if (!decoded.value().contains("__is_method_input")) {
-                return std::nullopt;
-            }
-
-            return decoded;
-        }
-
         IBusProxy& bus_proxy_;
         const fcp::ISchema& schema_;
         ServiceImpl& service_impl_;

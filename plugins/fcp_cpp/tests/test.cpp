@@ -24,8 +24,12 @@
 #include "service1_client.h"
 #include "service1_server.h"
 
+#include <nlohmann/json.hpp>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+
+using json = nlohmann::json;
 
 
 TEST(BasicStruct, EncodeSimpleUnsignedStruct) {
@@ -248,11 +252,11 @@ class MockedBusProxy: public fcp::IBusProxy {
         MOCK_METHOD(
                 void,
                 Send,
-                (const std::vector<std::uint8_t>& data, std::string msg_name),
+                (std::string msg_name, const json& data),
                 (override));
 
         MOCK_METHOD(
-                (std::optional<std::pair<std::vector<std::uint8_t>, std::string>>),
+                (std::optional<std::pair<std::string, json>>),
                 Recv,
                 (),
                 (override));
@@ -260,12 +264,14 @@ class MockedBusProxy: public fcp::IBusProxy {
 
 TEST(Service, Method1Call) {
     auto bus = MockedBusProxy{};
-    EXPECT_CALL(
-            bus,
-            Send(
-                testing::Eq(std::vector<std::uint8_t>{0, 0, 1,2,1}),
-                testing::Eq("S2Input"))
-        ).Times(testing::Exactly(1));
+    EXPECT_CALL(bus,
+                Send(testing::Eq("S2Input"),
+                     testing::Eq(json{
+                         {"__is_method_input", true},
+                         {"method_id", 0},
+                         {"service_id", 0},
+                         {"payload", json{{"s1", 1}, {"s2", 2}, {"s3", 1}}}})))
+        .Times(testing::Exactly(1));
 
     auto schema = fcp::StaticSchema{};
     auto service1 = fcp::Service1Proxy(bus, schema);
@@ -285,14 +291,29 @@ class Service1Impl: public fcp::IService1Impl {
 TEST(Service, Method1Response) {
     auto bus = MockedBusProxy{};
 
-    EXPECT_CALL(bus, Recv()).WillRepeatedly(testing::Return(std::make_pair(std::vector<std::uint8_t>{0,0,1,2,1}, "S2Input")));
+    EXPECT_CALL(bus, Recv())
+        .WillRepeatedly(testing::Return(std::make_pair(
+            "S2Input",
+            json{
+                 {"__is_method_input", true},
+                 {"service_id", 0},
+                 {"method_id", 0},
+                 {"payload", json{{"s1", 1}, {"s2", 2}, {"s3", 1}}}})));
 
-    EXPECT_CALL(bus, Send(testing::Eq(std::vector<std::uint8_t>{0,0,1,2,3,4,5,6}), testing::Eq("S3Output"))).Times(testing::Exactly(1));
+    EXPECT_CALL(
+        bus, Send(testing::Eq("S3Output"),
+                  testing::Eq(json{
+                      {"service_id", 0},
+                      {"method_id", 0},
+                      {"payload",
+                       json{{"s1", json{1, 2, 3, 4}}, {"s2", 5}, {"s3", 6}}}})))
+        .Times(testing::Exactly(1));
 
     auto schema = fcp::StaticSchema{};
 
     auto service1_impl = Service1Impl{};
-    auto broker = fcp::Service1Broker<fcp::IService1Impl>(bus, schema, service1_impl, fcp::ServiceId::Service1);
+    auto broker = fcp::Service1Broker<fcp::IService1Impl>(
+        bus, schema, service1_impl, fcp::ServiceId::Service1);
 
     broker.Step();
 

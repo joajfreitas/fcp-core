@@ -36,7 +36,7 @@ class {{service.name}}Proxy {
         template<typename Input, typename Output>
         MethodResponse<typename Output::PayloadType> HandleMethod(const typename Input::PayloadType& input, std::uint8_t service_id, std::uint8_t method_id) {
             Input input_req{service_id, method_id, input};
-            bus_proxy_.Send(input_req.Encode().GetData(), Input::GetTypeName());
+            bus_proxy_.Send(Input::GetTypeName(), input_req.DecodeJson());
 
             std::promise<json> promise;
             std::future<json> future = promise.get_future();
@@ -55,7 +55,7 @@ class {{service.name}}Proxy {
             if (!msg.has_value()) {
                 return;
             }
-            auto decoded = schema_.DecodeJson(msg.value().second, msg.value().first);
+            auto decoded = schema_.DecodeJson(msg.value().first, msg.value().second);
 
             if (!decoded.has_value()) {
                 return;
