@@ -23,11 +23,10 @@
 
 #include "dynamic.h"
 #include "fcp.h"
-#include <nlohmann/json.hpp>
+#include "json.h"
 
 #include <cstring>
 
-using json = nlohmann::json;
 
 using testing::Eq;
 using testing::Optional;
@@ -55,14 +54,14 @@ TEST_F(DynamicSchemaTest, DecodeSimpleUnsignedStruct)
 
     auto decoded = schema.DecodeJson("S1", { 1, 2 });
 
-    EXPECT_THAT(decoded, Optional(Eq(json { { "s1", 1 }, { "s2", 2 } })));
+    EXPECT_THAT(decoded, Optional(Eq(std::map<std::string, json> { { "s1", 1ULL }, { "s2", 2ULL } })));
 }
 
 TEST_F(DynamicSchemaTest, EncodeSimpleUnsignedStruct)
 {
     auto schema = GetSchema();
 
-    auto encoded = schema.EncodeJson("S1", { { "s1", 1 }, { "s2", 2 } });
+    auto encoded = schema.EncodeJson("S1", std::map<std::string, json>{ { "s1", 1ULL }, { "s2", 2ULL } });
 
     EXPECT_THAT(encoded, Optional(Eq(std::vector<std::uint8_t> { 1, 2 })));
 }
@@ -73,14 +72,31 @@ TEST_F(DynamicSchemaTest, DecodeIntegerStruct)
 
     auto decoded = schema.DecodeJson("S5", { 1, 2, 3, 0, 4, 0, 5, 0, 0, 6, 0, 0, 7, 0, 0, 0, 8, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0 });
 
-    EXPECT_THAT(decoded, Optional(Eq(json { { "s1", 1 }, { "s2", 2 }, { "s3", 3 }, { "s4", 4 }, { "s5", 5 }, { "s6", 6 }, { "s7", 7 }, { "s8", 8 }, { "s9", 9 }, { "s10", 10 } })));
+    auto xs = rva::get<std::map<std::string, json>>(decoded.value());
+    for (const auto& [key, _] : xs) {
+        std::cout << key << std::endl;
+    }
+
+        std::cout << "s1: " << rva::get<std::uint64_t>(xs["s1"]) << std::endl;
+        std::cout << "alternative: " << rva::holds_alternative<std::uint64_t>(xs["s2"]) << std::endl;
+        std::cout << "s2: " << rva::get<std::int64_t>(xs["s2"]) << std::endl;
+        std::cout << "s3: " << rva::get<std::uint64_t>(xs["s3"]) << std::endl;
+        std::cout << "s4: " << rva::get<std::int64_t>(xs["s4"]) << std::endl;
+        std::cout << "s5: " << rva::get<std::uint64_t>(xs["s5"]) << std::endl;
+        std::cout << "s6: " << rva::get<std::int64_t>(xs["s6"]) << std::endl;
+        std::cout << "s7: " << rva::get<std::uint64_t>(xs["s7"]) << std::endl;
+        std::cout << "s8: " << rva::get<std::int64_t>(xs["s8"]) << std::endl;
+        std::cout << "s9: " << rva::get<std::uint64_t>(xs["s9"]) << std::endl;
+        std::cout << "s10: " << rva::get<std::int64_t>(xs["s10"]) << std::endl;
+
+    EXPECT_THAT(decoded, Optional(Eq(json { std::map<std::string, json>{{ "s1", 1ULL }, { "s2", 2LL }, { "s3", 3ULL }, { "s4", 4LL }, { "s5", 5ULL }, { "s6", 6LL }, { "s7", 7ULL }, { "s8", 8LL }, { "s9", 9ULL }, { "s10", 10LL } }})));
 }
 
 TEST_F(DynamicSchemaTest, EncodeIntegerStruct)
 {
     auto schema = GetSchema();
 
-    auto encoded = schema.EncodeJson("S5", { { "s1", 1 }, { "s2", 2 }, { "s3", 3 }, { "s4", 4 }, { "s5", 5 }, { "s6", 6 }, { "s7", 7 }, { "s8", 8 }, { "s9", 9 }, { "s10", 10 } });
+    auto encoded = schema.EncodeJson("S5", json{ std::map<std::string, json>{{ "s1", 1ULL }, { "s2", 2LL }, { "s3", 3ULL }, { "s4", 4LL }, { "s5", 5ULL }, { "s6", 6LL }, { "s7", 7ULL }, { "s8", 8LL }, { "s9", 9ULL }, { "s10", 10LL } }});
 
     EXPECT_THAT(encoded, Optional(Eq(std::vector<std::uint8_t> { 1, 2, 3, 0, 4, 0, 5, 0, 0, 6, 0, 0, 7, 0, 0, 0, 8, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0 })));
 }
@@ -91,7 +107,7 @@ TEST_F(DynamicSchemaTest, DecodeFloat)
 
     auto decoded = schema.DecodeJson("S6", { 0, 0, 0x80, 0x3f, 0, 0, 0, 0, 0, 0, 0, 0});
 
-    EXPECT_THAT(decoded, Optional(Eq(json {
+    EXPECT_THAT(decoded, Optional(Eq(std::map<std::string, json> {
         { "s1", 1.0 }, { "s2", 0.0 }})));
 }
 
@@ -99,7 +115,7 @@ TEST_F(DynamicSchemaTest, EncodeFloat)
 {
     auto schema = GetSchema();
 
-    auto decoded = schema.EncodeJson("S6", json {{ "s1", 1.0 }, { "s2", 0.0 }});
+    auto decoded = schema.EncodeJson("S6", json {std::map<std::string, json>{{ "s1", 1.0 }, { "s2", 0.0 }}});
 
     EXPECT_THAT(decoded, Optional(Eq(std::vector<std::uint8_t>
             { 0, 0, 0x80, 0x3f, 0, 0, 0, 0, 0, 0, 0, 0})));
@@ -112,14 +128,14 @@ TEST_F(DynamicSchemaTest, DecodeDouble)
     auto decoded = schema.DecodeJson("S6", { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xf0, 0x3f});
 
     EXPECT_THAT(decoded, Optional(Eq(json {
-        { "s1", 0.0 }, { "s2", 1.0 }})));
+                    std::map<std::string, json>{{ "s1", 0.0 }, { "s2", 1.0 }}})));
 }
 
 TEST_F(DynamicSchemaTest, EncodeDouble)
 {
     auto schema = GetSchema();
 
-    auto decoded = schema.EncodeJson("S6", json {{ "s1", 0.0 }, { "s2", 1.0 }});
+    auto decoded = schema.EncodeJson("S6", json {std::map<std::string, json>{{ "s1", 0.0 }, { "s2", 1.0 }}});
 
     EXPECT_THAT(decoded, Optional(Eq(std::vector<std::uint8_t>
             { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xf0, 0x3f})));
@@ -131,14 +147,14 @@ TEST_F(DynamicSchemaTest, DecodeString)
 
     auto decoded = schema.DecodeJson("S7", { 5, 0, 0, 0, 'h', 'e', 'l', 'l', 'o' });
 
-    EXPECT_THAT(decoded, Optional(Eq(json { { "s1", std::string { "hello" } } })));
+    EXPECT_THAT(decoded, Optional(Eq(json { std::map<std::string, json>{{ "s1", std::string { "hello" } }} })));
 }
 
 TEST_F(DynamicSchemaTest, EncodeString)
 {
     auto schema = GetSchema();
 
-    auto encoded = schema.EncodeJson("S7", json{{"s1", "hello"}});
+    auto encoded = schema.EncodeJson("S7", std::map<std::string, json>{{"s1", "hello"}});
 
     EXPECT_THAT(encoded, Optional(Eq(std::vector<std::uint8_t>
             { 5, 0, 0, 0, 'h', 'e', 'l', 'l', 'o'})));
@@ -150,14 +166,14 @@ TEST_F(DynamicSchemaTest, DecodeStaticArray)
 
     auto decoded = schema.DecodeJson("S3", { 1, 2, 3, 4, 5, 6 });
 
-    EXPECT_THAT(decoded, Optional(Eq(json { { "s1", { 1, 2, 3, 4 } }, { "s2", 5 }, { "s3", 6 } })));
+    EXPECT_THAT(decoded, Optional(Eq(json { std::map<std::string, json>{{ "s1", json{std::vector<json>{ 1ULL, 2ULL, 3ULL, 4ULL } }}, { "s2", 5ULL }, { "s3", 6ULL }} })));
 }
 
 TEST_F(DynamicSchemaTest, EncodeStaticArray)
 {
     auto schema = GetSchema();
 
-    auto encoded = schema.EncodeJson("S3", json { { "s1", { 1, 2, 3, 4 } }, { "s2", 5 }, { "s3", 6 } });
+    auto encoded = schema.EncodeJson("S3", json { std::map<std::string, json>{{ "s1", std::vector<json>{ 1ULL, 2ULL, 3ULL, 4ULL } }, { "s2", 5ULL }, { "s3", 6ULL } }});
 
     EXPECT_THAT(encoded, Optional(Eq(std::vector<std::uint8_t> { 1, 2, 3, 4, 5, 6 })));
 }
@@ -166,16 +182,16 @@ TEST_F(DynamicSchemaTest, DecodeNestedStruct)
 {
     auto schema = GetSchema();
 
-    auto decoded = schema.DecodeJson("S12", { 1, 2 });
+    auto decoded = schema.DecodeJson("S12", {1, 2});
 
-    EXPECT_THAT(decoded, Optional(Eq(json { { "s1", { { "s1", 1 }, { "s2", 2 } } } })));
+    EXPECT_THAT(decoded, Optional(Eq(json{std::map<std::string, json>{{"s1", json{std::map<std::string, json>{{"s1", 1ULL}, {"s2", 2ULL}}}}}})));
 }
 
 TEST_F(DynamicSchemaTest, EncodeNestedStruct)
 {
     auto schema = GetSchema();
 
-    auto encoded = schema.EncodeJson("S12", json { { "s1", { { "s1", 1 }, { "s2", 2 } } } });
+    auto encoded = schema.EncodeJson("S12", json { std::map<std::string, json>{{ "s1", std::map<std::string, json>{ { "s1", 1ULL }, { "s2", 2ULL } } } }});
 
     EXPECT_THAT(encoded, Optional(Eq(std::vector<std::uint8_t> { 1, 2 })));
 }
@@ -184,15 +200,15 @@ TEST_F(DynamicSchemaTest, DecodeEnum)
 {
     auto schema = GetSchema();
 
-    auto decoded = schema.DecodeJson("S2", { 0 , 1, 2});
+    auto decoded = schema.DecodeJson("S2", { 0, 1, 2});
 
-    EXPECT_THAT(decoded, Optional(Eq(json { { "s1", 0}, {"s2", 1}, {"s3", "S2" } })));
+    EXPECT_THAT(decoded, Optional(Eq(json { std::map<std::string, json>{{ "s1", 0ULL}, {"s2", 1ULL}, {"s3", "S2" } }})));
 }
 
 TEST_F(DynamicSchemaTest, EncodeEnum) {
     auto schema = GetSchema();
 
-    auto encoded = schema.EncodeJson("S2", { { "s1", 0 }, { "s2", 1 }, { "s3", "S2" } });
+    auto encoded = schema.EncodeJson("S2", json{ std::map<std::string, json>{{ "s1", 0ULL }, { "s2", 1ULL }, { "s3", "S2" } }});
 
     EXPECT_THAT(encoded, Optional(Eq(std::vector<std::uint8_t> { 0, 1, 2 })));
 }
@@ -203,14 +219,14 @@ TEST_F(DynamicSchemaTest, DecodeDynamicArray)
 
     auto decoded = schema.DecodeJson("S8", { 4, 0, 0, 0, 1, 2, 3, 4 });
 
-    EXPECT_THAT(decoded, Optional(Eq(json { { "s1", { 1, 2, 3, 4 } }})));
+    EXPECT_THAT(decoded, Optional(Eq(json { std::map<std::string, json>{{ "s1", std::vector<json>{ 1ULL, 2ULL, 3ULL, 4ULL }}}})));
 }
 
 TEST_F(DynamicSchemaTest, EncodeDynamicArray)
 {
     auto schema = GetSchema();
 
-    auto encoded = schema.EncodeJson("S8", json { { "s1", { 1, 2, 3, 4 } }});
+    auto encoded = schema.EncodeJson("S8", std::map<std::string, json> { { "s1", std::vector<json>{ 1ULL, 2ULL, 3ULL, 4ULL } }});
 
     EXPECT_THAT(encoded, Optional(Eq(std::vector<std::uint8_t>{ 4, 0, 0, 0, 1, 2, 3, 4 })));
 }
@@ -220,13 +236,13 @@ TEST_F(DynamicSchemaTest, DecodeOptional) {
 
     auto decoded = schema.DecodeJson("S10", { 1, 1 });
 
-    EXPECT_THAT(decoded, Optional(Eq(json { { "s1", 1 } })));
+    EXPECT_THAT(decoded, Optional(Eq(std::map<std::string, json>{{ "s1", 1ULL }})));
 }
 
 TEST_F(DynamicSchemaTest, EncodeOptional) {
     auto schema = GetSchema();
 
-    auto encoded = schema.EncodeJson("S10", json { { "s1", 1 } });
+    auto encoded = schema.EncodeJson("S10", std::map<std::string, json>{{ "s1", 1ULL }});
 
     EXPECT_THAT(encoded, Optional(Eq(std::vector<std::uint8_t>{ 1, 1 })));
 }

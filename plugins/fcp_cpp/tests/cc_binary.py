@@ -115,13 +115,20 @@ def cc_binary(
         header.apply(Path(tempdirname))
 
     r = subprocess.run(
-        ["/usr/bin/g++", "--std=c++17"]
+        ["/usr/bin/g++", "--std=c++20"]
         + flags
         + src_paths
         + ["-o", name]
         + ["-l" + lib for lib in dynamic_libraries],
         capture_output=True,
         cwd=tempdirname,
+    )
+    print(
+        ["/usr/bin/g++", "--std=c++20"]
+        + flags
+        + src_paths
+        + ["-o", name]
+        + ["-l" + lib for lib in dynamic_libraries]
     )
 
     if r.returncode != 0:

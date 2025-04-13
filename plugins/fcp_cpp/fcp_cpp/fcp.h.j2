@@ -37,18 +37,15 @@
 #include <cstring>
 #include <optional>
 
-#include <nlohmann/json.hpp>
-
 #include "buffer.h"
 #include "decoders.h"
 #include "i_schema.h"
+#include "json.h"
 
 namespace fcp {
 {% if namespace is not none %}
 namespace {{namespace}} {
 {% endif %}
-
-using json = nlohmann::json;
 
 {% for enum in fcp.enums %}
 class {{enum.name}} {
@@ -62,7 +59,7 @@ public:
     {{enum.name}}(UnderlyingType value): data_{value} {}
 
     static {{enum.name}} FromJson(json j) {
-        return {{enum.name}}{j.get<UnderlyingType>()};
+        return {{enum.name}}{static_cast<UnderlyingType>(rva::get<std::uint64_t>(j))};
     }
 
     static {{enum.name}} Decode(Buffer& buffer, Endianess endianess=Endianess::Little) {
@@ -71,7 +68,7 @@ public:
     }
 
     json DecodeJson() const {
-        return GetData();
+        return static_cast<std::uint64_t>(GetData());
     }
 
     Buffer Encode(Endianess endianess=Endianess::Little) {
@@ -137,9 +134,10 @@ struct {{struct.name}} {
     {}
 
     static {{struct.name}} FromJson(json j){
+        auto values = rva::get<std::map<std::string, json>>(j);
         return {{struct.name}} {
         {%- for signal in struct.fields %}
-            {{signal.name | to_pascal_case}}Type::FromJson(j["{{signal.name}}"]),
+            {{signal.name | to_pascal_case}}Type::FromJson(values["{{signal.name}}"]),
         {%- endfor %}
         };
     }
@@ -159,7 +157,7 @@ struct {{struct.name}} {
     }
 
     json DecodeJson() const {
-        json j{};
+        std::map<std::string, json> j{};
         {% for signal in struct.fields -%}
         j["{{signal.name}}"] = {{signal.name}}_.DecodeJson();
         {% endfor -%}

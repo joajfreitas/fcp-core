@@ -18,22 +18,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// Generated using fcp {{version}} on {{date}} by {{user}}@{{hostname}}
-
-// DO NOT EDIT
-
 #pragma once
 
-#include <optional>
+#include <map>
+#include <vector>
 #include <string>
+#include <cstdint>
+#include "variant.h"
 
-#include "json.h"
-
-namespace fcp {
-
-struct ISchema {
-    virtual std::optional<json> DecodeJson(std::string msg_name, std::vector<uint8_t> data, std::string bus = "default") const = 0;
-    virtual std::optional<std::vector<std::uint8_t>> EncodeJson(std::string msg_name, json j) const = 0;
-};
-
-} // namespace fcp
+using json = rva::variant<
+    std::nullptr_t,                       // json null
+    bool,                                 // json boolean
+    double,                               // json number
+    std::int64_t,                         // json integer
+    std::uint64_t,                        // json unsigned integer
+    std::string,                          // json string
+    std::map<std::string, rva::self_t>,   // json object, type is std::map<std::string, json_value>
+    std::vector<rva::self_t>>;            // json array, type is std::vector<json_value>

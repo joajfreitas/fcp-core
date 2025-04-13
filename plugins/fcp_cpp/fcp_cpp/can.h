@@ -32,15 +32,12 @@
 #include <cstring>
 #include <utility>
 
-#include <nlohmann/json.hpp>
-
 #include "fcp.h"
 #include "i_can_schema.h"
+#include "json.h"
 
 namespace fcp {
 namespace can {
-
-using json = nlohmann::json;
 
 inline bool operator==(const frame_t& lhs, const frame_t& rhs) {
     return lhs.bus == rhs.bus &&

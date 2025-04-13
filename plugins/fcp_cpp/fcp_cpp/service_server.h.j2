@@ -52,10 +52,10 @@ class {{service.name}}Broker {
                 return;
             }
 
-            auto decoded = decoded_.value();
+            auto decoded = rva::get<std::map<std::string, json>>(decoded_.value());
 
-            auto service_id = decoded["service_id"]. template get<std::uint8_t>();
-            auto method_id = decoded["method_id"]. template get<std::uint8_t>();
+            auto service_id = rva::get<std::uint64_t>(decoded["service_id"]);
+            auto method_id = rva::get<std::uint64_t>(decoded["method_id"]);
 
             if (service_id != service_id_) {
                 return;
@@ -65,7 +65,7 @@ class {{service.name}}Broker {
             if (method_id == {{service.name}}MethodId::{{method.name}}) {
                 auto input = {{method.input}}::FromJson(decoded["payload"]);
                 auto response_payload = service_impl_.{{method.name}}(input);
-                auto response = {{method.output}}Output{service_id_, method_id, response_payload};
+                auto response = {{method.output}}Output{static_cast<std::uint8_t>(service_id_), static_cast<std::uint8_t>(method_id), response_payload};
                 bus_proxy_.Send(response.Encode().GetData(), "{{method.output}}Output");
                 return;
             }
@@ -84,8 +84,8 @@ class {{service.name}}Broker {
                 return std::nullopt;
             }
 
-
-            if (!decoded.value().contains("__is_method_input")) {
+            auto values = rva::get<std::map<std::string, json>>(decoded.value());
+            if (!values.contains("__is_method_input")) {
                 return std::nullopt;
             }
 

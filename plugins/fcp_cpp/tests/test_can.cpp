@@ -33,8 +33,6 @@ using testing::Optional;
 using testing::Pair;
 using testing::Values;
 
-using json = nlohmann::json;
-
 using CanTest = testing::TestWithParam<fcp::can::Can>;
 
 fcp::can::CanDynamicSchema BuildCanDynamicSchema() {
@@ -59,14 +57,14 @@ TEST_P(CanTest, BasicDecode)
         Optional(
             Pair(
                 Eq("S1"),
-                Eq(json { { "s1", 1 }, { "s2", 2 } }))));
+                Eq(json { std::map<std::string, json>{{ "s1", 1ULL }, { "s2", 2ULL } }}))));
 }
 
 TEST_P(CanTest, BasicEncode)
 {
     auto can = GetParam();
 
-    const auto frame = can.Encode("S1", { { "s1", 1 }, { "s2", 2 } });
+    const auto frame = can.Encode("S1", { std::map<std::string, json>{{ "s1", 1ULL }, { "s2", 2ULL } }});
 
     EXPECT_THAT(frame, Optional(Eq(fcp::can::frame_t{{'b','u','s','1'}, 10, 2, {1,2}})));
 }

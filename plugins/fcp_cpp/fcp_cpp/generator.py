@@ -219,6 +219,9 @@ class Generator(CodeGenerator):
                 {"fcp": fcp, "service": service},
             )
 
+        output_builder.with_file("variant.h", "variant.h")
+        output_builder.with_file("json.h", "json.h")
+
         env = create_template_environment(output_builder.output)
 
         return [

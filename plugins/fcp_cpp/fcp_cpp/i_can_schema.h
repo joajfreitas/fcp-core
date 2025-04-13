@@ -24,10 +24,10 @@
 
 #pragma once
 
+#include "json.h"
+
 namespace fcp {
 namespace can {
-
-#include <nlohmann/json.hpp>
 
 struct frame_t {
     std::array<char,4> bus;

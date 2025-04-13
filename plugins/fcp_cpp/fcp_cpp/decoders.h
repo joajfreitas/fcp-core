@@ -24,13 +24,11 @@
 
 #pragma once
 
-#include <nlohmann/json.hpp>
-#
+#include <cmath>
 #include "buffer.h"
+#include "json.h"
 
 namespace fcp {
-
-using json = nlohmann::json;
 
 template<typename UnderlyingType, std::size_t BitSize>
 class Unsigned {
@@ -39,7 +37,7 @@ public:
     Unsigned(UnderlyingType value): data_{value} {}
 
     static Unsigned FromJson(json j) {
-        return Unsigned(j.get<UnderlyingType>());
+        return Unsigned(rva::get<std::uint64_t>(j));
     }
 
     static Unsigned Decode(Buffer& buffer, Endianess endianess=Endianess::Little) {
@@ -48,7 +46,7 @@ public:
     }
 
     json DecodeJson() const {
-        return GetData();
+        return static_cast<std::uint64_t>(GetData());
     }
 
     void Encode(Buffer& buffer, Endianess endianess=Endianess::Little) const {
@@ -87,7 +85,7 @@ public:
     Signed(UnderlyingType value): data_{value} {}
 
     static Signed FromJson(json j) {
-        return Signed(j.get<UnderlyingType>());
+        return Signed(rva::get<std::int64_t>(j));
     }
 
     static Signed Decode(Buffer& buffer, Endianess endianess=Endianess::Little) {
@@ -96,7 +94,7 @@ public:
     }
 
     json DecodeJson() const {
-        return GetData();
+        return static_cast<std::int64_t>(GetData());
     }
 
     void Encode(Buffer& buffer, Endianess endianess=Endianess::Little) const {
@@ -136,7 +134,7 @@ public:
     Float(UnderlyingType value): data_{value} {}
 
     static Float FromJson(json j) {
-        return Float(j.get<UnderlyingType>());
+        return Float(rva::get<double>(j));
     }
 
     static Float Decode(Buffer& buffer, Endianess endianess=Endianess::Little) {
@@ -191,7 +189,7 @@ public:
     Double(): data_{0.0}{}
     Double(UnderlyingType value): data_{value} {}
     static Double FromJson(json j) {
-        return Double(j.get<UnderlyingType>());
+        return Double(rva::get<UnderlyingType>(j));
     }
 
     static Double Decode(Buffer& buffer, Endianess endianess=Endianess::Little) {
@@ -250,9 +248,9 @@ class Array {
 
     static Array FromJson(json j) {
         std::array<T, N> data{0};
-
-        for (std::size_t i=0; i<N && i<j.size(); i++) {
-            data[i] = T::FromJson(j[i]);
+        auto vs = rva::get<std::vector<json>>(j);
+        for (std::size_t i=0; i<N && i<vs.size(); i++) {
+            data[i] = T::FromJson(vs[i]);
         }
 
         return Array(data);
@@ -269,7 +267,7 @@ class Array {
     }
 
     json DecodeJson() const {
-        json j{};
+        std::vector<json> j{};
 
         for (const auto& x: GetData()) {
             j.push_back(x.DecodeJson());
@@ -321,7 +319,7 @@ class String {
     String(const char* value): data_{value} {}
 
     static String FromJson(json j) {
-        return String(j.get<std::string>());
+        return String(rva::get<std::string>(j));
     }
 
     static String Decode(Buffer& buffer, Endianess endianess=Endianess::Little) {
@@ -379,7 +377,8 @@ class DynamicArray {
 
     static DynamicArray FromJson(json j) {
         std::vector<T> data{};
-        for (const auto& x: j) {
+        auto vs = rva::get<std::vector<json>>(j);
+        for (const auto& x: vs) {
             data.push_back(T::FromJson(x));
         }
 
@@ -397,7 +396,7 @@ class DynamicArray {
     }
 
     json DecodeJson() const {
-        json j{};
+        std::vector<json> j{};
         for (auto x: GetData()) {
             j.push_back(x.DecodeJson());
         }
@@ -470,7 +469,7 @@ class Optional {
     }
 
     static Optional FromJson(json j) {
-        if (j.is_null()) {
+        if (rva::holds_alternative<std::nullptr_t>(j)) {
             return Optional{std::nullopt};
         }
         else {

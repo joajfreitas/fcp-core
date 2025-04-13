@@ -24,6 +24,8 @@
 
 #pragma once
 
+#include <unordered_map>
+
 #include "rpc.h"
 #include "i_schema.h"
 
@@ -61,11 +63,13 @@ class {{service.name}}Proxy {
                 return;
             }
 
-            auto service_id = decoded.value()["service_id"].get<std::uint8_t>();
-            auto method_id = decoded.value()["method_id"].get<std::uint8_t>();
+            auto values = rva::get<std::map<std::string, json>>(decoded.value());
+
+            auto service_id = rva::get<std::uint64_t>(values["service_id"]);
+            auto method_id = rva::get<std::uint64_t>(values["method_id"]);
             for (auto& [key, value]: pending_requests_) {
                 if (key.service_id == service_id && key.method_id == method_id) {
-                    value.set_value(decoded.value()["payload"]);
+                    value.set_value(rva::get<std::uint64_t>(values["payload"]));
                     pending_requests_.erase(key);
                     return;
                 }
