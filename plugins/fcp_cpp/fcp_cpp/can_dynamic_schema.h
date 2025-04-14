@@ -33,9 +33,10 @@
 namespace fcp {
 namespace can {
 
-class CanDynamicSchema: public ICanSchema {
+class CanDynamicSchema final: public ICanSchema {
     public:
         CanDynamicSchema(const dynamic::DynamicSchema& dynamic_schema): dynamic_schema_{dynamic_schema} {}
+        ~CanDynamicSchema() = default;
 
     std::optional<std::pair<std::string, json>> Decode(const frame_t& frame) override {
         auto msg_name = GetMsgName(frame.sid, frame.bus);

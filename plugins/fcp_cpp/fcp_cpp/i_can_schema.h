@@ -38,6 +38,7 @@ struct frame_t {
 
 class ICanSchema {
   public:
+    virtual ~ICanSchema() = default;
     virtual std::optional<std::pair<std::string, json>> Decode(const frame_t& frame) = 0;
     virtual std::optional<frame_t> Encode(std::string msg_name, json j) = 0;
 };

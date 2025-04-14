@@ -33,6 +33,7 @@ namespace can {
 class CanStaticSchema: public ICanSchema {
   public:
     CanStaticSchema(): static_schema_{} {}
+    ~CanStaticSchema() = default;
 
     std::optional<std::pair<std::string, json>> Decode(const frame_t& frame) override {
         auto msg_name = GetMsgName(frame.sid, frame.bus);
