@@ -248,11 +248,11 @@ class MockedBusProxy: public fcp::IBusProxy {
         MOCK_METHOD(
                 void,
                 Send,
-                (const std::vector<std::uint8_t>& data, std::string msg_name),
+                (std::string msg_name, const std::vector<std::uint8_t>& data),
                 (override));
 
         MOCK_METHOD(
-                (std::optional<std::pair<std::vector<std::uint8_t>, std::string>>),
+                (std::optional<std::pair<std::string, std::vector<std::uint8_t>>>),
                 Recv,
                 (),
                 (override));
@@ -263,8 +263,8 @@ TEST(Service, Method1Call) {
     EXPECT_CALL(
             bus,
             Send(
-                testing::Eq(std::vector<std::uint8_t>{0, 0, 1,2,1}),
-                testing::Eq("S2Input"))
+                testing::Eq("S2Input"),
+                testing::Eq(std::vector<std::uint8_t>{0, 0, 1,2,1}))
         ).Times(testing::Exactly(1));
 
     auto schema = fcp::StaticSchema{};
@@ -285,9 +285,9 @@ class Service1Impl: public fcp::IService1Impl {
 TEST(Service, Method1Response) {
     auto bus = MockedBusProxy{};
 
-    EXPECT_CALL(bus, Recv()).WillRepeatedly(testing::Return(std::make_pair(std::vector<std::uint8_t>{0,0,1,2,1}, "S2Input")));
+    EXPECT_CALL(bus, Recv()).WillRepeatedly(testing::Return(std::make_pair("S2Input", std::vector<std::uint8_t>{0,0,1,2,1})));
 
-    EXPECT_CALL(bus, Send(testing::Eq(std::vector<std::uint8_t>{0,0,1,2,3,4,5,6}), testing::Eq("S3Output"))).Times(testing::Exactly(1));
+    EXPECT_CALL(bus, Send(testing::Eq("S3Output"), testing::Eq(std::vector<std::uint8_t>{0,0,1,2,3,4,5,6}))).Times(testing::Exactly(1));
 
     auto schema = fcp::StaticSchema{};
 

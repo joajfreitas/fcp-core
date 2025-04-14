@@ -66,19 +66,19 @@ class {{service.name}}Broker {
                 auto input = {{method.input}}::FromJson(decoded["payload"]);
                 auto response_payload = service_impl_.{{method.name}}(input);
                 auto response = {{method.output}}Output{static_cast<std::uint8_t>(service_id_), static_cast<std::uint8_t>(method_id), response_payload};
-                bus_proxy_.Send(response.Encode().GetData(), "{{method.output}}Output");
+                bus_proxy_.Send("{{method.output}}Output", response.Encode().GetData());
                 return;
             }
             {% endfor -%}
         }
 
     private:
-        std::optional<json> GetDecodedMethod(std::optional<std::pair<std::vector<std::uint8_t>, std::string>> msg) {
+        std::optional<json> GetDecodedMethod(std::optional<std::pair<std::string, std::vector<std::uint8_t>>> msg) {
             if (!msg.has_value()) {
                 return std::nullopt;
             }
 
-            auto [data, msg_name] = msg.value();
+            auto [msg_name, data] = msg.value();
             auto decoded = schema_.DecodeJson(msg_name, data);
             if (!decoded.has_value()) {
                 return std::nullopt;
