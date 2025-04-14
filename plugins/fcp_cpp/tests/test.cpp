@@ -77,18 +77,19 @@ TEST(SimpleArray, Decode) {
 }
 
 TEST(EnumArray, Encode) {
-    auto foo = fcp::S4{{fcp::E::S0,fcp::E::S1,fcp::E::S2,fcp::E::S0}, 5,6};
-    auto encoded = foo.Encode().GetData();
+  auto foo = fcp::S4{{fcp::E::S0, fcp::E::S1, fcp::E::S2, fcp::E::S0}, 5, 6};
+  auto encoded = foo.Encode().GetData();
 
-    std::vector<uint8_t> bytes{0x24,5,6};
-    EXPECT_THAT(encoded,bytes);
+  std::vector<uint8_t> bytes{0x24, 5, 6};
+  EXPECT_THAT(encoded, bytes);
 }
 
 TEST(EnumArray, Decode) {
     std::vector<uint8_t> bytes{0x24,5,6};
 
     auto foo = fcp::S4::Decode(bytes.begin(), bytes.end());
-    auto expected = fcp::S4{{fcp::E::S0,fcp::E::S1,fcp::E::S2,fcp::E::S0}, 5, 6};
+    auto expected =
+        fcp::S4{{fcp::E::S0, fcp::E::S1, fcp::E::S2, fcp::E::S0}, 5, 6};
     EXPECT_THAT(foo,expected);
 }
 
@@ -248,11 +249,11 @@ class MockedBusProxy: public fcp::IBusProxy {
         MOCK_METHOD(
                 void,
                 Send,
-                (std::string msg_name, const std::vector<std::uint8_t>& data),
+                (std::string msg_name, const json& data),
                 (override));
 
         MOCK_METHOD(
-                (std::optional<std::pair<std::string, std::vector<std::uint8_t>>>),
+                (std::optional<std::pair<std::string, json>>),
                 Recv,
                 (),
                 (override));
@@ -260,15 +261,18 @@ class MockedBusProxy: public fcp::IBusProxy {
 
 TEST(Service, Method1Call) {
     auto bus = MockedBusProxy{};
-    EXPECT_CALL(
-            bus,
-            Send(
-                testing::Eq("S2Input"),
-                testing::Eq(std::vector<std::uint8_t>{0, 0, 1,2,1}))
-        ).Times(testing::Exactly(1));
+    EXPECT_CALL(bus,
+                Send(testing::Eq("S2Input"),
+                     testing::Eq(std::map<std::string, json>{
+                         {"__is_method_input", true},
+                         {"service_id", 0ULL},
+                         {"method_id", 0ULL},
+                         {"payload",
+                          std::map<std::string, json>{
+                              {"s1", 1ULL}, {"s2", 2ULL}, {"s3", 1ULL}}}})))
+        .Times(testing::Exactly(1));
 
-    auto schema = fcp::StaticSchema{};
-    auto service1 = fcp::Service1Proxy(bus, schema);
+    auto service1 = fcp::Service1Proxy(bus);
 
     service1.Method1(fcp::S2{1,2,fcp::E::S1});
 }
@@ -285,14 +289,32 @@ class Service1Impl: public fcp::IService1Impl {
 TEST(Service, Method1Response) {
     auto bus = MockedBusProxy{};
 
-    EXPECT_CALL(bus, Recv()).WillRepeatedly(testing::Return(std::make_pair("S2Input", std::vector<std::uint8_t>{0,0,1,2,1})));
+    EXPECT_CALL(bus, Recv())
+        .WillRepeatedly(testing::Return(std::make_pair(
+            "S2Input",
+            std::map<std::string, json>{
+                {"service_id", 0ULL},
+                {"method_id", 0ULL},
+                {"payload", std::map<std::string, json>{
+                                {"s1", 1ULL}, {"s2", 2ULL}, {"s3", 1ULL}}}})));
 
-    EXPECT_CALL(bus, Send(testing::Eq("S3Output"), testing::Eq(std::vector<std::uint8_t>{0,0,1,2,3,4,5,6}))).Times(testing::Exactly(1));
+    EXPECT_CALL(bus,
+                Send(testing::Eq("S3Output"),
+                     testing::Eq(std::map<std::string, json>{
+                         {"service_id", 0ULL},
+                         {"method_id", 0ULL},
+                         {"payload",
+                          std::map<std::string, json>{
+                              {"s1", std::vector<json>{1ULL, 2ULL, 3ULL, 4ULL}},
+                              {"s2", 5ULL},
+                              {"s3", 6ULL}}}})))
+        .Times(testing::Exactly(1));
 
     auto schema = fcp::StaticSchema{};
 
     auto service1_impl = Service1Impl{};
-    auto broker = fcp::Service1Broker<fcp::IService1Impl>(bus, schema, service1_impl, fcp::ServiceId::Service1);
+    auto broker = fcp::Service1Broker<fcp::IService1Impl>(
+        bus, schema, service1_impl, fcp::ServiceId::Service1);
 
     broker.Step();
 

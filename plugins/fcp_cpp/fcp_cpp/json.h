@@ -24,6 +24,7 @@
 #include <vector>
 #include <string>
 #include <cstdint>
+#include <iostream>
 #include "variant.h"
 
 using json = rva::variant<
@@ -35,3 +36,53 @@ using json = rva::variant<
     std::string,                          // json string
     std::map<std::string, rva::self_t>,   // json object, type is std::map<std::string, json_value>
     std::vector<rva::self_t>>;            // json array, type is std::vector<json_value>
+
+void _Print(const json& j) {
+    auto visitor = [](auto&& x) -> void {
+        using T = std::decay_t<decltype(x)>;
+        if constexpr (std::is_same_v<T, std::nullptr_t>) {
+            std::cout << "null";
+        }
+        else if constexpr (std::is_same_v<T, bool>) {
+            std::cout << (x ? "true" : "false");
+        }
+        else if constexpr (std::is_same_v<T, double>) {
+            std::cout << x;
+        }
+        else if constexpr (std::is_same_v<T, std::int64_t>) {
+            std::cout << x;
+        }
+        else if constexpr (std::is_same_v<T, std::uint64_t>) {
+            std::cout << x;
+        }
+        else if constexpr (std::is_same_v<T, std::map<std::string, json>>) {
+            std::cout << "{";
+            for (const auto& [key, value] : x) {
+                std::cout << key << ": ";
+                _Print(value);
+                std::cout << ", ";
+            }
+            std::cout << "}";
+        }
+        else if constexpr (std::is_same_v<T, std::vector<json>>) {
+            std::cout << "[";
+            for (const auto& value : x) {
+                _Print(value);
+                std::cout << ", ";
+            }
+            std::cout << "]";
+        }
+        else if constexpr (std::is_same_v<T, std::string>) {
+            std::cout << "\"" << x << "\"";
+        }
+        else {
+            std::cout << "Unimplemented";
+        }
+    };
+    rva::visit(visitor, j);
+}
+
+void Print(const json& j) {
+    _Print(j);
+    std::cout << std::endl;
+}

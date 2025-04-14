@@ -46,13 +46,13 @@ class {{service.name}}Broker {
         {}
 
         void Step() {
-            auto decoded_ = GetDecodedMethod(bus_proxy_.Recv());
+            auto decoded_ = bus_proxy_.Recv();
 
             if (!decoded_.has_value()) {
                 return;
             }
 
-            auto decoded = rva::get<std::map<std::string, json>>(decoded_.value());
+            auto decoded = rva::get<std::map<std::string, json>>(decoded_.value().second);
 
             auto service_id = rva::get<std::uint64_t>(decoded["service_id"]);
             auto method_id = rva::get<std::uint64_t>(decoded["method_id"]);
@@ -66,7 +66,7 @@ class {{service.name}}Broker {
                 auto input = {{method.input}}::FromJson(decoded["payload"]);
                 auto response_payload = service_impl_.{{method.name}}(input);
                 auto response = {{method.output}}Output{static_cast<std::uint8_t>(service_id_), static_cast<std::uint8_t>(method_id), response_payload};
-                bus_proxy_.Send("{{method.output}}Output", response.Encode().GetData());
+                bus_proxy_.Send("{{method.output}}Output", response.DecodeJson());
                 return;
             }
             {% endfor -%}
