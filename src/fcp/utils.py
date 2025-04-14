@@ -21,9 +21,16 @@
 """Utilities."""
 
 
+def capitalize(x: str) -> str:
+    """Capitalize the first letter of a string."""
+    if len(x) <= 1:
+        return x
+    return x[0].upper() + x[1:]
+
+
 def to_pascal_case(name: str) -> str:
     """Convert snake case to pascal case."""
-    return "".join([n.capitalize() for n in name.split("_")])
+    return "".join([capitalize(n) for n in name.split("_")])
 
 
 def to_snake_case(name: str) -> str:
