@@ -377,6 +377,11 @@ class CanCWriter:
                     device_name_pascal=to_pascal_case(device_name),
                     device_name_snake=to_snake_case(device_name),
                     messages=messages,
+                    has_rpc=any(
+                        getattr(msg.id, "name", "") in ["rpc_get_id", "rpc_ans_id"]
+                        for msg in messages
+                        if hasattr(msg, "id")
+                    ),
                 ),
             )
 
@@ -388,10 +393,11 @@ class CanCWriter:
 
         """
         for device in self.devices:
+            if device.rpc_get_id is None or device.rpc_ans_id is None:
+                continue
+
             device_name = device.name
             messages = self.device_messages.get(device_name, [])
-            rpc_get_id = device.rpc_get_id if device.rpc_get_id is not None else 0
-            rpc_ans_id = device.rpc_ans_id if device.rpc_ans_id is not None else 0
 
             yield (
                 device_name,
@@ -399,8 +405,8 @@ class CanCWriter:
                     device_name_pascal=to_pascal_case(device_name),
                     device_name_snake=to_snake_case(device_name),
                     messages=messages,
-                    rpc_get_id=rpc_get_id,
-                    rpc_ans_id=rpc_ans_id,
+                    rpc_get_id=device.rpc_get_id,
+                    rpc_ans_id=device.rpc_ans_id,
                     services=device.services,
                 ),
             )
@@ -412,7 +418,13 @@ class CanCWriter:
             Generator: Tuple containing the device name and the file content.
 
         """
-        for device_name, messages in self.device_messages.items():
+        for device in self.devices:
+            if device.rpc_get_id is None or device.rpc_ans_id is None:
+                continue
+
+            device_name = device.name
+            messages = self.device_messages.get(device_name, [])
+
             yield (
                 to_snake_case(device_name),
                 self.templates["device_rpc_c"].render(
