@@ -10,8 +10,13 @@ impl can for Msg {
     device: "ecu",
 }
 
+service SensorService @0 {
+    method RequestState(SensorReq) @0 returns SensorInformation,
+    method GetTemperature(SensorReq) @1 returns Temperature,
+}
+
 device ecu {
     rpc_get_id: 1025,
     rpc_ans_id: 1026,
-    services: [SensorService, InterfaceService],
+    services: [SensorService],
 }
