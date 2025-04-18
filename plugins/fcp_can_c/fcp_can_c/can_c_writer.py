@@ -272,7 +272,7 @@ def initialize_can_data(
         if not any(node.name == device_name for node in devices):
             rpc_get_id = None
             rpc_ans_id = None
-            for dev in getattr(fcp, "devices", []):
+            for dev in fcp.devices:
                 if dev.name == device_name:
                     rpc_get_id = dev.fields.get("rpc_get_id")
                     rpc_ans_id = dev.fields.get("rpc_ans_id")
