@@ -1,8 +1,7 @@
 #include "{{ device_name_snake }}_rpc.h"
+#include "{{ device_name_snake }}_can.h"
 #include <string.h>
 
-
-{% if device_name == "global" %}
 /*---------------------------------------- RPC Dispacher -----------------------------------------*/
 bool can_service_dispatch(const CanFrame *frame, void (*send)(const CanFrame *)) {    
     if (frame->id != RPC_GET_ID) {
@@ -23,10 +22,13 @@ bool can_service_dispatch(const CanFrame *frame, void (*send)(const CanFrame *))
         .response = res
     };
 
-    /* TODO: implement handling logic based on service_id/method_id */
+   bool handled = can_service_handle(&service);
 
-    res->args[0] = 0xFE;                           /* Not handled */
+    if (!handled) {
+        res->args[0] = 0xFE;        // Not handled
+    }
+
     send(&response);
-    return false;
+    return handled;
 }
-{% endif %}
+
