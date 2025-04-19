@@ -4,14 +4,15 @@
 
 /*---------------------------------------- RPC Dispacher -----------------------------------------*/
 bool can_service_dispatch(const CanFrame *frame, void (*send)(const CanFrame *)) {    
-    if (frame->id != RPC_GET_ID) {
+    if (frame->id != {{ device_name_snake | upper }}_RPC_GET_ID) {
         return false;
     }
+
 
     const RpcMessage *call = (const RpcMessage *) frame->data;
 
     CanFrame response;
-    response.id = RPC_ANS_ID;
+    response.id = {{ device_name_snake | upper }}_RPC_ANS_ID;
     response.dlc = 8;
 
     RpcMessage *res = (RpcMessage *) response.data;

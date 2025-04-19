@@ -5,8 +5,8 @@
 #include <stdbool.h>
 #include "can_frame.h"
 
-#define RPC_GET_ID {{ rpc_get_id }}
-#define RPC_ANS_ID {{ rpc_ans_id }}
+#define {{ device_name_snake | upper }}_RPC_GET_ID {{ rpc_get_id }}
+#define {{ device_name_snake | upper }}_RPC_ANS_ID {{ rpc_ans_id }}
 
 /* Unified 16-bit RPC ID */
 typedef union {
