@@ -351,15 +351,21 @@ class CanCWriter:
             device_name = device.name
             messages = self.device_messages.get(device_name, [])
 
+            include_global = (
+                device_name != "global"
+                and global_device_exists
+                and self.device_messages.get("global")
+            )
+
             yield (
                 device_name,
                 self.templates["device_can_h"].render(
                     device_name_pascal=to_pascal_case(device_name),
                     device_name_snake=to_snake_case(device_name),
                     messages=messages,
-                    include_global=device_name != "global" and global_device_exists,
+                    include_global=include_global,
                     is_global_device=device_name == "global",
-                    enums=self.enums if device_name == "global" else [],
+                    enums=self.enums,
                 ),
             )
 
@@ -370,18 +376,20 @@ class CanCWriter:
             Generator: Tuple containing the device name and the file content.
 
         """
+        device_by_name = {device.name: device for device in self.devices}
+
         for device_name, messages in self.device_messages.items():
+
+            device = device_by_name[device_name]
+            has_rpc = device.rpc_get_id is not None and device.rpc_ans_id is not None
+
             yield (
                 to_snake_case(device_name),
                 self.templates["device_can_c"].render(
                     device_name_pascal=to_pascal_case(device_name),
                     device_name_snake=to_snake_case(device_name),
                     messages=messages,
-                    has_rpc=any(
-                        getattr(msg.id, "name", "") in ["rpc_get_id", "rpc_ans_id"]
-                        for msg in messages
-                        if hasattr(msg, "id")
-                    ),
+                    has_rpc=has_rpc,
                 ),
             )
 

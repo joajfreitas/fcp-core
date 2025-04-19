@@ -1,8 +1,7 @@
 #include "{{ device_name_snake }}_can.h"
-{% if has_rpc %}
+{%- if has_rpc %}
 #include "{{ device_name_snake }}_rpc.h"
-{% endif %}
-
+{%- endif %}
 #include "can_signal_parser.h"
 
 /*-------------------- Decode Signals ---------------------*/
