@@ -140,7 +140,7 @@ class Enum:
 
 
 class CanNode:
-    """Represents a device node with RPC compatibility."""
+    """Class to represent a device node with RPC compatibility."""
 
     def __init__(
         self, name: str, rpc_get_id: Union[int, None], rpc_ans_id: Union[int, None]
@@ -252,7 +252,7 @@ def initialize_can_data(
         devices.append(CanNode("global", rpc_get_id=None, rpc_ans_id=None))
 
         device_rpc_info = {}
-        for dev in getattr(fcp, "devices", []):
+        for dev in fcp.devices:
             device_rpc_info[dev.name] = {
                 "rpc_get_id": dev.fields.get("rpc_get_id"),
                 "rpc_ans_id": dev.fields.get("rpc_ans_id"),
