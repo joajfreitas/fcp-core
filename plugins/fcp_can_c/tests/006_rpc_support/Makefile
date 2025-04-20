@@ -3,8 +3,10 @@ CC = clang
 LIBDIR = generated_code
 SRCDIR = .
 
-SRCS = $(SRCDIR)/test.c $(wildcard $(LIBDIR)/*.c)
+SRCS = $(wildcard $(SRCDIR)/*.c) $(wildcard $(LIBDIR)/*.c)
 OBJS = $(SRCS:.c=.o)
+
+OBJECTS = $(OBJS)
 OUTPUT = test
 
 CFLAGS = -I$(LIBDIR) -Wall 
@@ -23,4 +25,6 @@ run_tests: all
 
 clean:
 	rm -f $(OBJS) $(OUTPUT)
+
+clean-all: clean
 	rm -f $(LIBDIR)/*.c $(LIBDIR)/*.h

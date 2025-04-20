@@ -29,11 +29,7 @@ typedef struct {
     RpcMessage *response;
 } CanServiceStruct;
 
-{% if device_name == "global" %}
-/* Dispatcher function {{ device_name_pascal }} */
-bool can_service_dispatch(const CanFrame *frame, void (*send)(const CanFrame *));
-{% endif %}
-
-/* can_service_handle -> usr */
+/* Service handler function - to be implemented by user */
+bool can_service_handle(CanServiceStruct *service);
 
 #endif // {{ device_name_snake | upper }}_RPC_H
