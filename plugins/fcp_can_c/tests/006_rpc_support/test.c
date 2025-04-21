@@ -26,12 +26,13 @@ bool all_tests_passed = true;
     }
 
 bool can_service_handle(CanServiceStruct *service) {
-    printf("\033[34m[DEBUG] Handler received RPC request: service_id=%u, method_id=%u (rpc_id=%u)\033[0m\n",
+    printf("\033[34m[DEBUG] Handler received RPC request: service_id=%u, method_id=%u rpc_id=%u\033[0m\n",
             service->request->id.service_id,
             service->request->id.method_id,
             service->request->id.rpc_id);
     
-    if (service->request->id.rpc_id == 0) {
+    if (service->request->id.service_id == SENSOR_SERVICE_ID &&
+        service->request->id.method_id == 0) {
         service->response->args[0] = 0xAB;
         printf("\033[34m[DEBUG] Handler responding with value: 0x%02X\033[0m\n", service->response->args[0]);
         return true;

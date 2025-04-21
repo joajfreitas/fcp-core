@@ -18,7 +18,8 @@ bool request_sensor_state(uint8_t *result) {
     request.dlc = 8;
 
     RpcMessage *msg = (RpcMessage *) request.data;
-    msg->id.rpc_id = 0;
+    msg->id.service_id = SENSOR_SERVICE_ID;
+    msg->id.method_id = 0;
     memset(msg->args, 0, sizeof(msg->args));
 
     /* Add the can_service_dispatch function declaration from can_service.h */

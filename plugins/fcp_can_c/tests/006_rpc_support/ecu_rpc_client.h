@@ -6,6 +6,8 @@
 #include "generated_code/ecu_rpc.h"
 #include "generated_code/can_frame.h"
 
+#define SENSOR_SERVICE_ID 1
+
 /* SensorService RPC Methods */
 bool request_sensor_state(uint8_t *result);
 bool get_sensor_temperature(uint8_t *result);
