@@ -3,11 +3,7 @@
 #include <string.h>
 
 /*---------------------------------------- RPC Dispacher -----------------------------------------*/
-bool can_service_dispatch(const CanFrame *frame, void (*send)(const CanFrame *)) {    
-    
-    if (frame->id != {{ device_name_snake | upper }}_RPC_GET_ID) {
-        return false;
-    }
+bool can_service_dispatch(const CanFrame *frame, void (*send)(const CanFrame *)) {
 
     const RpcMessage *call = (const RpcMessage *) frame->data;
 
