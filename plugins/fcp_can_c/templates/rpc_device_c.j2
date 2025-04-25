@@ -5,6 +5,10 @@
 /*---------------------------------------- RPC Dispacher -----------------------------------------*/
 bool can_service_dispatch(const CanFrame *frame, void (*send)(const CanFrame *)) {
 
+    if (frame->dlc != sizeof(RpcMessage)) {
+        return false;
+    }
+
     const RpcMessage *call = (const RpcMessage *) frame->data;
 
     CanFrame response;
