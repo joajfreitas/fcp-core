@@ -85,7 +85,6 @@ void test_valid_dlc() {
 
     printf("\n\033[33m====== Running: test_valid_dlc ======\033[0m\n");
 
-    // Reset the response flag
     response_received = false;
 
     CanFrame valid_request;
@@ -104,7 +103,6 @@ void test_valid_dlc() {
         printf("\033[34m[DEBUG] Frame with valid DLC incorrectly rejected!\033[0m\n");
     }
     
-    // Check that we received a response and it contains the expected value
     if (response_received) {
         RpcMessage *response = (RpcMessage *)response_frame.data;
         printf("\033[34m[DEBUG] Response value: 0x%02X\033[0m\n", response->args[0]);
