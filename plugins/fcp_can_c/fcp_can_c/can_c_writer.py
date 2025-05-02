@@ -247,15 +247,15 @@ def initialize_can_data(
         values = {v.name: v.value for v in enum.enumeration}
         enums.append(Enum(name=enum.name, values=values))
 
-        # Enums are not tied to a specific device so they live on the global device
-        devices.append(CanNode("global", rpc_get_id=None, rpc_ans_id=None))
+    # Enums are not tied to a specific device so they live on the global device
+    devices.append(CanNode("global", rpc_get_id=None, rpc_ans_id=None))
 
-        device_rpc_info = {}
-        for dev in fcp.devices:
-            device_rpc_info[dev.name] = {
-                "rpc_get_id": dev.fields.get("rpc_get_id"),
-                "rpc_ans_id": dev.fields.get("rpc_ans_id"),
-            }
+    device_rpc_info = {}
+    for dev in fcp.devices:
+        device_rpc_info[dev.name] = {
+            "rpc_get_id": dev.fields.get("rpc_get_id"),
+            "rpc_ans_id": dev.fields.get("rpc_ans_id"),
+        }
 
     for extension in fcp.get_matching_impls("can"):
         encoding = encoder.generate(extension)
