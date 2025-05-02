@@ -274,13 +274,13 @@ def initialize_can_data(
                     rpc_get_id = dev.fields.get("rpc_get_id")
                     rpc_ans_id = dev.fields.get("rpc_ans_id")
                     break
-            devices.append(
-                CanNode(
-                    device_name,
-                    rpc_get_id=rpc_get_id,
-                    rpc_ans_id=rpc_ans_id,
-                )
+        devices.append(
+            CanNode(
+                device_name,
+                rpc_get_id=rpc_get_id,
+                rpc_ans_id=rpc_ans_id,
             )
+        )
 
         messages.append(
             CanMessage(
@@ -376,7 +376,6 @@ class CanCWriter:
         device_by_name = {device.name: device for device in self.devices}
 
         for device_name, messages in self.device_messages.items():
-
             device = device_by_name[device_name]
             has_rpc = device.rpc_get_id is not None and device.rpc_ans_id is not None
 
