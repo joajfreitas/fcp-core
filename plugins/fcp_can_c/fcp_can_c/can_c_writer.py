@@ -28,7 +28,6 @@ from jinja2 import Environment, FileSystemLoader
 from fcp.specs.struct_field import StructField
 from fcp.specs.v2 import FcpV2
 from dataclasses import dataclass
-from fcp.result import Err
 from fcp.encoding import make_encoder, EncodeablePiece, Value, PackedEncoderContext
 from fcp.utils import to_pascal_case, to_snake_case
 
@@ -263,8 +262,6 @@ def initialize_can_data(
         signals, dlc = create_can_signals(encoding)
 
         frame_id = extension.fields.get("id")
-        if frame_id is None:
-            Err("No id field found in extension").unwrap()
 
         device_name = extension.fields.get("device", "global")
         period = extension.fields.get("period", -1)
