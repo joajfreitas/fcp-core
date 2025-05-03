@@ -341,7 +341,6 @@ class CanCWriter:
             Generator: Tuple containing the device name and the file content.
 
         """
-        # Check if the global device is present in the list of devices
         global_device_exists = any(device.name == "global" for device in self.devices)
 
         for device in self.devices:
@@ -384,12 +383,16 @@ class CanCWriter:
             Generator: Tuple containing the device name and the file content.
 
         """
+        self._devices_with_rpc = set()
+
         for device in self.devices:
             if device.rpc_get_id is None or device.rpc_ans_id is None:
                 continue
 
             device_name = device.name
             messages = self.device_messages.get(device_name, [])
+
+            self._devices_with_rpc.add(device_name)
 
             yield (
                 device_name,
@@ -410,12 +413,9 @@ class CanCWriter:
             Generator: Tuple containing the device name and the file content.
 
         """
-        for device in self.devices:
-            if device.rpc_get_id is None or device.rpc_ans_id is None:
+        for device_name, messages in self.device_messages.items():
+            if device_name not in self._devices_with_rpc:
                 continue
-
-            device_name = device.name
-            messages = self.device_messages.get(device_name, [])
 
             yield (
                 to_snake_case(device_name),
