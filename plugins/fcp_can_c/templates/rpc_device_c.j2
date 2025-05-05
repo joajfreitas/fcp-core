@@ -2,34 +2,68 @@
 #include "{{ device_name_snake }}_can.h"
 #include <string.h>
 
-/*---------------------------------------- RPC Dispacher -----------------------------------------*/
-bool can_service_dispatch(const CanFrame *frame, void (*send)(const CanFrame *)) {
+/*---------------------------------------- RPC Validation Functions -----------------------------------------*/
+static const uint16_t valid_rpc_ids[] = {
+    {{ device_name_snake | upper }}_RPC_GET_ID,
+    {{ device_name_snake | upper }}_RPC_ANS_ID,
+    {%- for other_device in other_devices_with_rpc %}
+    {{ other_device.name | upper }}_RPC_GET_ID,
+    {{ other_device.name | upper }}_RPC_ANS_ID,
+    {%- endfor %}
+};
 
-    if (frame->dlc != sizeof(RpcMessage)) {
-        return false;
+bool is_valid_rpc_message(const CanFrame *frame) {
+    if (!frame || frame->dlc != sizeof(RpcMessage)) return false;
+
+    for (size_t i = 0; i < sizeof(valid_rpc_ids)/sizeof(valid_rpc_ids[0]); i++) {
+        if (frame->id == valid_rpc_ids[i]) {
+            return true;
+        }
     }
 
-    const RpcMessage *call = (const RpcMessage *) frame->data;
+    return false;
+}
+
+/*---------------------------------------- RPC Dispatcher -----------------------------------------*/
+void can_service_dispatch(const CanFrame *frame, void (*send)(const CanFrame *)) {
+    if (!is_valid_rpc_message(frame)) return;
 
     CanFrame response;
     response.id = {{ device_name_snake | upper }}_RPC_ANS_ID;
-    response.dlc = 8;
+    response.dlc = sizeof(RpcMessage);
+    memset(response.data, 0, sizeof(response.data));
 
+    const RpcMessage *req = (const RpcMessage *) frame->data;
     RpcMessage *res = (RpcMessage *) response.data;
-    res->id.rpc_id = call->id.rpc_id;
 
-    CanServiceStruct service = {
-        .request = call,
-        .response = res
-    };
+    extern void can_service_handle(const RpcMessage *request, RpcMessage *response);
+    can_service_handle(req, res);
 
-   bool handled = can_service_handle(&service);
-
-    if (!handled) {
-        res->args[0] = 0xFE;        // Not handled
+    if (send) {
+        send(&response);
     }
-
-    send(&response);
-    return handled;
 }
 
+/*---------------------------------------- Encode/Decode Functions -----------------------------------------*/
+{%- for service in services -%}
+  {%- for method in service.methods -%}
+    {% if method.input_fields and method.input_fields|length > 0 %}
+void encode_{{ service.name }}_{{ method.name }}_Request(uint8_t *raw, const {{ service.name }}_{{ method.name }}_Request *msg) {
+    memcpy(raw, msg, sizeof({{ service.name }}_{{ method.name }}_Request));
+}
+
+void decode_{{ service.name }}_{{ method.name }}_Request({{ service.name }}_{{ method.name }}_Request *msg, const uint8_t *raw) {
+    memcpy(msg, raw, sizeof({{ service.name }}_{{ method.name }}_Request));
+}
+    {%- endif %}
+    {% if method.output_fields and method.output_fields|length > 0 %}
+void encode_{{ service.name }}_{{ method.name }}_Response(uint8_t *raw, const {{ service.name }}_{{ method.name }}_Response *msg) {
+    memcpy(raw, msg, sizeof({{ service.name }}_{{ method.name }}_Response));
+}
+
+void decode_{{ service.name }}_{{ method.name }}_Response({{ service.name }}_{{ method.name }}_Response *msg, const uint8_t *raw) {
+    memcpy(msg, raw, sizeof({{ service.name }}_{{ method.name }}_Response));
+}
+    {%- endif %}
+  {% endfor %}
+{%- endfor %}

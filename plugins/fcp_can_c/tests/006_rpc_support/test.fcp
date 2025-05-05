@@ -1,8 +1,14 @@
 version: "3"
 
+enum SensorState {
+    Inactive = 0,
+    Active = 1,
+    Error = 2,
+}
+
 struct Msg {
-    s1 @ 0: u8,
-    s2 @ 1: u16,
+    s1 @0: u8,
+    s2 @1: u16,
 }
 
 impl can for Msg {
@@ -10,9 +16,21 @@ impl can for Msg {
     device: "ecu",
 }
 
+struct SensorInformation {
+    result @0: u8,
+}
+
+struct TemperatureResponse {
+    result @0: u8,
+}
+
+struct SensorReq {
+    request_id @0: u8,
+}
+
 service SensorService @0 {
     method RequestState(SensorReq) @0 returns SensorInformation,
-    method GetTemperature(SensorReq) @1 returns Temperature,
+    method GetTemperature(SensorReq) @1 returns TemperatureResponse,
 }
 
 device ecu {
