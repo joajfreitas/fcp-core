@@ -13,7 +13,7 @@ bool request_sensor_state(uint8_t *result);
 bool get_sensor_temperature(uint8_t *result);
 
 /* Dispatch function to handle CAN RPC requests */
-bool can_service_dispatch(const CanFrame *request, void (*response_callback)(const CanFrame *));
+void can_service_dispatch(const CanFrame *request, void (*response_callback)(const CanFrame *));
 
 /* For test compatibility */
 #define call_my_rpc request_sensor_state

@@ -18,15 +18,14 @@ bool request_sensor_state(uint8_t *result) {
     request.dlc = 8;
 
     RpcMessage *msg = (RpcMessage *) request.data;
-    msg->id.service_id = SENSOR_SERVICE_ID;
-    msg->id.method_id = 0;
-    memset(msg->args, 0, sizeof(msg->args));
+    msg->rpc_get_id = ECU_RPC_GET_ID;
+    msg->rpc_ans_id = ECU_RPC_ANS_ID;
+    memset(&msg->payload, 0, sizeof(RpcPayload));
 
     /* Add the can_service_dispatch function declaration from can_service.h */
-    bool handled = can_service_dispatch(&request, capture_response);
-    if (!handled) return false;
+    can_service_dispatch(&request, capture_response);
 
     RpcMessage *res = (RpcMessage *) rpc_response.data;
-    *result = res->args[0];
+    *result = res->payload.sensorservice_requeststate_res.result;
     return true;
 }
