@@ -9,6 +9,15 @@
 #define {{ device_name_snake | upper }}_RPC_GET_ID {{ rpc_get_id }}
 #define {{ device_name_snake | upper }}_RPC_ANS_ID {{ rpc_ans_id }}
 
+/* RpsMethod union */
+typedef union {
+    struct {
+        uint8_t service;
+        uint8_t method;
+    };
+    uint16_t service_method;
+} RpcMethod;
+
 /* Functions to decode CanFrame into CanRpc<name> objects */
 {%- for message in messages %}
 CanRpc{{ message.name_pascal }} can_decode_rpc_{{ message.name_snake }}(const CanFrame *frame);
