@@ -138,26 +138,6 @@ class Enum:
     values: Dict[str, int]
 
 
-@dataclass
-class ServiceMethod:
-    """Class to represent a service method with its input and output types."""
-
-    name: str
-    service_name: str
-    method_id: int
-    input_fields: List[StructField]
-    output_fields: List[StructField]
-
-
-@dataclass
-class ServiceDefinition:
-    """Class to represent a service definition with its methods."""
-
-    name: str
-    service_id: int
-    methods: List[ServiceMethod]
-
-
 class CanNode:
     """Class to represent a device node with RPC compatibility."""
 
@@ -167,7 +147,7 @@ class CanNode:
         self.name = name
         self.rpc_get_id = rpc_get_id
         self.rpc_ans_id = rpc_ans_id
-        self.services: List[Union[str, ServiceDefinition]] = []
+        self.services: List[str] = []
 
 
 def is_signed(value: Value) -> bool:
@@ -244,101 +224,6 @@ def map_messages_to_devices(messages: List[CanMessage]) -> Dict[str, List[CanMes
     return device_messages
 
 
-def get_struct_fields(fcp: FcpV2, struct_name: str) -> List[StructField]:
-    """Get fields for a specific struct from FCP.
-
-    Args:
-        fcp: FcpV2 object
-        struct_name: Name of the struct to get fields for
-
-    Returns:
-        List of StructField objects
-
-    """
-    for struct in fcp.structs:
-        if struct.name == struct_name:
-            return struct.fields
-
-    return []
-
-
-def extract_service_methods(fcp: FcpV2) -> Dict[str, ServiceDefinition]:
-    """Extract service methods from FCP.
-
-    Args:
-        fcp: FcpV2 object
-
-    Returns:
-        Dict of service definitions
-
-    """
-    service_defs = {}
-    service_id = 1
-
-    for service in fcp.services:
-        methods = []
-
-        for idx, method in enumerate(service.methods):
-            input_struct_name = method.input
-            output_struct_name = method.output
-
-            input_fields = get_struct_fields(fcp, input_struct_name)
-            output_fields = get_struct_fields(fcp, output_struct_name)
-
-            methods.append(
-                ServiceMethod(
-                    name=method.name,
-                    service_name=service.name,
-                    method_id=idx,
-                    input_fields=input_fields,
-                    output_fields=output_fields,
-                )
-            )
-
-        service_defs[service.name] = ServiceDefinition(
-            name=service.name, service_id=service_id, methods=methods
-        )
-        service_id += 1
-
-    return service_defs
-
-
-def compute_max_payload_size(services: List[ServiceDefinition]) -> int:
-    """Compute the maximum payload size for RPC messages.
-
-    Args:
-        services: List of service definitions
-
-    Returns:
-        int: Maximum payload size
-
-    """
-    type_map = {
-        "uint8_t": 1,
-        "int8_t": 1,
-        "uint16_t": 2,
-        "int16_t": 2,
-        "uint32_t": 4,
-        "int32_t": 4,
-        "uint64_t": 8,
-        "int64_t": 8,
-        "float": 4,
-        "double": 8,
-        "bool": 1,
-    }
-
-    def sizeof(type_str: str) -> int:
-        return type_map.get(type_str, 1)
-
-    max_size = 0
-    for service in services:
-        for method in service.methods:
-            input_size = sum(sizeof(f.type.type) for f in (method.input_fields or []))
-            output_size = sum(sizeof(f.type.type) for f in (method.output_fields or []))
-            max_size = max(max_size, input_size, output_size)
-    return max_size
-
-
 def initialize_can_data(
     fcp: FcpV2,
 ) -> Tuple[List[Enum], List[CanMessage], List[CanNode]]:  # type: ignore
@@ -364,20 +249,11 @@ def initialize_can_data(
 
     devices.append(CanNode("global", rpc_get_id=None, rpc_ans_id=None))
 
-    service_defs = extract_service_methods(fcp)
-
-    device_info = {}
+    device_rpc_info = {}
     for dev in fcp.devices:
-        service_names = dev.fields.get("services", [])
-        services = []
-        for svc_name in service_names:
-            if svc_name in service_defs:
-                services.append(service_defs[svc_name])
-
-        device_info[dev.name] = {
+        device_rpc_info[dev.name] = {
             "rpc_get_id": dev.fields.get("rpc_get_id"),
             "rpc_ans_id": dev.fields.get("rpc_ans_id"),
-            "services": services,
         }
 
     for extension in fcp.get_matching_impls("can"):
@@ -389,25 +265,21 @@ def initialize_can_data(
         device_name = extension.fields.get("device", "global")
         period = extension.fields.get("period", -1)
 
-        device_node = next((node for node in devices if node.name == device_name), None)
-        if device_node is None:
+        if not any(node.name == device_name for node in devices):
             rpc_get_id = None
             rpc_ans_id = None
-            services = []
-
-            if device_name in device_info:
-                info = device_info[device_name]
-                rpc_get_id = info["rpc_get_id"]
-                rpc_ans_id = info["rpc_ans_id"]
-                services = info["services"]
-
-            device_node = CanNode(
+            for dev in fcp.devices:
+                if dev.name == device_name:
+                    rpc_get_id = dev.fields.get("rpc_get_id")
+                    rpc_ans_id = dev.fields.get("rpc_ans_id")
+                    break
+        devices.append(
+            CanNode(
                 device_name,
                 rpc_get_id=rpc_get_id,
                 rpc_ans_id=rpc_ans_id,
             )
-            device_node.services = services
-            devices.append(device_node)
+        )
 
         messages.append(
             CanMessage(
@@ -420,23 +292,19 @@ def initialize_can_data(
             )
         )
 
-    for service in fcp.services:
-        service_name = service.name
+    # TODO: if it has rpc ?
+    # rpc.append(
+    # CanMessage(
+    # frame_id=rpc_get_id,
+    # name_pascal=extension.name,
+    # dlc=dlc,
+    # signals=signals,
+    # senders=[device_name],
+    # period=period,
+    # )
+    # )
 
-        for device in devices:
-            if not device.services:
-                continue
-
-            for svc in device.services:
-                if isinstance(svc, ServiceDefinition) and svc.name == service_name:
-                    break
-                elif isinstance(svc, str) and svc == service_name:
-                    if service_name in service_defs:
-                        device.services.remove(svc)
-                        device.services.append(service_defs[service_name])
-                    break
-
-    return enums, messages, devices
+    return (enums, messages, devices)
 
 
 class CanCWriter:
@@ -529,16 +397,12 @@ class CanCWriter:
         self._devices_with_rpc = set()
 
         for device in self.devices:
-            if (
-                device.rpc_get_id is None
-                or device.rpc_ans_id is None
-                or not device.services
-            ):
+            if device.rpc_get_id is None or device.rpc_ans_id is None:
                 continue
 
             device_name = device.name
-            services = device.services
-            max_payload_size = compute_max_payload_size(services)
+            messages = self.device_messages.get(device_name, [])
+
             self._devices_with_rpc.add(device_name)
 
             yield (
@@ -546,10 +410,10 @@ class CanCWriter:
                 self.templates["device_rpc_h"].render(
                     device_name_pascal=to_pascal_case(device_name),
                     device_name_snake=to_snake_case(device_name),
+                    messages=messages,
                     rpc_get_id=device.rpc_get_id,
                     rpc_ans_id=device.rpc_ans_id,
-                    services=services,
-                    max_payload_size=max_payload_size,
+                    services=device.services,
                 ),
             )
 
@@ -560,22 +424,15 @@ class CanCWriter:
             Generator: Tuple containing the device name and the file content.
 
         """
-        for device in self.devices:
-            device_name = device.name
+        for device_name, messages in self.device_messages.items():
             if device_name not in self._devices_with_rpc:
                 continue
-
-            services = device.services
-            max_payload_size = compute_max_payload_size(services)
 
             yield (
                 to_snake_case(device_name),
                 self.templates["device_rpc_c"].render(
                     device_name_pascal=to_pascal_case(device_name),
                     device_name_snake=to_snake_case(device_name),
-                    rpc_get_id=device.rpc_get_id,
-                    rpc_ans_id=device.rpc_ans_id,
-                    services=services,
-                    max_payload_size=max_payload_size,
+                    messages=messages,
                 ),
             )

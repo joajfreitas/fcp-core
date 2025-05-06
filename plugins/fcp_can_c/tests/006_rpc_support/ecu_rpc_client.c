@@ -12,7 +12,7 @@ static void capture_response(const CanFrame *frame) {
     memcpy(&rpc_response, frame, sizeof(CanFrame));
 }
 
-bool request_sensor_state(uint8_t *result) {
+bool request_sensor_state(uint8_t *result) { //sensorservice_requeststate
     CanFrame request;
     request.id = ECU_RPC_GET_ID;
     request.dlc = 8;
