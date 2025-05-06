@@ -239,6 +239,7 @@ def initialize_can_data(
     enums = []
     messages = []
     devices: List["CanNode"] = []
+    # rpc = []
     encoder = make_encoder(
         "packed", fcp, PackedEncoderContext().with_unroll_arrays(True)
     )
@@ -292,16 +293,16 @@ def initialize_can_data(
             )
         )
 
-    # TODO: if it has rpc ?
+    # TODO: if it has rpc ? (if statment) in messages
     # rpc.append(
     # CanMessage(
-    # frame_id=rpc_get_id,
-    # name_pascal=extension.name,
+    #   frame_id=rpc_get_id,
+    #  name_pascal=extension.name,
     # dlc=dlc,
     # signals=signals,
-    # senders=[device_name],
-    # period=period,
-    # )
+    #   senders=[device_name],
+    #  period=period,
+    #   )
     # )
 
     return (enums, messages, devices)

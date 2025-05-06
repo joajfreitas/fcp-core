@@ -16,6 +16,6 @@ bool get_sensor_temperature(uint8_t *result);
 void can_service_dispatch(const CanFrame *request, void (*response_callback)(const CanFrame *));
 
 /* For test compatibility */
-#define call_my_rpc request_sensor_state
+#define call_my_rpc request_sensor_state //caps
 
 #endif // ECU_RPC_CLIENT_H

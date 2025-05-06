@@ -9,54 +9,19 @@
 #define {{ device_name_snake | upper }}_RPC_GET_ID {{ rpc_get_id }}
 #define {{ device_name_snake | upper }}_RPC_ANS_ID {{ rpc_ans_id }}
 
-{%- for service in services -%}
-  {% for method in service.methods %}
-{% if method.input_fields and method.input_fields|length > 0 %}
-/* {{ device_name_snake | upper }} - {{ service.name }}::{{ method.name }} Request */
-typedef struct {
-  {%- for field in method.input_fields %}
-  {{ field.type.type }} {{ field.name }};
-  {%- endfor %}
-} {{ service.name }}_{{ method.name }}_Request;
-
-void encode_{{ service.name }}_{{ method.name }}_Request(uint8_t *raw, const {{ service.name }}_{{ method.name }}_Request *msg);
-void decode_{{ service.name }}_{{ method.name }}_Request({{ service.name }}_{{ method.name }}_Request *msg, const uint8_t *raw);
-{% endif %}
-{%- if method.output_fields and method.output_fields|length > 0 %}
-/* {{ device_name_snake | upper }} - {{ service.name }}::{{ method.name }} Response */
-typedef struct {
-  {%- for field in method.output_fields %}
-  {{ field.type.type }} {{ field.name }};
-  {%- endfor %}
-} {{ service.name }}_{{ method.name }}_Response;
-
-void encode_{{ service.name }}_{{ method.name }}_Response(uint8_t *raw, const {{ service.name }}_{{ method.name }}_Response *msg);
-void decode_{{ service.name }}_{{ method.name }}_Response({{ service.name }}_{{ method.name }}_Response *msg, const uint8_t *raw);
-{%- endif -%}
-  {% endfor %}
+/* Functions to decode CanFrame into CanRpc<name> objects */
+{%- for message in messages %}
+CanRpc{{ message.name_pascal }} can_decode_rpc_{{ message.name_snake }}(const CanFrame *frame);
 {%- endfor %}
 
-/* RPC Payload Union */
-typedef union {
-  {%- for service in services -%}
-    {%- for method in service.methods -%}
-      {% if method.input_fields %}
-    {{ service.name }}_{{ method.name }}_Request {{ service.name | lower }}_{{ method.name | lower }}_req;
-      {%- endif -%}
-      {% if method.output_fields %}
-    {{ service.name }}_{{ method.name }}_Response {{ service.name | lower }}_{{ method.name | lower }}_res;
-      {%- endif -%}
-    {% endfor %}
-  {%- endfor %}
-    uint8_t raw[{{ max_payload_size }}];
-} RpcPayload;
-
-/* RPC Message */
-typedef struct {
-    uint16_t rpc_get_id;
-    uint16_t rpc_ans_id;
-    RpcPayload payload;
-} RpcMessage;
+/* Functions to encode CanRpc<name> object into CanFrame */
+{%- for message in messages %}
+{%- if message.is_multiplexer %}
+CanFrame can_encode_rpc_{{message.name_snake}}(const CanRpc{{ message.name_pascal }} *rpc, uint32_t {{message.multiplexer_signal}});
+{%- else %}
+CanFrame can_encode_rpc_{{message.name_snake}}(const CanRpc{{ message.name_pascal }} *rpc);
+{%- endif %}
+{%- endfor %}
 
 /* Dispatcher */
 void can_service_dispatch(const CanFrame *frame, void (*send)(const CanFrame *));
