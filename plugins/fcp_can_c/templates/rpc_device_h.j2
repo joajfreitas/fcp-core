@@ -29,6 +29,7 @@ CanRpc{{ message.name_pascal }} can_decode_rpc_{{ message.name_snake }}(const Ca
 CanFrame can_encode_rpc_{{message.name_snake}}(const CanRpc{{ message.name_pascal }} *rpc, uint32_t {{message.multiplexer_signal}});
 {%- else %}
 CanFrame can_encode_rpc_{{message.name_snake}}(const CanRpc{{ message.name_pascal }} *rpc);
+CanFrame can_encode_rpc_{{message.name_snake}}_ans(const CanRpc{{ message.name_pascal }} *rpc);
 {%- endif %}
 {%- endfor %}
 
