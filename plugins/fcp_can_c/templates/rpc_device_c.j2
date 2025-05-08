@@ -4,15 +4,14 @@
 
 /*---------------------------------------- RPC Validation Functions ------------------------------------------*/
 bool is_valid_rpc_message(const CanFrame *frame) {
-    if (!frame || frame->dlc != sizeof(RpcMessage)) return false;
+    if (!frame) return false;
 
-    for (size_t i = 0; i < sizeof(valid_rpc_ids)/sizeof(valid_rpc_ids[0]); i++) {
-        if (frame->id == valid_rpc_ids[i]) {
-            return true;
-        }
+    if (frame->id != {{ device_name_snake | upper }}_RPC_GET_ID &&
+        frame->id != {{ device_name_snake | upper }}_RPC_ANS_ID) {
+        return false;
     }
 
-    return false;
+    return true;
 }
 
 /*--------------------------------------------- RPC Dispatcher ----------------------------------------------*/
