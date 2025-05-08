@@ -9,6 +9,9 @@
 #define {{ device_name_snake | upper }}_RPC_GET_ID {{ rpc_get_id }}
 #define {{ device_name_snake | upper }}_RPC_ANS_ID {{ rpc_ans_id }}
 
+/* Maximum Payload Size */
+#define MAX_RPC_PAYLOAD_SIZE {{ max_payload_size }}
+
 /* RpsMethod union */
 typedef union {
     struct {
@@ -17,6 +20,24 @@ typedef union {
     };
     uint16_t service_method;
 } RpcMethod;
+
+/* RPC Message Can Struct */
+typedef struct {
+    RpcMethod method;
+    uint8_t args[MAX_RPC_PAYLOAD_SIZE];
+} RpcMessage;
+
+/* Rpc Message Struct */
+{%- for message in messages %}
+typedef struct {
+    {%- for signal in message.signals %}
+    {{ signal.data_type }} {{ signal.name }}{% if signal.is_multiplexer %}[{{ signal.multiplexer_count }}]{% endif %};
+    {%- endfor %}
+} CanRpc{{ message.name_pascal }};
+{%- endfor %}
+
+/* Dispatcher */
+void can_service_dispatch(const CanFrame *frame, void (*send)(const CanFrame *));
 
 /* Functions to decode CanFrame into CanRpc<name> objects */
 {%- for message in messages %}
@@ -32,8 +53,5 @@ CanFrame can_encode_rpc_{{message.name_snake}}(const CanRpc{{ message.name_pasca
 CanFrame can_encode_rpc_{{message.name_snake}}_ans(const CanRpc{{ message.name_pascal }} *rpc);
 {%- endif %}
 {%- endfor %}
-
-/* Dispatcher */
-void can_service_dispatch(const CanFrame *frame, void (*send)(const CanFrame *));
 
 #endif // {{ device_name_snake | upper }}_RPC_H
