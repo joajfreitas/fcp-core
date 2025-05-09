@@ -224,6 +224,22 @@ def map_messages_to_devices(messages: List[CanMessage]) -> Dict[str, List[CanMes
     return device_messages
 
 
+def structs_from_services(services: list, all_structs: list) -> list:
+    """Get structs used in RPC services.
+
+    Args:
+        services: List of RPC services.
+        all_structs: List of all defined structs.
+
+    Returns:
+        List: Structs used as input or output in service methods.
+
+    """
+    used = {method.input for service in services for method in service.methods}
+    used |= {method.output for service in services for method in service.methods}
+    return [s for s in all_structs if s.name in used]
+
+
 def initialize_can_data(
     fcp: FcpV2,
 ) -> Tuple[List[Enum], List[CanMessage], List[CanNode]]:  # type: ignore
@@ -332,6 +348,7 @@ class CanCWriter:
             "device_rpc_c": self.env.get_template("rpc_device_c.j2"),
         }
         self.device_messages = map_messages_to_devices(self.messages)
+        self.structs = fcp.structs
 
     def generate_static_files(self) -> Generator[Tuple[str, str], None, None]:
         """Generate all static C files.
@@ -402,7 +419,7 @@ class CanCWriter:
                 continue
 
             device_name = device.name
-            messages = self.device_messages.get(device_name, [])
+            messages = structs_from_services(device.services, self.structs)
 
             self._devices_with_rpc.add(device_name)
 
@@ -412,6 +429,9 @@ class CanCWriter:
                     device_name_pascal=to_pascal_case(device_name),
                     device_name_snake=to_snake_case(device_name),
                     messages=messages,
+                    max_payload_size=(
+                        max(msg.dlc for msg in messages) if messages else 0
+                    ),
                     rpc_get_id=device.rpc_get_id,
                     rpc_ans_id=device.rpc_ans_id,
                     services=device.services,
