@@ -15,37 +15,34 @@
 /* RpsMethod union */
 typedef union {
     struct {
-        uint8_t service;
-        uint8_t method;
+        uint8_t service_id;
+        uint8_t method_id;
     };
-    uint16_t service_method;
-} RpcMethod;
+    uint16_t rpc_id;
+} RpcID;
 
-/* RPC Message Can Struct */
-typedef struct {
-    RpcMethod method;
-    uint8_t args[MAX_RPC_PAYLOAD_SIZE];
-} RpcMessage;
-
+{% for message in rpcs -%}
 /* Rpc Message Struct */
-{%- for message in messages %}
 typedef struct {
+    RpcID rpc_id;
     {%- for signal in message.signals %}
     {{ signal.data_type }} {{ signal.name }}{% if signal.is_multiplexer %}[{{ signal.multiplexer_count }}]{% endif %};
     {%- endfor %}
 } CanRpc{{ message.name_pascal }};
 {%- endfor %}
 
+{% for message in rpcs -%}
 /* Dispatcher */
-void can_service_dispatch(const CanFrame *frame, void (*send)(const CanFrame *));
+void can_service_dispatch_{{ message.name_snake }}(const CanFrame *frame, void (*send)(const CanFrame *));
+{%- endfor %}
 
 /* Functions to decode CanFrame into CanRpc<name> objects */
-{%- for message in messages %}
+{%- for message in rpcs %}
 CanRpc{{ message.name_pascal }} can_decode_rpc_{{ message.name_snake }}(const CanFrame *frame);
 {%- endfor %}
 
 /* Functions to encode CanRpc<name> object into CanFrame */
-{%- for message in messages %}
+{%- for message in rpcs %}
 {%- if message.is_multiplexer %}
 CanFrame can_encode_rpc_{{message.name_snake}}(const CanRpc{{ message.name_pascal }} *rpc, uint32_t {{message.multiplexer_signal}});
 {%- else %}

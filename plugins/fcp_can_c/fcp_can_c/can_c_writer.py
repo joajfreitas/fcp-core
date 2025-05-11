@@ -224,25 +224,9 @@ def map_messages_to_devices(messages: List[CanMessage]) -> Dict[str, List[CanMes
     return device_messages
 
 
-def structs_from_services(services: list, all_structs: list) -> list:
-    """Get structs used in RPC services.
-
-    Args:
-        services: List of RPC services.
-        all_structs: List of all defined structs.
-
-    Returns:
-        List: Structs used as input or output in service methods.
-
-    """
-    used = {method.input for service in services for method in service.methods}
-    used |= {method.output for service in services for method in service.methods}
-    return [s for s in all_structs if s.name in used]
-
-
 def initialize_can_data(
     fcp: FcpV2,
-) -> Tuple[List[Enum], List[CanMessage], List[CanNode]]:  # type: ignore
+) -> Tuple[List[Enum], List[CanNode], List[CanMessage], List[CanMessage]]:
     """Initialize CAN data from an FCP.
 
     Args:
@@ -321,7 +305,7 @@ def initialize_can_data(
             )
         )
 
-    return (enums, messages, devices)
+    return (enums, messages, devices, rpc)
 
 
 class CanCWriter:
@@ -338,7 +322,7 @@ class CanCWriter:
         script_dir = os.path.dirname(os.path.realpath(__file__))
         self.templates_dir = os.path.join(script_dir, "../templates")
 
-        self.enums, self.messages, self.devices = initialize_can_data(fcp)
+        self.enums, self.messages, self.devices, self.rpcs = initialize_can_data(fcp)
         self.env = Environment(loader=FileSystemLoader(self.templates_dir))
 
         self.templates = {
@@ -348,7 +332,6 @@ class CanCWriter:
             "device_rpc_c": self.env.get_template("rpc_device_c.j2"),
         }
         self.device_messages = map_messages_to_devices(self.messages)
-        self.structs = fcp.structs
 
     def generate_static_files(self) -> Generator[Tuple[str, str], None, None]:
         """Generate all static C files.
@@ -419,7 +402,6 @@ class CanCWriter:
                 continue
 
             device_name = device.name
-            messages = structs_from_services(device.services, self.structs)
 
             self._devices_with_rpc.add(device_name)
 
@@ -428,13 +410,9 @@ class CanCWriter:
                 self.templates["device_rpc_h"].render(
                     device_name_pascal=to_pascal_case(device_name),
                     device_name_snake=to_snake_case(device_name),
-                    messages=messages,
-                    max_payload_size=(
-                        max(msg.dlc for msg in messages) if messages else 0
-                    ),
                     rpc_get_id=device.rpc_get_id,
                     rpc_ans_id=device.rpc_ans_id,
-                    services=device.services,
+                    rpcs=self.rpcs,
                 ),
             )
 
@@ -449,11 +427,16 @@ class CanCWriter:
             if device_name not in self._devices_with_rpc:
                 continue
 
+            device = next(d for d in self.devices if d.name == device_name)
+
             yield (
                 to_snake_case(device_name),
                 self.templates["device_rpc_c"].render(
                     device_name_pascal=to_pascal_case(device_name),
                     device_name_snake=to_snake_case(device_name),
                     messages=messages,
+                    rpc_get_id=device.rpc_get_id,
+                    rpc_ans_id=device.rpc_ans_id,
+                    rpcs=self.rpcs,
                 ),
             )
