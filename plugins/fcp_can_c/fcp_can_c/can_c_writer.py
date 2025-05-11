@@ -22,7 +22,7 @@
 
 import os
 
-from beartype.typing import Generator, List, Dict, Optional, Tuple, Union
+from beartype.typing import Generator, List, Dict, Optional, Tuple, Union, cast
 from math import ceil
 from jinja2 import Environment, FileSystemLoader
 from fcp.specs.struct_field import StructField
@@ -248,6 +248,10 @@ def initialize_can_data(
         values = {v.name: v.value for v in enum.enumeration}
         enums.append(Enum(name=enum.name, values=values))
 
+    rpc_input_structs = {
+        method.input for service in fcp.services for method in service.methods
+    }
+
     devices.append(CanNode("global", rpc_get_id=None, rpc_ans_id=None))
 
     device_rpc_info = {}
@@ -293,17 +297,18 @@ def initialize_can_data(
             )
         )
 
-    if rpc_get_id is not None and rpc_ans_id is not None:
-        rpc.append(
-            CanMessage(
-                frame_id=rpc_get_id,
-                name_pascal=extension.name,
-                dlc=dlc,
-                signals=signals,
-                senders=[device_name],
-                period=period,
+        if extension.name in rpc_input_structs:
+            rpc_id = cast(int, rpc_get_id)
+            rpc.append(
+                CanMessage(
+                    frame_id=rpc_id,
+                    name_pascal=extension.name,
+                    dlc=dlc,
+                    signals=signals,
+                    senders=[device_name],
+                    period=period,
+                )
             )
-        )
 
     return (enums, messages, devices, rpc)
 
