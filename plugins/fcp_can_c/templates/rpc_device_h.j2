@@ -48,4 +48,9 @@ CanFrame can_encode_rpc_{{message.name_snake}}_ans(const CanRpc{{ message.name_p
 {%- endif %}
 {%- endfor %}
 
+{% for message in rpcs -%}
+/* User must implement this handler in their client code */
+void can_service_handle_{{ message.name_snake }}(const CanRpc{{ message.name_pascal }} *request, CanRpc{{ message.name_pascal }} *response);
+{%- endfor %}
+
 #endif // {{ device_name_snake | upper }}_RPC_H
