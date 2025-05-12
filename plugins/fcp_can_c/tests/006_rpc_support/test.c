@@ -26,79 +26,68 @@ bool all_tests_passed = true;
         exit(EXIT_FAILURE); \
     }
 
-    void can_service_handle(const RpcMessage *request, RpcMessage *response) {
-        printf("\033[34m[DEBUG] Handler received RPC request: rpc_get_id=%u\033[0m\n",
-               request->rpc_get_id);
-    
-        if (request->rpc_get_id == ECU_RPC_GET_ID) {
-            response->payload.sensorservice_requeststate_res.result = 0xAB;
-            printf("\033[34m[DEBUG] Handler responding with value: 0x%02X\033[0m\n",
-                   response->payload.sensorservice_requeststate_res.result);
-        }
+void can_service_handle_sensor_req(const CanRpcSensorReq *request, CanRpcSensorReq *response) {
+    response->request_id = 0xAB;
+}
+
+static CanFrame response_frame;
+static bool response_received = false;
+
+static void response_callback(const CanFrame *frame) {
+    memcpy(&response_frame, frame, sizeof(CanFrame));
+    response_received = true;
+    printf("\033[34m[DEBUG] Response callback received frame with id: 0x%x\033[0m\n", frame->id);
+}
+
+void test_my_rpc_call() {
+    printf("\n\033[33m====== Running: test_my_rpc_call ======\033[0m\n");
+
+    uint8_t result;
+    bool ok = CALL_MY_RPC(&result);
+    printf("\033[34m[DEBUG] Client received response value: 0x%02X\033[0m\n", result);
+    VERIFY_TEST(ok && result == 0xAB);
+}
+
+void test_invalid_dlc() {
+    printf("\n\033[33m====== Running: test_invalid_dlc ======\033[0m\n");
+
+    CanFrame invalid_request;
+    invalid_request.id = 0x123;
+    invalid_request.dlc = 1;
+    memset(invalid_request.data, 0, sizeof(invalid_request.data));
+
+    can_service_dispatch_sensor_req(&invalid_request, NULL);
+    VERIFY_TEST(true); // not crashing is enough
+}
+
+void test_valid_dlc() {
+    printf("\n\033[33m====== Running: test_valid_dlc ======\033[0m\n");
+
+    response_received = false;
+
+    CanRpcSensorReq req = {
+        .rpc_id = {.service_id = 0, .method_id = 0},
+        .request_id = 0
+    };
+
+    CanFrame valid_request = can_encode_rpc_sensor_req(&req);
+    can_service_dispatch_sensor_req(&valid_request, response_callback);
+
+    if (response_received) {
+        CanRpcSensorReq *response = (CanRpcSensorReq *) response_frame.data;
+        printf("\033[34m[DEBUG] Response value: 0x%02X\033[0m\n", response->request_id);
+        VERIFY_TEST(response->request_id == 0xAB);
+    } else {
+        printf("\033[31m[DEBUG] No response received from dispatch!\033[0m\n");
+        VERIFY_TEST(false);
     }
+}
     
-    void test_my_rpc_call() {
-        printf("\n\033[33m====== Running: test_my_rpc_call ======\033[0m\n");
     
-        uint8_t result;
-        bool ok = call_my_rpc(&result);
-        printf("\033[34m[DEBUG] Client received response value: 0x%02X\033[0m\n", result);
-        VERIFY_TEST(ok && result == 0xAB);
-    }
-    
-    void test_invalid_dlc() {
-        printf("\n\033[33m====== Running: test_invalid_dlc ======\033[0m\n");
-    
-        CanFrame invalid_request;
-        invalid_request.id = 0x123;
-        invalid_request.dlc = 4;
-        memset(invalid_request.data, 0, sizeof(invalid_request.data));
-    
-        can_service_dispatch(&invalid_request, NULL);  // just dispatch
-        VERIFY_TEST(true); // the function does not return anything anymore
-    }
-    
-    static CanFrame response_frame;
-    static bool response_received = false;
-    
-    static void response_callback(const CanFrame *frame) {
-        memcpy(&response_frame, frame, sizeof(CanFrame));
-        response_received = true;
-        printf("\033[34m[DEBUG] Response callback received frame with id: 0x%x\033[0m\n", frame->id);
-    }
-    
-    void test_valid_dlc() {
-        printf("\n\033[33m====== Running: test_valid_dlc ======\033[0m\n");
-    
-        response_received = false;
-    
-        CanFrame valid_request;
-        valid_request.id = ECU_RPC_GET_ID;
-        valid_request.dlc = sizeof(RpcMessage);
-        memset(valid_request.data, 0, sizeof(valid_request.data));
-    
-        RpcMessage *msg = (RpcMessage *) valid_request.data;
-        msg->rpc_get_id = ECU_RPC_GET_ID;
-        msg->rpc_ans_id = ECU_RPC_ANS_ID;
-        msg->payload.sensorservice_requeststate_req.request_id = 0;
-    
-        can_service_dispatch(&valid_request, response_callback);
-    
-        if (response_received) {
-            RpcMessage *response = (RpcMessage *)response_frame.data;
-            printf("\033[34m[DEBUG] Response value: 0x%02X\033[0m\n",
-                   response->payload.sensorservice_requeststate_res.result);
-            VERIFY_TEST(response->payload.sensorservice_requeststate_res.result == 0xAB);
-        } else {
-            printf("\033[31m[DEBUG] No response received from dispatch!\033[0m\n");
-            VERIFY_TEST(false);
-        }
-    }
-    
-    int main() {
-        test_invalid_dlc();
-        test_valid_dlc();
-        test_my_rpc_call();
-        ASSERT_TESTS();
-        return 0;
-    }
+int main() {
+    test_invalid_dlc();
+    test_valid_dlc();
+    test_my_rpc_call();
+    ASSERT_TESTS();
+    return 0;
+}

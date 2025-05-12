@@ -10,12 +10,9 @@
 #define SENSOR_SERVICE_ID 1
 
 /* SensorService RPC Methods */
-bool request_sensor_state(uint8_t *result);
-
-/* Dispatch function to handle CAN RPC requests */
-void can_service_dispatch(const CanFrame *request, void (*response_callback)(const CanFrame *));
+bool sensorservice_requeststate(uint8_t *result);
 
 /* For test compatibility */
-#define CALL_MY_RPC REQUEST_SENSOR_STATE
+#define CALL_MY_RPC sensorservice_requeststate
 
 #endif // ECU_RPC_CLIENT_H

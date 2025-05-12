@@ -13,17 +13,15 @@ static void capture_response(const CanFrame *frame) {
 }
 
 bool sensorservice_requeststate(uint8_t *result) {
-    CanFrame request = {
-        .id = ECU_RPC_GET_ID,
-        .dlc = 3
+    CanRpcSensorReq req = {
+        .rpc_id = {.service_id = 0, .method_id = 0},
+        .request_id = 0
     };
 
-    RpcMethod *method = (RpcMethod *) &request.data[0];
-    method->service = SENSOR_SERVICE_ID;
-    method->method = 1;
+    CanFrame request = can_encode_rpc_sensor_req(&req);
 
-    can_service_dispatch(&request, capture_response);
+    can_service_dispatch_sensor_req(&request, capture_response);
 
-    *result = rpc_response.data[2];
+    *result = ((CanRpcSensorReq *)&rpc_response.data)->request_id;
     return true;
 }
