@@ -28,11 +28,6 @@ struct SensorReq {
     request_id @0: u8,
 }
 
-impl can for SensorReq {
-    id: 10,
-    device: "ecu",
-}
-
 service SensorService @0 {
     method RequestState(SensorReq) @0 returns SensorInformation,
     method GetTemperature(SensorReq) @1 returns TemperatureResponse,

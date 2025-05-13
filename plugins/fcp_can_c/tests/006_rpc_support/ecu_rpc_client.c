@@ -9,7 +9,7 @@
 static CanFrame rpc_response;
 
 static void capture_response(const CanFrame *frame) {
-    memcpy(&rpc_response, frame, sizeof(CanFrame));
+    rpc_response = *frame;
 }
 
 bool sensorservice_requeststate(uint8_t *result) {
