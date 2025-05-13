@@ -261,47 +261,43 @@ def initialize_can_data(
             "rpc_ans_id": dev.fields.get("rpc_ans_id"),
         }
 
-    for extension in fcp.get_matching_impls("can"):
+    for extension in fcp.impls:
         encoding = encoder.generate(extension)
         signals, dlc = create_can_signals(encoding)
 
         frame_id = extension.fields.get("id")
-
         device_name = extension.fields.get("device", "global")
         period = extension.fields.get("period", -1)
 
-        if not any(node.name == device_name for node in devices):
-            rpc_get_id = None
-            rpc_ans_id = None
-            for dev in fcp.devices:
-                if dev.name == device_name:
-                    rpc_get_id = dev.fields.get("rpc_get_id")
-                    rpc_ans_id = dev.fields.get("rpc_ans_id")
-                    break
-        devices.append(
-            CanNode(
-                device_name,
-                rpc_get_id=rpc_get_id,
-                rpc_ans_id=rpc_ans_id,
-            )
-        )
+        rpc_ids = device_rpc_info.get(device_name, {})
+        rpc_get_id = rpc_ids.get("rpc_get_id")
+        rpc_ans_id = rpc_ids.get("rpc_ans_id")
 
-        messages.append(
-            CanMessage(
-                frame_id=frame_id,
-                name_pascal=extension.name,
-                dlc=dlc,
-                signals=signals,
-                senders=[device_name],
-                period=period,
+        if not any(node.name == device_name for node in devices):
+            devices.append(
+                CanNode(
+                    device_name,
+                    rpc_get_id=rpc_get_id,
+                    rpc_ans_id=rpc_ans_id,
+                )
             )
-        )
+
+        if extension in fcp.get_matching_impls("can"):
+            messages.append(
+                CanMessage(
+                    frame_id=frame_id,
+                    name_pascal=extension.name,
+                    dlc=dlc,
+                    signals=signals,
+                    senders=[device_name],
+                    period=period,
+                )
+            )
 
         if extension.name in rpc_input_structs:
-            rpc_id = cast(int, rpc_get_id)
             rpc.append(
                 CanMessage(
-                    frame_id=rpc_id,
+                    frame_id=cast(int, rpc_get_id),
                     name_pascal=extension.name,
                     dlc=dlc,
                     signals=signals,
