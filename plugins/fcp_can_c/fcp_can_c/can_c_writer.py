@@ -251,6 +251,9 @@ def initialize_can_data(
     rpc_input_structs = {
         method.input for service in fcp.services for method in service.methods
     }
+    rpc_output_structs = {
+        method.output for service in fcp.services for method in service.methods
+    }
 
     devices.append(CanNode("global", rpc_get_id=None, rpc_ans_id=None))
 
@@ -260,6 +263,14 @@ def initialize_can_data(
             "rpc_get_id": dev.fields.get("rpc_get_id"),
             "rpc_ans_id": dev.fields.get("rpc_ans_id"),
         }
+
+    used_devices = set()
+
+    for service in fcp.services:
+        for method in service.methods:
+            method.name_snake = to_snake_case(method.name)
+            method.input_snake = to_snake_case(method.input)
+            method.output_snake = to_snake_case(method.output)
 
     for extension in fcp.impls:
         encoding = encoder.generate(extension)
@@ -273,7 +284,7 @@ def initialize_can_data(
         rpc_get_id = rpc_ids.get("rpc_get_id")
         rpc_ans_id = rpc_ids.get("rpc_ans_id")
 
-        if not any(node.name == device_name for node in devices):
+        if device_name not in used_devices:
             devices.append(
                 CanNode(
                     device_name,
@@ -281,6 +292,7 @@ def initialize_can_data(
                     rpc_ans_id=rpc_ans_id,
                 )
             )
+            used_devices.add(device_name)
 
         if extension in fcp.get_matching_impls("can"):
             messages.append(
@@ -290,7 +302,7 @@ def initialize_can_data(
                     dlc=dlc,
                     signals=signals,
                     senders=[device_name],
-                    period=period,
+                    period=cast(int, period) if period is not None else -1,
                 )
             )
 
@@ -302,11 +314,27 @@ def initialize_can_data(
                     dlc=dlc,
                     signals=signals,
                     senders=[device_name],
-                    period=period,
+                    period=cast(int, period),
                 )
             )
 
-    return (enums, messages, devices, rpc)
+    rpc_names = {msg.name_pascal for msg in rpc}
+    for extension in fcp.impls:
+        if extension.name in rpc_output_structs and extension.name not in rpc_names:
+            encoding = encoder.generate(extension)
+            signals, dlc = create_can_signals(encoding)
+            rpc.append(
+                CanMessage(
+                    frame_id=cast(int, rpc_get_id),
+                    name_pascal=extension.name,
+                    dlc=dlc,
+                    signals=signals,
+                    senders=[],
+                    period=cast(int, period) if period is not None else -1,
+                )
+            )
+
+    return (enums, messages, devices, rpc, fcp.services)
 
 
 class CanCWriter:
@@ -323,7 +351,9 @@ class CanCWriter:
         script_dir = os.path.dirname(os.path.realpath(__file__))
         self.templates_dir = os.path.join(script_dir, "../templates")
 
-        self.enums, self.messages, self.devices, self.rpcs = initialize_can_data(fcp)
+        self.enums, self.messages, self.devices, self.rpcs, self.services = (
+            initialize_can_data(fcp)
+        )
         self.env = Environment(loader=FileSystemLoader(self.templates_dir))
 
         self.templates = {
@@ -414,6 +444,7 @@ class CanCWriter:
                     rpc_get_id=device.rpc_get_id,
                     rpc_ans_id=device.rpc_ans_id,
                     rpcs=self.rpcs,
+                    services=self.services,
                 ),
             )
 
@@ -439,5 +470,6 @@ class CanCWriter:
                     rpc_get_id=device.rpc_get_id,
                     rpc_ans_id=device.rpc_ans_id,
                     rpcs=self.rpcs,
+                    services=self.services,
                 ),
             )

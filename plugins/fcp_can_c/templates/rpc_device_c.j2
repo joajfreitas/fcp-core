@@ -108,22 +108,33 @@ CanFrame can_encode_rpc_{{message.name_snake}}_ans(const CanRpc{{ message.name_p
 
 {%- for message in rpcs %}
 /*--------------------------------------------- RPC Dispatcher ----------------------------------------------*/
-void can_service_dispatch_{{ message.name_snake }}(const CanFrame *frame, void (*send)(const CanFrame *)) {
+void {{ device_name_snake }}_service_dispatch(const CanFrame *frame, void (*send)(const CanFrame *)) {
     if (!is_valid_rpc_message(frame)) return;
 
-    CanFrame response;
-    response.id = {{ device_name_snake | upper }}_RPC_ANS_ID;
-    response.dlc = sizeof(CanRpc{{ message.name_pascal }});
-    memset(response.data, 0, sizeof(response.data));
+    uint8_t service_id = frame->data[0];
+    uint8_t method_id = frame->data[1];
+    CanFrame frame_out;
 
-    const CanRpc{{ message.name_pascal }} *req = (const CanRpc{{ message.name_pascal }} *) frame->data;
-    CanRpc{{ message.name_pascal }} *res = (CanRpc{{ message.name_pascal }} *) response.data;
+    switch (method_id) {
+    {%- for service in services %}
+        {%- for method in service.methods %}
+        case {{ device_name_snake | upper }}_{{ method.name | upper }}: {
+            CanRpc{{ method.input }} request = can_decode_rpc_{{ method.input_snake }}(frame);
+            CanRpc{{ method.output }} response = { .service_id = service_id, .method_id = method_id };
 
-    extern void can_service_handle_{{ message.name_snake }}(const CanRpc{{ message.name_pascal }} *request, CanRpc{{ message.name_pascal }} *response);
-    can_service_handle_{{ message.name_snake }}(req, res);
+            {{ device_name_snake }}_service_handle_{{ method.name_snake }}(&request, &response);
+
+            frame_out = can_encode_rpc_{{ method.output_snake }}_ans(&response);
+            break;
+        }
+        {%- endfor %}
+    {%- endfor %}
+        default:
+            return;
+    }
 
     if (send) {
-        send(&response);
+        send(&frame_out);
     }
 }
 {%- endfor %}

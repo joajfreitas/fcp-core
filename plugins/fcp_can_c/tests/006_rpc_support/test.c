@@ -5,6 +5,7 @@
 
 #include "generated_code/can_frame.h"
 #include "generated_code/ecu_can.h"
+#include "generated_code/ecu_rpc.h"
 #include "ecu_rpc_client.h"
 
 bool all_tests_passed = true;
@@ -43,7 +44,8 @@ void test_rpc_encode_decode_roundtrip() {
     bool pass = true;
 
     CanRpcSensorReq original = {
-        .rpc_id = {.service_id = 0, .method_id = 0},
+        .service_id = 0,
+        .method_id = 0,
         .request_id = 0x12
     };
 
@@ -54,10 +56,10 @@ void test_rpc_encode_decode_roundtrip() {
 
     CanRpcSensorReq decoded = can_decode_rpc_sensor_req(&frame);
     printf("\033[34m[DEBUG] Decoded: service_id=0x%X method_id=0x%X request_id=0x%X\033[0m\n",
-           decoded.rpc_id.service_id, decoded.rpc_id.method_id, decoded.request_id);
+           decoded.service_id, decoded.method_id, decoded.request_id);
 
-    pass &= (decoded.rpc_id.service_id == 0);
-    pass &= (decoded.rpc_id.method_id == 0);
+    pass &= (decoded.service_id == 0);
+    pass &= (decoded.method_id == 0);
     pass &= (decoded.request_id == original.request_id);
 
     VERIFY_TEST(pass);
@@ -71,7 +73,8 @@ void test_rpc_dispatch_end_to_end() {
     got_response = false;
 
     CanRpcSensorReq req = {
-        .rpc_id = {.service_id = 0, .method_id = 0},
+        .service_id = 0,
+        .method_id = 0,
         .request_id = 0x01
     };
 
@@ -81,7 +84,7 @@ void test_rpc_dispatch_end_to_end() {
     printf("\033[34m[DEBUG] Sending request: frame.id = 0x%X, request_id = 0x%X\033[0m\n",
            request.id, req.request_id);
 
-    can_service_dispatch_sensor_req(&request, mock_send);
+    ecu_service_dispatch_sensor_service(&request, mock_send);
 
     pass &= got_response;
 
