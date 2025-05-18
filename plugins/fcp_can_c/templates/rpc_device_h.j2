@@ -39,27 +39,27 @@ void {{ device_name_snake }}_service_handle_{{ method.name | lower}}(
     const CanRpc{{ method.input }} *request,
     CanRpc{{ method.output }} *response
 );
-    {%- endfor %}
-{%- endfor %}
+    {% endfor %}
+{%- endfor -%}
 
 {% for message in rpcs %}
-/* Dispatcher */
-void can_service_dispatch_{{ message.name_snake }}(const CanFrame *frame, void (*send)(const CanFrame *));
-{% endfor %}
+/* Dispatcher {{ message.name_pascal }} */
+void {{ device_name_snake }}_service_dispatch_{{ message.name_snake }}(const CanFrame *frame, void (*send)(const CanFrame *));
+{% endfor -%}
 
 {% for message in rpcs %}
 /* Functions to decode CanFrame into CanRpc{{ message.name_pascal }} objects */
 CanRpc{{ message.name_pascal }} can_decode_rpc_{{ message.name_snake }}(const CanFrame *frame);
-{% endfor %}
+{% endfor -%}
 
 {% for message in rpcs %}
 /* Functions to encode CanRpc{{ message.name_pascal }} object into CanFrame */
-{% if message.is_multiplexer %}
+{%- if message.is_multiplexer %}
 CanFrame can_encode_rpc_{{message.name_snake}}(const CanRpc{{ message.name_pascal }} *rpc, uint32_t {{message.multiplexer_signal}});
 {% else %}
 CanFrame can_encode_rpc_{{message.name_snake}}(const CanRpc{{ message.name_pascal }} *rpc);
 CanFrame can_encode_rpc_{{message.name_snake}}_ans(const CanRpc{{ message.name_pascal }} *rpc);
-{% endif %}
-{% endfor %}
+{% endif -%}
+{% endfor -%}
 
 #endif // {{ device_name_snake | upper }}_RPC_H

@@ -7,13 +7,10 @@
 #include "generated_code/ecu_rpc.h"
 #include "generated_code/can_frame.h"
 
-/* Chamada de alto nível (cliente) */
 bool sensorservice_requeststate(uint8_t *result);
 
-/* Handler chamado pelo dispatcher gerado */
-void can_service_handle_sensor_req(const CanRpcSensorReq *request, CanRpcSensorInformation *response);
-
-/* Handler definido pelo utilizador para todos os métodos do SensorService */
-void te_service_handle(uint8_t method_id, void *rpc, void *ans);
+/* Handlers */
+void ecu_service_handle_requeststate(const CanRpcSensorReq *request, CanRpcSensorInformation *response);
+void ecu_service_handle_gettemperature(const CanRpcSensorReq *request, CanRpcTemperatureResponse *response);
 
 #endif // ECU_RPC_CLIENT_H

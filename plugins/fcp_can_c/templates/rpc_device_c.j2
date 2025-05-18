@@ -32,7 +32,7 @@ bool is_valid_rpc_message(const CanFrame *frame) {
 {%- endfor %}
 
 {% for message in rpcs -%}
-/*-------------------------------------------- Decode Function ----------------------------------------------*/
+/*-------------------------------- Decode Function {{ message.name_pascal }} ----------------------------------*/
 CanRpc{{ message.name_pascal }} can_decode_rpc_{{ message.name_snake }}(const CanFrame *rpc) {
 	CanRpc{{message.name_pascal}} rpc_struct = {0};
 
@@ -53,7 +53,7 @@ CanRpc{{ message.name_pascal }} can_decode_rpc_{{ message.name_snake }}(const Ca
 {% endfor -%}
 
 {%- for message in rpcs %}
-/*-------------------------------------------- Encode Functions ---------------------------------------------*/
+/*-------------------------------- Encode Functions {{ message.name_pascal }} ---------------------------------*/
 {%- if message.is_multiplexer %}
 CanFrame can_encode_rpc_{{message.name_snake}}(const CanRpc{{ message.name_pascal }} *rpc, uint32_t {{message.multiplexer_signal}}) {
     CanFrame message = {.id = {{message.frame_id}}, .dlc = {{message.dlc + 2}}};
@@ -107,8 +107,8 @@ CanFrame can_encode_rpc_{{message.name_snake}}_ans(const CanRpc{{ message.name_p
 {% endfor %}
 
 {%- for message in rpcs %}
-/*--------------------------------------------- RPC Dispatcher ----------------------------------------------*/
-void {{ device_name_snake }}_service_dispatch(const CanFrame *frame, void (*send)(const CanFrame *)) {
+/*----------------------------------- RPC Dispatcher {{ message.name_pascal }} ------------------------------------*/
+void {{ device_name_snake }}_service_dispatch_{{ message.name_snake }}(const CanFrame *frame, void (*send)(const CanFrame *)) {
     if (!is_valid_rpc_message(frame)) return;
 
     uint8_t service_id = frame->data[0];
@@ -122,7 +122,7 @@ void {{ device_name_snake }}_service_dispatch(const CanFrame *frame, void (*send
             CanRpc{{ method.input }} request = can_decode_rpc_{{ method.input_snake }}(frame);
             CanRpc{{ method.output }} response = { .service_id = service_id, .method_id = method_id };
 
-            {{ device_name_snake }}_service_handle_{{ method.name_snake }}(&request, &response);
+            {{ device_name_snake }}_service_handle_{{ method.name | lower }}(&request, &response);
 
             frame_out = can_encode_rpc_{{ method.output_snake }}_ans(&response);
             break;

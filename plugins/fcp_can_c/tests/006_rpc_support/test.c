@@ -84,7 +84,7 @@ void test_rpc_dispatch_end_to_end() {
     printf("\033[34m[DEBUG] Sending request: frame.id = 0x%X, request_id = 0x%X\033[0m\n",
            request.id, req.request_id);
 
-    ecu_service_dispatch_sensor_service(&request, mock_send);
+    ecu_service_dispatch_sensor_req(&request, mock_send);
 
     pass &= got_response;
 
@@ -114,7 +114,7 @@ void test_rpc_invalid_dlc() {
     got_response = false;
 
     if (invalid.dlc >= 3) {
-        can_service_dispatch_sensor_req(&invalid, mock_send);
+        ecu_service_dispatch_sensor_req(&invalid, mock_send);
     }
 
     pass &= (!got_response);
