@@ -24,6 +24,7 @@
 #include "dynamic.h"
 #include "fcp.h"
 #include "json.h"
+#include "dynamic_rpc.h"
 
 #include <cstring>
 
@@ -245,4 +246,45 @@ TEST_F(DynamicSchemaTest, EncodeOptional) {
     auto encoded = schema.EncodeJson("S10", std::map<std::string, json>{{ "s1", 1ULL }});
 
     EXPECT_THAT(encoded, Optional(Eq(std::vector<std::uint8_t>{ 1, 1 })));
+}
+
+
+class MockedBusProxy: public fcp::IBusProxy {
+    public:
+        MOCK_METHOD(
+                void,
+                Send,
+                (std::string msg_name, const json& data),
+                (override));
+
+        MOCK_METHOD(
+                (std::optional<std::pair<std::string, json>>),
+                Recv,
+                (),
+                (override));
+};
+
+TEST_F(DynamicSchemaTest, Method1Response) {
+    auto bus = MockedBusProxy{};
+    fcp::rpc::DynamicRpcServer server{GetSchema(), bus};
+
+    EXPECT_CALL(bus, Recv()).WillRepeatedly(testing::Return(std::make_pair("S2Input", std::map<std::string, json>{
+        {"service_id", 0ULL},
+        {"method_id", 0ULL},
+        {"payload", std::map<std::string, json>{{"s1", 1ULL}, {"s2", 2ULL}, {"s3", "S2"}}}
+    })));
+
+    EXPECT_CALL(bus, Send(testing::Eq("S3Output"),
+        testing::Eq(std::map<std::string, json>{
+            {"service_id", 0ULL},
+            {"method_id", 0ULL},
+            {"payload", std::map<std::string, json>{{"s1", std::vector<json>{0, 1, 2, 3}}, {"s2", 4}, {"s3", 5}}}
+        })))
+    .Times(testing::Exactly(1));
+
+    server.RegisterHandler(0x00, 0x00, "S3Output", [](const json& input) -> json {
+        return json{std::map<std::string, json>{{"s1", std::vector<json>{0,1,2,3}}, {"s2", 4}, {"s3", 5}}};
+    });
+
+    server.Step();
 }

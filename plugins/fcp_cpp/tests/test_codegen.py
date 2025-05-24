@@ -119,7 +119,7 @@ def test_dynamic_serialization() -> None:
             ),
         ]
         + fcp_sources,
-        dynamic_libraries=["gtest_main", "gtest"],
+        dynamic_libraries=["gtest_main", "gtest", "gmock"],
     )
 
 
