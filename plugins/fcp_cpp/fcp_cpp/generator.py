@@ -219,6 +219,8 @@ class Generator(CodeGenerator):
                 {"fcp": fcp, "service": service},
             )
 
+        output_builder.with_file("dynamic_rpc.h", "dynamic_rpc.h")
+
         output_builder.with_file("variant.h", "variant.h")
         output_builder.with_file("json.h", "json.h")
 
