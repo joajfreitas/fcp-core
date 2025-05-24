@@ -264,6 +264,22 @@ class MockedBusProxy: public fcp::IBusProxy {
                 (override));
 };
 
+TEST_F(DynamicSchemaTest, Method1Call) {
+    auto bus = MockedBusProxy{};
+    fcp::rpc::DynamicRpcClient client{bus};
+
+    EXPECT_CALL(bus, Send(testing::Eq("S2Input"),
+        testing::Eq(std::map<std::string, json>{
+            {"service_id", 0ULL},
+            {"method_id", 0ULL},
+            {"payload", std::map<std::string, json>{{"s1", 1ULL}, {"s2", 2ULL}, {"s3", "S2"}}}
+        }))).Times(testing::Exactly(1));
+
+
+    client.Request(0x00, 0x00, "S2Input", json{std::map<std::string, json>{{"s1", 1ULL}, {"s2", 2ULL}, {"s3", "S2"}}});
+    client.Step();
+}
+
 TEST_F(DynamicSchemaTest, Method1Response) {
     auto bus = MockedBusProxy{};
     fcp::rpc::DynamicRpcServer server{ bus};
