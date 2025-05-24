@@ -266,7 +266,7 @@ class MockedBusProxy: public fcp::IBusProxy {
 
 TEST_F(DynamicSchemaTest, Method1Response) {
     auto bus = MockedBusProxy{};
-    fcp::rpc::DynamicRpcServer server{GetSchema(), bus};
+    fcp::rpc::DynamicRpcServer server{ bus};
 
     EXPECT_CALL(bus, Recv()).WillRepeatedly(testing::Return(std::make_pair("S2Input", std::map<std::string, json>{
         {"service_id", 0ULL},

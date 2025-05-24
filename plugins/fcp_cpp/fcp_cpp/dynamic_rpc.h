@@ -30,10 +30,8 @@ namespace fcp {
 namespace rpc {
 class DynamicRpcServer {
 public:
-  DynamicRpcServer(ISchema &schema, IBusProxy &bus_proxy)
-      : schema_{schema}, bus_proxy_{bus_proxy}, handlers_{} {}
-  DynamicRpcServer(ISchema &&schema, IBusProxy &bus_proxy)
-      : schema_{std::move(schema)}, bus_proxy_{bus_proxy}, handlers_{} {}
+  DynamicRpcServer(IBusProxy &bus_proxy)
+      : bus_proxy_{bus_proxy}, handlers_{} {}
 
   void RegisterHandler(std::uint8_t service_id, std::uint8_t method_id,
                        std::string output_type,
@@ -71,7 +69,6 @@ public:
   }
 
 private:
-  const ISchema &schema_;
   IBusProxy &bus_proxy_;
   std::map<std::uint16_t,
            std::pair<std::string, std::function<json(const json &)>>>
@@ -80,8 +77,8 @@ private:
 
 class DynamicRpcClient {
     public:
-    DynamicRpcClient(ISchema &schema, IBusProxy &bus_proxy)
-        : schema_{schema}, bus_proxy_{bus_proxy}, pending_requests_{} {}
+    DynamicRpcClient(IBusProxy &bus_proxy)
+        : bus_proxy_{bus_proxy}, pending_requests_{} {}
 
     std::future<json> Request(std::uint8_t service_id, std::uint8_t method_id, std::string input_type, json input) {
         auto id = (service_id << 8) | method_id;
@@ -121,7 +118,6 @@ class DynamicRpcClient {
     }
 
     private:
-    const ISchema &schema_;
     IBusProxy &bus_proxy_;
     std::unordered_map<std::uint16_t, std::promise<json>> pending_requests_;
 };
