@@ -20,7 +20,7 @@
 
 """Describe."""
 
-from beartype.typing import List, Any, Tuple
+from beartype.typing import List, Any, Tuple, Union
 
 from .specs.v2 import FcpV2
 from .specs.type import Type
@@ -75,7 +75,7 @@ class DescribeVisitor(TypeVisitor):
         return [("has_value", 1), inner]
 
 
-def walk(xs: List[Any] | Any, level: int = -1) -> str:
+def walk(xs: Union[List[Any], Any], level: int = -1) -> str:
     """Convert the description information to string."""
     ss = ""
     if isinstance(xs, list):

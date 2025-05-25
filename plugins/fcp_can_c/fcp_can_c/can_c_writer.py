@@ -22,43 +22,14 @@
 
 import os
 
-from beartype.typing import Generator, List, Dict, Optional, Tuple
+from beartype.typing import Generator, List, Dict, Optional, Tuple, Union, cast
 from math import ceil
 from jinja2 import Environment, FileSystemLoader
-from cantools.database.can.node import Node as CanNode
 from fcp.specs.struct_field import StructField
 from fcp.specs.v2 import FcpV2
 from dataclasses import dataclass
-from fcp.result import Err
 from fcp.encoding import make_encoder, EncodeablePiece, Value, PackedEncoderContext
-
-
-def snake_to_pascal(snake_str: str) -> str:
-    """Convert a snake_case string to PascalCase.
-
-    Args:
-        snake_str: The snake_case string to convert.
-
-    Returns:
-        The PascalCase string.
-
-    """
-    return "".join(x.capitalize() for x in snake_str.split("_"))
-
-
-def pascal_to_snake(pascal_str: str) -> str:
-    """Convert a PascalCase string to snake_case.
-
-    Args:
-        pascal_str: The PascalCase string to convert.
-
-    Returns:
-        The snake_case string.
-
-    """
-    return "".join(["_" + c.lower() if c.isupper() else c for c in pascal_str]).lstrip(
-        "_"
-    )
+from fcp.utils import to_pascal_case, to_snake_case
 
 
 def ceil_to_power_of_2(x: int) -> int:
@@ -151,11 +122,11 @@ class CanMessage:
     name_snake: str = ""
 
     def __post_init__(self) -> None:
-        self.name_snake = pascal_to_snake(self.name_pascal)
+        self.name_snake = to_snake_case(self.name_pascal)
 
         for signal in self.signals:
             if signal.is_multiplexer:
-                self.multiplexer_signal = pascal_to_snake(signal.multiplexer_signal)
+                self.multiplexer_signal = to_snake_case(signal.multiplexer_signal)
                 self.is_multiplexer = True
 
 
@@ -165,6 +136,18 @@ class Enum:
 
     name: str
     values: Dict[str, int]
+
+
+class CanNode:
+    """Class to represent a device node with RPC compatibility."""
+
+    def __init__(
+        self, name: str, rpc_get_id: Union[int, None], rpc_ans_id: Union[int, None]
+    ):
+        self.name = name
+        self.rpc_get_id = rpc_get_id
+        self.rpc_ans_id = rpc_ans_id
+        self.services: List[str] = []
 
 
 def is_signed(value: Value) -> bool:
@@ -243,7 +226,7 @@ def map_messages_to_devices(messages: List[CanMessage]) -> Dict[str, List[CanMes
 
 def initialize_can_data(
     fcp: FcpV2,
-) -> Tuple[List[Enum], List[CanMessage], List[CanNode]]:  # type: ignore
+) -> Tuple[List[Enum], List[CanNode], List[CanMessage], List[CanMessage]]:
     """Initialize CAN data from an FCP.
 
     Args:
@@ -255,7 +238,8 @@ def initialize_can_data(
     """
     enums = []
     messages = []
-    devices = []
+    devices: List["CanNode"] = []
+    rpc = []
     encoder = make_encoder(
         "packed", fcp, PackedEncoderContext().with_unroll_arrays(True)
     )
@@ -264,35 +248,93 @@ def initialize_can_data(
         values = {v.name: v.value for v in enum.enumeration}
         enums.append(Enum(name=enum.name, values=values))
 
-        # Enums are not tied to a specific device so they live on the global device
-        devices.append(CanNode("global"))
+    rpc_input_structs = {
+        method.input for service in fcp.services for method in service.methods
+    }
+    rpc_output_structs = {
+        method.output for service in fcp.services for method in service.methods
+    }
 
-    for extension in fcp.get_matching_impls("can"):
+    devices.append(CanNode("global", rpc_get_id=None, rpc_ans_id=None))
+
+    device_rpc_info = {}
+    for dev in fcp.devices:
+        device_rpc_info[dev.name] = {
+            "rpc_get_id": dev.fields.get("rpc_get_id"),
+            "rpc_ans_id": dev.fields.get("rpc_ans_id"),
+        }
+
+    used_devices = set()
+
+    for service in fcp.services:
+        for method in service.methods:
+            method.name_snake = to_snake_case(method.name)
+            method.input_snake = to_snake_case(method.input)
+            method.output_snake = to_snake_case(method.output)
+
+    for extension in fcp.impls:
         encoding = encoder.generate(extension)
         signals, dlc = create_can_signals(encoding)
 
         frame_id = extension.fields.get("id")
-        if frame_id is None:
-            Err("No id field found in extension").unwrap()
-
         device_name = extension.fields.get("device", "global")
         period = extension.fields.get("period", -1)
 
-        if not any(node.name == device_name for node in devices):
-            devices.append(CanNode(device_name))
+        rpc_ids = device_rpc_info.get(device_name, {})
+        rpc_get_id = rpc_ids.get("rpc_get_id")
+        rpc_ans_id = rpc_ids.get("rpc_ans_id")
 
-        messages.append(
-            CanMessage(
-                frame_id=frame_id,
-                name_pascal=extension.name,
-                dlc=dlc,
-                signals=signals,
-                senders=[device_name],
-                period=period,
+        if device_name not in used_devices:
+            devices.append(
+                CanNode(
+                    device_name,
+                    rpc_get_id=rpc_get_id,
+                    rpc_ans_id=rpc_ans_id,
+                )
             )
-        )
+            used_devices.add(device_name)
 
-    return (enums, messages, devices)
+        if extension in fcp.get_matching_impls("can"):
+            messages.append(
+                CanMessage(
+                    frame_id=frame_id,
+                    name_pascal=extension.name,
+                    dlc=dlc,
+                    signals=signals,
+                    senders=[device_name],
+                    period=cast(int, period) if period is not None else -1,
+                )
+            )
+
+        if extension.name in rpc_input_structs:
+            rpc.append(
+                CanMessage(
+                    frame_id=cast(int, rpc_get_id),
+                    name_pascal=extension.name,
+                    dlc=dlc,
+                    signals=signals,
+                    senders=[device_name],
+                    period=cast(int, period),
+                )
+            )
+
+    rpc_names = {msg.name_pascal for msg in rpc}
+    for extension in fcp.impls:
+        if extension.name in rpc_output_structs and extension.name not in rpc_names:
+            encoding = encoder.generate(extension)
+            signals, dlc = create_can_signals(encoding)
+            rpc.append(
+                CanMessage(
+                    frame_id=cast(int, rpc_get_id),
+                    name_pascal=extension.name,
+                    dlc=dlc,
+                    signals=signals,
+                    senders=[],
+                    period=cast(int, period) if period is not None else -1,
+                )
+            )
+
+    return (enums, messages, devices, rpc, fcp.services)
 
 
 class CanCWriter:
@@ -309,12 +351,16 @@ class CanCWriter:
         script_dir = os.path.dirname(os.path.realpath(__file__))
         self.templates_dir = os.path.join(script_dir, "../templates")
 
-        self.enums, self.messages, self.devices = initialize_can_data(fcp)
+        self.enums, self.messages, self.devices, self.rpcs, self.services = (
+            initialize_can_data(fcp)
+        )
         self.env = Environment(loader=FileSystemLoader(self.templates_dir))
 
         self.templates = {
-            "device_can_h": self.env.get_template("can_device_h.jinja"),
-            "device_can_c": self.env.get_template("can_device_c.jinja"),
+            "device_can_h": self.env.get_template("can_device_h.j2"),
+            "device_can_c": self.env.get_template("can_device_c.j2"),
+            "device_rpc_h": self.env.get_template("rpc_device_h.j2"),
+            "device_rpc_c": self.env.get_template("rpc_device_c.j2"),
         }
         self.device_messages = map_messages_to_devices(self.messages)
 
@@ -338,7 +384,6 @@ class CanCWriter:
             Generator: Tuple containing the device name and the file content.
 
         """
-        # Check if the global device is present in the list of devices
         global_device_exists = any(device.name == "global" for device in self.devices)
 
         for device in self.devices:
@@ -348,8 +393,8 @@ class CanCWriter:
             yield (
                 device_name,
                 self.templates["device_can_h"].render(
-                    device_name_pascal=snake_to_pascal(device_name),
-                    device_name_snake=pascal_to_snake(device_name),
+                    device_name_pascal=to_pascal_case(device_name),
+                    device_name_snake=to_snake_case(device_name),
                     messages=messages,
                     include_global=device_name != "global" and global_device_exists,
                     is_global_device=device_name == "global",
@@ -366,10 +411,65 @@ class CanCWriter:
         """
         for device_name, messages in self.device_messages.items():
             yield (
-                pascal_to_snake(device_name),
+                to_snake_case(device_name),
                 self.templates["device_can_c"].render(
-                    device_name_pascal=snake_to_pascal(device_name),
-                    device_name_snake=pascal_to_snake(device_name),
+                    device_name_pascal=to_pascal_case(device_name),
+                    device_name_snake=to_snake_case(device_name),
                     messages=messages,
+                ),
+            )
+
+    def generate_rpc_headers(self) -> Generator[Tuple[str, str], None, None]:
+        """Generate C header files for devices with RPC.
+
+        Returns:
+            Generator: Tuple containing the device name and the file content.
+
+        """
+        self._devices_with_rpc = set()
+
+        for device in self.devices:
+            if device.rpc_get_id is None or device.rpc_ans_id is None:
+                continue
+
+            device_name = device.name
+
+            self._devices_with_rpc.add(device_name)
+
+            yield (
+                device_name,
+                self.templates["device_rpc_h"].render(
+                    device_name_pascal=to_pascal_case(device_name),
+                    device_name_snake=to_snake_case(device_name),
+                    rpc_get_id=device.rpc_get_id,
+                    rpc_ans_id=device.rpc_ans_id,
+                    rpcs=self.rpcs,
+                    services=self.services,
+                ),
+            )
+
+    def generate_rpc_sources(self) -> Generator[Tuple[str, str], None, None]:
+        """Generate C source files for devices with RPC.
+
+        Returns:
+            Generator: Tuple containing the device name and the file content.
+
+        """
+        for device_name, messages in self.device_messages.items():
+            if device_name not in self._devices_with_rpc:
+                continue
+
+            device = next(d for d in self.devices if d.name == device_name)
+
+            yield (
+                to_snake_case(device_name),
+                self.templates["device_rpc_c"].render(
+                    device_name_pascal=to_pascal_case(device_name),
+                    device_name_snake=to_snake_case(device_name),
+                    messages=messages,
+                    rpc_get_id=device.rpc_get_id,
+                    rpc_ans_id=device.rpc_ans_id,
+                    rpcs=self.rpcs,
+                    services=self.services,
                 ),
             )
