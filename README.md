@@ -37,8 +37,8 @@ See [readthedocs.io](https://fcp-core.readthedocs.io/en/latest/)
 | Frame id                   |   ✅  |  ✅  | ✅ |  ✅  |    ✅   |
 | Device designation         |   ✅  |  ✅  | ✅ |  ✅  |    ✅   |
 | Bus designation            |   ✅  |  ✅  | ❌ |  ❌  |    ❌   |
-| Big endian                 |   ✅  |  ✅  | ❌ |  ❌  |    ❌   |
-| Muxes                      |   ✅  |  ✅  | ❌ |  ❌  |    ❌   |
+| Big endian                 |   ✅  |  ✅  | ✅ |  ❌  |    ❌   |
+| Muxes                      |   ✅  |  ✅  | ✅ |  ❌  |    ❌   |
 
 ## Plugins
 
