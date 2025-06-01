@@ -4,7 +4,7 @@
 #include <string.h>
 
 /*---------------------------------------- RPC Validation Functions ------------------------------------------*/
-bool is_valid_rpc_message(const CanFrame *frame) {
+bool is_{{ device_name_snake}}_rpc(const CanFrame *frame) {
     if (!frame) return false;
 
     if (frame->id != {{ device_name_snake | upper }}_RPC_GET_ID &&
@@ -108,8 +108,8 @@ CanFrame can_encode_rpc_{{message.name_snake}}_ans(const CanRpc{{ message.name_p
 
 {%- for message in rpcs %}
 /*----------------------------------- RPC Dispatcher {{ message.name_pascal }} ------------------------------------*/
-void {{ device_name_snake }}_service_dispatch_{{ message.name_snake }}(const CanFrame *frame, void (*send)(const CanFrame *)) {
-    if (!is_valid_rpc_message(frame)) return;
+void {{ device_name_snake }}_service_dispatch_{{ message.name_snake }}(const CanFrame *frame, void (*can_send_func)(const CanFrame *)) {
+    if (!is_{{ device_name_snake}}_rpc(frame)) return;
 
     uint8_t service_id = frame->data[0];
     uint8_t method_id = frame->data[1];
@@ -133,8 +133,9 @@ void {{ device_name_snake }}_service_dispatch_{{ message.name_snake }}(const Can
             return;
     }
 
-    if (send) {
-        send(&frame_out);
+    if (can_send_func) {
+        can_send_func(&frame_out);
     }
+
 }
 {%- endfor %}
