@@ -285,6 +285,16 @@ def fcp2_to_json(fcpv2: str, fcpv1: str):
     with open(fcpv1, "w") as f:
         f.write(json.dumps(spec.compile(), indent=4))
 
+@click.command("write_json")
+@click.argument("json_file")
+def write_json(json_file: str):
+    logger = setup_logging()
+
+    spec = get_spec(json_file)
+
+    with open(os.path.splitext(json_file)[0] + ".json", "w") as f:
+        f.write(json.dumps(spec.compile(), indent=4))
+
 
 @click.group(invoke_without_command=True)
 @click.option("--version", is_flag=True, default=False)
@@ -307,7 +317,7 @@ main.add_command(gui_cmd)
 main.add_command(docs)
 main.add_command(fix)
 main.add_command(json_to_fcp2)
-main.add_command(fcp2_to_json)
+main.add_command(write_json)
 
 if __name__ == "__main__":
     main()
