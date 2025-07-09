@@ -6,6 +6,7 @@ import json
 import subprocess
 import os
 from pathlib import Path
+import ruamel.yaml
 
 import click
 
@@ -56,6 +57,20 @@ def report_validate(failed, force):
     return False
 
 
+def construct_include_tag(root_path):
+    def _construct_include_tag(constructor, node):
+        yaml = ruamel.yaml.YAML()
+        external_fpath = root_path / Path(node.value)
+        if not external_fpath.exists():
+            raise IOError(
+                f"Included external yaml file {external_fpath} " "does not exist"
+            )
+        res = yaml.load(external_fpath)
+        return res
+
+    return _construct_include_tag
+
+
 def get_spec(json_file: str, force: bool = False) -> Spec:
     """Create Spec from json file path.
     :param json_file: path to the json file.
@@ -71,6 +86,14 @@ def get_spec(json_file: str, force: bool = False) -> Spec:
             j = json.loads(f.read())
     elif path.suffix == ".fcp":
         j = fcp_v2_from_file(json_file)
+    elif path.suffix == ".yaml":
+        ruamel.yaml.constructor.RoundTripConstructor.add_constructor(
+            "!include", construct_include_tag(Path(json_file).parent)
+        )
+        yaml = ruamel.yaml.YAML()
+        yaml.preserve_quotes = True
+        with open(json_file) as f:
+            j = yaml.load(f.read())
 
     spec.decompile(j)
     failed = validate(spec)
