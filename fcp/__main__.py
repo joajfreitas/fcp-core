@@ -439,6 +439,16 @@ def read_fcp(json_file: str):
     print(spec)
 
 
+@click.command("write_json")
+@click.argument("json_file")
+def write_json(json_file: str):
+    logger = setup_logging()
+
+    spec = get_spec(json_file)
+
+    with open(os.path.splitext(json_file)[0] + ".json", "w") as f:
+        f.write(json.dumps(spec.compile(), indent=4))
+
 
 @click.group(invoke_without_command=True)
 @click.option("--version", is_flag=True, default=False)
@@ -474,6 +484,7 @@ main.add_command(fix)
 main.add_command(json_to_fcp2)
 main.add_command(read_fcp2)
 main.add_command(read_fcp)
+main.add_command(write_json)
 
 if __name__ == "__main__":
     main()
