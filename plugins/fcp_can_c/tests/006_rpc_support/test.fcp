@@ -23,8 +23,11 @@ struct SensorReq {
     request_id @0: u8,
 }
 
-service SensorService @0 {
+service StateService @0 {
     method RequestState(SensorReq) @0 returns SensorInformation,
+}
+
+service TemperatureService @1 {
     method GetTemperature(SensorReq) @1 returns TemperatureResponse,
 }
 
@@ -32,6 +35,6 @@ device ecu {
     protocol can {
         impl Msg { id: 10, },
         rpc { request_id: 1025, response_id: 1026, },
-        services: [SensorService],
+        services: [SensorService, TemperatureService],
     },
 }
