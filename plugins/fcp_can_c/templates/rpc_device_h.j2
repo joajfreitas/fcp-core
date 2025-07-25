@@ -29,6 +29,7 @@ typedef enum {
 {%- for service in services %}
     {%- for method in service.methods %}
     {{ device_name_snake | upper }}_{{ method.name | upper }} = {{ method.id }},
+    //{{ device_name_snake | upper }}_{{ method.name | upper }} = {{ method.unique_id }},
     {%- endfor %}
 {%- endfor %}
 } {{ device_name_snake }}_rpc_method_id_t;
