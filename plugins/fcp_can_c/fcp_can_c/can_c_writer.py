@@ -174,6 +174,26 @@ def is_signed(value: Value) -> bool:
     return bool(value.type.name.startswith("i"))
 
 
+def check_unique_service_method_ids(fcp: FcpV2) -> bool:
+    """Check if method IDs are unique across all services.
+
+    Args:
+        fcp (FcpV2): FCP object to check
+
+    Returns:
+        bool: True if all method IDs are unique, False otherwise
+
+    """
+    used_ids = set()
+    for service in fcp.services:
+        for method in service.methods:
+            method.unique_id = (service.id << 8) | method.id
+            if method.unique_id in used_ids:
+                return False
+            used_ids.add(method.unique_id)
+    return True
+
+
 def create_can_signals(
     encoding: List[EncodeablePiece],
 ) -> Tuple[List[StructField], int]:
@@ -456,6 +476,8 @@ class CanCWriter:
         ) = initialize_can_data(fcp)
         self.env = Environment(loader=FileSystemLoader(self.templates_dir))
 
+        self.fcp = fcp
+
         self.templates = {
             "device_can_h": self.env.get_template("can_device_h.j2"),
             "device_can_c": self.env.get_template("can_device_c.j2"),
@@ -526,6 +548,9 @@ class CanCWriter:
             Generator: Tuple containing the device name and the file content.
 
         """
+        if not check_unique_service_method_ids(self.fcp):
+            return
+
         self._devices_with_rpc = set()
 
         for device in self.devices:
@@ -556,6 +581,9 @@ class CanCWriter:
             Generator: Tuple containing the device name and the file content.
 
         """
+        if not check_unique_service_method_ids(self.fcp):
+            return
+
         for device_name, messages in self.device_messages.items():
             if device_name not in self._devices_with_rpc:
                 continue
