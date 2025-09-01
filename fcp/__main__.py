@@ -18,6 +18,7 @@ from .specs import Spec
 from .docs import generate_docs
 from .version import VERSION
 from .idl import spec_to_fcp_v2, fcp_v2_from_file, fcp_v2
+from .export_protobuf import export_protobuf
 
 
 def setup_logging() -> logging.Logger:
@@ -285,6 +286,7 @@ def fcp2_to_json(fcpv2: str, fcpv1: str):
     with open(fcpv1, "w") as f:
         f.write(json.dumps(spec.compile(), indent=4))
 
+
 @click.command("write_json")
 @click.argument("json_file")
 def write_json(json_file: str):
@@ -294,6 +296,16 @@ def write_json(json_file: str):
 
     with open(os.path.splitext(json_file)[0] + ".json", "w") as f:
         f.write(json.dumps(spec.compile(), indent=4))
+
+
+@click.command("export_protobuf")
+@click.argument("json_file")
+@click.argument("output")
+def export_protobuf_cmd(json_file: str, output: str):
+    logger = setup_logging()
+
+    spec = get_spec(json_file)
+    export_protobuf(spec, output)
 
 
 @click.group(invoke_without_command=True)
@@ -318,6 +330,7 @@ main.add_command(docs)
 main.add_command(fix)
 main.add_command(json_to_fcp2)
 main.add_command(write_json)
+main.add_command(export_protobuf_cmd)
 
 if __name__ == "__main__":
     main()
