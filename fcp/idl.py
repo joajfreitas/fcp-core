@@ -258,8 +258,16 @@ def fcp_v2(file):
     )
 
     fcp_vis = FcpVisitor()
-    ast = grammar.parse(file)
-    return fcp_vis.visit(ast)
+    ast = None
+    try:
+        ast = grammar.parse(file)
+    except Exception as e:
+        print(f"exception: {e}")
+
+    v = fcp_vis.visit(ast)
+    # print("v:", v)
+    return v
+
 
 def fcp_v2_from_file(file):
     with open(file) as f:
