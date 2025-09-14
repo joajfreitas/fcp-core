@@ -10,6 +10,7 @@ from .utils import normalize
 def handle_key_not_found(d: dict, key: str):
     return d.get(key).items() if d.get(key) != None else []
 
+
 class Spec:
     """FCP root node. Holds all Devices, Messages, Signals, Logs, Configs,
     Commands and Arguments.
@@ -246,25 +247,19 @@ class Spec:
         :return: A dictionary containing the node parameters
         """
 
-
         d = {"devices": {}, "logs": {}, "enums": {}}
 
         for dev_k, dev_v in self.devices.items():
             d["devices"][dev_k] = dev_v.compile()
 
-
         for log in self.logs.values():
             d["logs"][log.name] = log.compile()
-
-
 
         for enum_k, enum_v in self.enums.items():
             d["enums"][enum_k] = enum_v.compile()
 
-
         d["common"] = self.common.compile()
         d["version"] = self.version
-
 
         return d
 
@@ -296,7 +291,7 @@ class Spec:
         self.version = d["version"]
 
     def normalize(self):
-        """ Update devices and logs dictionary keys.  """
+        """Update devices and logs dictionary keys."""
 
         normalize(self.devices)
         normalize(self.logs)
@@ -329,10 +324,10 @@ class Spec:
 
 
 def decompose_id(sid: int) -> Tuple[int, int]:
-    """ Find the dev_id and the msg_id from the sid."""
+    """Find the dev_id and the msg_id from the sid."""
     return sid & 0x1F, (sid >> 5) & 0x3F
 
 
 def make_sid(dev_id: int, msg_id: int) -> int:
-    """ Find the sid from the dev_id and the msg_id """
+    """Find the sid from the dev_id and the msg_id"""
     return (msg_id << 5) + dev_id

@@ -3,6 +3,7 @@ import datetime
 
 from .node import Node
 
+
 class Argument(Node):
     """Argument node. Represents a Command Argument.
 
@@ -81,6 +82,6 @@ class Argument(Node):
 
         :param d: Node dictionary
         """
-        #self.__dict__.update(make_private(self, d))
-        for k,v in self.make_private(self,d).items():
-            self.__setattr__(k,v)
+        # self.__dict__.update(make_private(self, d))
+        for k, v in self.make_private(self, d).items():
+            self.__setattr__(k, v)

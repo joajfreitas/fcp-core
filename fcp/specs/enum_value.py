@@ -3,6 +3,7 @@ import datetime
 
 from .node import Node
 
+
 class EnumValue(Node):
     """Fcp EnumValue. C lookalike for FCP type definitions with name-value
     associations.
@@ -29,8 +30,8 @@ class EnumValue(Node):
         :param d: Node dictionary
         """
 
-        for k,v in self.make_private(self, d).items():
-            self.__setattr__(k,v)
+        for k, v in self.make_private(self, d).items():
+            self.__setattr__(k, v)
 
     @property
     def name(self) -> str:

@@ -5,7 +5,8 @@ from jinja2 import Template
 
 from .docs_css import css
 
-signals_template = Template("""
+signals_template = Template(
+    """
 <html>
 <head>
 <style>
@@ -88,7 +89,9 @@ function search_function() {
 </ul>
 </body>
 </html>
-""")
+"""
+)
+
 
 def markdown(spec, root):
     main = "% FCP Docs\n"
