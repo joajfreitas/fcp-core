@@ -200,151 +200,6 @@ def gui_cmd(file: str):
     gui(file)
 
 
-@click.command(name="gui2")
-@click.argument("file", type=Path, required=False)
-def gui_cmd2(file: Path):
-    """Launch FCP json editor GUI.
-    :param file: Optional FCP json file path
-    """
-
-    from .gui2 import gui2
-
-    gui2(file)
-
-
-@click.command()
-@click.argument("json_file")
-def dump_dev_list(json_file):
-    spec = get_spec(json_file)
-
-    for dev in spec.devices.keys():
-        print(dev)
-
-
-@click.command()
-@click.argument("json_file")
-@click.argument("device", required=False)
-def dump_msg_list(json_file, device):
-    spec = get_spec(json_file)
-
-    for dev_name, dev in spec.devices.items():
-        if device != None and device != dev_name:
-            continue
-
-        for msg in dev.msgs.keys():
-            print(msg)
-
-
-@click.command()
-@click.argument("json_file")
-@click.argument("device", required=False)
-def dump_cfg_list(json_file, device):
-    spec = get_spec(json_file)
-
-    for dev_name, dev in spec.devices.items():
-        if device != None and device != dev_name:
-            continue
-
-        for cfg in dev.cfgs.keys():
-            print(cfg)
-
-
-@click.command()
-@click.argument("json_file")
-@click.argument("device", required=False)
-def dump_cmd_list(json_file, device):
-    spec = get_spec(json_file)
-
-    for dev_name, dev in spec.devices.items():
-        if device != None and device != dev_name:
-            continue
-
-        for cmd in dev.cmds.keys():
-            print(cmd)
-
-
-@click.command()
-@click.argument("json_file")
-def dump_log_list(json_file):
-    spec = get_spec(json_file)
-
-    for log in spec.logs.keys():
-        print(log)
-
-
-@click.command()
-@click.argument("json_file")
-@click.argument("message", required=False)
-def dump_signal_list(json_file, message):
-    spec = get_spec(json_file)
-
-    for dev in spec.devices.values():
-        for msg in dev.msgs.values():
-            if message != None and msg.name != message:
-                continue
-            for signal in msg.signals.values():
-                print(signal)
-
-
-@click.command()
-@click.argument("json_file")
-@click.argument("message", required=False)
-def dump_signal_names(json_file, message):
-    spec = get_spec(json_file)
-
-    for dev in spec.devices.values():
-        for msg in dev.msgs.values():
-            if message != None and msg.name != message:
-                continue
-            for signal in msg.signals.values():
-                print(signal.name)
-
-
-@click.command()
-@click.argument("json_file")
-@click.argument("log")
-def print_log(json_file, log):
-    spec = get_spec(json_file)
-
-    print(spec.get_log(log))
-
-
-@click.command()
-@click.argument("json_file")
-@click.argument("dev")
-def print_dev(json_file, dev):
-    spec = get_spec(json_file)
-
-    print(spec.get_device(dev))
-
-
-@click.command()
-@click.argument("json_file")
-@click.argument("message")
-def print_msg(json_file, message):
-    spec = get_spec(json_file)
-
-    for dev in spec.devices.values():
-        for name, msg in dev.msgs.items():
-            if name == message:
-                print(dev.name)
-                print(msg)
-
-
-@click.command()
-@click.argument("json_file")
-@click.argument("signal")
-def print_signal(json_file, signal):
-    spec = get_spec(json_file)
-
-    for dev in spec.devices.values():
-        for msg in dev.msgs.values():
-            for name, sig in msg.signals.items():
-                if name == signal:
-                    print(dev.name, msg.name)
-                    print(sig)
-
-
 @click.command("docs")
 @click.argument("json_file")
 @click.argument("out")
@@ -397,25 +252,6 @@ def json_to_fcp2(json_file: str, output: str):
 
 
 
-@click.command("read_fcp2")
-@click.argument("fcp_v2_file")
-def read_fcp2(fcp_v2_file):
-    with open(fcp_v2_file) as f:
-        v2 = fcp_v2(f.read())
-
-    spec = Spec()
-    spec.decompile(v2)
-
-
-@click.command("read_fcp")
-@click.argument("json_file")
-def read_fcp(json_file: str):
-    logger = setup_logging()
-
-    spec = get_spec(json_file)
-    print(spec)
-
-
 
 @click.group(invoke_without_command=True)
 @click.option("--version", is_flag=True, default=False)
@@ -435,22 +271,9 @@ main.add_command(c_gen_cmd)
 main.add_command(init_cmd)
 main.add_command(validate_cmd)
 main.add_command(gui_cmd)
-#main.add_command(dump_dev_list)
-#main.add_command(dump_msg_list)
-#main.add_command(dump_cfg_list)
-#main.add_command(dump_cmd_list)
-#main.add_command(dump_log_list)
-#main.add_command(dump_signal_list)
-#main.add_command(dump_signal_names)
-#main.add_command(print_log)
-#main.add_command(print_dev)
-#main.add_command(print_msg)
-#main.add_command(print_signal)
 main.add_command(docs)
 main.add_command(fix)
 main.add_command(json_to_fcp2)
-main.add_command(read_fcp2)
-main.add_command(read_fcp)
 
 if __name__ == "__main__":
     main()
