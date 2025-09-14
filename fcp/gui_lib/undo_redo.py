@@ -3,7 +3,8 @@ import copy
 from PySide2.QtCore import Signal
 from PySide2.QtWidgets import *
 
-class UndoState():
+
+class UndoState:
     def __init__(self):
         pass
 
@@ -31,8 +32,9 @@ class UndoUpdate(UndoState):
     def __repr__(self):
         return f"{self.var} {self.old} {self.new}"
 
+
 class UndoAdd(UndoState):
-    #delete_sig = Signal()
+    # delete_sig = Signal()
     def __init__(self, obj, holder, remove, add):
         self.obj = obj
         self.holder = holder
@@ -42,7 +44,7 @@ class UndoAdd(UndoState):
     def undo(self):
         print("undo")
         self.obj = copy.copy(self.obj)
-        #print("remove from spec", self.obj.spec.rm_node(self.obj))
+        # print("remove from spec", self.obj.spec.rm_node(self.obj))
         self.remove()
 
     def redo(self):
@@ -52,7 +54,8 @@ class UndoAdd(UndoState):
     def __repr__(self):
         return f"{self.obj}"
 
-class UndoRedo():
+
+class UndoRedo:
     def __init__(self):
         self.undo_stack = []
         self.redo_stack = []

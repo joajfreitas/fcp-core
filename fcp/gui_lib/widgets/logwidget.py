@@ -16,25 +16,25 @@ from PySide2.QtWidgets import *
 class Ui_LogWidget(object):
     def setupUi(self, LogWidget):
         if not LogWidget.objectName():
-            LogWidget.setObjectName(u"LogWidget")
+            LogWidget.setObjectName("LogWidget")
         LogWidget.resize(400, 300)
         LogWidget.setMinimumSize(QSize(300, 0))
         self.verticalLayout = QVBoxLayout(LogWidget)
-        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setObjectName("verticalLayout")
         self.groupBox = QGroupBox(LogWidget)
-        self.groupBox.setObjectName(u"groupBox")
+        self.groupBox.setObjectName("groupBox")
         self.verticalLayout_3 = QVBoxLayout(self.groupBox)
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.scrollArea = QScrollArea(self.groupBox)
-        self.scrollArea.setObjectName(u"scrollArea")
+        self.scrollArea.setObjectName("scrollArea")
         self.scrollArea.setWidgetResizable(True)
         self.LogScrollContents = QWidget()
-        self.LogScrollContents.setObjectName(u"LogScrollContents")
+        self.LogScrollContents.setObjectName("LogScrollContents")
         self.LogScrollContents.setGeometry(QRect(0, 0, 356, 209))
         self.verticalLayout_2 = QVBoxLayout(self.LogScrollContents)
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.logContents = QVBoxLayout()
-        self.logContents.setObjectName(u"logContents")
+        self.logContents.setObjectName("logContents")
 
         self.verticalLayout_2.addLayout(self.logContents)
 
@@ -43,22 +43,25 @@ class Ui_LogWidget(object):
         self.verticalLayout_3.addWidget(self.scrollArea)
 
         self.addLogButton = QPushButton(self.groupBox)
-        self.addLogButton.setObjectName(u"addLogButton")
+        self.addLogButton.setObjectName("addLogButton")
 
         self.verticalLayout_3.addWidget(self.addLogButton)
 
-
         self.verticalLayout.addWidget(self.groupBox)
-
 
         self.retranslateUi(LogWidget)
 
         QMetaObject.connectSlotsByName(LogWidget)
+
     # setupUi
 
     def retranslateUi(self, LogWidget):
-        LogWidget.setWindowTitle(QCoreApplication.translate("LogWidget", u"LogWidget", None))
-        self.groupBox.setTitle(QCoreApplication.translate("LogWidget", u"Logs", None))
-        self.addLogButton.setText(QCoreApplication.translate("LogWidget", u"Add Log", None))
-    # retranslateUi
+        LogWidget.setWindowTitle(
+            QCoreApplication.translate("LogWidget", "LogWidget", None)
+        )
+        self.groupBox.setTitle(QCoreApplication.translate("LogWidget", "Logs", None))
+        self.addLogButton.setText(
+            QCoreApplication.translate("LogWidget", "Add Log", None)
+        )
 
+    # retranslateUi

@@ -52,7 +52,7 @@ class LogWidget(QWidget):
         log_widget = LogDetails(self.gui, log, FakeParent())
         self.ui.logContents.addWidget(log_widget)
         self.children.append(log_widget)
-        
+
         if new_log:
             undo_action = UndoAdd(log, log_widget, log_widget.delete, self.add_log)
             self.gui.undo_redo.push(undo_action)

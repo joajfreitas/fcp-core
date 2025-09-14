@@ -16,25 +16,25 @@ from PySide2.QtWidgets import *
 class Ui_CfgWidget(object):
     def setupUi(self, CfgWidget):
         if not CfgWidget.objectName():
-            CfgWidget.setObjectName(u"CfgWidget")
+            CfgWidget.setObjectName("CfgWidget")
         CfgWidget.resize(400, 300)
         CfgWidget.setMinimumSize(QSize(300, 0))
         self.verticalLayout = QVBoxLayout(CfgWidget)
-        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setObjectName("verticalLayout")
         self.groupBox = QGroupBox(CfgWidget)
-        self.groupBox.setObjectName(u"groupBox")
+        self.groupBox.setObjectName("groupBox")
         self.verticalLayout_3 = QVBoxLayout(self.groupBox)
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.scrollArea = QScrollArea(self.groupBox)
-        self.scrollArea.setObjectName(u"scrollArea")
+        self.scrollArea.setObjectName("scrollArea")
         self.scrollArea.setWidgetResizable(True)
         self._CfgScrollContents = QWidget()
-        self._CfgScrollContents.setObjectName(u"_CfgScrollContents")
+        self._CfgScrollContents.setObjectName("_CfgScrollContents")
         self._CfgScrollContents.setGeometry(QRect(0, 0, 356, 209))
         self.verticalLayout_2 = QVBoxLayout(self._CfgScrollContents)
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.CfgScrollContents = QVBoxLayout()
-        self.CfgScrollContents.setObjectName(u"CfgScrollContents")
+        self.CfgScrollContents.setObjectName("CfgScrollContents")
 
         self.verticalLayout_2.addLayout(self.CfgScrollContents)
 
@@ -43,22 +43,25 @@ class Ui_CfgWidget(object):
         self.verticalLayout_3.addWidget(self.scrollArea)
 
         self.addCfgButton = QPushButton(self.groupBox)
-        self.addCfgButton.setObjectName(u"addCfgButton")
+        self.addCfgButton.setObjectName("addCfgButton")
 
         self.verticalLayout_3.addWidget(self.addCfgButton)
 
-
         self.verticalLayout.addWidget(self.groupBox)
-
 
         self.retranslateUi(CfgWidget)
 
         QMetaObject.connectSlotsByName(CfgWidget)
+
     # setupUi
 
     def retranslateUi(self, CfgWidget):
-        CfgWidget.setWindowTitle(QCoreApplication.translate("CfgWidget", u"CfgWidget", None))
-        self.groupBox.setTitle(QCoreApplication.translate("CfgWidget", u"Configs", None))
-        self.addCfgButton.setText(QCoreApplication.translate("CfgWidget", u"Add Cfg", None))
-    # retranslateUi
+        CfgWidget.setWindowTitle(
+            QCoreApplication.translate("CfgWidget", "CfgWidget", None)
+        )
+        self.groupBox.setTitle(QCoreApplication.translate("CfgWidget", "Configs", None))
+        self.addCfgButton.setText(
+            QCoreApplication.translate("CfgWidget", "Add Cfg", None)
+        )
 
+    # retranslateUi
