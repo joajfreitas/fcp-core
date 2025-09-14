@@ -46,8 +46,9 @@ class FcpVisitor(NodeVisitor):
             type, child = child[0]
             d[type][child["name"]] = child
 
-        common = d["device"]["common"]
-        del d["device"]["common"]
+        common = d["device"].get("common")
+        if common is not None:
+            del d["device"]["common"]
 
         return {
             "logs": d["log"],

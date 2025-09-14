@@ -271,7 +271,8 @@ class Spec:
         d = copy.copy(d)
         self.devices = {}
         self.logs = {}
-        self.common.decompile(d["common"])
+        if d["common"] is not None:
+            self.common.decompile(d["common"])
 
         for k, v in handle_key_not_found(d, "devices"):
             dev = Device(self)
