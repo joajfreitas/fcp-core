@@ -17,7 +17,6 @@ from .validator import validate, format_error
 from .specs import Spec
 from .docs import generate_docs
 from .version import VERSION
-from .idl import spec_to_fcp_v2, fcp_v2_from_file, fcp_v2
 from .export_protobuf import export_protobuf
 
 
@@ -85,8 +84,6 @@ def get_spec(json_file: str, force: bool = False) -> Spec:
     if path.suffix == ".json":
         with open(json_file) as f:
             j = json.loads(f.read())
-    elif path.suffix == ".fcp":
-        j = fcp_v2_from_file(json_file)
     elif path.suffix == ".yaml":
         ruamel.yaml.constructor.RoundTripConstructor.add_constructor(
             "!include", construct_include_tag(Path(json_file).parent)
@@ -267,26 +264,6 @@ def fix(src: str, dst: str):
         f.write(json.dumps(d, indent=4))
 
 
-@click.command("json_to_fcp2")
-@click.argument("json_file")
-@click.argument("output")
-def json_to_fcp2(json_file: str, output: str):
-    spec = get_spec(json_file)
-    v2 = spec_to_fcp_v2(spec)
-
-    with open(output, "w") as f:
-        f.write(v2)
-
-
-@click.command("fcp2_to_json")
-@click.argument("fcpv2")
-@click.argument("fcpv1")
-def fcp2_to_json(fcpv2: str, fcpv1: str):
-    spec = get_spec(fcpv2)
-    with open(fcpv1, "w") as f:
-        f.write(json.dumps(spec.compile(), indent=4))
-
-
 @click.command("write_json")
 @click.argument("json_file")
 def write_json(json_file: str):
@@ -328,7 +305,6 @@ main.add_command(validate_cmd)
 main.add_command(gui_cmd)
 main.add_command(docs)
 main.add_command(fix)
-main.add_command(json_to_fcp2)
 main.add_command(write_json)
 main.add_command(export_protobuf_cmd)
 
