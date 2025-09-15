@@ -1,0 +1,157 @@
+{
+    "devices": {
+        "ecu0": {
+            "name": "ecu0",
+            "id": 1,
+            "msgs": {
+                "ecu0_msg1":{
+                    "name": "ecu0_msg1",
+                    "id": 0,
+                    "dlc": 2,
+                    "signals": {
+                        "ecu0_signal1":{
+                            "name": "ecu0_signal1",
+                            "start": 0,
+                            "length": 8,
+                            "scale": 1.0,
+                            "offset": 0.0,
+                            "unit": "",
+                            "comment": "The first ecu0 signal",
+                            "min_value": 0.0,
+                            "max_value": 255.0,
+                            "type": "unsigned",
+                            "byte_order": "little_endian",
+                            "mux": "",
+                            "mux_count": 1
+                        },
+                        "ecu0_signal2": {
+                            "name": "ecu0_signal2",
+                            "start": 8,
+                            "length": 8
+                        }
+                    }
+                }
+            },
+            "cfgs": {
+                "ecu0_cfg1": {
+                    "name": "ecu0_cfg1",
+                    "id": 0,
+                    "comment": "The first ecu0 config",
+                    "type": "unsigned"
+                }
+            },
+            "cmds": {
+                "ecu0_cmd1": {
+                    "name": "ecu0_cmd1",
+                    "n_args": 3,
+                    "comment": "The first ecu0 command",
+                    "id": 0,
+                    "args": {
+                        "arg1": {
+                            "name": "arg1",
+                            "id": 0,
+                            "comment": "The first argument",
+                            "type": "unsigned"
+                        },
+                        "arg2": {
+                            "name": "arg2",
+                            "id": 1,
+                            "comment": "The second argument",
+                            "type": "unsigned"
+                        },
+                        "arg3": {
+                            "name": "arg3",
+                            "id": 2,
+                            "comment": "The third argument",
+                            "type": "unsigned"
+                        }
+
+                    },
+                    "rets": {
+                        "ret1": {
+                            "name": "ret1",
+                            "id": 0,
+                            "comment": "The first return value",
+                            "type": "unsigned"
+                        },
+                        "ret2": {
+                            "name": "ret2",
+                            "id": 1,
+                            "comment": "The second return value",
+                            "type": "unsigned"
+                        },
+                        "ret3": {
+                            "name": "ret3",
+                            "id": 2,
+                            "comment": "The third return value",
+                            "type": "unsigned"
+                        }
+                    }
+                }
+            }
+        },
+        "ecu1": {
+            "name": "ecu1",
+            "id": 2,
+            "msgs": {
+                "ecu1_msg1": {
+                    "name": "ecu1_msg1",
+                    "id": 0,
+                    "dlc": 2,
+                    "signals": {
+                        "ecu1_signal1": {
+                            "name": "ecu1_signal1",
+                            "start": 0,
+                            "length": 8
+                        },
+                        "ecu1_signal2": {
+                            "name": "ecu1_signal2",
+                            "start": 8,
+                            "length": 8
+                        }
+                    }
+                }
+            },
+            "cfgs": {},
+            "cmds": {}
+        }
+    },
+    "common": {
+        "name": "common",
+        "id": 0,
+        "msgs": {
+            "common_msg1": {
+                "name": "common_msg1",
+                "id": 0,
+                "dlc": 2,
+                "signals": {
+                    "common_signal1": {
+                        "name": "common_signal1",
+                        "start": 0,
+                        "length": 8,
+                        "scale": 1.0,
+                        "offset": 0.0,
+                        "unit": "",
+                        "comment": "The first common signal",
+                        "min_value": 0.0,
+                        "max_value": 255.0,
+                        "type": "unsigned",
+                        "byte_order": "little_endian",
+                        "mux": "",
+                        "mux_count": 1
+                    },
+                    "common_signal2": {
+                        "name": "common_signal2",
+                        "start": 8,
+                        "length": 8
+                    }
+                }
+            }
+        },
+        "cfgs": {},
+        "cmds": {}
+    },
+    "enums": {},
+    "logs": {},
+    "version": "0.2"
+}

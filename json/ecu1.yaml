@@ -1,0 +1,18 @@
+name: ecu1
+id: 2
+msgs:
+  ecu1_msg1:
+    name: ecu1_msg1
+    id: 0
+    dlc: 2
+    signals:
+      ecu1_signal1:
+        name: ecu1_signal1
+        start: 0
+        length: 8
+      ecu1_signal2:
+        name: ecu1_signal2
+        start: 8
+        length: 8
+cfgs: {}
+cmds: {}
