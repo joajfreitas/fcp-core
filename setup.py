@@ -23,7 +23,7 @@ setup(
     packages=find_packages(),
     entry_points={"console_scripts": ["fcp = fcp.__main__:main",],},
     install_requires=["jinja2", "click", "colorful", "cantools",
-                      "hjson", "pyyaml", "sqlalchemy", "appdirs", "result", "hypothesis", "requests", "parsimonious", "ruamel.yaml"],
+                      "sqlalchemy", "appdirs", "result", "hypothesis", "requests", "ruamel.yaml"],
     long_description=long_description,
     long_description_content_type="text/markdown"
 )
