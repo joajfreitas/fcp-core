@@ -140,14 +140,6 @@ c-gen
 
 .. warning:: This command will override the contents of the output directory
 
-gui
----
-
-Launches the GUI editor.
-
-.. image:: gui_preview.png
-
-
 Shortcuts
 ---------
 
@@ -538,4 +530,11 @@ The CFG protocol is intended for changing parameters only. Ex: maximum torque li
 
 The C library works by directly changing memory values without develop intervention which is convenient since no user code is needed to handle the configurations.
 
-On the other side commands allow for the request of immediate actions. Ex: turn on/off pumps/fans, activate TS, write all parameters to flash. These actions must be handled by the developer and for this reason cannot be done automatically by fcp.
+Schema files
+-------------------
+
+Fcp schema files can be written in json. See :download:`example1.json <../json/example1.json>` for an example of a schema file.
+
+Schemas can alternatively be written in yaml. See :download:`example1.yaml <../json/example1.yaml>` for an example of a yaml schema file.
+
+Note the `!include` directive in the example yaml file. This directive can be used to include other yaml files. This is useful to split a large schema into smaller more manageable files.
