@@ -1,0 +1,43 @@
+name: main
+
+on:
+    push:
+        branches: [release/v0]
+    pull_request:
+        branches: [release/v0]
+
+env:
+    CARGO_TERM_COLOR: always
+    RUSTFLAGS: -D warnings
+
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - run: pip install -r requirements.txt
+            - run: pip install pytest
+            - run: pytest -v fcp
+
+    install:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - run: python3 hooks/check_release_notes
+            - run: pip install setuptools
+            - run: mkdir tmp
+            - run: python3 setup.py install --user
+
+    black:
+      name: runner / black formatter
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - uses: psf/black@stable
+          with:
+            black_args: "fcp --check"

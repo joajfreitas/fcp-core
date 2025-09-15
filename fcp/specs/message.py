@@ -201,6 +201,7 @@ class Message(Transmit):
         else:
             mux_value = None
 
+        print(signals)
         signals = {k + (mux_value if v[1] else ""): v[0] for (k, v) in signals.items()}
 
         return self.name, signals
