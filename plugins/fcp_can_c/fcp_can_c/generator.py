@@ -22,6 +22,7 @@
 
 import os
 
+
 from beartype.typing import Any, Union, Dict, List
 from pathlib import Path
 
@@ -157,12 +158,12 @@ class Generator(CodeGenerator):
                     seen_ids.add(method.id)
             return Ok(())
 
-        @register(verifier, "impl")  # reuse impl category
+        @register(verifier, "impl")  # type: ignore
         def check_rpc_method_id_clash(
             self: Any, fcp: FcpV2, extension: Any
         ) -> Result[Nil, FcpError]:
             """Check for duplicate RPC method IDs across all services."""
-            seen_ids = {}  # global across services
+            seen_ids = {}  # type: ignore[var-annotated]
 
             for service in fcp.services:
                 for method in service.methods:
