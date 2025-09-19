@@ -216,7 +216,7 @@ def make_general_verifier() -> Verifier:
                     )
 
         return Ok(())
-    
+
     @register(general_verifier, "struct")  # type: ignore
     def check_duplicated_struct_field_ids(
         self: Any, fcp: FcpV2, struct: Struct
