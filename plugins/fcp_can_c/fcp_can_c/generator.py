@@ -22,7 +22,6 @@
 
 import os
 
-
 from beartype.typing import Any, Union, Dict, List
 from pathlib import Path
 
@@ -124,59 +123,3 @@ class Generator(CodeGenerator):
                 )
             else:
                 return Ok(())
-
-        @register(verifier, "struct")  # type: ignore
-        def check_field_id_clash(
-            self: Any, fcp: FcpV2, extension: Any
-        ) -> Result[Nil, FcpError]:
-            """Check for duplicate field IDs inside structs."""
-            for struct in fcp.structs:
-                seen_ids = set()
-                for field in struct.fields:
-                    if field.field_id in seen_ids:
-                        return error(
-                            f"Duplicate field ID @{field.field_id} in struct '{struct.name}'",
-                            node=field,
-                        )
-                    seen_ids.add(field.field_id)
-            return Ok(())
-
-        @register(verifier, "impl")  # type: ignore
-        def check_service_method_id_clash(
-            self: Any, fcp: FcpV2, extension: Any
-        ) -> Result[Nil, FcpError]:
-            """Check for duplicate method IDs inside services."""
-            for service in fcp.services:  # iterate all services
-                seen_ids = set()
-                for method in service.methods:
-                    if method.id in seen_ids:
-                        return error(
-                            f"Duplicate method ID @{method.id} in service '{service.name}' "
-                            f"(method '{method.name}')",
-                            node=method,
-                        )
-                    seen_ids.add(method.id)
-            return Ok(())
-
-        @register(verifier, "impl")  # type: ignore
-        def check_rpc_method_id_clash(
-            self: Any, fcp: FcpV2, extension: Any
-        ) -> Result[Nil, FcpError]:
-            """Check for duplicate RPC method IDs across all services."""
-            seen_ids = {}  # type: ignore[var-annotated]
-
-            for service in fcp.services:
-                for method in service.methods:
-                    if method.id in seen_ids:
-                        return error(
-                            f"Duplicate RPC method ID @{method.id} detected in service "
-                            f"'{service.name}' (method '{method.name}') "
-                            f"and service '{seen_ids[method.id].service_name}' "
-                            f"(method '{seen_ids[method.id].name}')",
-                            node=method,
-                        )
-                    # store both method name and service name for reporting
-                    method.service_name = service.name
-                    seen_ids[method.id] = method
-
-            return Ok(())

@@ -216,5 +216,36 @@ def make_general_verifier() -> Verifier:
                     )
 
         return Ok(())
+    
+    @register(general_verifier, "struct")  # type: ignore
+    def check_duplicated_struct_field_ids(
+        self: Any, fcp: FcpV2, struct: Struct
+    ) -> Result[Nil, FcpError]:
+        """Check for duplicate field IDs inside a struct."""
+        seen_ids = set()
+        for field in struct.fields:
+            if field.field_id in seen_ids:
+                return error(
+                    f"Duplicate field ID @{field.field_id} in struct '{struct.name}'",
+                    node=field,
+                )
+            seen_ids.add(field.field_id)
+        return Ok(())
+
+    @register(general_verifier, "device")  # type: ignore
+    def check_duplicate_method_ids_within_service(
+        self: Any, fcp: FcpV2, device: Device
+    ) -> Result[Nil, FcpError]:
+        """Check that method IDs are unique within each service."""
+        for service in fcp.services:
+            seen_ids = set()
+            for method in service.methods:
+                if method.id in seen_ids:
+                    return error(
+                        f"Duplicate method ID @{method.id} in service '{service.name}'",
+                        node=method,
+                    )
+                seen_ids.add(method.id)
+        return Ok(())
 
     return general_verifier
