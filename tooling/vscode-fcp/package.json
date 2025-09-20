@@ -1,0 +1,65 @@
+{
+  "name": "fcp",
+  "displayName": "fcp",
+  "publisher": "DiogoFerreira",
+  "icon": "./icons/fcp_icon.png",
+  "description": "fcp language support for vscode",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joajfreitas/fcp-core"
+  },
+  "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:fcp"
+  ],
+  "engines": {
+    "vscode": "^1.104.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "fcp",
+        "aliases": [
+          "fcp",
+          "fcp"
+        ],
+        "extensions": [
+          ".fcp"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/fcp_icon.png",
+          "dark": "./icons/fcp_icon.png"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "fcp",
+        "scopeName": "source.fcp",
+        "path": "./syntaxes/fcp.tmLanguage.json"
+      }
+    ],
+    "iconThemes": [
+      {
+        "id": "fcp-icons",
+        "label": "FCP Icons",
+        "path": "./icons/fcp-icon-theme.json"
+      }
+    ],
+    "configuration": {
+      "title": "FCP",
+      "properties": {
+        "fcp.pythonInterpreter": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path to the Python interpreter used for diagnostics. Leave empty to auto-detect."
+        }
+      }
+    }
+  }
+}
