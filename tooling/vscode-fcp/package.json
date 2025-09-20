@@ -1,6 +1,7 @@
 {
   "name": "fcp",
   "displayName": "fcp",
+  "icon": "./icons/fcp_icon.png",
   "description": "fcp language support for vscode",
   "version": "0.0.1",
   "engines": {
@@ -10,16 +11,36 @@
     "Programming Languages"
   ],
   "contributes": {
-    "languages": [{
-      "id": "fcp",
-      "aliases": ["fcp", "fcp"],
-      "extensions": [".fcp"],
-      "configuration": "./language-configuration.json"
-    }],
-    "grammars": [{
-      "language": "fcp",
-      "scopeName": "source.fcp",
-      "path": "./syntaxes/fcp.tmLanguage.json"
-    }]
+    "languages": [
+      {
+        "id": "fcp",
+        "aliases": [
+          "fcp",
+          "fcp"
+        ],
+        "extensions": [
+          ".fcp"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/fcp_icon.png",
+          "dark": "./icons/fcp_icon.png"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "fcp",
+        "scopeName": "source.fcp",
+        "path": "./syntaxes/fcp.tmLanguage.json"
+      }
+    ],
+    "iconThemes": [
+      {
+        "id": "fcp-icons",
+        "label": "FCP Icons",
+        "path": "./icons/fcp-icon-theme.json"
+      }
+    ]
   }
 }

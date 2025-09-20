@@ -1,0 +1,11 @@
+{
+  "iconDefinitions": {
+    "fcpFile": {
+      "iconPath": "./fcp_icon.png"
+    }
+  },
+  "fileExtensions": {
+    "fcp": "fcpFile"
+  },
+  "hidesExplorerArrows": false
+}
