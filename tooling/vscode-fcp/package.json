@@ -2,7 +2,7 @@
   "name": "fcp",
   "displayName": "fcp",
   "publisher": "DiogoFerreira",
-  "icon": "./icons/fcp_icon.png",
+  "icon": "./icons/fcp_icon.svg",
   "description": "fcp language support for vscode",
   "version": "0.0.1",
   "repository": {
@@ -32,8 +32,8 @@
         ],
         "configuration": "./language-configuration.json",
         "icon": {
-          "light": "./icons/fcp_icon.png",
-          "dark": "./icons/fcp_icon.png"
+          "light": "./icons/fcp_icon.svg",
+          "dark": "./icons/fcp_icon.svg"
         }
       }
     ],
