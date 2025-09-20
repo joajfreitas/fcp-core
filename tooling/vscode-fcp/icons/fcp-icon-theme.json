@@ -1,7 +1,7 @@
 {
   "iconDefinitions": {
     "fcpFile": {
-      "iconPath": "./fcp_icon.svg"
+      "iconPath": "./fcp_icon.png"
     }
   },
   "fileExtensions": {
