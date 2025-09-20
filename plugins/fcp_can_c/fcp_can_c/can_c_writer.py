@@ -291,7 +291,6 @@ def initialize_can_data(
             method.name_snake = to_snake_case(method.name)
             method.input_snake = to_snake_case(method.input)
             method.output_snake = to_snake_case(method.output)
-            # method.unique_id = (service.id << 8) | method.id
 
     for extension in fcp.impls:
         encoding = encoder.generate(extension)
