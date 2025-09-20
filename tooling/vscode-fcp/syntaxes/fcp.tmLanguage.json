@@ -1,0 +1,257 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "fcp",
+  "scopeName": "source.fcp",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#struct-declaration" },
+    { "include": "#enum-declaration" },
+    { "include": "#impl-declaration" },
+    { "include": "#service-declaration" },
+    { "include": "#device-declaration" },
+    { "include": "#signal-declaration" },
+    { "include": "#method-declaration" },
+    { "include": "#mod-declaration" },
+    { "include": "#field-names" },
+    { "include": "#attribute-marker" },
+    { "include": "#enum-field" },
+    { "include": "#types" },
+    { "include": "#numbers" },
+    { "include": "#strings" },
+    { "include": "#keywords" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.fcp",
+          "begin": "//",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.comment.fcp" }
+          },
+          "end": "$",
+          "patterns": [
+            {
+              "name": "constant.character.escape.fcp",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "comment.block.fcp",
+          "begin": "/\\*",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.comment.begin.fcp" }
+          },
+          "end": "\\*/",
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.comment.end.fcp" }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.fcp",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.fcp",
+          "match": "\\b(?:enum|impl|for|service|method|version|device|mod|signal|struct)\\b"
+        }
+      ]
+    },
+    "struct-declaration": {
+      "patterns": [
+        {
+          "name": "meta.declaration.struct.fcp",
+          "match": "\\b(struct)(\\s+)([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "keyword.declaration.struct.fcp" },
+            "3": { "name": "entity.name.type.struct.fcp" }
+          }
+        }
+      ]
+    },
+    "enum-declaration": {
+      "patterns": [
+        {
+          "name": "meta.declaration.enum.fcp",
+          "match": "\\b(enum)(\\s+)([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "keyword.declaration.enum.fcp" },
+            "3": { "name": "entity.name.type.enum.fcp" }
+          }
+        }
+      ]
+    },
+    "impl-declaration": {
+      "patterns": [
+        {
+          "name": "meta.declaration.impl.fcp",
+          "match": "\\b(impl)(\\s+)([A-Za-z_][A-Za-z0-9_]*)(\\s+)(for)(\\s+)([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "keyword.declaration.impl.fcp" },
+            "3": { "name": "entity.name.type.impl.source.fcp" },
+            "5": { "name": "keyword.operator.word.for.fcp" },
+            "7": { "name": "entity.name.type.impl.target.fcp" }
+          }
+        }
+      ]
+    },
+    "service-declaration": {
+      "patterns": [
+        {
+          "name": "meta.declaration.service.fcp",
+          "match": "\\b(service)(\\s+)([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "keyword.declaration.service.fcp" },
+            "3": { "name": "entity.name.type.service.fcp" }
+          }
+        }
+      ]
+    },
+    "device-declaration": {
+      "patterns": [
+        {
+          "name": "meta.declaration.device.fcp",
+          "match": "\\b(device)(\\s+)([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "keyword.declaration.device.fcp" },
+            "3": { "name": "entity.name.type.device.fcp" }
+          }
+        }
+      ]
+    },
+    "signal-declaration": {
+      "patterns": [
+        {
+          "name": "meta.declaration.signal.fcp",
+          "match": "\\b(signal)(\\s+)([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "keyword.declaration.signal.fcp" },
+            "3": { "name": "entity.name.type.signal.fcp" }
+          }
+        }
+      ]
+    },
+    "method-declaration": {
+      "patterns": [
+        {
+          "name": "meta.declaration.method.fcp",
+          "match": "\\b(method)(\\s+)([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "keyword.declaration.method.fcp" },
+            "3": { "name": "entity.name.function.method.fcp" }
+          }
+        },
+        {
+          "name": "meta.method.parameters.fcp",
+          "begin": "\\(",
+          "beginCaptures": {
+            "0": { "name": "punctuation.section.parameters.begin.fcp" }
+          },
+          "end": "\\)",
+          "endCaptures": {
+            "0": { "name": "punctuation.section.parameters.end.fcp" }
+          },
+          "patterns": [
+            { "include": "#types" },
+            {
+              "name": "entity.name.type.fcp",
+              "match": "[A-Z][A-Za-z0-9_]*"
+            }
+          ]
+        },
+        {
+          "name": "meta.method.returns.fcp",
+          "match": "\\b(returns)(\\s+)([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "keyword.control.returns.fcp" },
+            "3": { "name": "entity.name.type.return.fcp" }
+          }
+        }
+      ]
+    },
+    "mod-declaration": {
+      "patterns": [
+        {
+          "name": "meta.declaration.module.fcp",
+          "match": "\\b(mod)(\\s+)([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "keyword.declaration.mod.fcp" },
+            "3": { "name": "entity.name.namespace.module.fcp" }
+          }
+        }
+      ]
+    },
+    "field-names": {
+      "patterns": [
+        {
+          "name": "variable.other.member.struct-field.fcp",
+          "match": "(?<![A-Za-z0-9_])([A-Za-z_][A-Za-z0-9_]*)(?=\\s*@)"
+        }
+      ]
+    },
+    "attribute-marker": {
+      "name": "punctuation.definition.attribute.fcp",
+      "match": "@"
+    },
+    "enum-field": {
+      "patterns": [
+        {
+          "name": "constant.other.enum.fcp",
+          "match": "(?<![A-Za-z0-9_])([A-Za-z_][A-Za-z0-9_]*)(?=\\s*=)"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "storage.type.primitive.fcp",
+          "match": "\\b(?:u(?:8|16|32|64)|i(?:8|16|32|64)|f(?:32|64))\\b"
+        },
+        {
+          "name": "storage.type.optional.fcp",
+          "match": "\\bOptional\\b"
+        },
+        {
+          "name": "meta.type.annotation.fcp",
+          "match": "(:)\\s*([A-Z][A-Za-z0-9_]*(?:\\.[A-Za-z0-9_]+)?)",
+          "captures": {
+            "1": { "name": "punctuation.separator.key-value.fcp" },
+            "2": { "name": "entity.name.type.fcp" }
+          }
+        },
+        {
+          "name": "storage.type.array.fcp",
+          "match": "\\[[A-Za-z_][A-Za-z0-9_]*(?:\\s*,\\s*\\d+)?\\]"
+        }
+      ]
+    },
+    "numbers": {
+      "name": "constant.numeric.integer.fcp",
+      "match": "\\b[0-9]+\\b"
+    },
+    "strings": {
+      "name": "string.quoted.double.fcp",
+      "begin": "\"",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.fcp" }
+      },
+      "end": "\"",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.fcp" }
+      },
+      "patterns": [
+        {
+          "name": "constant.character.escape.fcp",
+          "match": "\\\\."
+        }
+      ]
+    }
+  }
+}
