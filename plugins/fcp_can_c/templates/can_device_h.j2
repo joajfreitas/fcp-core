@@ -9,14 +9,6 @@
 #include "global_can.h"
 {%- endif %}
 
-typedef union {
-    struct {
-        uint8_t service_id;
-        uint8_t method_id;
-    };
-    uint16_t rpc_id;
-} CanRpcId;
-
 {% if messages | length > 0 -%}
   /* {{ device_name_pascal }} Message IDs */
 {%- endif %}
@@ -42,24 +34,14 @@ typedef enum {
 } {{ enum.name }};
 {%- endfor -%}
 
-{% for service in services %}
-/* {{ service.name_pascal }} Method IDs */
-typedef enum {
-    {%- for method in service.methods %}
-    {{ device_name_snake | upper }}_{{ method.name | upper }} = {{ method.id }},             /* local ID */
-    {{ device_name_snake | upper }}_{{ method.name | upper }}_GLOBAL = {{ method.unique_id }}, /* global ID */
-    {%- endfor %}
-} {{ service.name_pascal }}MethodIds;
-{% endfor %}
-
 {% for message in messages %}
+
 typedef struct {
     {%- for signal in message.signals %}
     {{ signal.data_type }} {{ signal.name }}{% if signal.is_multiplexer %}[{{ signal.multiplexer_count }}]{% endif %};
     {%- endfor %}
 } CanMsg{{ message.name_pascal }};
 {%- endfor %}
-
 {% if messages|length > 0 %}
 /* {{ device_name_pascal }} device struct. Contains one instance of each device message */
 typedef struct {
