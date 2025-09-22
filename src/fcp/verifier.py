@@ -248,4 +248,22 @@ def make_general_verifier() -> Verifier:
                 seen_ids.add(method.id)
         return Ok(())
 
+    @register(general_verifier, "device")  # type: ignore
+    def check_unique_service_method_ids(
+        self: Any, fcp: FcpV2, device: Device
+    ) -> Result[Nil, FcpError]:
+        """Check if method unique IDs (service.id << 8 | method.id) are unique across all services."""
+        used_ids = set()
+        for service in fcp.services:
+            for method in service.methods:
+                unique_id = (service.id << 8) | method.id
+                if unique_id in used_ids:
+                    return error(
+                        f"Duplicate global method unique_id 0x{unique_id:X} "
+                        f"(service '{service.name}', method '{method.name}')",
+                        node=method,
+                    )
+                used_ids.add(unique_id)
+        return Ok(())
+
     return general_verifier
