@@ -5,6 +5,15 @@
 #include <stdbool.h>
 #include "can_frame.h"
 
+/* Reusable RPC ID type */
+typedef union {
+    struct {
+        uint8_t service_id;
+        uint8_t method_id;
+    };
+    uint16_t rpc_id;
+} CanRpcId;
+
 /* RPC Get and Answer IDs */
 #define {{ device_name_snake | upper }}_RPC_GET_ID {{ rpc_get_id }}
 #define {{ device_name_snake | upper }}_RPC_ANS_ID {{ rpc_ans_id }}
@@ -12,13 +21,7 @@
 {% for message in rpcs %}
 /* RPC Message Struct */
 typedef struct {
-    union {
-        struct {
-            uint8_t service_id;
-            uint8_t method_id;
-        };
-        uint16_t rpc_id;
-    };
+    CanRpcId id;  /* replaces the repeated inline union */
     {%- for signal in message.signals %}
     {{ signal.data_type }} {{ signal.name }}{% if signal.is_multiplexer %}[{{ signal.multiplexer_count }}]{% endif %};
     {%- endfor %}
