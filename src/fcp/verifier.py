@@ -249,7 +249,7 @@ def make_general_verifier() -> Verifier:
         return Ok(())
 
     @register(general_verifier, "device")  # type: ignore
-    def check_unique_service_method_ids(
+    def check_unique_service_method_ids_across_services(
         self: Any, fcp: FcpV2, device: Device
     ) -> Result[Nil, FcpError]:
         """Check if method unique IDs (service.id << 8 | method.id) are unique across all services."""
