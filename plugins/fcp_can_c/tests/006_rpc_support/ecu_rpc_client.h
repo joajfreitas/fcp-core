@@ -9,8 +9,15 @@
 
 bool sensorservice_requeststate(uint8_t *result);
 
-/* Handlers */
-void ecu_service_handle_requeststate(const CanRpcSensorReq *request, CanRpcSensorInformation *response);
-void ecu_service_handle_gettemperature(const CanRpcSensorReq *request, CanRpcTemperatureResponse *response);
+/* Handlers for services */
+void ecu_service_handle_requeststate(
+    const CanRpcSensorReq *request,
+    CanRpcSensorInformation *response
+);
+
+void ecu_service_handle_gettemperature(
+    const CanRpcSensorReq *request,
+    CanRpcTemperatureResponse *response
+);
 
 #endif // ECU_RPC_CLIENT_H

@@ -44,8 +44,8 @@ void test_rpc_encode_decode_roundtrip() {
     bool pass = true;
 
     CanRpcSensorReq original = {
-        .service_id = 0,
-        .method_id = 0,
+        .id.service_id = 0,
+        .id.method_id = 0,
         .request_id = 0x12
     };
 
@@ -56,10 +56,11 @@ void test_rpc_encode_decode_roundtrip() {
 
     CanRpcSensorReq decoded = can_decode_rpc_sensor_req(&frame);
     printf("\033[34m[DEBUG] Decoded: service_id=0x%X method_id=0x%X request_id=0x%X\033[0m\n",
-           decoded.service_id, decoded.method_id, decoded.request_id);
+           decoded.id.service_id, decoded.id.method_id, decoded.request_id);
 
-    pass &= (decoded.service_id == 0);
-    pass &= (decoded.method_id == 0);
+    
+    pass &= (decoded.id.service_id == 0);
+    pass &= (decoded.id.method_id == 0);
     pass &= (decoded.request_id == original.request_id);
 
     VERIFY_TEST(pass);
@@ -73,8 +74,8 @@ void test_rpc_dispatch_end_to_end() {
     got_response = false;
 
     CanRpcSensorReq req = {
-        .service_id = 0,
-        .method_id = 0,
+        .id.service_id = 0,
+        .id.method_id = 0,
         .request_id = 0x01
     };
 

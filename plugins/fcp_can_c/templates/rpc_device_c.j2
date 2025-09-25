@@ -120,7 +120,7 @@ void {{ device_name_snake }}_service_dispatch_{{ message.name_snake }}(const Can
         {%- for method in service.methods %}
         case {{ device_name_snake | upper }}_{{ method.name | upper }}: {
             CanRpc{{ method.input }} request = can_decode_rpc_{{ method.input_snake }}(frame);
-            CanRpc{{ method.output }} response = { .service_id = service_id, .method_id = method_id };
+            CanRpc{{ method.output }} response = { .id.service_id = service_id, .id.method_id = method_id };
 
             {{ device_name_snake }}_service_handle_{{ method.name | lower }}(&request, &response);
 
