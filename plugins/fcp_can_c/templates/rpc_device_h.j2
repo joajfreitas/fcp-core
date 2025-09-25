@@ -21,7 +21,7 @@ typedef union {
 {% for message in rpcs %}
 /* RPC Message Struct */
 typedef struct {
-    CanRpcId id;  /* replaces the repeated inline union */
+    CanRpcId id;
     {%- for signal in message.signals %}
     {{ signal.data_type }} {{ signal.name }}{% if signal.is_multiplexer %}[{{ signal.multiplexer_count }}]{% endif %};
     {%- endfor %}
