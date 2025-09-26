@@ -17,8 +17,9 @@ typedef union {
 #define {{ device_name_snake | upper }}_RPC_ANS_ID {{ rpc_ans_id }}
 
 {% for message in rpcs %}
+/* Rpc Message Struct */
 typedef struct {
-    CanRpcId id;  // union field must be accessed via 'id'
+    CanRpcId id;
     {%- for signal in message.signals %}
     {{ signal.data_type }} {{ signal.name }}{% if signal.is_multiplexer %}[{{ signal.multiplexer_count }}]{% endif %};
     {%- endfor %}
