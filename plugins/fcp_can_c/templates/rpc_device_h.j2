@@ -29,7 +29,7 @@ typedef struct {
 typedef enum {
 {%- for service in services %}
     {%- for method in service.methods %}
-    {{ device_name_snake | upper }}_{{ method.name | upper }} = {{ method.id }},
+    {{ device_name_snake | upper }}_{{ method.name_snake | upper }} = {{ method.id }},
     {%- endfor %}
 {%- endfor %}
 } {{ device_name_pascal }}RpcMethodId;
@@ -43,12 +43,10 @@ void {{ device_name_snake }}_service_handle_{{ method.name | lower }}(
     {% endfor %}
 {%- endfor -%}
 
-{% for message in rpcs %}
-void {{ device_name_snake }}_service_dispatch_{{ message.name_snake }}(
+void {{ device_name_snake }}_service_dispatch_(
     const CanFrame *frame,
     void (*can_send_func)(const CanFrame *)
 );
-{% endfor %}
 
 {% for message in rpcs %}
 CanRpc{{ message.name_pascal }} can_decode_rpc_{{ message.name_snake }}(const CanFrame *frame);

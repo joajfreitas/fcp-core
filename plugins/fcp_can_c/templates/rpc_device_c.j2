@@ -106,9 +106,9 @@ CanFrame can_encode_rpc_{{message.name_snake}}_ans(const CanRpc{{ message.name_p
 {%- endif %}
 {% endfor %}
 
-{%- for message in rpcs %}
-/*----------------------------------- RPC Dispatcher {{ message.name_pascal }} ------------------------------------*/
-void {{ device_name_snake }}_service_dispatch_{{ message.name_snake }}(const CanFrame *frame, void (*can_send_func)(const CanFrame *)) {
+
+/*-------------------------------- Service Dispatcher ---------------------------------*/
+void {{ device_name_snake }}_service_dispatch(const CanFrame *frame, void (*can_send_func)(const CanFrame *)) {
     if (!is_{{ device_name_snake}}_rpc(frame)) return;
 
     uint8_t service_id = frame->data[0];
@@ -118,7 +118,7 @@ void {{ device_name_snake }}_service_dispatch_{{ message.name_snake }}(const Can
     switch (method_id) {
     {%- for service in services %}
         {%- for method in service.methods %}
-        case {{ device_name_snake | upper }}_{{ method.name | upper }}: {
+        case {{ device_name_snake | upper }}_{{ method.name_snake | upper }}: {
             CanRpc{{ method.input }} request = can_decode_rpc_{{ method.input_snake }}(frame);
             CanRpc{{ method.output }} response = { .id.service_id = service_id, .id.method_id = method_id };
 
@@ -138,4 +138,3 @@ void {{ device_name_snake }}_service_dispatch_{{ message.name_snake }}(const Can
     }
 
 }
-{%- endfor %}
