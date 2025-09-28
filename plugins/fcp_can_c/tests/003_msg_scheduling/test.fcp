@@ -5,28 +5,29 @@ struct Pedals {
     brake_pos @1: u8 | unit("%"),
 }
 
-impl can for Pedals {
-    id: 10,
-    device: "ecu",
-    period: 15, /* Period in milliseconds*/
-}
-
 struct Shutdown {
     error @0: u8,
-}
-
-impl can for Shutdown {
-    id: 11,
-    device: "ecu",
-    period: 20,
 }
 
 struct Button {
     press @0: u8,
 }
 
-impl can for Button {
-    id: 12,
-    device: "ecu",
-    period: -1,
+device ecu {
+    protocol can {
+        impl Pedals {
+            id: 10;
+            period: 15; /* Period in milliseconds */
+        }
+
+        impl Shutdown {
+            id: 11;
+            period: 20;
+        }
+
+        impl Button {
+            id: 12;
+            period: -1;
+        }
+    }
 }

@@ -1,0 +1,121 @@
+{
+  "structs": [
+    {
+      "name": "Msg",
+      "fields": [
+        {
+          "name": "field1",
+          "field_id": 0,
+          "type": {
+            "name": "u8",
+            "type": "unsigned"
+          }
+        }
+      ]
+    }
+  ],
+  "enums": [],
+  "impls": [
+    {
+      "name": "Msg",
+      "protocol": "default",
+      "type": "Msg",
+      "fields": {},
+      "signals": []
+    },
+    {
+      "name": "Msg",
+      "protocol": "can",
+      "type": "Msg",
+      "fields": {
+        "id": 16
+      },
+      "signals": []
+    },
+    {
+      "name": "MsgTcp",
+      "protocol": "tcp",
+      "type": "Msg",
+      "fields": {
+        "tag": 32
+      },
+      "signals": []
+    }
+  ],
+  "services": [
+    {
+      "name": "SensorService",
+      "id": 0,
+      "methods": [
+        {
+          "name": "Ping",
+          "id": 0,
+          "input": "Msg",
+          "output": "Msg"
+        }
+      ]
+    }
+  ],
+  "devices": [
+    {
+      "name": "ecu",
+      "fields": {
+        "protocols": {
+          "can": {
+            "impls": [
+              {
+                "name": "Msg",
+                "type": "Msg"
+              }
+            ],
+            "rpc": {
+              "request_id": 1025,
+              "response_id": 1026
+            },
+            "rpc_meta": {
+              "line": 14,
+              "end_line": 14,
+              "column": 9,
+              "end_column": 55,
+              "start_pos": 188,
+              "end_pos": 234,
+              "filename": "tests/schemas/syntax/012_device_protocols.fcp"
+            },
+            "fields": {
+              "services": [
+                "SensorService"
+              ]
+            }
+          },
+          "tcp": {
+            "impls": [
+              {
+                "name": "MsgTcp",
+                "type": "Msg"
+              }
+            ],
+            "rpc": {
+              "port": 5000,
+              "request_tag": 1,
+              "response_tag": 2
+            },
+            "rpc_meta": {
+              "line": 20,
+              "end_line": 20,
+              "column": 9,
+              "end_column": 67,
+              "start_pos": 346,
+              "end_pos": 404,
+              "filename": "tests/schemas/syntax/012_device_protocols.fcp"
+            },
+            "fields": {}
+          }
+        },
+        "services": [
+          "SensorService"
+        ]
+      }
+    }
+  ],
+  "version": "3.0"
+}

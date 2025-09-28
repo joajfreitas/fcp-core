@@ -5,28 +5,20 @@ struct Foo {
     s2 @ 1: u16,
 }
 
-impl can for Foo {
-    id: 10,
-    device: "ecu",
-}
-
 struct Bar {
     s1 @ 0: f32,
-}
-
-impl can for Bar {
-    id: 11,
-    device: "ecu",
 }
 
 struct Baz {
     s1 @ 0: f64,
 }
 
-impl can for Baz {
-    id: 12,
-    device: "ecu",
+device ecu {
+    protocol can {
+        impl Foo { id: 10; }
+        impl Bar { id: 11; }
+        impl Baz { id: 12; }
+    }
 }
-
 
 

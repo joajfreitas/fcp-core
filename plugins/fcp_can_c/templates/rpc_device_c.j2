@@ -106,7 +106,7 @@ CanFrame can_encode_rpc_{{message.name_snake}}_ans(const CanRpc{{ message.name_p
 {%- endif %}
 {% endfor %}
 
-{%- for message in rpcs %}
+{%- for message in rpc_requests %}
 /*----------------------------------- RPC Dispatcher {{ message.name_pascal }} ------------------------------------*/
 void {{ device_name_snake }}_service_dispatch_{{ message.name_snake }}(const CanFrame *frame, void (*can_send_func)(const CanFrame *)) {
     if (!is_{{ device_name_snake}}_rpc(frame)) return;

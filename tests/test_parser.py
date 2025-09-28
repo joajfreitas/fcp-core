@@ -69,6 +69,7 @@ def get_result_txt(scope: str, name: str) -> str:
         "009_optional",
         "010_device",
         "011_device_services",
+        "012_device_protocols",
     ],
 )  # type: ignore
 def test_parser(test_name: str) -> NoReturn:

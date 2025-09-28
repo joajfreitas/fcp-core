@@ -12,7 +12,8 @@ struct Foo {
     s3 @ 2: MyEnum,
 }
 
-impl can for Foo {
-    id: 10,
-    device: "ecu",
+device ecu {
+    protocol can {
+        impl Foo { id: 10; }
+    }
 }
