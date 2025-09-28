@@ -4,7 +4,7 @@
   "publisher": "DiogoFerreira",
   "icon": "./icons/fcp_icon.png",
   "description": "fcp language support for vscode",
-  "version": "0.0.1",
+  "version": "1.0.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/joajfreitas/fcp-core"
@@ -14,7 +14,7 @@
     "onLanguage:fcp"
   ],
   "engines": {
-    "vscode": "^1.104.0"
+    "vscode": "^1.90.0"
   },
   "categories": [
     "Programming Languages"
