@@ -88,22 +88,22 @@ fcp_parser = Lark(
     param_argument: value ","?
 
     enum: "enum" identifier "{" enum_field* "}"
-    enum_field : identifier "=" value ","
+    enum_field : identifier "=" value ","?
 
-    impl: "impl" identifier "for" identifier "as"? identifier? "{" protocol_impl_body+ "}"
-    protocol_impl: "impl" identifier ("as" identifier)? "{" protocol_impl_body+ "}"
+    impl: "impl" identifier "for" identifier "as"? identifier? "{" protocol_impl_body+ "}" ","?
+    protocol_impl: "impl" identifier ("as" identifier)? "{" protocol_impl_body+ "}" ","?
     protocol_impl_body: extension_field | signal_block
-    signal_block: "signal" identifier "{" extension_field+ "}" ("," | ";")
-    extension_field: identifier ":" value ("," | ";")
+    signal_block: "signal" identifier "{" extension_field+ "}" ","?
+    extension_field: identifier ":" value ","?
 
     service: "service" identifier "@" number "{" method+ "}"
     method: "method" identifier "(" identifier ")" "@" number "returns" identifier ","
 
     device: "device" identifier "{" device_body* "}"
     device_body: protocol_block | extension_field
-    protocol_block: "protocol" identifier "{" protocol_body* "}"
+    protocol_block: "protocol" identifier "{" protocol_body* "}" ","?
     protocol_body: protocol_impl | rpc_block | extension_field
-    rpc_block: "rpc" "{" extension_field* "}"
+    rpc_block: "rpc" "{" extension_field* "}" ","?
 
     mod_expr: "mod" identifier ("." identifier)* ";"
 

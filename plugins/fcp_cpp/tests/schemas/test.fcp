@@ -5,12 +5,6 @@ struct S1 {
     s2 @ 1: u8 | unit("C"),
 }
 
-impl can for S1 {
-    id: 10,
-    device: "ecu1",
-    bus: "bus1",
-}
-
 enum E {
     S0 = 0,
     S1 = 1,
@@ -73,15 +67,23 @@ struct S11 {
     s1 @ 0: u16,
 }
 
-impl can for S11 {
-    id: 11,
-    endianess: "big",
-}
-
 struct S12 {
     s1 @ 0: S1,
 }
 
 service Service1 @0 {
     method Method1(S2) @0 returns S3,
+}
+
+device ecu1 {
+    protocol can {
+        impl S1 {
+            id: 10,
+            bus: "bus1",
+        },
+        impl S11 {
+            id: 11,
+            endianess: "big",
+        },
+    }
 }
