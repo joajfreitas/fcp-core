@@ -22,11 +22,22 @@
 
 import os
 
-from beartype.typing import Generator, List, Dict, Optional, Tuple, Union, cast
+from beartype.typing import (
+    Any,
+    Generator,
+    List,
+    Dict,
+    Optional,
+    Tuple,
+    Union,
+    cast,
+    Set,
+)
 from math import ceil
 from jinja2 import Environment, FileSystemLoader
 from fcp.specs.struct_field import StructField
 from fcp.specs.v2 import FcpV2
+from fcp.specs.service import Service
 from dataclasses import dataclass
 from fcp.encoding import make_encoder, EncodeablePiece, Value, PackedEncoderContext
 from fcp.utils import to_pascal_case, to_snake_case
@@ -226,7 +237,14 @@ def map_messages_to_devices(messages: List[CanMessage]) -> Dict[str, List[CanMes
 
 def initialize_can_data(
     fcp: FcpV2,
-) -> Tuple[List[Enum], List[CanNode], List[CanMessage], List[CanMessage]]:
+) -> Tuple[
+    List[Enum],
+    List[CanNode],
+    List[CanMessage],
+    List[CanMessage],
+    List[CanMessage],
+    List[Service],
+]:
     """Initialize CAN data from an FCP.
 
     Args:
@@ -239,7 +257,8 @@ def initialize_can_data(
     enums = []
     messages = []
     devices: List["CanNode"] = []
-    rpc = []
+    rpc: List[CanMessage] = []
+    rpc_requests: List[CanMessage] = []
     encoder = make_encoder(
         "packed", fcp, PackedEncoderContext().with_unroll_arrays(True)
     )
@@ -257,14 +276,70 @@ def initialize_can_data(
 
     devices.append(CanNode("global", rpc_get_id=None, rpc_ans_id=None))
 
-    device_rpc_info = {}
+    device_rpc_info: Dict[str, Dict[str, Optional[int]]] = {}
+    device_services: Dict[str, List[str]] = {}
+    service_devices: Dict[str, List[str]] = {}
+    can_impl_device_by_name: Dict[str, str] = {}
+    can_impl_device_by_type: Dict[str, str] = {}
+    default_impl_by_name: Dict[str, Any] = {}
+
     for dev in fcp.devices:
+        rpc_get_id: Optional[int] = None
+        rpc_ans_id: Optional[int] = None
+
+        protocols = dev.fields.get("protocols") if isinstance(dev.fields, dict) else None
+        if isinstance(protocols, dict) and isinstance(protocols.get("can"), dict):
+            can_protocol = cast(Dict[str, Any], protocols["can"])
+
+            for impl_binding in cast(List[Dict[str, Any]], can_protocol.get("impls", [])):
+                binding_name = impl_binding.get("name")
+                binding_type = impl_binding.get("type")
+                if isinstance(binding_name, str):
+                    can_impl_device_by_name.setdefault(binding_name, dev.name)
+                if isinstance(binding_type, str):
+                    can_impl_device_by_type.setdefault(binding_type, dev.name)
+
+            rpc_block = cast(Dict[str, Any], can_protocol.get("rpc", {}))
+            request_id = rpc_block.get("request_id")
+            response_id = rpc_block.get("response_id")
+
+            if isinstance(request_id, int):
+                rpc_get_id = request_id
+            if isinstance(response_id, int):
+                rpc_ans_id = response_id
+
+            protocol_fields = cast(Dict[str, Any], can_protocol.get("fields", {}))
+            services_from_protocol = protocol_fields.get("services")
+            if isinstance(services_from_protocol, list):
+                device_services[dev.name] = services_from_protocol
+
+        # Fallback to legacy device level configuration
+        if rpc_get_id is None:
+            value = dev.fields.get("rpc_get_id")
+            if isinstance(value, int):
+                rpc_get_id = value
+        if rpc_ans_id is None:
+            value = dev.fields.get("rpc_ans_id")
+            if isinstance(value, int):
+                rpc_ans_id = value
+
+        services_field = dev.fields.get("services")
+        if isinstance(services_field, list):
+            device_services.setdefault(dev.name, services_field)
+
+        for service_name in device_services.get(dev.name, []):
+            service_devices.setdefault(service_name, []).append(dev.name)
+
         device_rpc_info[dev.name] = {
-            "rpc_get_id": dev.fields.get("rpc_get_id"),
-            "rpc_ans_id": dev.fields.get("rpc_ans_id"),
+            "rpc_get_id": rpc_get_id,
+            "rpc_ans_id": rpc_ans_id,
         }
 
-    used_devices = set()
+    used_devices = {"global"}
+
+    for extension in fcp.impls:
+        if extension.protocol == "default":
+            default_impl_by_name.setdefault(extension.name, extension)
 
     for service in fcp.services:
         for method in service.methods:
@@ -272,29 +347,34 @@ def initialize_can_data(
             method.input_snake = to_snake_case(method.input)
             method.output_snake = to_snake_case(method.output)
 
-    for extension in fcp.impls:
+    rpc_messages: Set[Tuple[str, int, str]] = set()
+
+    for extension in fcp.get_matching_impls("can"):
         encoding = encoder.generate(extension)
         signals, dlc = create_can_signals(encoding)
 
         frame_id = extension.fields.get("id")
-        device_name = extension.fields.get("device", "global")
-        period = extension.fields.get("period", -1)
+        period = extension.fields.get("period")
+
+        device_name: Optional[str] = extension.fields.get("device")
+        if not isinstance(device_name, str):
+            device_name = can_impl_device_by_name.get(extension.name)
+        if not isinstance(device_name, str):
+            device_name = can_impl_device_by_type.get(extension.type)
+        if not isinstance(device_name, str):
+            device_name = "global"
 
         rpc_ids = device_rpc_info.get(device_name, {})
         rpc_get_id = rpc_ids.get("rpc_get_id")
         rpc_ans_id = rpc_ids.get("rpc_ans_id")
 
         if device_name not in used_devices:
-            devices.append(
-                CanNode(
-                    device_name,
-                    rpc_get_id=rpc_get_id,
-                    rpc_ans_id=rpc_ans_id,
-                )
-            )
+            node = CanNode(device_name, rpc_get_id=rpc_get_id, rpc_ans_id=rpc_ans_id)
+            node.services = device_services.get(device_name, [])
+            devices.append(node)
             used_devices.add(device_name)
 
-        if extension in fcp.get_matching_impls("can"):
+        if frame_id is not None:
             messages.append(
                 CanMessage(
                     frame_id=frame_id,
@@ -306,35 +386,60 @@ def initialize_can_data(
                 )
             )
 
-        if extension.name in rpc_input_structs:
-            rpc.append(
-                CanMessage(
-                    frame_id=cast(int, rpc_get_id),
-                    name_pascal=extension.name,
-                    dlc=dlc,
-                    signals=signals,
-                    senders=[device_name],
-                    period=cast(int, period),
-                )
-            )
+    for service in fcp.services:
+        target_devices = service_devices.get(service.name, ["global"])
 
-    rpc_names = {msg.name_pascal for msg in rpc}
-    for extension in fcp.impls:
-        if extension.name in rpc_output_structs and extension.name not in rpc_names:
-            encoding = encoder.generate(extension)
-            signals, dlc = create_can_signals(encoding)
-            rpc.append(
-                CanMessage(
-                    frame_id=cast(int, rpc_get_id),
-                    name_pascal=extension.name,
-                    dlc=dlc,
-                    signals=signals,
-                    senders=[],
-                    period=cast(int, period) if period is not None else -1,
-                )
-            )
+        for device_name in target_devices:
+            rpc_ids = device_rpc_info.get(device_name, {})
+            rpc_get_id = rpc_ids.get("rpc_get_id")
+            rpc_ans_id = rpc_ids.get("rpc_ans_id")
 
-    return (enums, messages, devices, rpc, fcp.services)
+            if device_name not in used_devices:
+                node = CanNode(device_name, rpc_get_id=rpc_get_id, rpc_ans_id=rpc_ans_id)
+                node.services = device_services.get(device_name, [])
+                devices.append(node)
+                used_devices.add(device_name)
+
+            for method in service.methods:
+                for struct_name, frame_id, direction in (
+                    (method.input, rpc_get_id, "request"),
+                    (method.output, rpc_ans_id, "response"),
+                ):
+                    if frame_id is None:
+                        continue
+
+                    impl = default_impl_by_name.get(struct_name)
+                    if impl is None:
+                        impl = next(
+                            (ext for ext in fcp.impls if ext.name == struct_name),
+                            None,
+                        )
+
+                    if impl is None:
+                        continue
+
+                    encoding = encoder.generate(impl)
+                    signals, dlc = create_can_signals(encoding)
+
+                    key = (struct_name, cast(int, frame_id), direction)
+                    if key in rpc_messages:
+                        continue
+
+                    message = CanMessage(
+                        frame_id=cast(int, frame_id),
+                        name_pascal=struct_name,
+                        dlc=dlc,
+                        signals=signals,
+                        senders=[device_name] if direction == "request" else [],
+                        period=-1,
+                    )
+
+                    rpc.append(message)
+                    if direction == "request":
+                        rpc_requests.append(message)
+                    rpc_messages.add(key)
+
+    return (enums, messages, devices, rpc, rpc_requests, fcp.services)
 
 
 class CanCWriter:
@@ -351,7 +456,14 @@ class CanCWriter:
         script_dir = os.path.dirname(os.path.realpath(__file__))
         self.templates_dir = os.path.join(script_dir, "../templates")
 
-        self.enums, self.messages, self.devices, self.rpcs, self.services = (
+        (
+            self.enums,
+            self.messages,
+            self.devices,
+            self.rpcs,
+            self.rpc_requests,
+            self.services,
+        ) = (
             initialize_can_data(fcp)
         )
         self.env = Environment(loader=FileSystemLoader(self.templates_dir))
@@ -444,6 +556,7 @@ class CanCWriter:
                     rpc_get_id=device.rpc_get_id,
                     rpc_ans_id=device.rpc_ans_id,
                     rpcs=self.rpcs,
+                    rpc_requests=self.rpc_requests,
                     services=self.services,
                 ),
             )
@@ -470,6 +583,7 @@ class CanCWriter:
                     rpc_get_id=device.rpc_get_id,
                     rpc_ans_id=device.rpc_ans_id,
                     rpcs=self.rpcs,
+                    rpc_requests=self.rpc_requests,
                     services=self.services,
                 ),
             )

@@ -42,7 +42,7 @@ void {{ device_name_snake }}_service_handle_{{ method.name | lower}}(
     {% endfor %}
 {%- endfor -%}
 
-{% for message in rpcs %}
+{% for message in rpc_requests %}
 /* Dispatcher {{ message.name_pascal }} */
 void {{ device_name_snake }}_service_dispatch_{{ message.name_snake }}(const CanFrame *frame, void (*can_send_func)(const CanFrame *));
 {% endfor -%}
