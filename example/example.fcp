@@ -1,52 +1,47 @@
 version: "3"
 
-mod temperature; /* Importing temperature.fcp */
+mod temperature; /* Import another FCP file (temperature.fcp) for reuse */
 
-/* enum defines named constants */
+/* Enums define sets of named constants */
 enum SensorState {
     Inactive = 0,
-    Active = 1,
-    Error = 2,
+    Active   = 1,
+    Error    = 2,
 }
 
-/* struct groups fields */
-struct TemperatureSample {
-    value_celsius @0: f32,
-    state @1: SensorState,
+/* Structs define message formats exchanged between devices */
+struct StateMsg {
+    s1 @0: u8,   /* Example field: 8-bit unsigned integer */
+    s2 @1: u16,  /* Example field: 16-bit unsigned integer */
 }
 
-/* Another struct used by the service */
-struct TemperatureRequest {
-    sensor_id @0: u8,
+struct SensorInformation {
+    result @0: u8, /* Status/result code */
 }
 
-/* service consisnt in a collection of methods for rpc */
-service TemperatureService @0 {
-    method GetLatest(TemperatureRequest) @0 returns TemperatureSample,
+struct TemperatureResponse {
+    result @0: u8, /* Encoded temperature value */
 }
 
-/* device blocks bind protocol and rpc to devices */
-device engine_controller {
+struct SensorReq {
+    request_id @0: u8, /* Identifier to correlate request/response */
+}
+
+/* A service is a collection of RPC methods that a device can expose */
+service SensorService @0 {
+    method RequestState(SensorReq) @0 returns SensorInformation,
+    method GetTemperature(SensorReq) @1 returns TemperatureResponse,
+}
+
+/* A device represents a physical or logical unit in the system.
+   Each device binds its message types and services to one or more protocols. */
+device ecu {
     protocol can {
-        impl TemperatureSample {
-            id: 0x180,
-        }
-        rpc {
-            request_id: 0x501,
-            response_id: 0x502,
-        }
-        services: [TemperatureService],
-    }
-
-    protocol tcp {
-        impl TemperatureSample {
-            tag: 0x01,
-        }
-        rpc {
-            port: 5000,
-            request_tag: 0x10,
-            response_tag: 0x11,
-        }
-        services: [TemperatureService],
+        /* Protocol-specific message bindings with unique IDs */
+        impl StateMsg        { id: 10 }
+        impl TemperatureMsg  { id: 20 }
+    
+        rpc { request_id: 1025, response_id: 1026 } /* RPC settings: request/response identifiers for CAN */
+        services: [SensorService], /* Services exposed by this device */
     }
 }
