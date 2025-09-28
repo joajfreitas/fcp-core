@@ -111,7 +111,7 @@ fcp_parser = Lark(
     string: ESCAPED_STRING
     number: SIGNED_NUMBER | HEX_NUMBER
     value : array | identifier | number | string
-    array: "[" value ("," value)* "]"
+    array: "[" (value ("," value)*)? "]"
 
     COMMENT: C_COMMENT | CPP_COMMENT
 
