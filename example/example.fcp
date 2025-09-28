@@ -1,49 +1,52 @@
 version: "3"
 
-mod temperature;
+mod temperature; /* Importing temperature.fcp */
 
+/* enum defines named constants */
 enum SensorState {
     Inactive = 0,
     Active = 1,
     Error = 2,
 }
 
-struct Msg {
-    s1 @0: u8,
-    s2 @1: u16,
+/* struct groups fields */
+struct TemperatureSample {
+    value_celsius @0: f32,
+    state @1: SensorState,
 }
 
-struct SensorInformation {
-    result @0: u8,
+/* Another struct used by the service */
+struct TemperatureRequest {
+    sensor_id @0: u8,
 }
 
-struct TemperatureResponse {
-    result @0: u8,
+/* service consisnt in a collection of methods for rpc */
+service TemperatureService @0 {
+    method GetLatest(TemperatureRequest) @0 returns TemperatureSample,
 }
 
-struct SensorReq {
-    request_id @0: u8,
-}
-
-service SensorService @0 {
-    method RequestState(SensorReq) @0 returns SensorInformation,
-    method GetTemperature(SensorReq) @1 returns TemperatureResponse,
-}
-
-impl tcp for Msg {
-    key: value,
-    tag: 0x20,
-}
-
-device ecu {
+/* device blocks bind protocol and rpc to devices */
+device engine_controller {
     protocol can {
-        impl Msg {
-            id: 0x010,
-        },
+        impl TemperatureSample {
+            id: 0x180,
+        }
         rpc {
-            request_id: 0x401,
-            response_id: 0x402,
-        },
-        services: [SensorService],
+            request_id: 0x501,
+            response_id: 0x502,
+        }
+        services: [TemperatureService],
+    }
+
+    protocol tcp {
+        impl TemperatureSample {
+            tag: 0x01,
+        }
+        rpc {
+            port: 5000,
+            request_tag: 0x10,
+            response_tag: 0x11,
+        }
+        services: [TemperatureService],
     }
 }
