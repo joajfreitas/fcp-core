@@ -1,6 +1,6 @@
 version: "3"
 
-struct Temperature {
+struct TemperatureMsg {
     temperature @0 : u32 | unit("C"),
     timestamp @1 : u32 | unit("s"),
 }
