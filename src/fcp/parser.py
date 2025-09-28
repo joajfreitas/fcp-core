@@ -519,7 +519,6 @@ class FcpV2Transformer(Transformer):
     @v_args(tree=True)  # type: ignore
     def protocol_impl(self, tree: ParseTree) -> ProtocolImplBlock:
         """Parse a protocol_impl node within a device protocol block."""
-
         type_name, *fields = tree.children
 
         alias = type_name
@@ -527,7 +526,9 @@ class FcpV2Transformer(Transformer):
             alias = fields[0]
             fields = fields[1:]
 
-        signal_blocks = [field for field in fields if isinstance(field, signal_block.SignalBlock)]
+        signal_blocks = [
+            field for field in fields if isinstance(field, signal_block.SignalBlock)
+        ]
         extension_fields = [field for field in fields if isinstance(field, tuple)]
 
         return ProtocolImplBlock(
@@ -541,9 +542,10 @@ class FcpV2Transformer(Transformer):
     @v_args(tree=True)  # type: ignore
     def rpc_block(self, tree: ParseTree) -> ProtocolRpcBlock:
         """Parse a rpc block within a device protocol block."""
-
         return ProtocolRpcBlock(
-            fields={name: value for name, value in tree.children if isinstance(name, str)},
+            fields={
+                name: value for name, value in tree.children if isinstance(name, str)
+            },
             meta=_get_meta(tree, self),
         )
 
@@ -562,7 +564,6 @@ class FcpV2Transformer(Transformer):
     @v_args(tree=True)  # type: ignore
     def protocol_block(self, tree: ParseTree) -> DeviceProtocolBlock:
         """Parse a protocol block within a device."""
-
         protocol_name, *items = tree.children
 
         impl_definitions: List[ProtocolImplBlock] = []

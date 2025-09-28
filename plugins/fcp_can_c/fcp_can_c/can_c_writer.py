@@ -267,13 +267,6 @@ def initialize_can_data(
         values = {v.name: v.value for v in enum.enumeration}
         enums.append(Enum(name=enum.name, values=values))
 
-    rpc_input_structs = {
-        method.input for service in fcp.services for method in service.methods
-    }
-    rpc_output_structs = {
-        method.output for service in fcp.services for method in service.methods
-    }
-
     devices.append(CanNode("global", rpc_get_id=None, rpc_ans_id=None))
 
     device_rpc_info: Dict[str, Dict[str, Optional[int]]] = {}
@@ -287,11 +280,15 @@ def initialize_can_data(
         rpc_get_id: Optional[int] = None
         rpc_ans_id: Optional[int] = None
 
-        protocols = dev.fields.get("protocols") if isinstance(dev.fields, dict) else None
+        protocols = (
+            dev.fields.get("protocols") if isinstance(dev.fields, dict) else None
+        )
         if isinstance(protocols, dict) and isinstance(protocols.get("can"), dict):
             can_protocol = cast(Dict[str, Any], protocols["can"])
 
-            for impl_binding in cast(List[Dict[str, Any]], can_protocol.get("impls", [])):
+            for impl_binding in cast(
+                List[Dict[str, Any]], can_protocol.get("impls", [])
+            ):
                 binding_name = impl_binding.get("name")
                 binding_type = impl_binding.get("type")
                 if isinstance(binding_name, str):
@@ -395,7 +392,9 @@ def initialize_can_data(
             rpc_ans_id = rpc_ids.get("rpc_ans_id")
 
             if device_name not in used_devices:
-                node = CanNode(device_name, rpc_get_id=rpc_get_id, rpc_ans_id=rpc_ans_id)
+                node = CanNode(
+                    device_name, rpc_get_id=rpc_get_id, rpc_ans_id=rpc_ans_id
+                )
                 node.services = device_services.get(device_name, [])
                 devices.append(node)
                 used_devices.add(device_name)
@@ -463,9 +462,7 @@ class CanCWriter:
             self.rpcs,
             self.rpc_requests,
             self.services,
-        ) = (
-            initialize_can_data(fcp)
-        )
+        ) = initialize_can_data(fcp)
         self.env = Environment(loader=FileSystemLoader(self.templates_dir))
 
         self.templates = {
