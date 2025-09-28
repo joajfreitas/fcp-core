@@ -2,34 +2,48 @@ version: "3"
 
 mod temperature;
 
-/*this is a comment*/
 enum SensorState {
-	Off = 0,
-	On = 1,
-	Error = 2,
+    Inactive = 0,
+    Active = 1,
+    Error = 2,
+}
+
+struct Msg {
+    s1 @0: u8,
+    s2 @1: u16,
 }
 
 struct SensorInformation {
-    temperature @ 0: Temperature,
-    sensor_state @ 1: SensorState,
+    result @0: u8,
 }
 
-enum SensorId {
-    Left = 0,
-    Right = 1,
+struct TemperatureResponse {
+    result @0: u8,
 }
 
 struct SensorReq {
-    sensor_id @0 : SensorId,
+    request_id @0: u8,
 }
 
 service SensorService @0 {
     method RequestState(SensorReq) @0 returns SensorInformation,
-    method GetTemperature(SensorReq) @1 returns Temperature,
+    method GetTemperature(SensorReq) @1 returns TemperatureResponse,
+}
+
+impl tcp for Msg {
+    key: value,
+    tag: 0x20,
 }
 
 device ecu {
-    rpc_get_id: 1025,
-    rpc_ans_id: 1026,
-    services: [SensorService],
+    protocol can {
+        impl Msg {
+            id: 0x010,
+        },
+        rpc {
+            request_id: 0x401,
+            response_id: 0x402,
+        },
+        services: [SensorService],
+    }
 }

@@ -15,9 +15,9 @@ struct Baz {
 
 device ecu {
     protocol can {
-        impl Foo { id: 10; }
-        impl Bar { id: 11; }
-        impl Baz { id: 12; }
+        impl Foo { id: 10, }
+        impl Bar { id: 11, }
+        impl Baz { id: 12, }
     }
 }
 

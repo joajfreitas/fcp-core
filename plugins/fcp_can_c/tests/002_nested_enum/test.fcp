@@ -14,6 +14,6 @@ struct Foo {
 
 device ecu {
     protocol can {
-        impl Foo { id: 10; }
+        impl Foo { id: 10, }
     }
 }

@@ -73,12 +73,12 @@
               "response_id": 1026
             },
             "rpc_meta": {
-              "line": 14,
-              "end_line": 14,
+              "line": 16,
+              "end_line": 19,
               "column": 9,
-              "end_column": 55,
-              "start_pos": 188,
-              "end_pos": 234,
+              "end_column": 11,
+              "start_pos": 209,
+              "end_pos": 288,
               "filename": "tests/schemas/syntax/012_device_protocols.fcp"
             },
             "fields": {
@@ -100,12 +100,12 @@
               "response_tag": 2
             },
             "rpc_meta": {
-              "line": 20,
-              "end_line": 20,
+              "line": 27,
+              "end_line": 31,
               "column": 9,
-              "end_column": 67,
-              "start_pos": 346,
-              "end_pos": 404,
+              "end_column": 11,
+              "start_pos": 421,
+              "end_pos": 524,
               "filename": "tests/schemas/syntax/012_device_protocols.fcp"
             },
             "fields": {}

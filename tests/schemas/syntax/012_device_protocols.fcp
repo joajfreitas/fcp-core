@@ -10,13 +10,24 @@ service SensorService @0 {
 
 device ecu {
     protocol can {
-        impl Msg { id: 0x010; }
-        rpc { request_id: 0x401; response_id: 0x402; }
-        services: [SensorService];
+        impl Msg {
+            id: 0x010,
+        },
+        rpc {
+            request_id: 0x401,
+            response_id: 0x402,
+        },
+        services: [SensorService],
     }
 
     protocol tcp {
-        impl Msg as MsgTcp { tag: 0x20; }
-        rpc { port: 5000; request_tag: 0x01; response_tag: 0x02; }
+        impl Msg as MsgTcp {
+            tag: 0x20,
+        },
+        rpc {
+            port: 5000,
+            request_tag: 0x01,
+            response_tag: 0x02,
+        },
     }
 }

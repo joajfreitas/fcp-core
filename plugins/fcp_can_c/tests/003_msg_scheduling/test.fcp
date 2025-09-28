@@ -16,18 +16,18 @@ struct Button {
 device ecu {
     protocol can {
         impl Pedals {
-            id: 10;
-            period: 15; /* Period in milliseconds */
+            id: 10,
+            period: 15, /* Period in milliseconds */
         }
 
         impl Shutdown {
-            id: 11;
-            period: 20;
+            id: 11,
+            period: 20,
         }
 
         impl Button {
-            id: 12;
-            period: -1;
+            id: 12,
+            period: -1,
         }
     }
 }
