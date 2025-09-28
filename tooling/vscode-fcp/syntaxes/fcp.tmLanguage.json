@@ -9,6 +9,8 @@
     { "include": "#impl-declaration" },
     { "include": "#service-declaration" },
     { "include": "#device-declaration" },
+    { "include": "#protocol-declaration" },
+    { "include": "#rpc-declaration" },
     { "include": "#signal-declaration" },
     { "include": "#method-declaration" },
     { "include": "#mod-declaration" },
@@ -60,7 +62,7 @@
       "patterns": [
         {
           "name": "keyword.control.fcp",
-          "match": "\\b(?:enum|impl|for|service|method|version|device|mod|signal|struct)\\b"
+          "match": "\\b(?:enum|impl|for|service|method|version|device|mod|signal|struct|protocol|rpc|returns|as)\\b"
         }
       ]
     },
@@ -122,6 +124,29 @@
           "captures": {
             "1": { "name": "keyword.declaration.device.fcp" },
             "3": { "name": "entity.name.type.device.fcp" }
+          }
+        }
+      ]
+    },
+    "protocol-declaration": {
+      "patterns": [
+        {
+          "name": "meta.declaration.protocol.fcp",
+          "match": "\\b(protocol)(\\s+)([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "keyword.declaration.protocol.fcp" },
+            "3": { "name": "entity.name.type.protocol.fcp" }
+          }
+        }
+      ]
+    },
+    "rpc-declaration": {
+      "patterns": [
+        {
+          "name": "meta.declaration.rpc.fcp",
+          "match": "\\b(rpc)(?=\\s*\\{)",
+          "captures": {
+            "1": { "name": "keyword.declaration.rpc.fcp" }
           }
         }
       ]
@@ -212,7 +237,7 @@
       "patterns": [
         {
           "name": "storage.type.primitive.fcp",
-          "match": "\\b(?:u(?:8|16|32|64)|i(?:8|16|32|64)|f(?:32|64))\\b"
+          "match": "\\b(?:u(?:8|16|32|64)|i(?:8|16|32|64)|f(?:32|64)|str)\\b"
         },
         {
           "name": "storage.type.optional.fcp",
@@ -228,13 +253,21 @@
         },
         {
           "name": "storage.type.array.fcp",
-          "match": "\\[[A-Za-z_][A-Za-z0-9_]*(?:\\s*,\\s*\\d+)?\\]"
+          "match": "\\[[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z0-9_]+)*(?:\\s*,\\s*(?:0x[0-9A-Fa-f]+|\\d+))?\\]"
         }
       ]
     },
     "numbers": {
-      "name": "constant.numeric.integer.fcp",
-      "match": "\\b[0-9]+\\b"
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.fcp",
+          "match": "\\b0x[0-9A-Fa-f]+\\b"
+        },
+        {
+          "name": "constant.numeric.integer.fcp",
+          "match": "\\b-?\\d+\\b"
+        }
+      ]
     },
     "strings": {
       "name": "string.quoted.double.fcp",

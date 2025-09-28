@@ -26,14 +26,8 @@ const KEYWORDS = [
     {
         label: 'impl',
         detail: 'implementation block',
-        insertText: new vscode.SnippetString('impl ${1:Extension} for ${2:Type} {\n    ${3:key}: ${4:value},\n}'),
+        insertText: new vscode.SnippetString('impl ${1:StructName} {\n\n}'),
         documentation: 'Attach metadata or signals to existing types.',
-    },
-    {
-        label: 'signal',
-        detail: 'signal block',
-        insertText: new vscode.SnippetString('signal ${1:Name} {\n    ${2:key}: ${3:value},\n},'),
-        documentation: 'Define a signal block inside an impl.',
     },
     {
         label: 'service',
@@ -50,8 +44,14 @@ const KEYWORDS = [
     {
         label: 'device',
         detail: 'device definition',
-        insertText: new vscode.SnippetString('device ${1:Name} {\n    ${2:key}: ${3:value},\n}'),
+        insertText: new vscode.SnippetString('device ${1:DeviceName} {\n    protocol ${2:protocol_name} {\n        impl ${3:StructName} {}\n\n        rpc {}\n        services: [],\n    }\n}'),
         documentation: 'Define a device block.',
+    },
+    {
+        label: 'protocol',
+        detail: 'protocol definition',
+        insertText: new vscode.SnippetString('protocol ${1:ProtocolName} {\n    impl ${2:StructName} {}\n\n    rpc {}\n    services: [],\n}'),
+        documentation: 'Define a protocol block.',
     },
     {
         label: 'mod',
@@ -67,11 +67,17 @@ const KEYWORDS = [
     },
 ];
 
-const KEYWORD_COMPLETIONS = KEYWORDS.map((item) => {
-    const completion = new vscode.CompletionItem(item.label, vscode.CompletionItemKind.Keyword);
+
+
+const KEYWORD_COMPLETIONS = KEYWORDS.map((item, index) => {
+    const completion = new vscode.CompletionItem(item.label, vscode.CompletionItemKind.Snippet);
     completion.detail = item.detail;
     completion.documentation = new vscode.MarkdownString(item.documentation);
     completion.insertText = item.insertText;
+    if (item.filterText) {
+        completion.filterText = item.filterText;
+    }
+    completion.sortText = `0${index}_${item.label}`;
     return completion;
 });
 
@@ -102,6 +108,8 @@ function collectSymbols(document) {
         { regex: /\bservice\s+([A-Za-z_][A-Za-z0-9_]*)/g, kind: vscode.CompletionItemKind.Class, detail: 'service' },
         { regex: /\bdevice\s+([A-Za-z_][A-Za-z0-9_]*)/g, kind: vscode.CompletionItemKind.Class, detail: 'device' },
         { regex: /\bimpl\s+([A-Za-z_][A-Za-z0-9_]*)\s+for\s+([A-Za-z_][A-Za-z0-9_]*)/g, kind: vscode.CompletionItemKind.Reference, detail: 'impl alias' },
+        { regex: /\bprotocol\s+([A-Za-z_][A-Za-z0-9_]*)/g, kind: vscode.CompletionItemKind.Module, detail: 'protocol' },
+        { regex: /\bimpl\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?=\{)/g, kind: vscode.CompletionItemKind.Reference, detail: 'protocol impl' },
     ];
 
     patterns.forEach((pattern) => {
