@@ -20,7 +20,9 @@
 
 """V2 parser."""
 
-from beartype.typing import Any, Union, Callable, Tuple, List, Dict
+from beartype.typing import Any, Union, Callable, Tuple, List, Dict, Optional
+from dataclasses import dataclass
+import os
 import pathlib
 from typing import cast
 
@@ -88,20 +90,26 @@ fcp_parser = Lark(
     enum: "enum" identifier "{" enum_field* "}"
     enum_field : identifier "=" value ","
 
-    impl: "impl" identifier "for" identifier "as"? identifier? "{" (extension_field | signal_block)+ "}"
-    signal_block: "signal" identifier "{" extension_field+ "}" ","
-    extension_field: identifier ":" value ","
+    impl: "impl" identifier "for" identifier "as"? identifier? "{" protocol_impl_body+ "}"
+    protocol_impl: "impl" identifier ("as" identifier)? "{" protocol_impl_body+ "}"
+    protocol_impl_body: extension_field | signal_block
+    signal_block: "signal" identifier "{" extension_field+ "}" ("," | ";")
+    extension_field: identifier ":" value ("," | ";")
 
     service: "service" identifier "@" number "{" method+ "}"
     method: "method" identifier "(" identifier ")" "@" number "returns" identifier ","
 
-    device: "device" identifier "{" extension_field+ "}"
+    device: "device" identifier "{" device_body* "}"
+    device_body: protocol_block | extension_field
+    protocol_block: "protocol" identifier "{" protocol_body* "}"
+    protocol_body: protocol_impl | rpc_block | extension_field
+    rpc_block: "rpc" "{" extension_field* "}"
 
     mod_expr: "mod" identifier ("." identifier)* ";"
 
     identifier: CNAME
     string: ESCAPED_STRING
-    number: SIGNED_NUMBER
+    number: SIGNED_NUMBER | HEX_NUMBER
     value : array | identifier | number | string
     array: "[" value ("," value)* "]"
 
@@ -116,6 +124,8 @@ fcp_parser = Lark(
     %import common.DIGIT   // imports from terminal library
     %import common.SIGNED_NUMBER   // imports from terminal library
     %import common.ESCAPED_STRING   // imports from terminal library
+    %import common.HEXDIGIT
+    HEX_NUMBER: "0x" HEXDIGIT+
     %import common.C_COMMENT // imports from terminal library
     %import common.CPP_COMMENT // imports from terminal library
     %ignore " "           // Disregard spaces in text
@@ -135,7 +145,7 @@ def _get_meta(tree: ParseTree, parser: Lark) -> MetaData:
         end_column=tree.meta.end_column,
         start_pos=tree.meta.start_pos,
         end_pos=tree.meta.end_pos,
-        filename=str(parser.filename),
+        filename=os.path.relpath(str(parser.filename)),
     )
 
 
@@ -144,6 +154,37 @@ class Token:
 
     def __init__(self, meta: MetaData):
         self.meta = meta
+
+
+@dataclass
+class ProtocolImplBlock:
+    """Intermediate representation for protocol impl bindings."""
+
+    type: str
+    name: str
+    fields: Dict[str, Any]
+    signals: List[signal_block.SignalBlock]
+    meta: MetaData
+
+
+@dataclass
+class ProtocolRpcBlock:
+    """Intermediate representation for protocol rpc sections."""
+
+    fields: Dict[str, Any]
+    meta: MetaData
+
+
+@dataclass
+class DeviceProtocolBlock:
+    """Intermediate representation for device protocol blocks."""
+
+    name: str
+    impl_bindings: List[Dict[str, Any]]
+    rpc: Dict[str, Any]
+    rpc_meta: Optional[MetaData]
+    fields: Dict[str, Any]
+    meta: MetaData
 
 
 def _convert_params(params: Dict[str, Callable]) -> Dict[str, Any]:
@@ -475,6 +516,100 @@ class FcpV2Transformer(Transformer):
 
         return Ok(())
 
+    @v_args(tree=True)  # type: ignore
+    def protocol_impl(self, tree: ParseTree) -> ProtocolImplBlock:
+        """Parse a protocol_impl node within a device protocol block."""
+
+        type_name, *fields = tree.children
+
+        alias = type_name
+        if fields and isinstance(fields[0], str):
+            alias = fields[0]
+            fields = fields[1:]
+
+        signal_blocks = [field for field in fields if isinstance(field, signal_block.SignalBlock)]
+        extension_fields = [field for field in fields if isinstance(field, tuple)]
+
+        return ProtocolImplBlock(
+            type=type_name,
+            name=alias,
+            fields={name: value for name, value in extension_fields},
+            signals=signal_blocks,
+            meta=_get_meta(tree, self),
+        )
+
+    @v_args(tree=True)  # type: ignore
+    def rpc_block(self, tree: ParseTree) -> ProtocolRpcBlock:
+        """Parse a rpc block within a device protocol block."""
+
+        return ProtocolRpcBlock(
+            fields={name: value for name, value in tree.children if isinstance(name, str)},
+            meta=_get_meta(tree, self),
+        )
+
+    def protocol_body(self, args: List[Any]) -> Any:
+        """Unwrap protocol_body nodes."""
+        return args[0]
+
+    def device_body(self, args: List[Any]) -> Any:
+        """Unwrap device_body nodes."""
+        return args[0]
+
+    def protocol_impl_body(self, args: List[Any]) -> Any:
+        """Unwrap protocol_impl_body nodes."""
+        return args[0]
+
+    @v_args(tree=True)  # type: ignore
+    def protocol_block(self, tree: ParseTree) -> DeviceProtocolBlock:
+        """Parse a protocol block within a device."""
+
+        protocol_name, *items = tree.children
+
+        impl_definitions: List[ProtocolImplBlock] = []
+        rpc_section: Optional[ProtocolRpcBlock] = None
+        fields: Dict[str, Any] = {}
+
+        for item in items:
+            if isinstance(item, ProtocolImplBlock):
+                impl_definitions.append(item)
+            elif isinstance(item, ProtocolRpcBlock):
+                rpc_section = item
+            elif isinstance(item, tuple):
+                name, value = item
+                fields[name] = value
+
+        impl_bindings: List[Dict[str, Any]] = []
+        for impl_definition in impl_definitions:
+            self.fcp.impls.append(
+                impl.Impl(
+                    name=impl_definition.name,
+                    protocol=protocol_name,
+                    type=impl_definition.type,
+                    fields=impl_definition.fields,
+                    signals=impl_definition.signals,
+                    meta=impl_definition.meta,
+                )
+            )
+            impl_bindings.append(
+                {
+                    "name": impl_definition.name,
+                    "type": impl_definition.type,
+                    "meta": impl_definition.meta,
+                }
+            )
+
+        rpc_fields = rpc_section.fields if rpc_section is not None else {}
+        rpc_meta = rpc_section.meta if rpc_section is not None else None
+
+        return DeviceProtocolBlock(
+            name=protocol_name,
+            impl_bindings=impl_bindings,
+            rpc=rpc_fields,
+            rpc_meta=rpc_meta,
+            fields=fields,
+            meta=_get_meta(tree, self),
+        )
+
     def extension_field(self, args: List[Any]) -> Tuple[str, Any]:
         """Parse an extension_field node of the fcp AST."""
         name, value = args
@@ -516,12 +651,18 @@ class FcpV2Transformer(Transformer):
         """Parse a value node of the fcp AST."""
         return args[0]
 
-    def number(self, args: List[str]) -> Union[int, float]:
+    def number(self, args: List[Any]) -> Union[int, float]:
         """Parse a number node of the fcp AST."""
+        token = args[0]
+        value = token.value
+
+        if getattr(token, "type", "") == "HEX_NUMBER":
+            return int(value, 16)
+
         try:
-            return int(args[0].value)
+            return int(value)
         except ValueError:
-            return float(args[0].value)
+            return float(value)
 
     def string(self, args: List[str]) -> str:
         """Parse a string node of the fcp AST."""
@@ -534,9 +675,49 @@ class FcpV2Transformer(Transformer):
     @v_args(tree=True)  # type: ignore
     def device(self, tree: ParseTree) -> Result[Nil, FcpError]:
         """Parse a device node of the fcp AST."""
-        name, *fields = tree.children
+        name, *items = tree.children
+
+        device_fields: Dict[str, Any] = {}
+        protocol_map: Dict[str, Dict[str, Any]] = {}
+        services_from_protocols: List[Any] = []
+
+        for item in items:
+            if isinstance(item, DeviceProtocolBlock):
+                protocol_map[item.name] = {
+                    "impls": item.impl_bindings,
+                    "rpc": item.rpc,
+                    "rpc_meta": item.rpc_meta,
+                    "fields": item.fields,
+                    "meta": item.meta,
+                }
+
+                services = item.fields.get("services")
+                if isinstance(services, list):
+                    services_from_protocols.extend(services)
+            elif isinstance(item, tuple):
+                field_name, field_value = item
+                device_fields[field_name] = field_value
+
+        if protocol_map:
+            device_fields["protocols"] = protocol_map
+
+        if services_from_protocols:
+            merged_services: List[Any] = []
+            existing_services = device_fields.get("services")
+
+            if isinstance(existing_services, list):
+                merged_services.extend(existing_services)
+            elif existing_services is not None:
+                merged_services.append(existing_services)
+
+            for service in services_from_protocols:
+                if service not in merged_services:
+                    merged_services.append(service)
+
+            device_fields["services"] = merged_services
+
         self.fcp.devices.append(
-            device.Device(name, {k: v for k, v in fields}, _get_meta(tree, self))
+            device.Device(name, device_fields, _get_meta(tree, self))
         )
 
         return Ok(())
