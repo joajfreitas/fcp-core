@@ -45,3 +45,12 @@ device ecu {
         services: [SensorService], /* Services exposed by this device */
     }
 }
+
+device DeviceName {
+    protocol protocol_name {
+        impl StructName {id: 34}
+
+        rpc {}
+        services: [],
+    }
+}
