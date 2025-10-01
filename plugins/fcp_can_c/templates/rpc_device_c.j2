@@ -138,3 +138,29 @@ void {{ device_name_snake }}_service_dispatch(const CanFrame *frame, void (*can_
     }
 
 }
+
+/*-------------------------------- Per-Method Dispatchers ---------------------------------*/
+{% for service in services %}
+    {% for method in service.methods %}
+void {{ device_name_snake }}_service_dispatch_{{ method.name_snake }}(
+    CanRpc{{ method.input }} *request,
+    void (*send_response)(const CanFrame *)
+) {
+    CanFrame frame = {0};
+
+    {% if method.output != method.input %}
+    CanRpc{{ method.output }} resp = {0};
+    {% else %}
+    CanRpc{{ method.input }} resp = {0};
+    {% endif %}
+
+    // Call the handler (you can implement it or leave stub)
+    {{ device_name_snake }}_service_handle_{{ method.name | lower }}(request, &resp);
+
+    // Encode the response as an answer frame
+    frame = can_encode_rpc_{{ method.output_snake }}_ans(&resp);
+
+    if (send_response) send_response(&frame);
+}
+    {% endfor %}
+{% endfor %}

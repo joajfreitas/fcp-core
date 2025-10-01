@@ -18,10 +18,12 @@ bool sensorservice_requeststate(uint8_t *result) {
         .request_id = 0x12
     };
 
-    CanFrame request = can_encode_rpc_sensor_req(&original);
+    
+    // Call the generated per-method dispatcher instead:
+    ecu_service_dispatch_request_state(&original, capture_response);
 
-    ecu_service_dispatch_sensor_req(&request, capture_response);
 
+    // Decode the response frame captured by capture_response
     CanRpcSensorInformation response = can_decode_rpc_sensor_information(&rpc_response);
     *result = response.result;
 

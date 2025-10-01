@@ -34,19 +34,31 @@ typedef enum {
 {%- endfor %}
 } {{ device_name_pascal }}RpcMethodId;
 
-{% for service in services -%}
+/* service dispatcher */
+void {{ device_name_snake }}_service_dispatch(
+    const CanFrame *frame,
+    void (*can_send_func)(const CanFrame *)
+);
+
+{% for service in services %}
+    {% for method in service.methods %}
+/* Per-method dispatcher */
+void {{ device_name_snake }}_service_dispatch_{{ method.name_snake }}(
+    CanRpc{{ method.input }} *request,
+    void (*can_send_func)(const CanFrame *)
+);
+    {% endfor %}
+{% endfor %}
+
+{% for service in services %}
     {% for method in service.methods %}
 void {{ device_name_snake }}_service_handle_{{ method.name | lower }}(
     const CanRpc{{ method.input }} *request,
     CanRpc{{ method.output }} *response
 );
     {% endfor %}
-{%- endfor -%}
+{% endfor %}
 
-void {{ device_name_snake }}_service_dispatch_(
-    const CanFrame *frame,
-    void (*can_send_func)(const CanFrame *)
-);
 
 {% for message in rpcs %}
 CanRpc{{ message.name_pascal }} can_decode_rpc_{{ message.name_snake }}(const CanFrame *frame);
