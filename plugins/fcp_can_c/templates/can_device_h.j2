@@ -10,15 +10,16 @@
 {%- endif %}
 
 {% if messages | length > 0 -%}
-/* {{ device_name_pascal }} Message IDs */
+ /* {{ device_name_pascal }} Message IDs */
 {%- endif %}
 {%- for message in messages %}
 #define CAN_MSG_ID_{{ message.name_snake | upper }} {{ message.frame_id }}
 {%- endfor %}
 
 {% if messages | length > 0 -%}
-/* ECU Message Periods */
+  /* Ecu Message Periods */
 {%- endif %}
+
 {%- for message in messages %}
 #define CAN_MSG_PERIOD_{{ message.name_snake | upper }} {{ message.period }}
 {%- endfor %}
@@ -62,12 +63,12 @@ void can_send_{{ device_name_snake }}_msgs_scheduled(
 );
 {% endif %}
 
-/* Decode CanFrame into messages */
+/* Functions to decode CanFrame into CanMsg<name> objects */
 {%- for message in messages %}
 CanMsg{{ message.name_pascal }} can_decode_msg_{{ message.name_snake }}(const CanFrame *frame);
 {%- endfor %}
 
-/* Encode messages into CanFrame */
+/* Functions to encode CanMsg<name> object into CanFrame */
 {%- for message in messages %}
 {%- if message.is_multiplexer %}
 CanFrame can_encode_msg_{{ message.name_snake }}(const CanMsg{{ message.name_pascal }} *msg, uint32_t {{ message.multiplexer_signal }});
