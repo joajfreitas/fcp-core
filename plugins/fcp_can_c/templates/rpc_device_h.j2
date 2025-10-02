@@ -36,7 +36,7 @@ typedef enum {
 
 {% for service in services -%}
     {% for method in service.methods %}
-void {{ device_name_snake }}_service_handle_{{ method.name | lower }}(
+void {{ device_name_snake }}_service_handle_{{ method.name | lower}}(
     const CanRpc{{ method.input }} *request,
     CanRpc{{ method.output }} *response
 );
@@ -61,8 +61,8 @@ CanFrame can_encode_rpc_{{ message.name_snake }}(
     uint32_t {{ message.multiplexer_signal }}
 );
 {% else %}
-CanFrame can_encode_rpc_{{ message.name_snake }}(const CanRpc{{ message.name_pascal }} *rpc);
-CanFrame can_encode_rpc_{{ message.name_snake }}_ans(const CanRpc{{ message.name_pascal }} *rpc);
+CanFrame can_encode_rpc_{{message.name_snake}}(const CanRpc{{ message.name_pascal }} *rpc);
+CanFrame can_encode_rpc_{{message.name_snake}}_ans(const CanRpc{{ message.name_pascal }} *rpc);
 {% endif -%}
 {% endfor -%}
 
