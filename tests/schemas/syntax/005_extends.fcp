@@ -4,10 +4,14 @@ struct A {
     field1 @0: u8,
 }
 
-impl protocol1 for A {
-    id: 2,
-    signal field1 {
-        bitstart: 0,
-        bitlength: 8,
+device Dev {
+    protocol protocol1 {
+        impl A {
+            id: 2,
+            signal field1 {
+                bitstart: 0,
+                bitlength: 8,
+            },
+        },
     },
 }

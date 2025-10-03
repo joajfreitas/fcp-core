@@ -52,18 +52,22 @@ Example
         sensor_id @2: u8,
     }
 
-    impl can for SensorInformation {
-        id: 100,
-        device: "ecu1",
+    device ecu1 {
+        protocol can {
+            impl SensorInformation {
+                id: 100,
+                device: "ecu1",
 
-        signal temperature {
-            mux_count: 16,
-            mux_signal: "sensor_id",
-        },
+                signal temperature {
+                    mux_count: 16,
+                    mux_signal: "sensor_id",
+                },
 
-        signal sensor_state {
-            mux_count: 16,
-            mux_signal: "sensor_id",
+                signal sensor_state {
+                    mux_count: 16,
+                    mux_signal: "sensor_id",
+                },
+            },
         },
     }
 

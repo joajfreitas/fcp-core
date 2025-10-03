@@ -1,4 +1,4 @@
-  → Error: Unexpected character '{', expected one of: ['identifier']
+  → Error: Unexpected character '{', expected one of: ['extension_field', 'identifier']
   |
-7 | impl can for {
+9 |         impl {
   | ~~~~~~~~~~~~~~

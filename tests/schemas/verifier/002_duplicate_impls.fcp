@@ -4,10 +4,14 @@ struct A {
     field1 @0: u8,
 }
 
-impl can for A {
-    id: 10,
-}
+device Dev {
+    protocol can {
+        impl A {
+            id: 10,
+        },
 
-impl can for A {
-    id: 10,
+        impl A {
+            id: 10,
+        },
+    },
 }

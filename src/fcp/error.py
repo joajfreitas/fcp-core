@@ -83,10 +83,12 @@ class Logger:
 
     def log_lark_unexpected_characters(self, exception: UnexpectedCharacters) -> str:
         """Log a lark unexpected characters exception."""
-        return f"Unexpected character '{exception.char}', expected one of: " + str(
-            list(
-                set([str(rule.rule.origin.name) for rule in exception.considered_rules])
-            )
+        expected_rules = sorted(
+            {str(rule.rule.origin.name) for rule in exception.considered_rules}
+        )
+        return (
+            f"Unexpected character '{exception.char}', expected one of: "
+            + str(expected_rules)
         )
 
     def log_lark_unexpected_eof(self, exception: UnexpectedEOF) -> str:

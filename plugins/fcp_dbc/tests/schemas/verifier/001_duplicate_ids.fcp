@@ -8,10 +8,11 @@ struct B {
     field1 @0: u8,
 }
 
-impl can for A {
-    id: 10,
+
+device Dev {
+    protocol Can {
+        impl A {id: 10,},
+        impl B {id: 10,},
+    },
 }
 
-impl can for B {
-    id: 10,
-}

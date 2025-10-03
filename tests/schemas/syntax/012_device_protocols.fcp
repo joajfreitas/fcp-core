@@ -18,7 +18,7 @@ device ecu {
             response_id: 0x402,
         },
         services: [SensorService],
-    }
+    },
 
     protocol tcp {
         impl Msg as MsgTcp {
@@ -29,5 +29,5 @@ device ecu {
             request_tag: 0x01,
             response_tag: 0x02,
         },
-    }
+    },
 }

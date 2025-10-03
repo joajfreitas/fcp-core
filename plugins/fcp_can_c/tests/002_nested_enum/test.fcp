@@ -7,13 +7,13 @@ enum MyEnum {
 }
 
 struct Foo {
-    s1 @ 0: u8,
-    s2 @ 1: u16,
-    s3 @ 2: MyEnum,
+    s1 @0: u8,
+    s2 @1: u16,
+    s3 @2: MyEnum,
 }
 
 device ecu {
     protocol can {
-        impl Foo { id: 10, }
+        impl Foo { id: 10, },
     }
 }

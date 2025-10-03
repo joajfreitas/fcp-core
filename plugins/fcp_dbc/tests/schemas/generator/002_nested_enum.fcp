@@ -7,11 +7,15 @@ enum E {
 }
 
 struct Foo {
-    s1 @ 0: u8,
-    s2 @ 1: u8,
-    s3 @ 2: E,
+    s1 @0: u8,
+    s2 @1: u8,
+    s3 @2: E,
 }
 
-impl can for Foo {
-    id: 10,
+device dbc_device {
+    protocol can {
+        impl Foo {
+            id: 10,
+        },
+    },
 }
