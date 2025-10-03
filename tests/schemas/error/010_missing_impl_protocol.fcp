@@ -4,6 +4,10 @@ struct S1 {
     field1 @0 : MissingType,
 }
 
-impl can for {
-    some_field: 1,
+device Device {
+    protocol can {
+        impl {
+            some_field: 1,
+        },
+    },
 }

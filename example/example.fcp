@@ -38,10 +38,10 @@ service SensorService @0 {
 device ecu {
     protocol can {
         /* Protocol-specific message bindings with unique IDs */
-        impl StateMsg        { id: 10 }
-        impl TemperatureMsg  { id: 20 }
+        impl StateMsg        { id: 10, },
+        impl TemperatureMsg  { id: 20, },
     
-        rpc { request_id: 1025, response_id: 1026 } /* RPC settings: request/response identifiers for CAN */
-        services: [SensorService] /* Services exposed by this device */
-    }
+        rpc { request_id: 1025, response_id: 1026, }, /* RPC settings: request/response identifiers for CAN */
+        services: [SensorService], /* Services exposed by this device */
+    },
 }

@@ -1,31 +1,4 @@
 {
-  "devices": [],
-  "impls":[
-      {
-          "fields": {},
-          "name": "A",
-          "protocol": "default",
-          "signals": [],
-          "type": "A"
-      },
-      {
-          "name": "A",
-          "protocol": "protocol1",
-          "type": "A",
-          "fields": {
-              "id": 2
-          },
-          "signals": [
-              {
-                  "name": "field1",
-                  "fields": {
-                      "bitstart": 0,
-                      "bitlength": 8
-                  }
-              }
-          ]
-      }
-  ],
   "structs": [
     {
       "name": "A",
@@ -33,12 +6,60 @@
         {
           "name": "field1",
           "field_id": 0,
-          "type": {"name": "u8", "type": "unsigned"}
+          "type": {
+            "name": "u8",
+            "type": "unsigned"
+          }
         }
       ]
     }
   ],
   "enums": [],
+  "impls": [
+    {
+      "name": "A",
+      "protocol": "default",
+      "type": "A",
+      "fields": {},
+      "signals": []
+    },
+    {
+      "name": "A",
+      "protocol": "protocol1",
+      "type": "A",
+      "fields": {
+        "id": 2
+      },
+      "signals": [
+        {
+          "name": "field1",
+          "fields": {
+            "bitstart": 0,
+            "bitlength": 8
+          }
+        }
+      ]
+    }
+  ],
   "services": [],
+  "devices": [
+    {
+      "name": "Dev",
+      "fields": {
+        "protocols": {
+          "protocol1": {
+            "impls": [
+              {
+                "name": "A",
+                "type": "A"
+              }
+            ],
+            "rpc": {},
+            "fields": {}
+          }
+        }
+      }
+    }
+  ],
   "version": "3.0"
 }

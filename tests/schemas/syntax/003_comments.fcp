@@ -3,7 +3,7 @@ version: "3"
 /*the foo struct*/
 struct foo {
     /*the bar field*/
-    bar @ 0: u8,
+    bar @0: u8,
 }
 
 /*the enum baz*/

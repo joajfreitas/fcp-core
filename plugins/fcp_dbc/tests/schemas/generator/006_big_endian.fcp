@@ -5,10 +5,14 @@ struct Foo {
     s2 @1: u8,
 }
 
-impl can for Foo {
-    id: 10,
+device dbc_device {
+    protocol can {
+        impl Foo {
+            id: 10,
 
-    signal s2 {
-        endianess: "big",
+            signal s2 {
+                endianess: "big",
+            },
+        },
     },
 }

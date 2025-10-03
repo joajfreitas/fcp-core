@@ -10,6 +10,10 @@ struct Bar {
     s1 @0: [Foo, 2],
 }
 
-impl can for Bar {
-    id: 10,
+device dbc_device {
+    protocol can {
+        impl Bar {
+            id: 10,
+        },
+    },
 }

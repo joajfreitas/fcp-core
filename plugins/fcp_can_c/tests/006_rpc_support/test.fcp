@@ -30,8 +30,8 @@ service SensorService @0 {
 
 device ecu {
     protocol can {
-        impl Msg { id: 10, }
-        rpc { request_id: 1025, response_id: 1026, }
+        impl Msg { id: 10, },
+        rpc { request_id: 1025, response_id: 1026, },
         services: [SensorService],
-    }
+    },
 }

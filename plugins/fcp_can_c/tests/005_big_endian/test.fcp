@@ -47,69 +47,69 @@ device ecu {
             signal val {
                 endianness: "big",
             },
-        }
+        },
 
         impl U16B {
             id: 12,
             signal val {
                 endianness: "big",
             },
-        }
+        },
 
         impl U32B {
             id: 13,
             signal val {
                 endianness: "big",
             },
-        }
+        },
 
         impl U64B {
             id: 14,
             signal val {
                 endianness: "big",
             },
-        }
+        },
 
         impl I8B {
             id: 15,
             signal val {
                 endianness: "big",
             },
-        }
+        },
 
         impl I16B {
             id: 16,
             signal val {
                 endianness: "big",
             },
-        }
+        },
 
         impl I32B {
             id: 17,
             signal val {
                 endianness: "big",
             },
-        }
+        },
 
         impl I64B {
             id: 18,
             signal val {
                 endianness: "big",
             },
-        }
+        },
 
         impl F32B {
             id: 19,
             signal val {
                 endianness: "big",
             },
-        }
+        },
 
         impl F64B {
             id: 20,
             signal val {
                 endianness: "big",
             },
-        }
-    }
+        },
+    },
 }

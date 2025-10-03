@@ -7,15 +7,15 @@ enum E {
 }
 
 struct S1 {
-    s1 @ 0: str,
+    s1 @0: str,
 }
 
 struct S2 {
-    s1 @ 0: [u8],
+    s1 @0: [u8],
 }
 
 struct S3 {
-    s1 @ 0: [E],
+    s1 @0: [E],
 }
 
 struct S4 {

@@ -67,7 +67,7 @@ from .error import Logger, FcpError, error
 
 fcp_parser = Lark(
     """
-    start: preamble (struct | enum | mod_expr | impl | service | device)*
+    start: preamble (struct | enum | mod_expr | service | device)*
 
     preamble: "version" ":" string
 
@@ -90,18 +90,17 @@ fcp_parser = Lark(
     enum: "enum" identifier "{" enum_field* "}"
     enum_field : identifier "=" value ","
 
-    impl: "impl" identifier "for" identifier "as"? identifier? "{" protocol_impl_body+ "}" ","?
-    protocol_impl: "impl" identifier ("as" identifier)? "{" protocol_impl_body+ "}" ","?
+    protocol_impl: "impl" identifier ("as" identifier)? "{" protocol_impl_body+ "}" ","
     protocol_impl_body: extension_field | signal_block
-    signal_block: "signal" identifier "{" extension_field+ "}" ","?
-    extension_field: identifier ":" value ","?
+    signal_block: "signal" identifier "{" extension_field+ "}" ","
+    extension_field: identifier ":" value ","
 
     service: "service" identifier "@" number "{" method+ "}"
     method: "method" identifier "(" identifier ")" "@" number "returns" identifier ","
 
     device: "device" identifier "{" device_body* "}"
     device_body: protocol_block | extension_field
-    protocol_block: "protocol" identifier "{" protocol_body* "}" ","?
+    protocol_block: "protocol" identifier "{" protocol_body* "}" ","
     protocol_body: protocol_impl | rpc_block | extension_field
     rpc_block: "rpc" "{" extension_field* "}" ","?
 
@@ -124,8 +123,7 @@ fcp_parser = Lark(
     %import common.DIGIT   // imports from terminal library
     %import common.SIGNED_NUMBER   // imports from terminal library
     %import common.ESCAPED_STRING   // imports from terminal library
-    %import common.HEXDIGIT
-    HEX_NUMBER: "0x" HEXDIGIT+
+    HEX_NUMBER: /0x[0-9a-fA-F]+/
     %import common.C_COMMENT // imports from terminal library
     %import common.CPP_COMMENT // imports from terminal library
     %ignore " "           // Disregard spaces in text
@@ -481,42 +479,6 @@ class FcpV2Transformer(Transformer):
         return Ok(())
 
     @v_args(tree=True)  # type: ignore
-    def impl(self, tree: ParseTree) -> Result[Nil, FcpError]:
-        """Parse an impl node of the fcp AST."""
-
-        def is_signal_block(x: Any) -> bool:
-            return isinstance(x, signal_block.SignalBlock)
-
-        def is_extension_field(x: Any) -> bool:
-            return isinstance(x, tuple)
-
-        def is_impl_name(x: Any) -> bool:
-            return isinstance(x, str)
-
-        protocol, type, *fields = tree.children
-        if len(fields) != 0 and is_impl_name(fields[0]):
-            name = fields[0]
-            fields = fields[1:]
-        else:
-            name = type
-
-        signal_blocks = [field for field in fields if is_signal_block(field)]
-        fields = [field for field in fields if not is_signal_block(field)]
-
-        self.fcp.impls.append(
-            impl.Impl(
-                name=name,
-                protocol=protocol,
-                type=type,
-                fields=dict(fields),
-                signals=signal_blocks,
-                meta=_get_meta(tree, self),
-            )
-        )
-
-        return Ok(())
-
-    @v_args(tree=True)  # type: ignore
     def protocol_impl(self, tree: ParseTree) -> ProtocolImplBlock:
         """Parse a protocol_impl node within a device protocol block."""
         type_name, *fields = tree.children
@@ -652,18 +614,24 @@ class FcpV2Transformer(Transformer):
         """Parse a value node of the fcp AST."""
         return args[0]
 
+    def HEX_NUMBER(self, token: Any) -> int:
+        """Parse a hexadecimal number token."""
+        return int(token.value, 16)
+
     def number(self, args: List[Any]) -> Union[int, float]:
         """Parse a number node of the fcp AST."""
-        token = args[0]
-        value = token.value
+        value = args[0]
 
-        if getattr(token, "type", "") == "HEX_NUMBER":
-            return int(value, 16)
+        if isinstance(value, (int, float)):
+            return value
+
+        token = value
+        text = token.value
 
         try:
-            return int(value)
+            return int(text)
         except ValueError:
-            return float(value)
+            return float(text)
 
     def string(self, args: List[str]) -> str:
         """Parse a string node of the fcp AST."""

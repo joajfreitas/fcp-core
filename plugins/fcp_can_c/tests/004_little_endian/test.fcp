@@ -42,15 +42,15 @@ struct F64L {
 
 device ecu {
     protocol can {
-        impl U8L { id: 1, }
-        impl U16L { id: 2, }
-        impl U32L { id: 3, }
-        impl U64L { id: 4, }
-        impl I8L { id: 5, }
-        impl I16L { id: 6, }
-        impl I32L { id: 7, }
-        impl I64L { id: 8, }
-        impl F32L { id: 9, }
-        impl F64L { id: 10, }
-    }
+        impl U8L { id: 1, },
+        impl U16L { id: 2, },
+        impl U32L { id: 3, },
+        impl U64L { id: 4, },
+        impl I8L { id: 5, },
+        impl I16L { id: 6, },
+        impl I32L { id: 7, },
+        impl I64L { id: 8, },
+        impl F32L { id: 9, },
+        impl F64L { id: 10, },
+    },
 }

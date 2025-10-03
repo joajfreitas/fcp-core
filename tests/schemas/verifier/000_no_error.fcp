@@ -5,6 +5,13 @@ struct A {
     field2 @1: u16,
 }
 
-impl protocol1 for A {
-    id: 10,
+device D {
+    protocol A {
+        impl StructName {
+            id: 10,
+        },
+
+        rpc {}
+        services: [],
+    },
 }

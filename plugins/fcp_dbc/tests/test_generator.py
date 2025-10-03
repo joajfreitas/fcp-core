@@ -129,9 +129,14 @@ struct Foo {
     s3 @2: u8,
 }
 
-impl can for Foo {
-    id: 10,
-}"""
+device dbc_device {
+    protocol can {
+        impl Foo {
+            id: 10,
+        },
+    },
+}
+"""
         )
 
     fcp_v2 = get_fcp(tmp.name).unwrap()

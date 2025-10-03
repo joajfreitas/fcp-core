@@ -11,6 +11,10 @@ struct Foo {
     s3 @2: Bar,
 }
 
-impl can for Foo {
-    id: 10,
+device dbc_device {
+    protocol can {
+        impl Foo {
+            id: 10,
+        },
+    },
 }
