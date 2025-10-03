@@ -60,12 +60,12 @@
     },
     "keywords": {
       "patterns": [
-        {
-          "name": "keyword.control.fcp",
-          "match": "\\b(?:enum|impl|for|service|method|version|device|mod|signal|struct|protocol|rpc|returns|as)\\b"
-        }
-      ]
-    },
+    {
+      "name": "keyword.control.fcp",
+      "match": "\\b(?:enum|impl|service|method|version|device|mod|signal|struct|protocol|rpc|returns|as)\\b"
+    }
+  ]
+},
     "struct-declaration": {
       "patterns": [
         {
@@ -94,12 +94,12 @@
       "patterns": [
         {
           "name": "meta.declaration.impl.fcp",
-          "match": "\\b(impl)(\\s+)([A-Za-z_][A-Za-z0-9_]*)(\\s+)(for)(\\s+)([A-Za-z_][A-Za-z0-9_]*)",
+          "match": "\\b(impl)(\\s+)([A-Za-z_][A-Za-z0-9_]*)(?:\\s+(as)\\s+([A-Za-z_][A-Za-z0-9_]*))?",
           "captures": {
             "1": { "name": "keyword.declaration.impl.fcp" },
-            "3": { "name": "entity.name.type.impl.source.fcp" },
-            "5": { "name": "keyword.operator.word.for.fcp" },
-            "7": { "name": "entity.name.type.impl.target.fcp" }
+            "3": { "name": "entity.name.type.impl.target.fcp" },
+            "4": { "name": "keyword.operator.word.as.fcp" },
+            "5": { "name": "entity.name.type.impl.alias.fcp" }
           }
         }
       ]

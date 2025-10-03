@@ -15,9 +15,10 @@ module.exports = grammar({
     $._service_name,
     $._method_input_type,
     $._method_output_type,
+    $._protocol_name,
   ],
   rules: {
-    source_file: $ => seq($.preamble, repeat1(choice($.struct, $.enum_block, $.impl, $.service, $.device, $.mod_expr))),
+    source_file: $ => seq($.preamble, repeat(choice($.struct, $.enum_block, $.service, $.device, $.mod_expr))),
 
     preamble: $ => seq('version', ':', $.string),
 
@@ -55,7 +56,6 @@ module.exports = grammar({
     enum_field: $ => seq($._enum_field_name, '=', $.value, ','),
     _enum_field_name: $ => alias($.identifier, $.enum_field_name),
 
-    impl: $ => seq('impl', $.identifier, 'for', $.identifier, '{', repeat1(choice($.extension_field, $.signal_block)), '}'),
     extension_field: $ => seq($.identifier, ':', $.value, ','),
     signal_block: $ => seq('signal', $.identifier, '{', repeat1($.extension_field), '}', ','),
 
@@ -66,17 +66,22 @@ module.exports = grammar({
     _method_input_type: $ => alias($.identifier, $.method_input_type),
     _method_output_type: $ => alias($.identifier, $.method_output_type),
 
-    device: $ => seq('device', $.identifier, '{', repeat1($.device_field), '}'),
-    device_field: $ => seq($.device_field_name, ':', $.value, ','),
-    device_field_name: $ => $.identifier,
+    device: $ => seq('device', $.identifier, '{', repeat($.device_body), '}'),
+    device_body: $ => choice($.protocol_block, $.extension_field),
+    protocol_block: $ => seq('protocol', $._protocol_name, '{', repeat($.protocol_body), '}', ','),
+    _protocol_name: $ => alias($.identifier, $.protocol_name),
+    protocol_body: $ => choice($.protocol_impl, $.rpc_block, $.extension_field),
+    protocol_impl: $ => seq('impl', $.identifier, optional(seq('as', $.identifier)), '{', repeat1($.protocol_impl_body), '}', ','),
+    protocol_impl_body: $ => choice($.extension_field, $.signal_block),
+    rpc_block: $ => seq('rpc', '{', repeat($.extension_field), '}', optional(',')),
 
-    mod_expr: $ => seq('mod', $._mod_name, ';'),
-    _mod_name: $ => alias($.identifier, $.mod_name),
+    mod_expr: $ => seq('mod', $.identifier, repeat(seq('.', $.identifier)), ';'),
 
-    value: $ => choice($.identifier, $.number, $.string),
+    value: $ => choice($.array, $.identifier, $.number, $.string),
+    array: $ => seq('[', optional(seq($.value, repeat(seq(',', $.value)))), ']'),
     identifier: _ => /[a-zA-Z_][a-zA-Z_\d]*/,
-    string: _ => /(".*?")/,
-    number: _ => /\d+/,
+    string: _ => token(seq('"', repeat(choice(/[^"\\]/, /\\./)), '"')),
+    number: _ => token(seq(optional('-'), choice(/0x[0-9A-Fa-f]+/, /\d+/))),
 
     comment: _ => token(choice(
       seq('//', /(\\+(.|\r?\n)|[^\\\n])*/),
