@@ -86,9 +86,8 @@ class Logger:
         expected_rules = sorted(
             {str(rule.rule.origin.name) for rule in exception.considered_rules}
         )
-        return (
-            f"Unexpected character '{exception.char}', expected one of: "
-            + str(expected_rules)
+        return f"Unexpected character '{exception.char}', expected one of: " + str(
+            expected_rules
         )
 
     def log_lark_unexpected_eof(self, exception: UnexpectedEOF) -> str:
