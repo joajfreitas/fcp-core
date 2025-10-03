@@ -88,7 +88,7 @@ fcp_parser = Lark(
     param_argument: value ","?
 
     enum: "enum" identifier "{" enum_field* "}"
-    enum_field : identifier "=" value ","?
+    enum_field : identifier "=" value ","
 
     impl: "impl" identifier "for" identifier "as"? identifier? "{" protocol_impl_body+ "}" ","?
     protocol_impl: "impl" identifier ("as" identifier)? "{" protocol_impl_body+ "}" ","?

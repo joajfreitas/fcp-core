@@ -310,16 +310,6 @@ def initialize_can_data(
             if isinstance(services_from_protocol, list):
                 device_services[dev.name] = services_from_protocol
 
-        # Fallback to legacy device level configuration
-        if rpc_get_id is None:
-            value = dev.fields.get("rpc_get_id")
-            if isinstance(value, int):
-                rpc_get_id = value
-        if rpc_ans_id is None:
-            value = dev.fields.get("rpc_ans_id")
-            if isinstance(value, int):
-                rpc_ans_id = value
-
         services_field = dev.fields.get("services")
         if isinstance(services_field, list):
             device_services.setdefault(dev.name, services_field)
