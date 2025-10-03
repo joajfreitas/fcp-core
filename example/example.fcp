@@ -16,20 +16,20 @@ struct StateMsg {
 }
 
 struct SensorInformation {
-    result @0: u8, /* Status/result code */
+    state @0: SensorState, /* enums and other structs can also be used as types */
 }
 
 struct TemperatureResponse {
-    result @0: u8, /* Encoded temperature value */
+    temperature @0: u8, 
 }
 
 struct SensorReq {
-    request_id @0: u8, /* Identifier to correlate request/response */
+    sensor_nr @0: u8, 
 }
 
-/* A service is a collection of RPC methods that a device can expose */
+/* A service is a collection of RPC methods (remote procedures) that a device can expose */
 service SensorService @0 {
-    method RequestState(SensorReq) @0 returns SensorInformation,
+    method RequestState(SensorReq) @0 returns SensorInformation, 
     method GetTemperature(SensorReq) @1 returns TemperatureResponse,
 }
 
@@ -42,15 +42,6 @@ device ecu {
         impl TemperatureMsg  { id: 20 }
     
         rpc { request_id: 1025, response_id: 1026 } /* RPC settings: request/response identifiers for CAN */
-        services: [SensorService], /* Services exposed by this device */
-    }
-}
-
-device DeviceName {
-    protocol protocol_name {
-        impl StructName {id: 34}
-
-        rpc {}
-        services: [],
+        services: [SensorService] /* Services exposed by this device */
     }
 }
