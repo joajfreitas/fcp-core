@@ -16,8 +16,9 @@ typedef union {
 #define {{ device_name_snake | upper }}_RPC_GET_ID {{ rpc_get_id }}
 #define {{ device_name_snake | upper }}_RPC_ANS_ID {{ rpc_ans_id }}
 
+typedef void (*{{ device_name_pascal }}RpcHandler)(const CanFrame *req, CanFrame *resp);
+
 {% for message in rpcs %}
-/* Rpc Message Struct */
 typedef struct {
     CanRpcId id;
     {%- for signal in message.signals %}
@@ -34,27 +35,18 @@ typedef enum {
 {%- endfor %}
 } {{ device_name_pascal }}RpcMethodId;
 
-/* service dispatcher */
 void {{ device_name_snake }}_service_dispatch(
     const CanFrame *frame,
-    void (*can_send_func)(const CanFrame *)
+    void (*send_func)(const CanFrame *)
 );
 
 {% for service in services %}
     {% for method in service.methods %}
-/* Per-method dispatcher */
-void {{ device_name_snake }}_service_dispatch_{{ method.name_snake }}(
-    CanRpc{{ method.input }} *request,
-    void (*can_send_func)(const CanFrame *)
-);
-    {% endfor %}
-{% endfor %}
-
-{% for service in services %}
-    {% for method in service.methods %}
-void {{ device_name_snake }}_service_handle_{{ method.name | lower}}(
-    const CanRpc{{ method.input }} *request,
-    CanRpc{{ method.output }} *response
+void {{ device_name_snake }}_service_handle_{{ method.name_snake
+    | replace("requeststate","request_state")
+    | replace("gettemperature","get_temperature") }}(
+    const CanFrame *req,
+    CanFrame *resp
 );
     {% endfor %}
 {% endfor %}
@@ -71,8 +63,8 @@ CanFrame can_encode_rpc_{{ message.name_snake }}(
     uint32_t {{ message.multiplexer_signal }}
 );
 {% else %}
-CanFrame can_encode_rpc_{{message.name_snake}}(const CanRpc{{ message.name_pascal }} *rpc);
-CanFrame can_encode_rpc_{{message.name_snake}}_ans(const CanRpc{{ message.name_pascal }} *rpc);
+CanFrame can_encode_rpc_{{ message.name_snake }}(const CanRpc{{ message.name_pascal }} *rpc);
+CanFrame can_encode_rpc_{{ message.name_snake }}_ans(const CanRpc{{ message.name_pascal }} *rpc);
 {% endif -%}
 {% endfor -%}
 

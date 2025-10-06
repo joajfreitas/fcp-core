@@ -5,19 +5,20 @@
 #include <stdbool.h>
 
 #include "generated_code/ecu_rpc.h"
-#include "generated_code/can_frame.h"
+#include "generated_code/can_frame.h"  // Include CanFrame definition
 
-bool sensorservice_requeststate(uint8_t *result);
+// Function to request sensor state
+bool sensorservice_request_state(uint8_t *result);
 
-/* Handlers for services */
-void ecu_service_handle_requeststate(
-    const CanRpcSensorReq *request,
-    CanRpcSensorInformation *response
+/* Handlers for services using raw CAN frames */
+void ecu_service_handle_request_state(
+    const CanFrame *req,
+    CanFrame *resp
 );
 
-void ecu_service_handle_gettemperature(
-    const CanRpcSensorReq *request,
-    CanRpcTemperatureResponse *response
+void ecu_service_handle_get_temperature(
+    const CanFrame *req,
+    CanFrame *resp
 );
 
 #endif // ECU_RPC_CLIENT_H
