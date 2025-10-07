@@ -10,7 +10,7 @@ FCP is an interface description language to exchange information independently o
 
 ## Example
 
-![Code showcase](https://raw.githubusercontent.com/joajfreitas/fcp-core/master/assets/code_showcase.png)
+![Code showcase](https://github.com/joajfreitas/fcp-core/blob/master/assets/code_showcase.png)
 
 ## Documentation
 
