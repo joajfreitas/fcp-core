@@ -66,7 +66,6 @@ void test_rpc_encode_decode_roundtrip() {
     VERIFY_TEST(pass);
 }
 
-// Test: Full dispatch from request to response
 void test_rpc_dispatch_end_to_end() {
     printf("\n\033[33m====== Running: test_rpc_dispatch_end_to_end ======\033[0m\n");
 
@@ -79,25 +78,25 @@ void test_rpc_dispatch_end_to_end() {
         .request_id = 0x01
     };
 
-    CanFrame request = can_encode_rpc_sensor_req(&req);
-    request.id = ECU_RPC_GET_ID;
+    printf("\033[34m[DEBUG] Sending request: service_id=0x%X, method_id=0x%X, request_id=0x%X\033[0m\n",
+           req.id.service_id, req.id.method_id, req.request_id);
 
-    printf("\033[34m[DEBUG] Sending request: frame.id = 0x%X, request_id = 0x%X\033[0m\n",
-           request.id, req.request_id);
-
-    ecu_service_dispatch_sensor_req(&request, mock_send);
+    CanFrame frame = can_encode_rpc_sensor_req(&req);
+    ecu_service_dispatch(&frame, mock_send);
 
     pass &= got_response;
 
-    CanRpcSensorReq decoded = can_decode_rpc_sensor_req(&intercepted_response);
-    printf("\033[34m[DEBUG] Received response: frame.id = 0x%X, request_id = 0x%X\033[0m\n",
-           intercepted_response.id, decoded.request_id);
+    CanRpcSensorInformation decoded = can_decode_rpc_sensor_information(&intercepted_response);
+    printf("\033[34m[DEBUG] Received response: frame.id = 0x%X, result=0x%X\033[0m\n",
+           intercepted_response.id, decoded.result);
 
     pass &= (intercepted_response.id == ECU_RPC_ANS_ID);
-    pass &= (decoded.request_id == 0xA0);
+    pass &= (decoded.result == 0xA0);
 
     VERIFY_TEST(pass);
 }
+
+
 
 // Test: Invalid DLC
 void test_rpc_invalid_dlc() {
@@ -115,8 +114,9 @@ void test_rpc_invalid_dlc() {
     got_response = false;
 
     if (invalid.dlc >= 3) {
-        ecu_service_dispatch_sensor_req(&invalid, mock_send);
+        ecu_service_dispatch(&invalid, mock_send);
     }
+
 
     pass &= (!got_response);
     VERIFY_TEST(pass);

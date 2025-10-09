@@ -34,58 +34,61 @@ bool is_{{ device_name_snake}}_rpc(const CanFrame *frame) {
 {% for message in rpcs -%}
 /*-------------------------------- Decode Function {{ message.name_pascal }} ----------------------------------*/
 CanRpc{{ message.name_pascal }} can_decode_rpc_{{ message.name_snake }}(const CanFrame *rpc) {
-	CanRpc{{message.name_pascal}} rpc_struct = {0};
+    CanRpc{{message.name_pascal}} rpc_struct = {0};
 
-	{%- for signal in message.signals %}
-	{%- if signal.multiplexer_count <= 1 %}
-	rpc_struct.{{ signal.name }} = can_decode_signal_{{ message.name_snake }}_{{ signal.name }}(rpc);
-	{%- endif %}
-	{%- endfor %}
+    {%- for signal in message.signals %}
+    {%- if signal.multiplexer_count <= 1 %}
+    rpc_struct.{{ signal.name }} = can_decode_signal_{{ message.name_snake }}_{{ signal.name }}(rpc);
+    {%- endif %}
+    {%- endfor %}
 
-	{%- for signal in message.signals %}
-	{%- if signal.multiplexer_count > 1 %}
-	rpc_struct.{{ signal.name }}[rpc_struct.{{ signal.multiplexer_signal }}] = can_decode_{{ message.name_snake }}_{{ signal.name }}(rpc);
-	{%- endif %}
-	{%- endfor %}
+    {%- for signal in message.signals %}
+    {%- if signal.multiplexer_count > 1 %}
+    rpc_struct.{{ signal.name }}[rpc_struct.{{ signal.multiplexer_signal }}] = can_decode_signal_{{ message.name_snake }}_{{ signal.name }}(rpc);
+    {%- endif %}
+    {%- endfor %}
 
-	return rpc_struct;
+    return rpc_struct;
 }
 {% endfor -%}
 
-{%- for message in rpcs %}
+{% for message in rpcs -%}
 /*-------------------------------- Encode Functions {{ message.name_pascal }} ---------------------------------*/
 {%- if message.is_multiplexer %}
 CanFrame can_encode_rpc_{{message.name_snake}}(const CanRpc{{ message.name_pascal }} *rpc, uint32_t {{message.multiplexer_signal}}) {
     CanFrame message = {.id = {{message.frame_id}}, .dlc = {{message.dlc + 2}}};
     uint64_t word = 0;
     uint64_t *ptr = (uint64_t *) &message.data;
+
     {% for signal in message.signals %}
     {%- if signal.multiplexer_count > 1 -%}
-    word |= can_encode_{{message.name_snake}}_{{signal.name}}(rpc->{{signal.name}}[{{message.multiplexer_signal}}]);
+    word |= can_encode_signal_{{message.name_snake}}_{{signal.name}}(rpc->{{signal.name}}[{{message.multiplexer_signal}}]);
     {%- elif signal.name == message.multiplexer_signal %}
     word |= can_encode_signal_{{message.name_snake}}_{{signal.name}}({{message.multiplexer_signal}});
     {%- else -%}
     word |= can_encode_signal_{{message.name_snake}}_{{signal.name}}(rpc->{{signal.name}});
     {%- endif %}
     {% endfor %}
+
     *ptr = word;
     return message;
 }
 {%- else %}
 CanFrame can_encode_rpc_{{message.name_snake}}(const CanRpc{{ message.name_pascal }} *rpc) {
-	CanFrame message = {.id = {{ device_name_snake | upper }}_RPC_GET_ID, .dlc = {{message.dlc + 2}}};
-	uint64_t word = 0;
-	uint64_t *ptr = (uint64_t *) &message.data;
+    CanFrame message = {.id = {{ device_name_snake | upper }}_RPC_GET_ID, .dlc = {{message.dlc + 2}}};
+    uint64_t word = 0;
+    uint64_t *ptr = (uint64_t *) &message.data;
 
-	{% for signal in message.signals %}
-	{%- if signal.multiplexer_count > 1 -%}
-	word |= can_encode_signal_{{message.name_snake}}_{{signal.name}}(rpc->{{signal.name}}[rpc->{{signal.multiplexer_signal}}]);
-	{%- else -%}
-	word |= can_encode_signal_{{message.name_snake}}_{{signal.name}}(rpc->{{signal.name}});
-	{%- endif %}
-	{% endfor %}
-	*ptr = word;
-	return message;
+    {% for signal in message.signals %}
+    {%- if signal.multiplexer_count > 1 -%}
+    word |= can_encode_signal_{{message.name_snake}}_{{signal.name}}(rpc->{{signal.name}}[rpc->{{signal.multiplexer_signal}}]);
+    {%- else -%}
+    word |= can_encode_signal_{{message.name_snake}}_{{signal.name}}(rpc->{{signal.name}});
+    {%- endif %}
+    {% endfor %}
+
+    *ptr = word;
+    return message;
 }
 
 CanFrame can_encode_rpc_{{message.name_snake}}_ans(const CanRpc{{ message.name_pascal }} *rpc) {
@@ -100,42 +103,35 @@ CanFrame can_encode_rpc_{{message.name_snake}}_ans(const CanRpc{{ message.name_p
     word |= can_encode_signal_{{message.name_snake}}_{{signal.name}}(rpc->{{signal.name}});
     {%- endif %}
     {% endfor %}
+
     *ptr = word;
     return message;
 }
 {%- endif %}
 {% endfor %}
 
-{%- for message in rpc_requests %}
-/*----------------------------------- RPC Dispatcher {{ message.name_pascal }} ------------------------------------*/
-void {{ device_name_snake }}_service_dispatch_{{ message.name_snake }}(const CanFrame *frame, void (*can_send_func)(const CanFrame *)) {
+/*----------------------------------------- RPC Handler Table -----------------------------------------------*/
+static const {{ device_name_pascal }}RpcHandler handler_table[] = {
+{% for service in services %}
+    {% for method in service.methods %}
+    [{{ device_name_snake | upper }}_{{ method.name_snake | upper }}] = {{ device_name_snake }}_service_handle_{{ method.name_snake | replace("requeststate", "request_state") | replace("gettemperature", "get_temperature") }},
+    {% endfor %}
+{% endfor %}
+};
+
+/*----------------------------------------- RPC Dispatch Function --------------------------------------------*/
+void {{ device_name_snake }}_service_dispatch(
+    const CanFrame *frame,
+    void (*send_func)(const CanFrame *)
+) {
+    if (!frame) return;
     if (!is_{{ device_name_snake}}_rpc(frame)) return;
 
-    uint8_t service_id = frame->data[0];
     uint8_t method_id = frame->data[1];
-    CanFrame frame_out;
+    if (method_id >= (sizeof(handler_table) / sizeof(handler_table[0])) ||
+        handler_table[method_id] == NULL) return;
 
-    switch (method_id) {
-    {%- for service in services %}
-        {%- for method in service.methods %}
-        case {{ device_name_snake | upper }}_{{ method.name | upper }}: {
-            CanRpc{{ method.input }} request = can_decode_rpc_{{ method.input_snake }}(frame);
-            CanRpc{{ method.output }} response = { .id.service_id = service_id, .id.method_id = method_id };
-
-            {{ device_name_snake }}_service_handle_{{ method.name | lower }}(&request, &response);
-
-            frame_out = can_encode_rpc_{{ method.output_snake }}_ans(&response);
-            break;
-        }
-        {%- endfor %}
-    {%- endfor %}
-        default:
-            return;
-    }
-
-    if (can_send_func) {
-        can_send_func(&frame_out);
-    }
-
+    CanFrame response = {0};
+    handler_table[method_id](frame, &response);
+    if (send_func) send_func(&response);
 }
-{%- endfor %}
