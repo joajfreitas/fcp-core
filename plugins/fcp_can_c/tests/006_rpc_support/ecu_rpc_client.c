@@ -13,13 +13,12 @@ static void capture_response(const CanFrame *frame) {
 }
 
 bool sensorservice_requeststate(uint8_t *result) {
-    CanRpcSensorReq req = {
-        .service_id = 0,
-        .method_id = 0,
-        .request_id = 0x01
+    CanRpcSensorReq original = {
+        .id = { .service_id = 0, .method_id = 0 },
+        .request_id = 0x12
     };
 
-    CanFrame request = can_encode_rpc_sensor_req(&req);
+    CanFrame request = can_encode_rpc_sensor_req(&original);
 
     ecu_service_dispatch_sensor_req(&request, capture_response);
 
@@ -28,6 +27,7 @@ bool sensorservice_requeststate(uint8_t *result) {
 
     return true;
 }
+
 
 // Handler for ECU_REQUESTSTATE
 void ecu_service_handle_requeststate(

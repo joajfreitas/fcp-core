@@ -5,20 +5,22 @@
 #include <stdbool.h>
 #include "can_frame.h"
 
-/* RPC Get and Answer IDs */
+typedef union {
+    struct {
+        uint8_t service_id;
+        uint8_t method_id;
+    };
+    uint16_t raw;
+} CanRpcId;
+
+
 #define {{ device_name_snake | upper }}_RPC_GET_ID {{ rpc_get_id }}
 #define {{ device_name_snake | upper }}_RPC_ANS_ID {{ rpc_ans_id }}
 
 {% for message in rpcs %}
 /* Rpc Message Struct */
 typedef struct {
-    union {
-        struct {
-            uint8_t service_id;
-            uint8_t method_id;
-        };
-        uint16_t rpc_id;
-    };
+    CanRpcId id;
     {%- for signal in message.signals %}
     {{ signal.data_type }} {{ signal.name }}{% if signal.is_multiplexer %}[{{ signal.multiplexer_count }}]{% endif %};
     {%- endfor %}
@@ -31,7 +33,7 @@ typedef enum {
     {{ device_name_snake | upper }}_{{ method.name | upper }} = {{ method.id }},
     {%- endfor %}
 {%- endfor %}
-} {{ device_name_snake }}_rpc_method_id_t;
+} {{ device_name_pascal }}RpcMethodId;
 
 {% for service in services -%}
     {% for method in service.methods %}
@@ -42,20 +44,25 @@ void {{ device_name_snake }}_service_handle_{{ method.name | lower}}(
     {% endfor %}
 {%- endfor -%}
 
-{% for message in rpc_requests %}
-/* Dispatcher {{ message.name_pascal }} */
-void {{ device_name_snake }}_service_dispatch_{{ message.name_snake }}(const CanFrame *frame, void (*can_send_func)(const CanFrame *));
-{% endfor -%}
+{% for message in rpcs %}
+void {{ device_name_snake }}_service_dispatch_{{ message.name_snake }}(
+    const CanFrame *frame,
+    void (*can_send_func)(const CanFrame *)
+);
+{% endfor %}
 
 {% for message in rpcs %}
 /* Functions to decode CanFrame into CanRpc{{ message.name_pascal }} objects */
 CanRpc{{ message.name_pascal }} can_decode_rpc_{{ message.name_snake }}(const CanFrame *frame);
-{% endfor -%}
+{% endfor %}
 
 {% for message in rpcs %}
 /* Functions to encode CanRpc{{ message.name_pascal }} object into CanFrame */
 {%- if message.is_multiplexer %}
-CanFrame can_encode_rpc_{{message.name_snake}}(const CanRpc{{ message.name_pascal }} *rpc, uint32_t {{message.multiplexer_signal}});
+CanFrame can_encode_rpc_{{ message.name_snake }}(
+    const CanRpc{{ message.name_pascal }} *rpc,
+    uint32_t {{ message.multiplexer_signal }}
+);
 {% else %}
 CanFrame can_encode_rpc_{{message.name_snake}}(const CanRpc{{ message.name_pascal }} *rpc);
 CanFrame can_encode_rpc_{{message.name_snake}}_ans(const CanRpc{{ message.name_pascal }} *rpc);

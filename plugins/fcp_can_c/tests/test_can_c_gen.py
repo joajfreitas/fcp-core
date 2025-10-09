@@ -44,6 +44,7 @@ def get_path(test_name: str) -> str:
         "003_msg_scheduling",
         "004_little_endian",
         "005_big_endian",
+        "006_rpc_support",
     ],
 )  # type: ignore
 def test_can_c_gen(test_name: str) -> None:
