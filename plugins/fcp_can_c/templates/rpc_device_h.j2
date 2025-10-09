@@ -51,10 +51,12 @@ void {{ device_name_snake }}_service_dispatch_{{ message.name_snake }}(
 {% endfor %}
 
 {% for message in rpcs %}
+/* Functions to decode CanFrame into CanRpc{{ message.name_pascal }} objects */
 CanRpc{{ message.name_pascal }} can_decode_rpc_{{ message.name_snake }}(const CanFrame *frame);
 {% endfor %}
 
 {% for message in rpcs %}
+/* Functions to encode CanRpc{{ message.name_pascal }} object into CanFrame */
 {%- if message.is_multiplexer %}
 CanFrame can_encode_rpc_{{ message.name_snake }}(
     const CanRpc{{ message.name_pascal }} *rpc,
