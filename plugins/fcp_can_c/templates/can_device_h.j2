@@ -10,8 +10,9 @@
 {%- endif %}
 
 {% if messages | length > 0 -%}
- /* {{ device_name_pascal }} Message IDs */
+  /* {{ device_name_pascal }} Message IDs */
 {%- endif %}
+
 {%- for message in messages %}
 #define CAN_MSG_ID_{{ message.name_snake | upper }} {{ message.frame_id }}
 {%- endfor %}
@@ -23,6 +24,7 @@
 {%- for message in messages %}
 #define CAN_MSG_PERIOD_{{ message.name_snake | upper }} {{ message.period }}
 {%- endfor %}
+
 
 {%- for enum in enums %}
 /* {{ enum.name }} enum */
@@ -50,6 +52,7 @@ typedef struct {
     {%- endfor %}
 } CanDevice{{ device_name_pascal }};
 {%- endif %}
+
 
 /* Check if a CanFrame comes from {{ device_name_pascal }} */
 bool can_is_{{ device_name_snake }}_msg(const CanFrame *frame);
