@@ -10,8 +10,9 @@ typedef union {
         uint8_t service_id;
         uint8_t method_id;
     };
-    uint16_t rpc_id;
+    uint16_t raw;
 } CanRpcId;
+
 
 #define {{ device_name_snake | upper }}_RPC_GET_ID {{ rpc_get_id }}
 #define {{ device_name_snake | upper }}_RPC_ANS_ID {{ rpc_ans_id }}
