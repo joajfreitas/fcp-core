@@ -27,7 +27,6 @@
 
 
 {%- for enum in enums %}
-/* {{ enum.name }} enum */
 typedef enum {
     {%- for name, value in enum.values.items() %}
     {{ name | upper }} = {{ value }},
@@ -36,7 +35,6 @@ typedef enum {
 {%- endfor -%}
 
 {% for message in messages %}
-/* {{ message.name_pascal }} message struct */
 typedef struct {
     {%- for signal in message.signals %}
     {{ signal.data_type }} {{ signal.name }}{% if signal.is_multiplexer %}[{{ signal.multiplexer_count }}]{% endif %};
@@ -45,7 +43,6 @@ typedef struct {
 {%- endfor %}
 
 {% if messages|length > 0 %}
-/* {{ device_name_pascal }} device struct */
 typedef struct {
     {%- for message in messages %}
     CanMsg{{ message.name_pascal }} {{ message.name_snake }};
