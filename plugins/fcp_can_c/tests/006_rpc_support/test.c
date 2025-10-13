@@ -66,6 +66,22 @@ void test_rpc_encode_decode_roundtrip() {
     VERIFY_TEST(pass);
 }
 
+void test_rpc_response_roundtrip() {
+    printf("\n\033[33m====== Running: test_rpc_response_roundtrip ======\033[0m\n");
+
+    bool pass = true;
+
+    CanRpcSensorInformation response = { .result = 0xA5 };
+    CanFrame frame = can_encode_rpc_sensor_information(&response);
+
+    pass &= (frame.id == ECU_RPC_GET_ID || frame.id == ECU_RPC_ANS_ID);
+
+    CanRpcSensorInformation decoded = can_decode_rpc_sensor_information(&frame);
+    pass &= (decoded.result == response.result);
+
+    VERIFY_TEST(pass);
+}
+
 void test_rpc_dispatch_end_to_end() {
     printf("\n\033[33m====== Running: test_rpc_dispatch_end_to_end ======\033[0m\n");
 
@@ -122,12 +138,70 @@ void test_rpc_invalid_dlc() {
     VERIFY_TEST(pass);
 }
 
+// Test: Invalid service and method IDs
+void test_rpc_invalid_service_method() {
+    printf("\n\033[33m====== Running: test_rpc_invalid_service_method ======\033[0m\n");
+
+    bool pass = true;
+    got_response = false;
+
+    CanFrame req = {
+        .id = ECU_RPC_GET_ID,
+        .dlc = 3,
+        .data = {0xFF, 0xFF, 0x00}
+    };
+
+    printf("\033[34m[DEBUG] Sending invalid service/method frame: service=0x%X, method=0x%X\033[0m\n",
+           req.data[0], req.data[1]);
+
+    ecu_service_dispatch(&req, mock_send);
+
+    pass &= (!got_response);
+
+    VERIFY_TEST(pass);
+}
+
+static bool handler_called = false;
+void ecu_service_handle_mock(const CanFrame *req, CanFrame *resp) {
+    handler_called = true;
+    resp->id = ECU_RPC_ANS_ID;
+}
+
+void test_rpc_handler_invocation() {
+    printf("\n\033[33m====== Running: test_rpc_handler_invocation ======\033[0m\n");
+
+    bool pass = true;
+    got_response = false;
+    handler_called = false;
+
+    CanRpcSensorReq req = {
+        .id.service_id = 0,
+        .id.method_id = 0,
+        .request_id = 0x01
+    };
+
+    CanFrame frame = can_encode_rpc_sensor_req(&req);
+    ecu_service_dispatch(&frame, mock_send);
+
+    pass &= got_response;
+    pass &= (intercepted_response.id == ECU_RPC_ANS_ID);
+
+    CanRpcSensorInformation decoded = can_decode_rpc_sensor_information(&intercepted_response);
+    pass &= (decoded.result == 0xA0);
+
+    VERIFY_TEST(pass);
+}
+
 
 int main() {
     test_rpc_encode_decode_roundtrip();
+    test_rpc_response_roundtrip();
     test_rpc_dispatch_end_to_end();
     test_rpc_invalid_dlc();
+    test_rpc_invalid_service_method();
+    test_rpc_handler_invocation();
 
     ASSERT_TESTS();
     return 0;
 }
+
