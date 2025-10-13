@@ -106,21 +106,22 @@ void test_rpc_invalid_dlc() {
 
     CanFrame invalid;
     invalid.id = ECU_RPC_GET_ID;
-    invalid.dlc = 1;  // invalid
+    invalid.dlc = 1;  // too short to contain service_id + method_id
     memset(invalid.data, 0, sizeof(invalid.data));
 
-    printf("\033[34m[DEBUG] Sending invalid frame ID=0x%X DLC=%d\033[0m\n", invalid.id, invalid.dlc);
+    printf("\033[34m[DEBUG] Sending invalid frame ID=0x%X DLC=%d\033[0m\n",
+           invalid.id, invalid.dlc);
 
     got_response = false;
 
-    if (invalid.dlc >= 3) {
-        ecu_service_dispatch(&invalid, mock_send);
-    }
+    // Dispatch should ignore the frame
+    ecu_service_dispatch(&invalid, mock_send);
 
+    pass &= (!got_response);  // verify the dispatcher did not send a response
 
-    pass &= (!got_response);
     VERIFY_TEST(pass);
 }
+
 
 int main() {
     test_rpc_encode_decode_roundtrip();
