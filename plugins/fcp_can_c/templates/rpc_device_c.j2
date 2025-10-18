@@ -25,6 +25,7 @@ bool is_{{ device_name_snake }}_rpc(const CanFrame *frame) {
 {% for message in rpcs %}
 CanRpc{{ message.name_pascal }} can_decode_rpc_{{ message.name_snake }}(const CanFrame *rpc) {
     CanRpc{{ message.name_pascal }} r = {0};
+
     {% for signal in message.signals %}
     {% if signal.multiplexer_count <= 1 %}
     r.{{ signal.name }} = can_decode_signal_{{ message.name_snake }}_{{ signal.name }}(rpc);
@@ -32,8 +33,10 @@ CanRpc{{ message.name_pascal }} can_decode_rpc_{{ message.name_snake }}(const Ca
     r.{{ signal.name }}[r.{{ message.multiplexer_signal }}] = can_decode_signal_{{ message.name_snake }}_{{ signal.name }}(rpc);
     {% endif %}
     {% endfor %}
+
     return r;
 }
+
 
 CanFrame can_encode_rpc_{{ message.name_snake }}(const CanRpc{{ message.name_pascal }} *rpc{% if message.is_multiplexer %}, uint32_t {{ message.multiplexer_signal }}{% endif %}) {
     CanFrame frame = {.id = {{ device_name_snake | upper }}_RPC_GET_ID, .dlc = {{ message.dlc + 2 }}};
@@ -66,21 +69,56 @@ CanFrame can_encode_rpc_{{ message.name_snake }}_ans(const CanRpc{{ message.name
 }
 {% endfor %}
 
-/*---------------------------------------- 2D RPC Handler Table -------------------------------------*/
-typedef void (*{{ device_name_pascal }}RpcHandler)(const CanFrame *, CanFrame *);
+/*---------------------------------------- RPC Table and Registry -----------------------------------*/
+typedef struct {
+    CanRpcId id;
+    {{ device_name_pascal }}RpcHandler handler;
+} {{ device_name_pascal }}RpcEntry;
 
-#define MAX_SERVICES {{ services|length }}
-#define MAX_METHODS 16  // adjust if you have more methods per service
+#define MAX_RPC_ENTRIES 32  // adjust if more handlers are needed
+static {{ device_name_pascal }}RpcEntry rpc_table[MAX_RPC_ENTRIES];
+static size_t rpc_table_size = 0;
 
-static const {{ device_name_pascal }}RpcHandler handler_table[MAX_SERVICES][MAX_METHODS] = {
-{% for service in services %}
-    {
-    {% for method in service.methods %}
-        [{{ method.id }}] = {{ device_name_snake }}_service_handle_{{ method.name_snake }},
-    {% endfor %}
-    },
-{% endfor %}
-};
+/*---------------------------------------- RPC Registration API ------------------------------------*/
+bool {{ device_name_snake }}_rpc_register(uint8_t service_id, uint8_t method_id, {{ device_name_pascal }}RpcHandler handler) {
+    if (!handler) return false;
+    if (rpc_table_size >= MAX_RPC_ENTRIES) return false;
+
+    // Check if entry already exists (update if so)
+    for (size_t i = 0; i < rpc_table_size; i++) {
+        if (rpc_table[i].id.service_id == service_id && rpc_table[i].id.method_id == method_id) {
+            rpc_table[i].handler = handler;
+            return true;
+        }
+    }
+
+    rpc_table[rpc_table_size++] = ({{ device_name_pascal }}RpcEntry){
+        .id = {.service_id = service_id, .method_id = method_id},
+        .handler = handler,
+    };
+    return true;
+}
+
+bool {{ device_name_snake }}_rpc_unregister(uint8_t service_id, uint8_t method_id) {
+    for (size_t i = 0; i < rpc_table_size; i++) {
+        if (rpc_table[i].id.service_id == service_id && rpc_table[i].id.method_id == method_id) {
+            // Shift everything down
+            memmove(&rpc_table[i], &rpc_table[i + 1], (rpc_table_size - i - 1) * sizeof(rpc_table[0]));
+            rpc_table_size--;
+            return true;
+        }
+    }
+    return false;
+}
+
+/*---------------------------------------- RPC Lookup ----------------------------------------------*/
+static {{ device_name_pascal }}RpcHandler find_rpc_handler(uint16_t rpc_id) {
+    for (size_t i = 0; i < rpc_table_size; i++) {
+        if (rpc_table[i].id.rpc_id == rpc_id)
+            return rpc_table[i].handler;
+    }
+    return NULL;
+}
 
 /*---------------------------------------- RPC Dispatch ---------------------------------------------*/
 void {{ device_name_snake }}_service_dispatch(
@@ -88,21 +126,23 @@ void {{ device_name_snake }}_service_dispatch(
     void (*send_func)(const CanFrame *)
 ) {
     if (!frame || !is_{{ device_name_snake }}_rpc(frame)) return;
-
-    // DLC check: must have at least 2 bytes for service_id and method_id
     if (frame->dlc < 2) return;
 
-    uint8_t service_id = frame->data[0];
-    uint8_t method_id  = frame->data[1];
-
-    if (service_id >= MAX_SERVICES) return;
-    if (method_id >= MAX_METHODS) return;
-
-    {{ device_name_pascal }}RpcHandler handler = handler_table[service_id][method_id];
+    CanRpcId id = {.service_id = frame->data[0], .method_id = frame->data[1]};
+    {{ device_name_pascal }}RpcHandler handler = find_rpc_handler(id.rpc_id);
     if (!handler) return;
 
     CanFrame response = {0};
     handler(frame, &response);
 
     if (send_func) send_func(&response);
+}
+
+/*---------------------------------------- RPC Auto-Registration (Optional) -------------------------*/
+void {{ device_name_snake }}_rpc_init(void) {
+{% for service in services %}
+    {% for method in service.methods %}
+    {{ device_name_snake }}_rpc_register({{ service.id }}, {{ method.id }}, {{ device_name_snake }}_service_handle_{{ method.name_snake }});
+    {% endfor %}
+{% endfor %}
 }
