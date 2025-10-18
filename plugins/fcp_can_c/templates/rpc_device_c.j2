@@ -82,7 +82,6 @@ bool {{ device_name_snake }}_rpc_register(uint8_t service, uint8_t method, {{ de
     if (!handler) return false;
     if (rpc_table_size >= MAX_RPC_ENTRIES) return false;
 
-    // Check if entry already exists (update if so)
     for (size_t i = 0; i < rpc_table_size; i++) {
         if (rpc_table[i].id.service == service && rpc_table[i].id.method == method) {
             rpc_table[i].handler = handler;
@@ -100,7 +99,6 @@ bool {{ device_name_snake }}_rpc_register(uint8_t service, uint8_t method, {{ de
 bool {{ device_name_snake }}_rpc_unregister(uint8_t service, uint8_t method) {
     for (size_t i = 0; i < rpc_table_size; i++) {
         if (rpc_table[i].id.service == service && rpc_table[i].id.method == method) {
-            // Shift everything down
             memmove(&rpc_table[i], &rpc_table[i + 1], (rpc_table_size - i - 1) * sizeof(rpc_table[0]));
             rpc_table_size--;
             return true;
