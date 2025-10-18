@@ -5,8 +5,7 @@
 #include <stdbool.h>
 
 #include "generated_code/ecu_rpc.h"
-#include "generated_code/can_frame.h"  // Include CanFrame definition
-
+#include "generated_code/can_frame.h"
 /*---------------------------------------- Client API ---------------------------------------------*/
 
 /**
