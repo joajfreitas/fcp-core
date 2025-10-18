@@ -1,9 +1,14 @@
-#ifndef {{ device_name_snake | upper }}_RPC_H
-#define {{ device_name_snake | upper }}_RPC_H
+#ifndef {{ device_name_upper }}_RPC_H
+#define {{ device_name_upper }}_RPC_H
 
 #include <stdint.h>
 #include <stdbool.h>
 #include "can_frame.h"
+
+/*---------------------------------------- Type Definitions ----------------------------------------*/
+
+#define {{ device_name_snake | upper }}_RPC_GET_ID {{ rpc_get_id }}
+#define {{ device_name_snake | upper }}_RPC_ANS_ID {{ rpc_ans_id }}
 
 typedef union {
     struct {
@@ -14,59 +19,91 @@ typedef union {
 } CanRpcId;
 
 
-#define {{ device_name_snake | upper }}_RPC_GET_ID {{ rpc_get_id }}
-#define {{ device_name_snake | upper }}_RPC_ANS_ID {{ rpc_ans_id }}
+/**
+ * @brief RPC handler function prototype.
+ * 
+ * Each handler should process an incoming frame and fill out the response.
+ * 
+ * @param request  Pointer to the incoming CAN frame.
+ * @param response Pointer to the CAN frame that will be filled as the response.
+ */
+typedef void (*{{ device_name_pascal }}RpcHandler)(const CanFrame *request, CanFrame *response);
 
-typedef void (*{{ device_name_pascal }}RpcHandler)(const CanFrame *req, CanFrame *resp);
+/*---------------------------------------- RPC Utility Functions -----------------------------------*/
 
-{% for message in rpcs %}
-typedef struct {
-    CanRpcId id;
-    {%- for signal in message.signals %}
-    {{ signal.data_type }} {{ signal.name }}{% if signal.is_multiplexer %}[{{ signal.multiplexer_count }}]{% endif %};
-    {%- endfor %}
-} CanRpc{{ message.name_pascal }};
-{% endfor %}
+/**
+ * @brief Check if a CAN frame belongs to this device's RPC namespace.
+ */
+bool is_{{ device_name_snake }}_rpc(const CanFrame *frame);
 
-typedef enum {
-{%- for service in services %}
-    {%- for method in service.methods %}
-    {{ device_name_snake | upper }}_{{ method.name_snake | upper }} = {{ method.id }},
-    {%- endfor %}
-{%- endfor %}
-} {{ device_name_pascal }}RpcMethodId;
-
+/**
+ * @brief Main RPC dispatcher.
+ * 
+ * Finds and invokes the handler corresponding to a service + method ID.
+ * Automatically sends back a response using the provided callback.
+ */
 void {{ device_name_snake }}_service_dispatch(
     const CanFrame *frame,
     void (*send_func)(const CanFrame *)
 );
 
-{% for service in services %}
-    {% for method in service.methods %}
-void {{ device_name_snake }}_service_handle_{{ method.name_snake
-    | replace("requeststate","request_state")
-    | replace("gettemperature","get_temperature") }}(
-    const CanFrame *req,
-    CanFrame *resp
-);
+/*---------------------------------------- RPC Registration API ------------------------------------*/
+
+/**
+ * @brief Register an RPC handler dynamically.
+ * 
+ * Adds or updates a handler in the internal RPC table.
+ * 
+ * @param service_id RPC service identifier.
+ * @param method_id  RPC method identifier.
+ * @param handler    Function pointer to the handler.
+ * @return true if successfully registered or updated, false otherwise.
+ */
+bool {{ device_name_snake }}_rpc_register(uint8_t service_id, uint8_t method_id, {{ device_name_pascal }}RpcHandler handler);
+
+/**
+ * @brief Unregister an RPC handler dynamically.
+ * 
+ * Removes the handler associated with the given service and method IDs.
+ * 
+ * @param service_id RPC service identifier.
+ * @param method_id  RPC method identifier.
+ * @return true if successfully unregistered, false if not found.
+ */
+bool {{ device_name_snake }}_rpc_unregister(uint8_t service_id, uint8_t method_id);
+
+/**
+ * @brief Initialize and pre-register all statically generated RPC handlers.
+ * 
+ * Should be called once during system startup.
+ */
+void {{ device_name_snake }}_rpc_init(void);
+
+/*---------------------------------------- RPC Encode/Decode Prototypes -----------------------------*/
+{% for message in rpcs %}
+typedef struct {
+    {% for signal in message.signals %}
+    {% if signal.multiplexer_count > 1 %}
+    {{ signal.scalar_type }} {{ signal.name }}[{{ signal.multiplexer_count }}];
+    {% else %}
+    {{ signal.scalar_type }} {{ signal.name }};
+    {% endif %}
     {% endfor %}
-{% endfor %}
+} CanRpc{{ message.name_pascal }};
 
-
-{% for message in rpcs %}
-CanRpc{{ message.name_pascal }} can_decode_rpc_{{ message.name_snake }}(const CanFrame *frame);
-{% endfor %}
-
-{% for message in rpcs %}
-{%- if message.is_multiplexer %}
-CanFrame can_encode_rpc_{{ message.name_snake }}(
-    const CanRpc{{ message.name_pascal }} *rpc,
-    uint32_t {{ message.multiplexer_signal }}
-);
-{% else %}
-CanFrame can_encode_rpc_{{ message.name_snake }}(const CanRpc{{ message.name_pascal }} *rpc);
+CanRpc{{ message.name_pascal }} can_decode_rpc_{{ message.name_snake }}(const CanFrame *rpc);
+CanFrame can_encode_rpc_{{ message.name_snake }}(const CanRpc{{ message.name_pascal }} *rpc{% if message.is_multiplexer %}, uint32_t {{ message.multiplexer_signal }}{% endif %});
 CanFrame can_encode_rpc_{{ message.name_snake }}_ans(const CanRpc{{ message.name_pascal }} *rpc);
-{% endif -%}
-{% endfor -%}
+{% endfor %}
 
-#endif // {{ device_name_snake | upper }}_RPC_H
+/*---------------------------------------- Generated Service Handlers -------------------------------*/
+{% for service in services %}
+{% for method in service.methods %}
+/**
+ * @brief Handler for {{ service.name }}.{{ method.name }} RPC method.
+ */
+void {{ device_name_snake }}_service_handle_{{ method.name_snake }}(const CanFrame *request, CanFrame *response);
+{% endfor %}
+{% endfor %}
+
+#endif /* {{ device_name_upper }}_RPC_H */

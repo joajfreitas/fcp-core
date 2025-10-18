@@ -26,7 +26,7 @@ bool all_tests_passed = true;
         exit(EXIT_FAILURE); \
     }
 
-// Globals
+// Globals for capturing dispatched responses
 static CanFrame intercepted_response;
 static bool got_response = false;
 
@@ -37,35 +37,32 @@ void mock_send(const CanFrame *frame) {
     printf("\033[34m[DEBUG] Intercepted response: ID=0x%X DLC=%d\033[0m\n", frame->id, frame->dlc);
 }
 
-// Test: Encode and decode roundtrip
+/*---------------------------------------- Tests ----------------------------------------*/
+
+// Encode/Decode roundtrip for SensorReq
 void test_rpc_encode_decode_roundtrip() {
     printf("\n\033[33m====== Running: test_rpc_encode_decode_roundtrip ======\033[0m\n");
 
     bool pass = true;
 
     CanRpcSensorReq original = {
-        .id.service_id = 0,
-        .id.method_id = 0,
         .request_id = 0x12
     };
 
     CanFrame frame = can_encode_rpc_sensor_req(&original);
-    printf("\033[34m[DEBUG] Encoded frame ID=0x%X DLC=%d\033[0m\n", frame.id, frame.dlc);
+    printf("[DEBUG] Encoded frame ID=0x%X DLC=%d\n", frame.id, frame.dlc);
 
     pass &= (frame.id == ECU_RPC_GET_ID && frame.dlc == 3);
 
     CanRpcSensorReq decoded = can_decode_rpc_sensor_req(&frame);
-    printf("\033[34m[DEBUG] Decoded: service_id=0x%X method_id=0x%X request_id=0x%X\033[0m\n",
-           decoded.id.service_id, decoded.id.method_id, decoded.request_id);
+    printf("[DEBUG] Decoded: request_id=0x%X\n", decoded.request_id);
 
-    
-    pass &= (decoded.id.service_id == 0);
-    pass &= (decoded.id.method_id == 0);
     pass &= (decoded.request_id == original.request_id);
 
     VERIFY_TEST(pass);
 }
 
+// Encode/Decode roundtrip for SensorInformation
 void test_rpc_response_roundtrip() {
     printf("\n\033[33m====== Running: test_rpc_response_roundtrip ======\033[0m\n");
 
@@ -82,29 +79,23 @@ void test_rpc_response_roundtrip() {
     VERIFY_TEST(pass);
 }
 
+// Full end-to-end dispatch test
 void test_rpc_dispatch_end_to_end() {
     printf("\n\033[33m====== Running: test_rpc_dispatch_end_to_end ======\033[0m\n");
 
     bool pass = true;
     got_response = false;
 
-    CanRpcSensorReq req = {
-        .id.service_id = 0,
-        .id.method_id = 0,
-        .request_id = 0x01
-    };
+    ecu_rpc_client_init(); // <--- register handlers
 
-    printf("\033[34m[DEBUG] Sending request: service_id=0x%X, method_id=0x%X, request_id=0x%X\033[0m\n",
-           req.id.service_id, req.id.method_id, req.request_id);
-
+    CanRpcSensorReq req = { .request_id = 0x01 };
     CanFrame frame = can_encode_rpc_sensor_req(&req);
+
     ecu_service_dispatch(&frame, mock_send);
 
     pass &= got_response;
 
     CanRpcSensorInformation decoded = can_decode_rpc_sensor_information(&intercepted_response);
-    printf("\033[34m[DEBUG] Received response: frame.id = 0x%X, result=0x%X\033[0m\n",
-           intercepted_response.id, decoded.result);
 
     pass &= (intercepted_response.id == ECU_RPC_ANS_ID);
     pass &= (decoded.result == 0xA0);
@@ -113,27 +104,21 @@ void test_rpc_dispatch_end_to_end() {
 }
 
 
-
 // Test: Invalid DLC
 void test_rpc_invalid_dlc() {
     printf("\n\033[33m====== Running: test_rpc_invalid_dlc ======\033[0m\n");
 
     bool pass = true;
 
-    CanFrame invalid;
+    CanFrame invalid = {0};
     invalid.id = ECU_RPC_GET_ID;
-    invalid.dlc = 1;  // too short to contain service_id + method_id
+    invalid.dlc = 1;  // too short
     memset(invalid.data, 0, sizeof(invalid.data));
 
-    printf("\033[34m[DEBUG] Sending invalid frame ID=0x%X DLC=%d\033[0m\n",
-           invalid.id, invalid.dlc);
-
     got_response = false;
-
-    // Dispatch should ignore the frame
     ecu_service_dispatch(&invalid, mock_send);
 
-    pass &= (!got_response);  // verify the dispatcher did not send a response
+    pass &= (!got_response);
 
     VERIFY_TEST(pass);
 }
@@ -148,11 +133,8 @@ void test_rpc_invalid_service_method() {
     CanFrame req = {
         .id = ECU_RPC_GET_ID,
         .dlc = 3,
-        .data = {0xFF, 0xFF, 0x00}
+        .data = {0xFF, 0xFF, 0x00}  // service=0xFF, method=0xFF
     };
-
-    printf("\033[34m[DEBUG] Sending invalid service/method frame: service=0x%X, method=0x%X\033[0m\n",
-           req.data[0], req.data[1]);
 
     ecu_service_dispatch(&req, mock_send);
 
@@ -161,6 +143,7 @@ void test_rpc_invalid_service_method() {
     VERIFY_TEST(pass);
 }
 
+// Test: handler invocation
 static bool handler_called = false;
 void ecu_service_handle_mock(const CanFrame *req, CanFrame *resp) {
     handler_called = true;
@@ -174,13 +157,9 @@ void test_rpc_handler_invocation() {
     got_response = false;
     handler_called = false;
 
-    CanRpcSensorReq req = {
-        .id.service_id = 0,
-        .id.method_id = 0,
-        .request_id = 0x01
-    };
-
+    CanRpcSensorReq req = { .request_id = 0x01 };
     CanFrame frame = can_encode_rpc_sensor_req(&req);
+
     ecu_service_dispatch(&frame, mock_send);
 
     pass &= got_response;
@@ -192,6 +171,7 @@ void test_rpc_handler_invocation() {
     VERIFY_TEST(pass);
 }
 
+/*---------------------------------------- Main ----------------------------------------*/
 
 int main() {
     test_rpc_encode_decode_roundtrip();
@@ -204,4 +184,3 @@ int main() {
     ASSERT_TESTS();
     return 0;
 }
-
