@@ -1,6 +1,6 @@
 #ifndef ECU_RPC_CLIENT_H
 #define ECU_RPC_CLIENT_H
-    
+
 #include <stdint.h>
 #include <stdbool.h>
 

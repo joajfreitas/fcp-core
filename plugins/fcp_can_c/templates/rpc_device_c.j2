@@ -75,10 +75,8 @@ typedef struct {
     {{ device_name_pascal }}RpcHandler handler;
 } {{ device_name_pascal }}RpcEntry;
 
-#define MAX_RPC_ENTRIES 32  // adjust if more handlers are needed
 static {{ device_name_pascal }}RpcEntry rpc_table[MAX_RPC_ENTRIES];
 static size_t rpc_table_size = 0;
-
 /*---------------------------------------- RPC Registration API ------------------------------------*/
 bool {{ device_name_snake }}_rpc_register(uint8_t service_id, uint8_t method_id, {{ device_name_pascal }}RpcHandler handler) {
     if (!handler) return false;

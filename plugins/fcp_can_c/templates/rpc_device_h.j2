@@ -10,6 +10,8 @@
 #define {{ device_name_snake | upper }}_RPC_GET_ID {{ rpc_get_id }}
 #define {{ device_name_snake | upper }}_RPC_ANS_ID {{ rpc_ans_id }}
 
+#define MAX_RPC_ENTRIES {{ rpcs|length }}
+
 typedef union {
     struct {
         uint8_t service_id;
