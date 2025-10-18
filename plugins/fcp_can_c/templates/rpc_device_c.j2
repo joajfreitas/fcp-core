@@ -78,28 +78,28 @@ typedef struct {
 static {{ device_name_pascal }}RpcEntry rpc_table[MAX_RPC_ENTRIES];
 static size_t rpc_table_size = 0;
 /*---------------------------------------- RPC Registration API ------------------------------------*/
-bool {{ device_name_snake }}_rpc_register(uint8_t service_id, uint8_t method_id, {{ device_name_pascal }}RpcHandler handler) {
+bool {{ device_name_snake }}_rpc_register(uint8_t service, uint8_t method, {{ device_name_pascal }}RpcHandler handler) {
     if (!handler) return false;
     if (rpc_table_size >= MAX_RPC_ENTRIES) return false;
 
     // Check if entry already exists (update if so)
     for (size_t i = 0; i < rpc_table_size; i++) {
-        if (rpc_table[i].id.service_id == service_id && rpc_table[i].id.method_id == method_id) {
+        if (rpc_table[i].id.service == service && rpc_table[i].id.method == method) {
             rpc_table[i].handler = handler;
             return true;
         }
     }
 
     rpc_table[rpc_table_size++] = ({{ device_name_pascal }}RpcEntry){
-        .id = {.service_id = service_id, .method_id = method_id},
+        .id = {.service = service, .method = method},
         .handler = handler,
     };
     return true;
 }
 
-bool {{ device_name_snake }}_rpc_unregister(uint8_t service_id, uint8_t method_id) {
+bool {{ device_name_snake }}_rpc_unregister(uint8_t service, uint8_t method) {
     for (size_t i = 0; i < rpc_table_size; i++) {
-        if (rpc_table[i].id.service_id == service_id && rpc_table[i].id.method_id == method_id) {
+        if (rpc_table[i].id.service == service && rpc_table[i].id.method == method) {
             // Shift everything down
             memmove(&rpc_table[i], &rpc_table[i + 1], (rpc_table_size - i - 1) * sizeof(rpc_table[0]));
             rpc_table_size--;
@@ -126,7 +126,7 @@ void {{ device_name_snake }}_service_dispatch(
     if (!frame || !is_{{ device_name_snake }}_rpc(frame)) return;
     if (frame->dlc < 2) return;
 
-    CanRpcId id = {.service_id = frame->data[0], .method_id = frame->data[1]};
+    CanRpcId id = {.service = frame->data[0], .method = frame->data[1]};
     {{ device_name_pascal }}RpcHandler handler = find_rpc_handler(id.rpc_id);
     if (!handler) return;
 

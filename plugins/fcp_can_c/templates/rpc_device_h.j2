@@ -14,8 +14,8 @@
 
 typedef union {
     struct {
-        uint8_t service_id;
-        uint8_t method_id;
+        uint8_t service;
+        uint8_t method;
     };
     uint16_t rpc_id;
 } CanRpcId;
@@ -56,23 +56,23 @@ void {{ device_name_snake }}_service_dispatch(
  * 
  * Adds or updates a handler in the internal RPC table.
  * 
- * @param service_id RPC service identifier.
- * @param method_id  RPC method identifier.
+ * @param service RPC service identifier.
+ * @param method  RPC method identifier.
  * @param handler    Function pointer to the handler.
  * @return true if successfully registered or updated, false otherwise.
  */
-bool {{ device_name_snake }}_rpc_register(uint8_t service_id, uint8_t method_id, {{ device_name_pascal }}RpcHandler handler);
+bool {{ device_name_snake }}_rpc_register(uint8_t service, uint8_t method, {{ device_name_pascal }}RpcHandler handler);
 
 /**
  * @brief Unregister an RPC handler dynamically.
  * 
  * Removes the handler associated with the given service and method IDs.
  * 
- * @param service_id RPC service identifier.
- * @param method_id  RPC method identifier.
+ * @param service RPC service identifier.
+ * @param method  RPC method identifier.
  * @return true if successfully unregistered, false if not found.
  */
-bool {{ device_name_snake }}_rpc_unregister(uint8_t service_id, uint8_t method_id);
+bool {{ device_name_snake }}_rpc_unregister(uint8_t service, uint8_t method);
 
 /**
  * @brief Initialize and pre-register all statically generated RPC handlers.
