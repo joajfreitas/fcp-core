@@ -63,11 +63,9 @@ void ecu_service_handle_get_temperature(const CanFrame *req, CanFrame *resp) {
     resp->id = ECU_RPC_ANS_ID;
 }
 
-/*---------------------------------------- RPC Registration ----------------------------------------*/
+/*---------------------------------------- RPC Registration (Example) ----------------------------------------*/
 
 void ecu_rpc_client_init(void) {
-    ecu_rpc_init();
-
     ecu_rpc_register(0, 0, ecu_service_handle_request_state);
     ecu_rpc_register(0, 1, ecu_service_handle_get_temperature);
 }
