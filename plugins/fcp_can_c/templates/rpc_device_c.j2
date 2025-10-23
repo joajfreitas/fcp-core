@@ -3,6 +3,15 @@
 #include "can_signal_parser.h"
 #include <string.h>
 
+/*---------------------------------------- RPC Table and Registry -----------------------------------*/
+typedef struct {
+    CanRpcId id;
+    {{ device_name_pascal }}RpcHandler handler;
+} {{ device_name_pascal }}RpcEntry;
+
+static {{ device_name_pascal }}RpcEntry rpc_table[MAX_RPC_ENTRIES];
+static size_t rpc_table_size = 0;
+
 /*---------------------------------------- RPC Validation ------------------------------------------*/
 bool is_{{ device_name_snake }}_rpc(const CanFrame *frame) {
     if (!frame) return false;
@@ -56,15 +65,6 @@ bool is_{{ device_name_snake }}_rpc(const CanFrame *frame) {
     }
 {% endfor %}
 
-/*---------------------------------------- RPC Table and Registry -----------------------------------*/
-typedef struct {
-    CanRpcId id;
-    {{ device_name_pascal }}RpcHandler handler;
-} {{ device_name_pascal }}RpcEntry;
-
-static {{ device_name_pascal }}RpcEntry rpc_table[MAX_RPC_ENTRIES];
-static size_t rpc_table_size = 0;
-
 /*---------------------------------------- RPC Registration API ------------------------------------*/
 bool {{ device_name_snake }}_rpc_register(uint8_t service, uint8_t method, {{ device_name_pascal }}RpcHandler handler) {
     if (!handler || rpc_table_size >= MAX_RPC_ENTRIES) return false;
@@ -79,15 +79,17 @@ bool {{ device_name_snake }}_rpc_register(uint8_t service, uint8_t method, {{ de
 }
 
 bool {{ device_name_snake }}_rpc_unregister(uint8_t service, uint8_t method) {
-    for (size_t i = 0; i < rpc_table_size; i++) {
+    for (uint16_t i = 0; i < rpc_table_size; i++) {
         if (rpc_table[i].id.service == service && rpc_table[i].id.method == method) {
-            memmove(&rpc_table[i], &rpc_table[i + 1], (rpc_table_size - i - 1) * sizeof(rpc_table[0]));
+            if (rpc_table_size > 1 && i < rpc_table_size - 1)
+                rpc_table[i] = rpc_table[rpc_table_size - 1];
             rpc_table_size--;
             return true;
         }
     }
     return false;
 }
+
 
 /*---------------------------------------- RPC Lookup ----------------------------------------------*/
 static {{ device_name_pascal }}RpcHandler find_rpc_handler(uint16_t rpc_id) {
