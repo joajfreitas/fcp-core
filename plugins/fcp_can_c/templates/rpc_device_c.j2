@@ -111,7 +111,9 @@ void {{ device_name_snake }}_service_dispatch(const CanFrame *frame, void (*send
 
 /*---------------------------------------- RPC Auto-Registration (Optional) -------------------------*/
 void {{ device_name_snake }}_rpc_init(void) {
-{% for service in services %}{% for method in service.methods %}
-    {{ device_name_snake }}_rpc_register({{ service.id }}, {{ method.id }}, {{ device_name_snake }}_service_handle_{{ method.name_snake }});
-{% endfor %}{% endfor %}
+{% for service in services %}
+    {% for method in service.methods %}
+        {{ device_name_snake }}_rpc_register({{ service.id }}, {{ method.id }}, {{ device_name_snake }}_service_handle_{{ method.name_snake }});
+    {% endfor %}
+{% endfor %}
 }
