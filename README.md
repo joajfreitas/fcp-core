@@ -49,3 +49,4 @@ See [readthedocs.io](https://fcp-core.readthedocs.io/en/latest/)
 ## Editor support
 
  * [neovim](https://github.com/joajfreitas/fcp.vim)
+ * [DiogoFerreira.fcp on Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=DiogoFerreira.fcp)
