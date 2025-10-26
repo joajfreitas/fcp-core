@@ -65,6 +65,13 @@ def generate_cmd(
         print(logger.error(r.err().results_in("Failed to generate fcp")))
         return
     fcp_v2 = r.unwrap()
+    try:
+        for struct in fcp_v2.structs:
+            for field in struct.fields:
+                field.type = fcp_v2.resolve_type(field.type)
+    except Exception as e:
+        print(f"Type resolution error: {e}")
+        return
 
     generator_manager = GeneratorManager(make_general_verifier())
     result = generator_manager.generate(generator, templates, skel, fcp_v2, output)

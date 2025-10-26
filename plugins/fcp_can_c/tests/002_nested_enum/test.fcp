@@ -1,19 +1,35 @@
 version: "3"
 
-enum MyEnum {
-    S0 = 0,
-    S1 = 1,
-    S2 = 2,
+enum InnerEnum {
+    A = 0,
+    B = 1,
+    C = 2,
 }
 
-struct Foo {
+struct InnerStruct {
     s1 @0: u8,
     s2 @1: u16,
-    s3 @2: MyEnum,
+}
+
+struct SensorInformation {
+    e @0: InnerEnum,
+    s @1: InnerStruct,
+}
+
+struct OuterStruct {
+    inner @0: InnerStruct,
+    val @1: u16,
+}
+
+struct MultiLevelStruct {
+    x @0: InnerStruct,
+    y @1: OuterStruct,
 }
 
 device ecu {
     protocol can {
-        impl Foo { id: 10, },
-    }
+        impl SensorInformation { id: 10, },
+        impl OuterStruct { id: 20, },
+        impl MultiLevelStruct { id: 30, },
+    },
 }

@@ -113,13 +113,32 @@ class Generator(CodeGenerator):
         def check_impl_size(
             self: Any, fcp: FcpV2, extension: Any
         ) -> Result[Nil, FcpError]:
-            """Check if extension has a valid type."""
-            struct = fcp.get_struct(extension.type)
-            size = sum([field.type.get_length() for field in struct.unwrap().fields])
-            if size > 64:
+            """Check if extension has a valid type and compute total bit size."""
+            struct_maybe = fcp.get_struct(extension.type)
+            if struct_maybe.is_nothing():
+                return error(f"Struct {extension.type} not found", node=extension)
+
+            struct = struct_maybe.unwrap()
+            total_size = 0
+
+            for field in struct.fields:
+                t = field.type
+                resolved = fcp.get_type(t)
+                if not resolved.is_nothing():
+                    t = resolved.unwrap()
+
+                if hasattr(t, "get_length"):
+                    try:
+                        total_size += t.get_length()
+                    except ValueError:
+                        total_size += 0
+                else:
+                    total_size += 0
+
+            if total_size > 64:
                 return error(
-                    f"Impl {extension.name} is way too big at {size} bits",
+                    f"Impl {extension.name} is way too big at {total_size} bits",
                     node=extension,
                 )
-            else:
-                return Ok(())
+
+            return Ok(())

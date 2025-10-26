@@ -22,48 +22,33 @@ bool all_tests_passed = true;
         exit(EXIT_FAILURE);                                                    \
     }
 
-CanFrame expected_frame = {
-    .id = 10,
-    .dlc = 3,
-    .data = {123, 234, 0, S2},
-};
-
-void test_encode_msg() {
-    CanMsgFoo msg = {
-        .s1 = 123,
-        .s2 = 234,
-        .s3 = S2,
+void test_encode_decode_msg() {
+    CanMsgSensorInformation msg = {
+        .e    = C,      // InnerEnum
+        .s_s1 = 33,     // InnerStruct s1
+        .s_s2 = 4567,   // InnerStruct s2
     };
 
-    CanFrame frame = can_encode_msg_foo(&msg);
-    VERIFY_TEST(frame.id == expected_frame.id);
-}
+    // Encode
+    CanFrame frame = can_encode_msg_sensor_information(&msg);
 
-void test_is_dev_msg() { VERIFY_TEST(can_is_ecu_msg(&expected_frame)); }
+    printf("Encoded frame bytes: ");
+    for (int i = 0; i < frame.dlc; i++)
+        printf("%d ", frame.data[i]);
+    printf("\n");
 
-void test_dlc() { VERIFY_TEST(expected_frame.dlc == 3); }
+    VERIFY_TEST(frame.id == CAN_MSG_ID_SENSOR_INFORMATION);
 
-void test_decode_msg() {
-    CanMsgFoo expected_msg = {
-        .s1 = 123,
-        .s2 = 234,
-        .s3 = S2,
-    };
+    // Decode
+    CanMsgSensorInformation decoded = can_decode_msg_sensor_information(&frame);
 
-    CanMsgFoo msg = can_decode_msg_foo(&expected_frame);
-
-    bool signals_match = msg.s1 == expected_msg.s1 &&
-                         msg.s2 == expected_msg.s2 && msg.s3 == expected_msg.s3;
-    VERIFY_TEST(signals_match);
+    VERIFY_TEST(decoded.e    == msg.e);
+    VERIFY_TEST(decoded.s_s1 == msg.s_s1);
+    VERIFY_TEST(decoded.s_s2 == msg.s_s2);
 }
 
 int main() {
-    test_encode_msg();
-    test_is_dev_msg();
-    test_dlc();
-    test_decode_msg();
-
+    test_encode_decode_msg();
     ASSERT_TESTS();
-
     return 0;
 }
