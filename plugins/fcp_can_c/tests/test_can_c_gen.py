@@ -40,7 +40,7 @@ def get_path(test_name: str) -> str:
     "test_name",
     [
         "001_basic_struct",
-        # "002_nested_enum",
+        "002_nested_enum",
         "003_msg_scheduling",
         "004_little_endian",
         "005_big_endian",
