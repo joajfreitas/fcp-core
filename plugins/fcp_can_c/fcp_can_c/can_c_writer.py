@@ -119,6 +119,14 @@ class CanSignal:
             len(self.multiplexer_ids) if self.multiplexer_ids else 0
         )
 
+@dataclass
+class NestedStruct:
+    """A nested struct within a CAN message."""
+    name: str
+    struct_type: str
+    fields: List[CanSignal]
+    start_bit: int
+    bit_length: int
 
 @dataclass
 class CanMessage:
@@ -134,11 +142,14 @@ class CanMessage:
 
     def __post_init__(self) -> None:
         self.name_snake = to_snake_case(self.name_pascal)
+        self.is_multiplexer = False
+        self.multiplexer_signal = None
 
         for signal in self.signals:
-            if signal.is_multiplexer:
+            if isinstance(signal, CanSignal) and signal.is_multiplexer:
                 self.multiplexer_signal = to_snake_case(signal.multiplexer_signal)
                 self.is_multiplexer = True
+
 
 
 @dataclass
@@ -147,6 +158,7 @@ class Enum:
 
     name: str
     values: Dict[str, int]
+
 
 
 class CanNode:
@@ -176,44 +188,64 @@ def is_signed(value: Value) -> bool:
 
 def create_can_signals(
     encoding: List[EncodeablePiece],
-) -> Tuple[List[StructField], int]:
-    """Create a list of CAN signals from a list of EncodeablePieces.
-
-    Args:
-        encoding: List of EncodeablePieces to create signals from.
-
-    Returns:
-        Tuple containing a list of CAN signals and the maximum DLC.
-
-    """
+    fcp: FcpV2,
+) -> Tuple[List[Union[CanSignal, NestedStruct]], int]:
+    """Create a list of CAN signals from a list of EncodeablePieces."""
     signals = []
     max_dlc = 0
 
     for piece in encoding:
-        multiplexer_signal = piece.extended_data.get("mux_signal")
-        multiplexer_ids = list(range(piece.extended_data.get("mux_count", 0)))
-
-        type = piece.composite_type.unwrap_or(piece.type.name)
-        signals.append(
-            CanSignal(
-                name=piece.name.replace("::", "_"),
-                start_bit=piece.bitstart,
-                data_type=type,
-                scalar_type=piece.type.name,
-                bit_length=piece.bitlength,
-                byte_order=(
-                    "big_endian"
-                    if piece.extended_data.get("endianness", "little") == "big"
-                    else "little_endian"
-                ),
-                signed=is_signed(piece),
-                is_multiplexer=bool(multiplexer_signal),
-                multiplexer_ids=multiplexer_ids if multiplexer_signal else None,
-                multiplexer_signal=multiplexer_signal,
+        if hasattr(piece, 'nested_fields') and piece.nested_fields:
+            nested_signals = []
+            for nested_piece in piece.nested_fields:
+                nested_signals.append(
+                    CanSignal(
+                        name=nested_piece.name,
+                        start_bit=nested_piece.bitstart,
+                        data_type=nested_piece.type.name,
+                        scalar_type=nested_piece.type.name,
+                        bit_length=nested_piece.bitlength,
+                        byte_order="little_endian",
+                        signed=is_signed(nested_piece),
+                    )
+                )
+            
+            signals.append(
+                NestedStruct(
+                    name=piece.name,
+                    struct_type=piece.composite_type.unwrap(),
+                    fields=nested_signals,
+                    start_bit=piece.bitstart,
+                    bit_length=piece.bitlength,
+                )
             )
-        )
+            max_dlc = max(max_dlc, ceil((piece.bitstart + piece.bitlength) / 8))
+        else:
+            # Regular signal
+            multiplexer_signal = piece.extended_data.get("mux_signal")
+            multiplexer_ids = list(range(piece.extended_data.get("mux_count", 0)))
 
-        max_dlc = max(max_dlc, ceil((piece.bitstart + piece.bitlength) / 8))
+            type = piece.composite_type.unwrap_or(piece.type.name)
+            signals.append(
+                CanSignal(
+                    name=piece.name.replace("::", "_"),
+                    start_bit=piece.bitstart,
+                    data_type=type,
+                    scalar_type=piece.type.name,
+                    bit_length=piece.bitlength,
+                    byte_order=(
+                        "big_endian"
+                        if piece.extended_data.get("endianness", "little") == "big"
+                        else "little_endian"
+                    ),
+                    signed=is_signed(piece),
+                    is_multiplexer=bool(multiplexer_signal),
+                    multiplexer_ids=multiplexer_ids if multiplexer_signal else None,
+                    multiplexer_signal=multiplexer_signal,
+                )
+            )
+
+            max_dlc = max(max_dlc, ceil((piece.bitstart + piece.bitlength) / 8))
 
     return signals, max_dlc
 
@@ -338,7 +370,7 @@ def initialize_can_data(
 
     for extension in fcp.get_matching_impls("can"):
         encoding = encoder.generate(extension)
-        signals, dlc = create_can_signals(encoding)
+        signals, dlc = create_can_signals(encoding, fcp)
 
         frame_id = extension.fields.get("id")
         period = extension.fields.get("period")
@@ -408,7 +440,7 @@ def initialize_can_data(
                         continue
 
                     encoding = encoder.generate(impl)
-                    signals, dlc = create_can_signals(encoding)
+                    signals, dlc = create_can_signals(encoding, fcp)
 
                     key = (struct_name, cast(int, frame_id), direction)
                     if key in rpc_messages:

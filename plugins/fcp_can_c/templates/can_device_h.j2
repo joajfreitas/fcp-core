@@ -18,7 +18,7 @@
 {%- endfor %}
 
 {% if messages | length > 0 -%}
-  /* Ecu Message Periods */
+  /* ECU Message Periods */
 {%- endif %}
 
 {%- for message in messages %}
@@ -35,14 +35,24 @@ typedef enum {
 {%- endfor -%}
 
 {% for message in messages %}
+/* {{ message.name_pascal }} message structure */
 typedef struct {
     {%- for signal in message.signals %}
+      {%- if signal.fields is defined and signal.fields %}
+    struct {
+        {%- for sub in signal.fields %}
+        {{ sub.data_type }} {{ sub.name }};
+        {%- endfor %}
+    } {{ signal.name }};
+      {%- else %}
     {{ signal.data_type }} {{ signal.name }}{% if signal.is_multiplexer %}[{{ signal.multiplexer_count }}]{% endif %};
+      {%- endif %}
     {%- endfor %}
 } CanMsg{{ message.name_pascal }};
 {%- endfor %}
 
 {% if messages|length > 0 %}
+/* {{ device_name_pascal }} device aggregate structure */
 typedef struct {
     {%- for message in messages %}
     CanMsg{{ message.name_pascal }} {{ message.name_snake }};
@@ -55,7 +65,7 @@ typedef struct {
 bool can_is_{{ device_name_snake }}_msg(const CanFrame *frame);
 
 {% if not is_global_device %}
-/* Send {{ device_name_pascal }} messages according to period */
+/* Send {{ device_name_pascal }} messages according to their defined period */
 void can_send_{{ device_name_snake }}_msgs_scheduled(
     const CanDevice{{ device_name_pascal }} *dev,
     uint32_t time,
