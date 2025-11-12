@@ -92,6 +92,8 @@ def get_spec(json_file: str, force: bool = False) -> Spec:
         yaml.preserve_quotes = True
         with open(json_file) as f:
             j = yaml.load(f.read())
+    else:
+        raise ValueError("Unsupported file format, expected .json or .yaml")
 
     spec.decompile(j)
     failed = validate(spec)
@@ -264,14 +266,19 @@ def fix(src: str, dst: str):
         f.write(json.dumps(d, indent=4))
 
 
-@click.command("write_json")
-@click.argument("json_file")
-def write_json(json_file: str):
-    logger = setup_logging()
+@click.command(
+    "write_json",
+    help="Write JSON file from schema. Accepts a schema file (json or yaml) and an output filename.",
+)
+@click.argument("schema")
+@click.argument("output")
+@click.option(
+    "--force", is_flag=True, default=False, help="Force write even if validation fails"
+)
+def write_json(schema: str, output: str, force: bool):
+    spec = get_spec(schema, force=force)
 
-    spec = get_spec(json_file)
-
-    with open(os.path.splitext(json_file)[0] + ".json", "w") as f:
+    with open(output, "w") as f:
         f.write(json.dumps(spec.compile(), indent=4))
 
 
