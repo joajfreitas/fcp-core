@@ -148,7 +148,7 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
                 frame_id=id,
                 name=impl.name,
                 length=dlc,
-                signals=list(reversed(signals)),
+                signals=signals,
                 senders=[],
             )
         )
