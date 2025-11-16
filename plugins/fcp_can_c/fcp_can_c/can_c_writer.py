@@ -21,6 +21,7 @@
 """CAN C writer module."""
 
 import os
+
 from beartype.typing import (
     Any,
     Generator,
@@ -53,6 +54,7 @@ def ceil_to_power_of_2(x: int) -> int:
     """
     if x <= 8:
         return 8
+
     x -= 1
     x |= x >> 1
     x |= x >> 2
@@ -60,6 +62,7 @@ def ceil_to_power_of_2(x: int) -> int:
     x |= x >> 8
     x |= x >> 16
     x |= x >> 32
+
     return x + 1
 
 
@@ -99,6 +102,7 @@ class CanSignal:
             "f32": "float",
             "f64": "double",
         }
+
         self.data_type = type_map.get(self.data_type, self.data_type)
         self.is_big_endian_s = "true" if self.byte_order == "big_endian" else "false"
 
@@ -174,10 +178,10 @@ def is_signed(value: "Value") -> bool:
     """Check if a value is signed.
 
     Args:
-        value: Value to check
+        value (Value): Value to check
 
     Returns:
-        True if the value is signed, False otherwise
+        bool: True if the value is signed, False otherwise
 
     """
     return bool(value.type.name.startswith("i"))
@@ -266,7 +270,7 @@ def map_messages_to_devices(messages: List[CanMessage]) -> Dict[str, List[CanMes
         messages: List of messages to map.
 
     Returns:
-        Mapping of devices to messages.
+        Dict: Mapping of devices to messages.
 
     """
     device_messages: Dict[str, List[CanMessage]] = {}
@@ -443,7 +447,8 @@ def initialize_can_data(
                     impl = default_impl_by_name.get(struct_name)
                     if impl is None:
                         impl = next(
-                            (ext for ext in fcp.impls if ext.name == struct_name), None
+                            (ext for ext in fcp.impls if ext.name == struct_name),
+                            None,
                         )
 
                     if impl is None:
