@@ -184,7 +184,16 @@ class PackedEncoder:
     def _generate_struct(
         self, struct: Struct, extension: Impl, prefix: str = ""
     ) -> None:
-        """Generate struct encoding, optionally preserving nested structure."""
+        """Generate struct encoding, optionally preserving nested structure.
+
+        When preserve_nested_structs=True: Creates a single Value with nested_fields
+        populated, preserving the hierarchical structure for C code generation.
+
+        When preserve_nested_structs=False (default): Flattens the struct into
+        individual Values with names like 'parent::child' for compatibility with
+        systems that don't support nested structures (e.g., DBC format).
+
+        """
         for field in sorted(struct.fields, key=lambda field: field.field_id):
             if isinstance(field.type, StructType):
                 if self.ctx.preserve_nested_structs:
