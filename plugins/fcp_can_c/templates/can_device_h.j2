@@ -3,56 +3,62 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
 #include "can_frame.h"
 {%- if include_global %}
 #include "global_can.h"
 {%- endif %}
 
-{% if messages | length > 0 -%}
-  /* {{ device_name_pascal }} Message IDs */
-{%- endif %}
-
+/* {{ device_name_pascal }} Message IDs */
 {%- for message in messages %}
 #define CAN_MSG_ID_{{ message.name_snake | upper }} {{ message.frame_id }}
 {%- endfor %}
 
-{% if messages | length > 0 -%}
-  /* ECU Message Periods */
-{%- endif %}
-
+/* {{ device_name_pascal }} Message Periods */
 {%- for message in messages %}
 #define CAN_MSG_PERIOD_{{ message.name_snake | upper }} {{ message.period }}
 {%- endfor %}
 
-
+/* --- Enums --- */
 {%- for enum in enums %}
 typedef enum {
     {%- for name, value in enum.values.items() %}
-    {{ name | upper }} = {{ value }},
+    {{ enum.name | upper }}_{{ name | upper }} = {{ value }}{% if not loop.last %},{% endif %}
     {%- endfor %}
 } {{ enum.name }};
-{%- endfor -%}
+{%- endfor %}
 
-{% for message in messages %}
+/* --- Nested struct type definitions --- */
+{%- set message_names = messages | map(attribute='name_pascal') | list %}
+{%- if all_struct_types is defined and all_struct_types | length > 0 %}
+{%- for struct_info in all_struct_types if struct_info.name not in message_names %}
+typedef struct {
+    {%- for field in struct_info.fields %}
+    {%- if field.__class__.__name__ == 'NestedStruct' %}
+    CanMsg{{ field.struct_type }} {{ field.name }};
+    {%- else %}
+    {{ field.data_type }} {{ field.name }}{% if field.is_multiplexer %}[{{ field.multiplexer_count }}]{% endif %};
+    {%- endif %}
+    {%- endfor %}
+} CanMsg{{ struct_info.name }};
+{%- endfor %}
+{%- endif %}
+
+/* --- Top-level message structs --- */
+{%- for message in messages %}
 /* {{ message.name_pascal }} message structure */
 typedef struct {
     {%- for signal in message.signals %}
-      {%- if signal.fields is defined and signal.fields %}
-    struct {
-        {%- for sub in signal.fields %}
-        {{ sub.data_type }} {{ sub.name }};
-        {%- endfor %}
-    } {{ signal.name }};
-      {%- else %}
+    {%- if signal.__class__.__name__ == 'NestedStruct' %}
+    CanMsg{{ signal.struct_type }} {{ signal.name }};
+    {%- else %}
     {{ signal.data_type }} {{ signal.name }}{% if signal.is_multiplexer %}[{{ signal.multiplexer_count }}]{% endif %};
-      {%- endif %}
+    {%- endif %}
     {%- endfor %}
 } CanMsg{{ message.name_pascal }};
 {%- endfor %}
 
-{% if messages|length > 0 %}
-/* {{ device_name_pascal }} device aggregate structure */
+/* Device aggregate structure */
+{%- if messages | length > 0 %}
 typedef struct {
     {%- for message in messages %}
     CanMsg{{ message.name_pascal }} {{ message.name_snake }};
@@ -60,31 +66,26 @@ typedef struct {
 } CanDevice{{ device_name_pascal }};
 {%- endif %}
 
-
 /* Check if a CanFrame comes from {{ device_name_pascal }} */
 bool can_is_{{ device_name_snake }}_msg(const CanFrame *frame);
 
-{% if not is_global_device %}
+{%- if not is_global_device %}
 /* Send {{ device_name_pascal }} messages according to their defined period */
 void can_send_{{ device_name_snake }}_msgs_scheduled(
     const CanDevice{{ device_name_pascal }} *dev,
     uint32_t time,
     void (*send_can_func)(const CanFrame *)
 );
-{% endif %}
+{%- endif %}
 
-/* Functions to decode CanFrame into CanMsg<name> objects */
-{%- for message in messages %}
-CanMsg{{ message.name_pascal }} can_decode_msg_{{ message.name_snake }}(const CanFrame *frame);
-{%- endfor %}
-
-/* Functions to encode CanMsg<name> object into CanFrame */
+/* Encode/decode functions */
 {%- for message in messages %}
 {%- if message.is_multiplexer %}
 CanFrame can_encode_msg_{{ message.name_snake }}(const CanMsg{{ message.name_pascal }} *msg, uint32_t {{ message.multiplexer_signal }});
 {%- else %}
 CanFrame can_encode_msg_{{ message.name_snake }}(const CanMsg{{ message.name_pascal }} *msg);
 {%- endif %}
+CanMsg{{ message.name_pascal }} can_decode_msg_{{ message.name_snake }}(const CanFrame *frame);
 {%- endfor %}
 
 #endif // {{ device_name_snake | upper }}_CAN_H

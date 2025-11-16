@@ -35,12 +35,14 @@ from beartype.typing import (
 )
 from math import ceil
 from jinja2 import Environment, FileSystemLoader
+from fcp.specs.struct import Struct
 from fcp.specs.struct_field import StructField
 from fcp.specs.v2 import FcpV2
 from fcp.specs.service import Service
 from dataclasses import dataclass
 from fcp.encoding import make_encoder, EncodeablePiece, Value, PackedEncoderContext
 from fcp.utils import to_pascal_case, to_snake_case
+from fcp.specs.type import StructType, EnumType
 
 
 def ceil_to_power_of_2(x: int) -> int:
@@ -74,8 +76,8 @@ class CanSignal:
     name: str
     start_bit: int
     bit_length: int
-    data_type: str  # user defined data type
-    scalar_type: str  # (u8, i12...)
+    data_type: str
+    scalar_type: str
     signed: bool
     byte_order: str
     scale: float = 1.0
@@ -107,7 +109,6 @@ class CanSignal:
         self.data_type = type_map.get(self.data_type, self.data_type)
         self.is_big_endian_s = "true" if self.byte_order == "big_endian" else "false"
 
-        # If the data type is not in the type map, it is a user defined type or a short type (i12, u5...) so we need to calculate the scalar type
         if self.data_type not in type_map.values():
             self.scalar_type = type_map[
                 "i" if self.signed else "u" + str(ceil_to_power_of_2(self.bit_length))
@@ -119,14 +120,17 @@ class CanSignal:
             len(self.multiplexer_ids) if self.multiplexer_ids else 0
         )
 
+
 @dataclass
 class NestedStruct:
     """A nested struct within a CAN message."""
+
     name: str
     struct_type: str
-    fields: List[CanSignal]
+    fields: List[Union[CanSignal, "NestedStruct"]]
     start_bit: int
     bit_length: int
+
 
 @dataclass
 class CanMessage:
@@ -151,14 +155,12 @@ class CanMessage:
                 self.is_multiplexer = True
 
 
-
 @dataclass
 class Enum:
     """Class to represent an enum."""
 
     name: str
     values: Dict[str, int]
-
 
 
 class CanNode:
@@ -173,16 +175,8 @@ class CanNode:
         self.services: List[str] = []
 
 
-def is_signed(value: Value) -> bool:
-    """Check if a value is signed.
-
-    Args:
-        value (Value): Value to check
-
-    Returns:
-        bool: True if the value is signed, False otherwise
-
-    """
+def is_signed(value: "Value") -> bool:
+    """Check if a value is signed."""
     return bool(value.type.name.startswith("i"))
 
 
@@ -195,59 +189,52 @@ def create_can_signals(
     max_dlc = 0
 
     for piece in encoding:
-        if hasattr(piece, 'nested_fields') and piece.nested_fields:
-            nested_signals = []
-            for nested_piece in piece.nested_fields:
-                nested_signals.append(
-                    CanSignal(
-                        name=nested_piece.name,
-                        start_bit=nested_piece.bitstart,
-                        data_type=nested_piece.type.name,
-                        scalar_type=nested_piece.type.name,
-                        bit_length=nested_piece.bitlength,
-                        byte_order="little_endian",
-                        signed=is_signed(nested_piece),
-                    )
-                )
-            
-            signals.append(
-                NestedStruct(
-                    name=piece.name,
-                    struct_type=piece.composite_type.unwrap(),
-                    fields=nested_signals,
-                    start_bit=piece.bitstart,
-                    bit_length=piece.bitlength,
-                )
-            )
-            max_dlc = max(max_dlc, ceil((piece.bitstart + piece.bitlength) / 8))
-        else:
-            # Regular signal
-            multiplexer_signal = piece.extended_data.get("mux_signal")
-            multiplexer_ids = list(range(piece.extended_data.get("mux_count", 0)))
-
-            type = piece.composite_type.unwrap_or(piece.type.name)
-            signals.append(
-                CanSignal(
-                    name=piece.name.replace("::", "_"),
-                    start_bit=piece.bitstart,
-                    data_type=type,
-                    scalar_type=piece.type.name,
-                    bit_length=piece.bitlength,
-                    byte_order=(
-                        "big_endian"
-                        if piece.extended_data.get("endianness", "little") == "big"
-                        else "little_endian"
-                    ),
-                    signed=is_signed(piece),
-                    is_multiplexer=bool(multiplexer_signal),
-                    multiplexer_ids=multiplexer_ids if multiplexer_signal else None,
-                    multiplexer_signal=multiplexer_signal,
-                )
-            )
-
-            max_dlc = max(max_dlc, ceil((piece.bitstart + piece.bitlength) / 8))
+        signal_or_struct = _process_piece(piece, fcp)
+        signals.append(signal_or_struct)
+        max_dlc = max(max_dlc, ceil((piece.bitstart + piece.bitlength) / 8))
 
     return signals, max_dlc
+
+
+def _process_piece(
+    piece: EncodeablePiece, fcp: FcpV2
+) -> Union[CanSignal, NestedStruct]:
+    """Process a single encodeable piece into a signal or nested struct."""
+    if hasattr(piece, "nested_fields") and piece.nested_fields:
+        nested_signals = []
+        for nested_piece in piece.nested_fields:
+            nested_result = _process_piece(nested_piece, fcp)
+            nested_signals.append(nested_result)
+
+        return NestedStruct(
+            name=piece.name,
+            struct_type=piece.composite_type.unwrap(),
+            fields=nested_signals,
+            start_bit=piece.bitstart,
+            bit_length=piece.bitlength,
+        )
+    else:
+        multiplexer_signal = piece.extended_data.get("mux_signal")
+        multiplexer_ids = list(range(piece.extended_data.get("mux_count", 0)))
+
+        type_name = piece.composite_type.unwrap_or(piece.type.name)
+
+        return CanSignal(
+            name=piece.name.replace("::", "_"),
+            start_bit=piece.bitstart,
+            data_type=type_name,
+            scalar_type=piece.type.name,
+            bit_length=piece.bitlength,
+            byte_order=(
+                "big_endian"
+                if piece.extended_data.get("endianness", "little") == "big"
+                else "little_endian"
+            ),
+            signed=is_signed(piece),
+            is_multiplexer=bool(multiplexer_signal),
+            multiplexer_ids=multiplexer_ids if multiplexer_signal else None,
+            multiplexer_signal=multiplexer_signal,
+        )
 
 
 def map_messages_to_devices(messages: List[CanMessage]) -> Dict[str, List[CanMessage]]:
@@ -473,7 +460,6 @@ class CanCWriter:
             fcp: FcpV2 object.
 
         """
-        # Get the path to the templates directory
         script_dir = os.path.dirname(os.path.realpath(__file__))
         self.templates_dir = os.path.join(script_dir, "../templates")
 
@@ -485,6 +471,9 @@ class CanCWriter:
             self.rpc_requests,
             self.services,
         ) = initialize_can_data(fcp)
+
+        self.fcp: FcpV2 = fcp
+
         self.env = Environment(loader=FileSystemLoader(self.templates_dir))
 
         self.templates = {
@@ -494,6 +483,252 @@ class CanCWriter:
             "device_rpc_c": self.env.get_template("rpc_device_c.j2"),
         }
         self.device_messages = map_messages_to_devices(self.messages)
+
+        for message in self.messages:
+            for signal in message.signals:
+                if isinstance(signal, NestedStruct):
+                    fcp_struct = next(
+                        (s for s in self.fcp.structs if s.name == signal.struct_type),
+                        None,
+                    )
+                    if fcp_struct:
+                        self._collect_enums_from_struct(fcp_struct)
+
+    def _collect_struct_types_for_messages(
+        self, messages: List[CanMessage]
+    ) -> List[Dict[str, Any]]:
+        """Collect all unique struct types used in messages, in dependency order."""
+        struct_map = {}
+
+        def collect_from_fields(fields: List[Union[CanSignal, NestedStruct]]) -> None:
+            """Recursively collect struct types from fields."""
+            for field in fields:
+                if isinstance(field, NestedStruct):
+                    if field.struct_type not in struct_map:
+                        fcp_struct = next(
+                            (
+                                s
+                                for s in self.fcp.structs
+                                if s.name == field.struct_type
+                            ),
+                            None,
+                        )
+
+                        if fcp_struct:
+                            converted_fields = self._convert_fcp_struct_to_signals(
+                                fcp_struct
+                            )
+                            struct_map[field.struct_type] = {
+                                "name": field.struct_type,
+                                "fields": converted_fields,
+                            }
+
+                            collect_from_fields(converted_fields)
+
+                    collect_from_fields(field.fields)
+
+        for message in messages:
+            collect_from_fields(message.signals)
+
+        return self._sort_structs_by_dependency(list(struct_map.values()))
+
+    def _convert_fcp_struct_to_signals(
+        self, fcp_struct: Struct
+    ) -> List[Union[CanSignal, NestedStruct]]:
+        """Convert FCP struct fields to CanSignal or NestedStruct objects."""
+        from fcp.specs.type import StructType
+
+        converted: List[Union[CanSignal, NestedStruct]] = []
+        bitstart = 0
+
+        for field in sorted(fcp_struct.fields, key=lambda f: f.field_id):
+            if isinstance(field.type, StructType):
+                nested_fcp_struct = next(
+                    (s for s in self.fcp.structs if s.name == field.type.name), None
+                )
+
+                if nested_fcp_struct:
+                    nested_fields = self._convert_fcp_struct_to_signals(
+                        nested_fcp_struct
+                    )
+
+                    bit_length = sum(
+                        f.bit_length if isinstance(f, CanSignal) else f.bit_length
+                        for f in nested_fields
+                    )
+
+                    converted.append(
+                        NestedStruct(
+                            name=field.name,
+                            struct_type=field.type.name,
+                            fields=nested_fields,
+                            start_bit=bitstart,
+                            bit_length=bit_length,
+                        )
+                    )
+                    bitstart += bit_length
+            else:
+                type_map = {
+                    "i8": "int8_t",
+                    "i16": "int16_t",
+                    "i32": "int32_t",
+                    "i64": "int64_t",
+                    "u8": "uint8_t",
+                    "u16": "uint16_t",
+                    "u32": "uint32_t",
+                    "u64": "uint64_t",
+                    "f32": "float",
+                    "f64": "double",
+                }
+
+                type_name = field.type.name
+                if isinstance(field.type, EnumType):
+                    data_type = field.type.name
+                else:
+                    data_type = type_map.get(type_name, type_name)
+
+                bit_length = self._get_field_bit_length(field)
+
+                converted.append(
+                    CanSignal(
+                        name=field.name,
+                        start_bit=bitstart,
+                        data_type=data_type,
+                        scalar_type=type_name,
+                        bit_length=bit_length,
+                        byte_order="little_endian",
+                        signed=type_name.startswith("i"),
+                    )
+                )
+                bitstart += bit_length
+
+        return converted
+
+    def _collect_enums_from_fields(self, fields: list) -> list:
+        enums: list = []
+        for field in fields:
+            if isinstance(field, CanSignal) and hasattr(field, "scalar_type"):
+                from fcp.specs.type import EnumType
+                if isinstance(field.type, EnumType):
+                    if all(e.name != field.type.name for e in enums):
+                        enum_values = {v.name: v.value for v in field.type.enumeration}
+                        enums.append(Enum(name=field.type.name, values=enum_values))
+            elif isinstance(field, NestedStruct):
+                nested_enums = self._collect_enums_from_fields(field.fields)
+                for e in nested_enums:
+                    if all(x.name != e.name for x in enums):
+                        enums.append(e)
+        return enums
+
+    def _get_field_bit_length(self, field: StructField) -> int:
+        """Get the bit length of a field."""
+        import re
+        from fcp.specs.type import (
+            UnsignedType,
+            SignedType,
+            FloatType,
+            DoubleType,
+            StructType,
+            ArrayType,
+        )
+
+        def _bits_from_type_obj(t: Any) -> int:
+            if hasattr(t, "bits"):
+                try:
+                    return int(getattr(t, "bits"))
+                except Exception:
+                    pass
+
+            for attr in ("bit_length", "width"):
+                if hasattr(t, attr):
+                    try:
+                        return int(getattr(t, attr))
+                    except Exception:
+                        pass
+
+            if hasattr(t, "name") and isinstance(t.name, str):
+                m = re.search(r"(\d+)$", t.name)
+                if m:
+                    try:
+                        return int(m.group(1))
+                    except Exception:
+                        pass
+
+            if hasattr(t, "size"):
+                try:
+                    size_val = int(getattr(t, "size"))
+                    return size_val * 8
+                except Exception:
+                    pass
+
+            return 8
+
+        if isinstance(field.type, (UnsignedType, SignedType)):
+            return _bits_from_type_obj(field.type)
+        elif isinstance(field.type, FloatType):
+            return 32
+        elif isinstance(field.type, DoubleType):
+            return 64
+        elif isinstance(field.type, EnumType):
+            enum = next((e for e in self.fcp.enums if e.name == field.type.name), None)
+            if enum:
+                from math import ceil, log2
+
+                max_val = max(v.value for v in enum.enumeration)
+                return max(1, ceil(log2(max_val + 1)))
+            return 8
+        elif isinstance(field.type, StructType):
+            struct = next(
+                (s for s in self.fcp.structs if s.name == field.type.name), None
+            )
+            if struct:
+                return sum(self._get_field_bit_length(f) for f in struct.fields)
+            return 0
+        elif isinstance(field.type, ArrayType):
+            element_length = self._get_field_bit_length(
+                StructField(name="", type=field.type.underlying_type, field_id=0)
+            )
+            array_size: int = int(field.type.size)
+            return element_length * array_size
+
+        return 8
+
+    def _sort_structs_by_dependency(
+        self, struct_infos: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """Sort structs so that dependencies come before dependents."""
+        sorted_structs = []
+        remaining = {s["name"]: s for s in struct_infos}
+
+        max_iterations = len(remaining) * 2
+        iteration = 0
+
+        while remaining and iteration < max_iterations:
+            iteration += 1
+            made_progress = False
+
+            for struct_name in list(remaining.keys()):
+                struct_info = remaining[struct_name]
+
+                dependencies = set()
+                for field in struct_info["fields"]:
+                    if isinstance(field, NestedStruct):
+                        if (
+                            field.struct_type in remaining
+                            and field.struct_type != struct_name
+                        ):
+                            dependencies.add(field.struct_type)
+
+                if not dependencies:
+                    sorted_structs.append(struct_info)
+                    del remaining[struct_name]
+                    made_progress = True
+
+            if not made_progress:
+                sorted_structs.extend(remaining.values())
+                break
+
+        return sorted_structs
 
     def generate_static_files(self) -> Generator[Tuple[str, str], None, None]:
         """Generate all static C files.
@@ -521,6 +756,8 @@ class CanCWriter:
             device_name = device.name
             messages = self.device_messages.get(device_name, [])
 
+            all_struct_types = self._collect_struct_types_for_messages(messages)
+
             yield (
                 device_name,
                 self.templates["device_can_h"].render(
@@ -529,7 +766,8 @@ class CanCWriter:
                     messages=messages,
                     include_global=device_name != "global" and global_device_exists,
                     is_global_device=device_name == "global",
-                    enums=self.enums if device_name == "global" else [],
+                    enums=self.enums,
+                    all_struct_types=all_struct_types,
                 ),
             )
 
@@ -606,3 +844,26 @@ class CanCWriter:
                     services=self.services,
                 ),
             )
+
+    def _topological_sort_structs(self, struct_names: Set[str]) -> List[str]:
+        """Sort structs so that dependencies come before dependents."""
+        sorted_structs: List[str] = []
+        remaining: Set[str] = set(struct_names)
+
+        while remaining:
+            for struct_name in list(remaining):
+                struct = next(
+                    (s for s in self.fcp.structs if s.name == struct_name), None
+                )
+                if struct:
+                    dependencies = {
+                        f.type.name
+                        for f in struct.fields
+                        if isinstance(f.type, StructType) and f.type.name in remaining
+                    }
+
+                    if not dependencies:
+                        sorted_structs.append(struct_name)
+                        remaining.remove(struct_name)
+
+        return sorted_structs

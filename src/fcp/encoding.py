@@ -2,7 +2,7 @@
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights  
+# in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
@@ -39,7 +39,7 @@ Usage example:
 """
 
 from beartype.typing import Union, NoReturn, List, Dict, Any, Optional
-from typing_extensions import Self, TypeAlias
+from typing_extensions import Self, TypeAlias, Set, Tuple
 from math import log2, ceil
 from copy import copy
 
@@ -74,7 +74,7 @@ class Value:
         unit: Optional[str] = None,
         extended_data: Dict[str, Any] = dict(),
         composite_type: Optional[str] = Nothing(),
-        nested_fields: Optional[List['Value']] = None
+        nested_fields: Optional[List["Value"]] = None,
     ) -> None:
         self.name = name
         self.type = type
@@ -130,7 +130,9 @@ class PackedEncoder:
         self.encoding: List[Value] = []
         self.bitstart = 0
 
-    def _get_type_length(self, fcp: FcpV2, type: Type, _seen: set = None) -> int:
+    def _get_type_length(
+        self, fcp: FcpV2, type: Type, _seen: Optional[Set[Tuple[str, str]]] = None
+    ) -> int:
         if _seen is None:
             _seen = set()
         if (
@@ -141,9 +143,13 @@ class PackedEncoder:
         ):
             return type.get_length()
         elif isinstance(type, ArrayType):
-            return int(type.size * self._get_type_length(fcp, type.underlying_type, _seen))
+            return int(
+                type.size * self._get_type_length(fcp, type.underlying_type, _seen)
+            )
         elif isinstance(type, EnumType):
-            return int(2 ** ceil(log2(fcp.get_enum(type.name).unwrap().get_packed_size())))
+            return int(
+                2 ** ceil(log2(fcp.get_enum(type.name).unwrap().get_packed_size()))
+            )
         elif isinstance(type, StructType):
             key = ("struct", type.name)
             if key in _seen:
@@ -163,94 +169,81 @@ class PackedEncoder:
     ) -> NoReturn:
         for field in sorted(struct.fields, key=lambda field: field.field_id):
             if isinstance(field.type, StructType) and not prefix:
-                # This is a top-level struct field - don't flatten
                 self._generate_nested_struct(field, extension, prefix)
             else:
                 self._generate_signal(field, extension, prefix)
 
     def _generate_nested_struct(
         self, field: StructField, extension: Impl, prefix: str = ""
-    ) -> NoReturn:
-        """Generate a struct field with nested field information."""
-        fields_data: Dict[str, Any] = (
-            extension.get_signal(field.name)
-            .and_then(lambda signal_block: Some(signal_block.fields))
-            .unwrap_or({})
-        )
-        
-        struct = self.fcp.get_struct(field.type.name).unwrap()
-        
-        struct_start_bit = self.bitstart
-        
-        nested_fields = []
-        temp_bitstart = self.bitstart
-        
+    ) -> None:
+        """Flatten a nested struct into scalar Values with flattened names."""
+        if isinstance(field.type, StructType):
+            struct_name = field.type.name
+            struct = self.fcp.get_struct(struct_name).unwrap()
+        else:
+            raise TypeError(f"Expected StructType, got {type(field.type)}")
+
         for nested_field in sorted(struct.fields, key=lambda f: f.field_id):
-            type_length = self._get_type_length(self.fcp, nested_field.type)
-            
-            nested_value = Value(
-                nested_field.name,
-                nested_field.type,
-                temp_bitstart,
-                type_length,
-                endianess=fields_data.get("endianess") or "little",
-                unit=nested_field.unit,
-            )
-            nested_fields.append(nested_value)
-            temp_bitstart += type_length
-        
-        struct_size = temp_bitstart - struct_start_bit
-        
-        self.encoding.append(
-            Value(
-                prefix + field.name,
-                field.type,
-                struct_start_bit,
-                struct_size,
-                endianess=fields_data.get("endianess") or "little",
-                extended_data=fields_data,
-                unit=field.unit,
-                composite_type=Some(field.type.name),
-                nested_fields=nested_fields,
-            )
-        )
-        
-        self.bitstart = temp_bitstart
+            nested_prefix = prefix + field.name + "::"
+
+            if isinstance(nested_field.type, StructType):
+                nested_struct_field = StructField(
+                    name=nested_field.name,
+                    field_id=nested_field.field_id,
+                    type=nested_field.type,
+                    unit=nested_field.unit,
+                )
+                self._generate_nested_struct(
+                    nested_struct_field, extension, nested_prefix
+                )
+            else:
+                type_length = self._get_type_length(self.fcp, nested_field.type)
+                fields_data: Dict[str, Any] = (
+                    extension.get_signal(nested_field.name)
+                    .and_then(lambda s: Some(s.fields))
+                    .unwrap_or({})
+                )
+                self.encoding.append(
+                    Value(
+                        name=nested_prefix + nested_field.name,
+                        type=nested_field.type,
+                        bitstart=self.bitstart,
+                        bitlength=type_length,
+                        endianess=fields_data.get("endianess") or "little",
+                        unit=nested_field.unit,
+                        extended_data=fields_data,
+                    )
+                )
+                self.bitstart += type_length
 
     def _generate_signal(
         self, field: StructField, extension: Impl, prefix: str = ""
-    ) -> NoReturn:
-        fields: Dict[str, Any] = (
-            extension.get_signal(field.name)
-            .and_then(lambda signal_block: Some(signal_block.fields))
-            .unwrap_or({})
-        )
-
+    ) -> None:
+        """Generate a scalar signal Value or flatten nested struct."""
         if isinstance(field.type, StructType):
-            self._generate(
-                field.type,
-                extension,
-                prefix=prefix + field.name + "::",
-            )
+            self._generate_nested_struct(field, extension, prefix)
             return
         elif isinstance(field.type, ArrayType) and self.ctx.unroll_arrays:
             self._generate_array_type(field.type, field, extension, prefix)
             return
 
         type_length = self._get_type_length(self.fcp, field.type)
-
+        fields: Dict[str, Any] = (
+            extension.get_signal(field.name)
+            .and_then(lambda s: Some(s.fields))
+            .unwrap_or({})
+        )
         self.encoding.append(
             Value(
-                prefix + field.name,
-                field.type,
-                self.bitstart,
-                type_length,
+                name=prefix + field.name,
+                type=field.type,
+                bitstart=self.bitstart,
+                bitlength=type_length,
                 endianess=fields.get("endianess") or "little",
-                extended_data=fields,
                 unit=field.unit,
+                extended_data=fields,
             )
         )
-
         self.bitstart += type_length
 
     def _generate_enum(
