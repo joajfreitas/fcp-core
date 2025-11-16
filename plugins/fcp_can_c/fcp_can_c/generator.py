@@ -115,20 +115,20 @@ class Generator(CodeGenerator):
         ) -> Result[Nil, FcpError]:
             """Check if extension has a valid type."""
             from fcp.encoding import make_encoder, PackedEncoderContext
-            
+
             encoder = make_encoder("packed", fcp, PackedEncoderContext())
             encoding = encoder.generate(extension)
-            
+
             if not encoding:
                 return Ok(())
-            
+
             last_piece = encoding[-1]
             total_size = last_piece.bitstart + last_piece.bitlength
-            
+
             if total_size > 64:
                 return error(
                     f"Impl {extension.name} is way too big at {total_size} bits",
                     node=extension,
                 )
-            
+
             return Ok(())
