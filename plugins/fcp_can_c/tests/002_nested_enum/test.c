@@ -24,9 +24,9 @@ bool all_tests_passed = true;
 
 void test_encode_decode_msg() {
     CanMsgSensorInformation msg = {
-        .e    = C,      // InnerEnum
-        .s_s1 = 33,     // InnerStruct s1
-        .s_s2 = 4567,   // InnerStruct s2
+        .e    = INNERENUM_C,  // InnerEnum
+        .s_s1 = 33,           // InnerStruct s1
+        .s_s2 = 4567,         // InnerStruct s2
     };
 
     // Encode
@@ -46,6 +46,7 @@ void test_encode_decode_msg() {
     VERIFY_TEST(decoded.s_s1 == msg.s_s1);
     VERIFY_TEST(decoded.s_s2 == msg.s_s2);
 }
+
 
 int main() {
     test_encode_decode_msg();
