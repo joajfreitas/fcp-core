@@ -1,21 +1,19 @@
-{# Recursive macro to render nested struct fields #}
-{%- macro render_struct_fields(fields, indent='') %}
+{%- macro render_fields(fields, indent='') -%}
 {%- for field in fields %}
 {%- if field.__class__.__name__ == 'NestedStruct' %}
-{{ indent }}struct {
-{{ render_struct_fields(field.fields, indent + '    ') }}
+{{ indent }}struct { {{ render_fields(field.fields, indent + '    ') }}
 {{ indent }}} {{ field.name }};
 {%- else %}
 {{ indent }}{{ field.data_type }} {{ field.name }}{% if field.is_multiplexer %}[{{ field.multiplexer_count }}]{% endif %};
 {%- endif %}
-{%- endfor %}
+{%- endfor -%}
 {%- endmacro %}
-
 #ifndef {{ device_name_snake | upper }}_CAN_H
 #define {{ device_name_snake | upper }}_CAN_H
 
 #include <stdint.h>
 #include <stdbool.h>
+
 #include "can_frame.h"
 {%- if include_global %}
 #include "global_can.h"
@@ -23,40 +21,33 @@
 
 {% if messages | length > 0 -%}
 /* {{ device_name_pascal }} Message IDs */
-{%- endif %}
 {%- for message in messages %}
 #define CAN_MSG_ID_{{ message.name_snake | upper }} {{ message.frame_id }}
 {%- endfor %}
 
-{% if messages | length > 0 -%}
 /* {{ device_name_pascal }} Message Periods */
-{%- endif %}
 {%- for message in messages %}
 #define CAN_MSG_PERIOD_{{ message.name_snake | upper }} {{ message.period }}
 {%- endfor %}
+{%- endif %}
 
 {%- if enums | length > 0 %}
-
-/* --- Enums --- */
 {%- for enum in enums %}
 typedef enum {
     {%- for name, value in enum.values.items() %}
     {{ name | upper }} = {{ value }},
     {%- endfor %}
 } {{ enum.name }};
-{%- endfor %}
+{%- endfor -%}
 {%- endif %}
 
-{%- for message in messages %}
-
+{% for message in messages %}
 /* {{ message.name_pascal }} message structure */
-typedef struct {
-{{ render_struct_fields(message.signals, '    ') }}
+typedef struct { {{ render_fields(message.signals, '    ') }}
 } CanMsg{{ message.name_pascal }};
-{%- endfor %}
+{% endfor %}
 
-{%- if messages | length > 0 %}
-
+{%- if messages|length > 0 %}
 /* {{ device_name_pascal }} device aggregate structure */
 typedef struct {
     {%- for message in messages %}
@@ -65,18 +56,18 @@ typedef struct {
 } CanDevice{{ device_name_pascal }};
 {%- endif %}
 
+
 /* Check if a CanFrame comes from {{ device_name_pascal }} */
 bool can_is_{{ device_name_snake }}_msg(const CanFrame *frame);
 
-{%- if not is_global_device %}
-
+{% if not is_global_device %}
 /* Send {{ device_name_pascal }} messages according to their defined period */
 void can_send_{{ device_name_snake }}_msgs_scheduled(
     const CanDevice{{ device_name_pascal }} *dev,
     uint32_t time,
     void (*send_can_func)(const CanFrame *)
 );
-{%- endif %}
+{% endif %}
 
 /* Functions to decode CanFrame into CanMsg<name> objects */
 {%- for message in messages %}
