@@ -373,10 +373,38 @@ class PackedEncoder:
     ) -> NoReturn:
         for i in range(type.size):
             derived_field = copy(field)
-
             derived_field.type = type.underlying_type
             derived_field.name = field.name + "_" + str(i)
-            self._generate_signal(derived_field, extension, prefix)
+
+            # Check if the array element is a struct
+            if isinstance(type.underlying_type, StructType):
+                # Get the struct definition
+                struct = self.fcp.get_struct(type.underlying_type.name).unwrap()
+
+                # Generate nested fields for this array element
+                nested_values = self._generate_struct_recursive(
+                    struct, extension, self.bitstart
+                )
+
+                # Calculate total bit length
+                total_bitlength = sum(v.bitlength for v in nested_values)
+
+                # Create a Value with nested_fields populated
+                self.encoding.append(
+                    Value(
+                        name=prefix + derived_field.name,
+                        type=type.underlying_type,
+                        bitstart=self.bitstart,
+                        bitlength=total_bitlength,
+                        composite_type=Some(type.underlying_type.name),
+                        nested_fields=nested_values,
+                        unit=derived_field.unit,
+                    )
+                )
+                self.bitstart += total_bitlength
+            else:
+                # Not a struct, handle normally
+                self._generate_signal(derived_field, extension, prefix)
 
     def _generate(self, type: Type, extension: Impl, prefix: str = "") -> NoReturn:
         if isinstance(type, StructType) or isinstance(type, EnumType):

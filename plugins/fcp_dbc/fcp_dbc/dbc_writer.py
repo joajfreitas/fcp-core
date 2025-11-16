@@ -44,6 +44,7 @@ def extract_signals(
     base_prefix = f"{prefix}{piece.name}"
     nested = getattr(piece, "nested_fields", None)
     array_count = piece.extended_data.get("array_length")
+
     if array_count:
         for i in range(array_count):
             indexed_prefix = f"{base_prefix}_{i}_"
@@ -53,12 +54,17 @@ def extract_signals(
             else:
                 signals.append((indexed_prefix[:-1], piece))
         return signals
+
     if nested:
         new_prefix = f"{base_prefix}_"
         for sub in nested:
-            signals.extend(extract_signals(sub, new_prefix))
+            if hasattr(sub, "nested_fields") and sub.nested_fields:
+                signals.extend(extract_signals(sub, new_prefix))
+            else:
+                signals.append((f"{new_prefix}{sub.name}", sub))
     else:
         signals.append((base_prefix, piece))
+
     return signals
 
 
@@ -142,7 +148,7 @@ def write_dbc(fcp: FcpV2) -> Result[str, str]:
                 frame_id=id,
                 name=impl.name,
                 length=dlc,
-                signals=signals,
+                signals=list(reversed(signals)),
                 senders=[],
             )
         )
