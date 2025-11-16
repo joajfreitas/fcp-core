@@ -148,45 +148,6 @@ class FcpV2:
 
         return Nothing()
 
-    def resolve_type(self, type_ref: Any) -> Type:
-        """Resolve a type reference (string or Type) into a concrete subclass."""
-        from .type import (
-            Type,
-            UnsignedType,
-            SignedType,
-            FloatType,
-            DoubleType,
-            StringType,
-            EnumType,
-            StructType,
-        )
-
-        # Already a concrete Type subclass
-        if isinstance(type_ref, Type) and type_ref.__class__ is not Type:
-            return type_ref
-
-        # If it's a string reference
-        if isinstance(type_ref, str):
-            # Primitive/numeric types
-            if type_ref.startswith("u"):
-                return UnsignedType(type_ref)
-            if type_ref.startswith("i"):
-                return SignedType(type_ref)
-            if type_ref == "f32":
-                return FloatType()
-            if type_ref == "f64":
-                return DoubleType()
-            if type_ref == "str":
-                return StringType()
-
-            # Enum or struct types
-            if self.get_enum(type_ref).is_some():
-                return EnumType(type_ref)
-            if self.get_struct(type_ref).is_some():
-                return StructType(type_ref)
-
-        raise ValueError(f"Unknown or unresolved type reference: {type_ref!r}")
-
     def get_xpath(self, xpath: Xpath) -> Result[StructField, str]:
         """Get struct field by xpath."""
         if not re.match(r"(\w+):((\w+\/)*\w+)", str(xpath)):
