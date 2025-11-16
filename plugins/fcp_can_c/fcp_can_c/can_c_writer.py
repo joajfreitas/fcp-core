@@ -42,7 +42,15 @@ from fcp.utils import to_pascal_case, to_snake_case
 
 
 def ceil_to_power_of_2(x: int) -> int:
-    """Ceil a number to the next power of 2."""
+    """Ceil a number to the next power of 2.
+
+    Args:
+        x: The number to ceil.
+
+    Returns:
+        The next power of 2 starting from 8.
+
+    """
     if x <= 8:
         return 8
     x -= 1
@@ -111,8 +119,8 @@ class NestedStruct:
     """A nested struct within a CAN message - represents anonymous struct."""
 
     name: str
-    struct_type: str  # The original type name (for reference)
-    fields: List[Union[CanSignal, "NestedStruct"]]  # Recursive!
+    struct_type: str
+    fields: List[Union[CanSignal, "NestedStruct"]]
     start_bit: int
     bit_length: int
 
@@ -163,7 +171,15 @@ class CanNode:
 
 
 def is_signed(value: "Value") -> bool:
-    """Check if a value is signed."""
+    """Check if a value is signed.
+
+    Args:
+        value: Value to check
+
+    Returns:
+        True if the value is signed, False otherwise
+
+    """
     return bool(value.type.name.startswith("i"))
 
 
@@ -171,7 +187,16 @@ def create_can_signals(
     encoding: List[EncodeablePiece],
     fcp: FcpV2,
 ) -> Tuple[List[Union[CanSignal, NestedStruct]], int]:
-    """Create a list of CAN signals from a list of EncodeablePieces."""
+    """Create a list of CAN signals from a list of EncodeablePieces.
+
+    Args:
+        encoding: List of EncodeablePieces to create signals from.
+        fcp: FCP object for type resolution.
+
+    Returns:
+        Tuple containing a list of CAN signals and the maximum DLC.
+
+    """
     signals = []
     max_dlc = 0
 
@@ -186,12 +211,22 @@ def create_can_signals(
 def _process_piece(
     piece: EncodeablePiece, fcp: FcpV2
 ) -> Union[CanSignal, NestedStruct]:
-    """Process a single encodeable piece into a signal or nested struct (RECURSIVE)."""
+    """Process a single encodeable piece into a signal or nested struct.
+
+    Recursively processes nested fields to create hierarchical struct representation.
+
+    Args:
+        piece: The encodeable piece to process.
+        fcp: FCP object for type resolution.
+
+    Returns:
+        Either a CanSignal or NestedStruct depending on the piece type.
+
+    """
     if hasattr(piece, "nested_fields") and piece.nested_fields:
-        # This is a nested struct - recursively process its fields
         nested_signals = []
         for nested_piece in piece.nested_fields:
-            nested_result = _process_piece(nested_piece, fcp)  # RECURSIVE CALL
+            nested_result = _process_piece(nested_piece, fcp)
             nested_signals.append(nested_result)
 
         return NestedStruct(
@@ -202,7 +237,6 @@ def _process_piece(
             bit_length=piece.bitlength,
         )
     else:
-        # Regular signal
         multiplexer_signal = piece.extended_data.get("mux_signal")
         multiplexer_ids = list(range(piece.extended_data.get("mux_count", 0)))
         type_name = piece.composite_type.unwrap_or(piece.type.name)
@@ -226,7 +260,15 @@ def _process_piece(
 
 
 def map_messages_to_devices(messages: List[CanMessage]) -> Dict[str, List[CanMessage]]:
-    """Map messages to devices based on the senders."""
+    """Map messages to devices based on the senders.
+
+    Args:
+        messages: List of messages to map.
+
+    Returns:
+        Mapping of devices to messages.
+
+    """
     device_messages: Dict[str, List[CanMessage]] = {}
     for msg in messages:
         for sender in msg.senders:
@@ -244,23 +286,29 @@ def initialize_can_data(
     List[CanMessage],
     List[Service],
 ]:
-    """Initialize CAN data from an FCP."""
+    """Initialize CAN data from an FCP.
+
+    Args:
+        fcp: FcpV2 object.
+
+    Returns:
+        Tuple containing a list of enums, messages and devices.
+
+    """
     enums = []
     messages = []
     devices: List["CanNode"] = []
     rpc: List[CanMessage] = []
     rpc_requests: List[CanMessage] = []
 
-    # Create custom encoder context that preserves nested structs
     encoder = make_encoder(
         "packed",
         fcp,
         PackedEncoderContext()
         .with_unroll_arrays(True)
-        .with_preserve_nested_structs(True),  # Enable nested struct preservation
+        .with_preserve_nested_structs(True),
     )
 
-    # Collect all enums
     for enum in fcp.enums:
         values = {v.name: v.value for v in enum.enumeration}
         enums.append(Enum(name=enum.name, values=values))
@@ -274,7 +322,6 @@ def initialize_can_data(
     can_impl_device_by_type: Dict[str, str] = {}
     default_impl_by_name: Dict[str, Any] = {}
 
-    # Process devices
     for dev in fcp.devices:
         rpc_get_id: Optional[int] = None
         rpc_ans_id: Optional[int] = None
@@ -332,7 +379,6 @@ def initialize_can_data(
 
     rpc_messages: Set[Tuple[str, int, str]] = set()
 
-    # Process CAN implementations
     for extension in fcp.get_matching_impls("can"):
         encoding = encoder.generate(extension)
         signals, dlc = create_can_signals(encoding, fcp)
@@ -370,7 +416,6 @@ def initialize_can_data(
                 )
             )
 
-    # Process RPC services
     for service in fcp.services:
         target_devices = service_devices.get(service.name, ["global"])
 
@@ -432,7 +477,12 @@ class CanCWriter:
     """Class to generate C files for CAN devices."""
 
     def __init__(self, fcp: FcpV2) -> None:
-        """Initialize the CanCWriter."""
+        """Initialize the CanCWriter.
+
+        Args:
+            fcp: FcpV2 object.
+
+        """
         script_dir = os.path.dirname(os.path.realpath(__file__))
         self.templates_dir = os.path.join(script_dir, "../templates")
 
@@ -457,21 +507,30 @@ class CanCWriter:
         self.device_messages = map_messages_to_devices(self.messages)
 
     def generate_static_files(self) -> Generator[Tuple[str, str], None, None]:
-        """Generate all static C files."""
+        """Generate all static C files.
+
+        Returns:
+            Generator: Tuple containing the file name and the file content.
+
+        """
         static_files = ["can_frame.h", "can_signal_parser.h", "can_signal_parser.c"]
         for file in static_files:
             with open(f"{self.templates_dir}/{file}", "r") as f:
                 yield file, f.read()
 
     def generate_device_headers(self) -> Generator[Tuple[str, str], None, None]:
-        """Generate C header files for devices."""
+        """Generate C header files for devices.
+
+        Returns:
+            Generator: Tuple containing the device name and the file content.
+
+        """
         global_device_exists = any(device.name == "global" for device in self.devices)
 
         for device in self.devices:
             device_name = device.name
             messages = self.device_messages.get(device_name, [])
 
-            # Only include enums in global device
             enums_to_include = self.enums if device_name == "global" else []
 
             yield (
@@ -487,7 +546,12 @@ class CanCWriter:
             )
 
     def generate_device_sources(self) -> Generator[Tuple[str, str], None, None]:
-        """Generate C source files for devices."""
+        """Generate C source files for devices.
+
+        Returns:
+            Generator: Tuple containing the device name and the file content.
+
+        """
         for device_name, messages in self.device_messages.items():
             yield (
                 to_snake_case(device_name),
@@ -499,7 +563,12 @@ class CanCWriter:
             )
 
     def generate_rpc_headers(self) -> Generator[Tuple[str, str], None, None]:
-        """Generate C header files for devices with RPC."""
+        """Generate C header files for devices with RPC.
+
+        Returns:
+            Generator: Tuple containing the device name and the file content.
+
+        """
         self._devices_with_rpc = set()
 
         for device in self.devices:
@@ -523,7 +592,12 @@ class CanCWriter:
             )
 
     def generate_rpc_sources(self) -> Generator[Tuple[str, str], None, None]:
-        """Generate C source files for devices with RPC."""
+        """Generate C source files for devices with RPC.
+
+        Returns:
+            Generator: Tuple containing the device name and the file content.
+
+        """
         for device_name, messages in self.device_messages.items():
             if device_name not in self._devices_with_rpc:
                 continue
