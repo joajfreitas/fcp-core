@@ -36,46 +36,83 @@ from fcp.maybe import catch
 from fcp.encoding import make_encoder, EncodeablePiece, PackedEncoderContext
 
 
+def extract_signals(
+    piece: EncodeablePiece, prefix: str = ""
+) -> List[Tuple[str, EncodeablePiece]]:
+    """Flatten nested structs and arrays into individual signals."""
+    signals: List[Tuple[str, EncodeablePiece]] = []
+    base_prefix = f"{prefix}{piece.name}"
+    nested = getattr(piece, "nested_fields", None)
+    array_count = piece.extended_data.get("array_length")
+    if array_count:
+        for i in range(array_count):
+            indexed_prefix = f"{base_prefix}_{i}_"
+            if nested:
+                for sub in nested:
+                    signals.extend(extract_signals(sub, indexed_prefix))
+            else:
+                signals.append((indexed_prefix[:-1], piece))
+        return signals
+    if nested:
+        new_prefix = f"{base_prefix}_"
+        for sub in nested:
+            signals.extend(extract_signals(sub, new_prefix))
+    else:
+        signals.append((base_prefix, piece))
+    return signals
+
+
 def _make_signals(
     encoding: List[EncodeablePiece], type: str
 ) -> Tuple[List[CanSignal], int]:
-    signals = []
+    signals: List[CanSignal] = []
     dlc = 0
-
-    mux_signals = [
-        piece.extended_data.get("mux_signal")
-        for piece in encoding
-        if piece.extended_data.get("mux_signal") is not None
-    ]
-
     msg_bitlength = encoding[-1].bitstart + encoding[-1].bitlength
     if msg_bitlength > 64:
         raise ValueError(f"Message {type} too big. Current length: {msg_bitlength}")
 
+    flat_signals: List[Tuple[str, EncodeablePiece]] = []
     for piece in encoding:
-        mux_count = piece.extended_data.get("mux_count")
+        flat_signals.extend(extract_signals(piece))
+
+    mux_signal_names = set()
+    for sig_name, leaf in flat_signals:
+        m = leaf.extended_data.get("mux_signal")
+        if m is not None:
+            mux_signal_names.add(m)
+
+    for sig_name, leaf in flat_signals:
+        mux_count = leaf.extended_data.get("mux_count")
         mux_ids = list(range(0, mux_count)) if mux_count is not None else None
+        is_signed_value = (
+            leaf.type.is_signed() if hasattr(leaf.type, "is_signed") else False
+        )
+        is_multiplexer_flag = (
+            leaf.extended_data.get("is_multiplexer") is True
+            or sig_name in mux_signal_names
+            or leaf.name in mux_signal_names
+        )
 
         signals.append(
             CanSignal(
-                piece.name.replace("::", "_"),
-                (piece.bitstart + 7) if piece.endianess != "little" else piece.bitstart,
-                piece.bitlength,
+                sig_name.replace("::", "_"),
+                (leaf.bitstart + 7) if leaf.endianess != "little" else leaf.bitstart,
+                leaf.bitlength,
                 byte_order=(
-                    "big_endian" if piece.endianess == "big" else "little_endian"
+                    "big_endian" if leaf.endianess == "big" else "little_endian"
                 ),
-                is_signed=piece.type.is_signed(),
+                is_signed=is_signed_value,
                 minimum=0,
                 maximum=0,
-                unit=piece.unit,
+                unit=leaf.unit,
                 comment=None,
-                is_multiplexer=piece.name in mux_signals,
+                is_multiplexer=is_multiplexer_flag,
                 multiplexer_ids=mux_ids,
-                multiplexer_signal=piece.extended_data.get("mux_signal"),
+                multiplexer_signal=leaf.extended_data.get("mux_signal"),
             )
         )
 
-        dlc = ceil((piece.bitstart + piece.bitlength) / 8)
+        dlc = max(dlc, ceil((leaf.bitstart + leaf.bitlength) / 8))
 
     return signals, dlc
 
