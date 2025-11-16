@@ -24,16 +24,15 @@ bool all_tests_passed = true;
 
 void test_encode_decode_sensor_information() {
     CanMsgSensorInformation msg = {
-        .e = C,           // InnerEnum (no prefix needed)
-        .s = {            // Nested struct
-            .s1 = 33,     // InnerStruct s1
-            .s2 = 4567,   // InnerStruct s2
+        .e = C,           // InnerEnum
+        .l1 = {           // Level1Struct
+            .s1 = 7,
+            .s2 = 15,
         }
     };
 
     // Encode
     CanFrame frame = can_encode_msg_sensor_information(&msg);
-    
     printf("Encoded frame bytes: ");
     for (int i = 0; i < frame.dlc; i++)
         printf("%d ", frame.data[i]);
@@ -43,66 +42,75 @@ void test_encode_decode_sensor_information() {
 
     // Decode
     CanMsgSensorInformation decoded = can_decode_msg_sensor_information(&frame);
-    
     VERIFY_TEST(decoded.e == msg.e);
-    VERIFY_TEST(decoded.s.s1 == msg.s.s1);  // Access via nested struct
-    VERIFY_TEST(decoded.s.s2 == msg.s.s2);  // Access via nested struct
+    VERIFY_TEST(decoded.l1.s1 == msg.l1.s1);
+    VERIFY_TEST(decoded.l1.s2 == msg.l1.s2);
 }
 
-void test_outer_struct() {
-    CanMsgOuterStruct msg = {
-        .inner = {
-            .s1 = 10,
-            .s2 = 2000,
-        },
-        .val = 9999
-    };
-
-    // Encode
-    CanFrame frame = can_encode_msg_outer_struct(&msg);
-    VERIFY_TEST(frame.id == CAN_MSG_ID_OUTER_STRUCT);
-
-    // Decode
-    CanMsgOuterStruct decoded = can_decode_msg_outer_struct(&frame);
-    VERIFY_TEST(decoded.inner.s1 == msg.inner.s1);
-    VERIFY_TEST(decoded.inner.s2 == msg.inner.s2);
-    VERIFY_TEST(decoded.val == msg.val);
-}
-
-void test_multi_level_struct() {
-    CanMsgMultiLevelStruct msg = {
-        .x = {
-            .s1 = 5,
-            .s2 = 100,
-        },
-        .y = {
-            .inner = {
-                .s1 = 20,
-                .s2 = 3000,
+void test_level3_struct() {
+    CanMsgLevel3Struct msg = {
+        .l2 = {                    // Level2Struct
+            .l1 = {                // Level1Struct
+                .s1 = 10,
+                .s2 = 12,
             },
-            .val = 12345
-        }
+            .val2 = 5,
+        },
+        .val3 = 9
     };
 
     // Encode
-    CanFrame frame = can_encode_msg_multi_level_struct(&msg);
-    VERIFY_TEST(frame.id == CAN_MSG_ID_MULTI_LEVEL_STRUCT);
+    CanFrame frame = can_encode_msg_level3_struct(&msg);
+    VERIFY_TEST(frame.id == CAN_MSG_ID_LEVEL3_STRUCT);
 
     // Decode
-    CanMsgMultiLevelStruct decoded = can_decode_msg_multi_level_struct(&frame);
-    VERIFY_TEST(decoded.x.s1 == msg.x.s1);
-    VERIFY_TEST(decoded.x.s2 == msg.x.s2);
-    VERIFY_TEST(decoded.y.inner.s1 == msg.y.inner.s1);
-    VERIFY_TEST(decoded.y.inner.s2 == msg.y.inner.s2);
-    VERIFY_TEST(decoded.y.val == msg.y.val);
+    CanMsgLevel3Struct decoded = can_decode_msg_level3_struct(&frame);
+    VERIFY_TEST(decoded.l2.l1.s1 == msg.l2.l1.s1);
+    VERIFY_TEST(decoded.l2.l1.s2 == msg.l2.l1.s2);
+    VERIFY_TEST(decoded.l2.val2 == msg.l2.val2);
+    VERIFY_TEST(decoded.val3 == msg.val3);
+}
+
+void test_level5_struct() {
+    CanMsgLevel5Struct msg = {
+        .l4 = {                            // Level4Struct
+            .l3 = {                        // Level3Struct
+                .l2 = {                    // Level2Struct
+                    .l1 = {                // Level1Struct
+                        .s1 = 5,
+                        .s2 = 10,
+                    },
+                    .val2 = 3,
+                },
+                .val3 = 12,
+            },
+            .val4 = 7,
+        },
+        .e = B,
+        .val5 = 15
+    };
+
+    // Encode
+    CanFrame frame = can_encode_msg_level5_struct(&msg);
+    VERIFY_TEST(frame.id == CAN_MSG_ID_LEVEL5_STRUCT);
+
+    // Decode
+    CanMsgLevel5Struct decoded = can_decode_msg_level5_struct(&frame);
+    VERIFY_TEST(decoded.l4.l3.l2.l1.s1 == msg.l4.l3.l2.l1.s1);
+    VERIFY_TEST(decoded.l4.l3.l2.l1.s2 == msg.l4.l3.l2.l1.s2);
+    VERIFY_TEST(decoded.l4.l3.l2.val2 == msg.l4.l3.l2.val2);
+    VERIFY_TEST(decoded.l4.l3.val3 == msg.l4.l3.val3);
+    VERIFY_TEST(decoded.l4.val4 == msg.l4.val4);
+    VERIFY_TEST(decoded.e == msg.e);
+    VERIFY_TEST(decoded.val5 == msg.val5);
 }
 
 int main() {
-    printf("=== Running CAN nested struct tests ===\n\n");
+    printf("=== Running CAN 5-layer nested struct tests ===\n\n");
     
     test_encode_decode_sensor_information();
-    test_outer_struct();
-    test_multi_level_struct();
+    test_level3_struct();
+    test_level5_struct();
     
     printf("\n=== All tests completed ===\n");
     ASSERT_TESTS();

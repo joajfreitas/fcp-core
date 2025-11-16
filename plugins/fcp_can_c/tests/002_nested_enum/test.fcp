@@ -6,30 +6,41 @@ enum InnerEnum {
     C = 2,
 }
 
-struct InnerStruct {
+struct Level1Struct {
     s1 @0: u8,
-    s2 @1: u16,
+    s2 @1: u8,
+}
+
+struct Level2Struct {
+    l1 @0: Level1Struct,
+    val2 @1: u8,
+}
+
+struct Level3Struct {
+    l2 @0: Level2Struct,
+    val3 @1: u8,
+}
+
+struct Level4Struct {
+    l3 @0: Level3Struct,
+    val4 @1: u8,
+}
+
+struct Level5Struct {
+    l4 @0: Level4Struct,
+    e @1: InnerEnum,
+    val5 @2: u8,
 }
 
 struct SensorInformation {
     e @0: InnerEnum,
-    s @1: InnerStruct,
-}
-
-struct OuterStruct {
-    inner @0: InnerStruct,
-    val @1: u16,
-}
-
-struct MultiLevelStruct {
-    x @0: InnerStruct,
-    y @1: OuterStruct,
+    l1 @1: Level1Struct,
 }
 
 device ecu {
     protocol can {
         impl SensorInformation { id: 10, },
-        impl OuterStruct { id: 20, },
-        impl MultiLevelStruct { id: 30, },
+        impl Level3Struct { id: 20, },
+        impl Level5Struct { id: 30, },
     },
 }
