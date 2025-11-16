@@ -1,5 +1,5 @@
-#include "generated_code/can_frame.h"
 #include "generated_code/ecu_can.h"
+#include "generated_code/ecu_rpc.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,86 +22,57 @@ bool all_tests_passed = true;
         exit(EXIT_FAILURE);                                                    \
     }
 
-void test_encode_decode_msg() {
-    CanMsgSensorInformation msg = {
-        .e = C,           // InnerEnum (no prefix needed)
-        .s = {            // Nested struct
-            .s1 = 33,     // InnerStruct s1
-            .s2 = 4567,   // InnerStruct s2
-        }
+/*------------------- RPC Encode/Decode Tests -------------------*/
+void test_rpc_sensor_information() {
+    CanRpcSensorInformation msg = {
+        .result = 0xA5
     };
 
     // Encode
-    CanFrame frame = can_encode_msg_sensor_information(&msg);
-    
-    printf("Encoded frame bytes: ");
-    for (int i = 0; i < frame.dlc; i++)
-        printf("%d ", frame.data[i]);
-    printf("\n");
+    CanFrame frame = can_encode_rpc_sensor_information(&msg);
+    printf("Encoded frame ID: 0x%X, DLC: %d\n", frame.id, frame.dlc);
 
-    VERIFY_TEST(frame.id == CAN_MSG_ID_SENSOR_INFORMATION);
+    VERIFY_TEST(frame.id == ECU_RPC_GET_ID || frame.id == ECU_RPC_ANS_ID);
 
     // Decode
-    CanMsgSensorInformation decoded = can_decode_msg_sensor_information(&frame);
-    
-    VERIFY_TEST(decoded.e == msg.e);
-    VERIFY_TEST(decoded.s.s1 == msg.s.s1);  // Access via nested struct
-    VERIFY_TEST(decoded.s.s2 == msg.s.s2);  // Access via nested struct
+    CanRpcSensorInformation decoded = can_decode_rpc_sensor_information(&frame);
+    VERIFY_TEST(decoded.result == msg.result);
 }
 
-void test_outer_struct() {
-    CanMsgOuterStruct msg = {
-        .inner = {
-            .s1 = 10,
-            .s2 = 2000,
-        },
-        .val = 9999
+void test_rpc_sensor_request() {
+    CanRpcSensorReq msg = {
+        .request_id = 0x01
     };
 
     // Encode
-    CanFrame frame = can_encode_msg_outer_struct(&msg);
-    VERIFY_TEST(frame.id == CAN_MSG_ID_OUTER_STRUCT);
+    CanFrame frame = can_encode_rpc_sensor_req(&msg);
+    VERIFY_TEST(frame.id == ECU_RPC_GET_ID || frame.id == ECU_RPC_ANS_ID);
 
     // Decode
-    CanMsgOuterStruct decoded = can_decode_msg_outer_struct(&frame);
-    VERIFY_TEST(decoded.inner.s1 == msg.inner.s1);
-    VERIFY_TEST(decoded.inner.s2 == msg.inner.s2);
-    VERIFY_TEST(decoded.val == msg.val);
+    CanRpcSensorReq decoded = can_decode_rpc_sensor_req(&frame);
+    VERIFY_TEST(decoded.request_id == msg.request_id);
 }
 
-void test_multi_level_struct() {
-    CanMsgMultiLevelStruct msg = {
-        .x = {
-            .s1 = 5,
-            .s2 = 100,
-        },
-        .y = {
-            .inner = {
-                .s1 = 20,
-                .s2 = 3000,
-            },
-            .val = 12345
-        }
+void test_rpc_temperature_response() {
+    CanRpcTemperatureResponse msg = {
+        .result = 25
     };
 
     // Encode
-    CanFrame frame = can_encode_msg_multi_level_struct(&msg);
-    VERIFY_TEST(frame.id == CAN_MSG_ID_MULTI_LEVEL_STRUCT);
+    CanFrame frame = can_encode_rpc_temperature_response(&msg);
+    VERIFY_TEST(frame.id == ECU_RPC_GET_ID || frame.id == ECU_RPC_ANS_ID);
 
     // Decode
-    CanMsgMultiLevelStruct decoded = can_decode_msg_multi_level_struct(&frame);
-    VERIFY_TEST(decoded.x.s1 == msg.x.s1);
-    VERIFY_TEST(decoded.x.s2 == msg.x.s2);
-    VERIFY_TEST(decoded.y.inner.s1 == msg.y.inner.s1);
-    VERIFY_TEST(decoded.y.inner.s2 == msg.y.inner.s2);
-    VERIFY_TEST(decoded.y.val == msg.y.val);
+    CanRpcTemperatureResponse decoded = can_decode_rpc_temperature_response(&frame);
+    VERIFY_TEST(decoded.result == msg.result);
 }
 
+/*------------------- Main -------------------*/
 int main() {
-    test_encode_decode_msg();
-    test_outer_struct();
-    test_multi_level_struct();
-    
+    test_rpc_sensor_information();
+    test_rpc_sensor_request();
+    test_rpc_temperature_response();
+
     ASSERT_TESTS();
     return 0;
 }
