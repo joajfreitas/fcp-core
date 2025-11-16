@@ -1,37 +1,71 @@
+{# Recursive macro to generate decode signal macros #}
+{%- macro generate_decode_macros(signals, message_name, prefix='') %}
+{%- for signal in signals %}
+  {%- if signal.__class__.__name__ == 'NestedStruct' %}
+{{ generate_decode_macros(signal.fields, message_name, prefix + signal.name + '_') }}
+  {%- else %}
+#define can_decode_signal_{{ message_name }}_{{ prefix }}{{ signal.name }}(msg) \
+    can_decode_signal_as_{{ signal.scalar_type }}((msg), {{ signal.start_bit }}, {{ signal.bit_length }}, {{ signal.scale|default(1.0) }}, {{ signal.offset|default(0.0) }}, {{ signal.is_big_endian_s }});
+  {%- endif %}
+{%- endfor %}
+{%- endmacro %}
+
+{# Recursive macro to generate encode signal macros #}
+{%- macro generate_encode_macros(signals, message_name, prefix='') %}
+{%- for signal in signals %}
+  {%- if signal.__class__.__name__ == 'NestedStruct' %}
+{{ generate_encode_macros(signal.fields, message_name, prefix + signal.name + '_') }}
+  {%- else %}
+#define can_encode_signal_{{ message_name }}_{{ prefix }}{{ signal.name }}(signal) \
+    can_encode_signal_from_{{ signal.scalar_type }}((signal), {{ signal.start_bit }}, {{ signal.bit_length }}, {{ signal.scale|default(1.0) }}, {{ signal.offset|default(0.0) }}, {{ signal.is_big_endian_s }});
+  {%- endif %}
+{%- endfor %}
+{%- endmacro %}
+
+{# Recursive macro to generate decode statements #}
+{%- macro generate_decode_statements(signals, message_name, struct_prefix='msg_struct.', macro_prefix='') %}
+{%- for signal in signals %}
+  {%- if signal.__class__.__name__ == 'NestedStruct' %}
+{{ generate_decode_statements(signal.fields, message_name, struct_prefix + signal.name + '.', macro_prefix + signal.name + '_') }}
+  {%- else %}
+    {%- if (signal.multiplexer_count is defined and signal.multiplexer_count <= 1) or signal.multiplexer_count is not defined %}
+	{{ struct_prefix }}{{ signal.name }} = can_decode_signal_{{ message_name }}_{{ macro_prefix }}{{ signal.name }}(msg);
+    {%- endif %}
+  {%- endif %}
+{%- endfor %}
+{%- endmacro %}
+
+{# Recursive macro to generate encode statements - now accepts message object #}
+{%- macro generate_encode_statements(signals, message_name, message_obj, struct_prefix='msg->', macro_prefix='') %}
+{%- for signal in signals %}
+  {%- if signal.__class__.__name__ == 'NestedStruct' %}
+{{ generate_encode_statements(signal.fields, message_name, message_obj, struct_prefix + signal.name + '.', macro_prefix + signal.name + '_') }}
+  {%- else %}
+    {%- if signal.multiplexer_count is defined and signal.multiplexer_count > 1 -%}
+	word |= can_encode_signal_{{ message_name }}_{{ macro_prefix }}{{ signal.name }}({{ struct_prefix }}{{ signal.name }}[{{ struct_prefix }}{{ signal.multiplexer_signal }}]);
+    {%- elif message_obj.is_multiplexer and signal.name == message_obj.multiplexer_signal %}
+	word |= can_encode_signal_{{ message_name }}_{{ macro_prefix }}{{ signal.name }}({{ message_obj.multiplexer_signal }});
+    {%- else -%}
+	word |= can_encode_signal_{{ message_name }}_{{ macro_prefix }}{{ signal.name }}({{ struct_prefix }}{{ signal.name }});
+    {%- endif %}
+  {%- endif %}
+{%- endfor %}
+{%- endmacro %}
+
 #include "{{ device_name_snake }}_can.h"
 #include "can_signal_parser.h"
 
 /*-------------------- Decode Signals ---------------------*/
 {%- for message in messages %}
 // {{ message.name_pascal }}
-{%- for signal in message.signals %}
-  {%- if signal.fields is defined and signal.fields %}
-    {%- for sub in signal.fields %}
-#define can_decode_signal_{{ message.name_snake }}_{{ signal.name }}_{{ sub.name }}(msg) \
-    can_decode_signal_as_{{ sub.scalar_type }}((msg), {{ sub.start_bit }}, {{ sub.bit_length }}, {{ sub.scale|default(1.0) }}, {{ sub.offset|default(0.0) }}, {{ sub.is_big_endian_s }});
-    {%- endfor %}
-  {%- else %}
-#define can_decode_signal_{{ message.name_snake }}_{{ signal.name }}(msg) \
-    can_decode_signal_as_{{ signal.scalar_type }}((msg), {{ signal.start_bit }}, {{ signal.bit_length }}, {{ signal.scale|default(1.0) }}, {{ signal.offset|default(0.0) }}, {{ signal.is_big_endian_s }});
-  {%- endif %}
-{%- endfor %}
+{{ generate_decode_macros(message.signals, message.name_snake) }}
 {%- endfor %}
 /*---------------------------------------------------------*/
 
 /*-------------------- Encode Signals ---------------------*/
 {%- for message in messages %}
 // {{ message.name_pascal }}
-{%- for signal in message.signals %}
-  {%- if signal.fields is defined and signal.fields %}
-    {%- for sub in signal.fields %}
-#define can_encode_signal_{{message.name_snake}}_{{signal.name}}_{{sub.name}}(signal) \
-    can_encode_signal_from_{{sub.scalar_type}}((signal), {{ sub.start_bit }}, {{ sub.bit_length }}, {{ sub.scale|default(1.0) }}, {{ sub.offset|default(0.0) }}, {{ sub.is_big_endian_s }});
-    {%- endfor %}
-  {%- else %}
-#define can_encode_signal_{{message.name_snake}}_{{signal.name}}(signal) \
-    can_encode_signal_from_{{signal.scalar_type}}((signal), {{ signal.start_bit }}, {{ signal.bit_length }}, {{ signal.scale|default(1.0) }}, {{ signal.offset|default(0.0) }}, {{ signal.is_big_endian_s }});
-  {%- endif %}
-{%- endfor %}
+{{ generate_encode_macros(message.signals, message.name_snake) }}
 {%- endfor %}
 /*---------------------------------------------------------*/
 
@@ -67,22 +101,11 @@ void can_send_{{ device_name_snake }}_msgs_scheduled(const CanDevice{{ device_na
 
 {% for message in messages %}
 CanMsg{{ message.name_pascal }} can_decode_msg_{{ message.name_snake }}(const CanFrame *msg) {
-	CanMsg{{message.name_pascal}} msg_struct = {0};
+	CanMsg{{ message.name_pascal }} msg_struct = {0};
+{{ generate_decode_statements(message.signals, message.name_snake) }}
 
 	{%- for signal in message.signals %}
-	  {%- if signal.fields is defined and signal.fields %}
-	    {%- for sub in signal.fields %}
-	msg_struct.{{ signal.name }}.{{ sub.name }} = can_decode_signal_{{ message.name_snake }}_{{ signal.name }}_{{ sub.name }}(msg);
-	    {%- endfor %}
-	  {%- else %}
-	    {%- if (signal.multiplexer_count is defined and signal.multiplexer_count <= 1) or signal.multiplexer_count is not defined %}
-	msg_struct.{{ signal.name }} = can_decode_signal_{{ message.name_snake }}_{{ signal.name }}(msg);
-	    {%- endif %}
-	  {%- endif %}
-	{%- endfor %}
-
-	{%- for signal in message.signals %}
-	  {%- if not (signal.fields is defined and signal.fields) %}
+	  {%- if signal.__class__.__name__ != 'NestedStruct' %}
 	    {%- if signal.multiplexer_count is defined and signal.multiplexer_count > 1 %}
 	msg_struct.{{ signal.name }}[msg_struct.{{ signal.multiplexer_signal }}] = can_decode_{{ message.name_snake }}_{{ signal.name }}(msg);
 	    {%- endif %}
@@ -95,139 +118,22 @@ CanMsg{{ message.name_pascal }} can_decode_msg_{{ message.name_snake }}(const Ca
 
 {%- for message in messages %}
 {%- if message.is_multiplexer %}
-CanFrame can_encode_msg_{{message.name_snake}}(const CanMsg{{ message.name_pascal }} *msg, uint32_t {{message.multiplexer_signal}}) {
-    CanFrame message = {.id = {{message.frame_id}}, .dlc = {{message.dlc}}};
-    uint64_t word = 0;
-    uint64_t *ptr = (uint64_t *) &message.data;
-    {% for signal in message.signals %}
-      {%- if signal.fields is defined and signal.fields %}
-        {%- for sub in signal.fields %}
-    word |= can_encode_signal_{{message.name_snake}}_{{signal.name}}_{{sub.name}}(msg->{{signal.name}}.{{sub.name}});
-        {%- endfor %}
-      {%- else %}
-        {%- if signal.multiplexer_count is defined and signal.multiplexer_count > 1 -%}
-    word |= can_encode_{{message.name_snake}}_{{signal.name}}(msg->{{signal.name}}[{{message.multiplexer_signal}}]);
-        {%- elif signal.name == message.multiplexer_signal %}
-    word |= can_encode_signal_{{message.name_snake}}_{{signal.name}}({{message.multiplexer_signal}});
-        {%- else -%}
-    word |= can_encode_signal_{{message.name_snake}}_{{signal.name}}(msg->{{signal.name}});
-        {%- endif %}
-      {%- endif %}
-    {% endfor %}
-    *ptr = word;
-    return message;
-}
-{%- else %}
-CanFrame can_encode_msg_{{message.name_snake}}(const CanMsg{{ message.name_pascal }} *msg) {
-	CanFrame message = {.id = {{message.frame_id}}, .dlc = {{message.dlc}}};
+CanFrame can_encode_msg_{{ message.name_snake }}(const CanMsg{{ message.name_pascal }} *msg, uint32_t {{ message.multiplexer_signal }}) {
+	CanFrame message = {.id = {{ message.frame_id }}, .dlc = {{ message.dlc }}};
 	uint64_t word = 0;
 	uint64_t *ptr = (uint64_t *) &message.data;
-
-	{% for signal in message.signals %}
-	  {%- if signal.fields is defined and signal.fields %}
-	    {%- for sub in signal.fields %}
-	word |= can_encode_signal_{{message.name_snake}}_{{signal.name}}_{{sub.name}}(msg->{{signal.name}}.{{sub.name}});
-	    {%- endfor %}
-	  {%- else %}
-	    {%- if signal.multiplexer_count is defined and signal.multiplexer_count > 1 -%}
-	word |= can_encode_signal_{{message.name_snake}}_{{signal.name}}(msg->{{signal.name}}[msg->{{signal.multiplexer_signal}}]);
-	    {%- else -%}
-	word |= can_encode_signal_{{message.name_snake}}_{{signal.name}}(msg->{{signal.name}});
-	    {%- endif %}
-	  {%- endif %}
-	{% endfor %}
+{{ generate_encode_statements(message.signals, message.name_snake, message) }}
+	*ptr = word;
+	return message;
+}
+{%- else %}
+CanFrame can_encode_msg_{{ message.name_snake }}(const CanMsg{{ message.name_pascal }} *msg) {
+	CanFrame message = {.id = {{ message.frame_id }}, .dlc = {{ message.dlc }}};
+	uint64_t word = 0;
+	uint64_t *ptr = (uint64_t *) &message.data;
+{{ generate_encode_statements(message.signals, message.name_snake, message) }}
 	*ptr = word;
 	return message;
 }
 {%- endif %}
 {% endfor %}
-
-
-#ifndef {{ device_name_snake | upper }}_CAN_H
-#define {{ device_name_snake | upper }}_CAN_H
-
-#include <stdint.h>
-#include <stdbool.h>
-
-#include "can_frame.h"
-{%- if include_global %}
-#include "global_can.h"
-{%- endif %}
-
-{% if messages | length > 0 -%}
-  /* {{ device_name_pascal }} Message IDs */
-{%- endif %}
-
-{%- for message in messages %}
-#define CAN_MSG_ID_{{ message.name_snake | upper }} {{ message.frame_id }}
-{%- endfor %}
-
-{% if messages | length > 0 -%}
-  /* Ecu Message Periods */
-{%- endif %}
-
-{%- for message in messages %}
-#define CAN_MSG_PERIOD_{{ message.name_snake | upper }} {{ message.period }}
-{%- endfor %}
-
-
-{%- for enum in enums %}
-typedef enum {
-    {%- for name, value in enum.values.items() %}
-    {{ name | upper }} = {{ value }},
-    {%- endfor %}
-} {{ enum.name }};
-{%- endfor -%}
-
-{% for message in messages %}
-typedef struct {
-    {%- for signal in message.signals %}
-      {%- if signal.fields is defined and signal.fields %}
-    struct {
-        {%- for sub in signal.fields %}
-        {{ sub.data_type }} {{ sub.name }};
-        {%- endfor %}
-    } {{ signal.name }};
-      {%- else %}
-    {{ signal.data_type }} {{ signal.name }}{% if signal.is_multiplexer %}[{{ signal.multiplexer_count }}]{% endif %};
-      {%- endif %}
-    {%- endfor %}
-} CanMsg{{ message.name_pascal }};
-{%- endfor %}
-
-{% if messages|length > 0 %}
-typedef struct {
-    {%- for message in messages %}
-    CanMsg{{ message.name_pascal }} {{ message.name_snake }};
-    {%- endfor %}
-} CanDevice{{ device_name_pascal }};
-{%- endif %}
-
-
-/* Check if a CanFrame comes from {{ device_name_pascal }} */
-bool can_is_{{ device_name_snake }}_msg(const CanFrame *frame);
-
-{% if not is_global_device %}
-/* Send {{ device_name_pascal }} messages according to period */
-void can_send_{{ device_name_snake }}_msgs_scheduled(
-    const CanDevice{{ device_name_pascal }} *dev,
-    uint32_t time,
-    void (*send_can_func)(const CanFrame *)
-);
-{% endif %}
-
-/* Functions to decode CanFrame into CanMsg<name> objects */
-{%- for message in messages %}
-CanMsg{{ message.name_pascal }} can_decode_msg_{{ message.name_snake }}(const CanFrame *frame);
-{%- endfor %}
-
-/* Functions to encode CanMsg<name> object into CanFrame */
-{%- for message in messages %}
-{%- if message.is_multiplexer %}
-CanFrame can_encode_msg_{{ message.name_snake }}(const CanMsg{{ message.name_pascal }} *msg, uint32_t {{ message.multiplexer_signal }});
-{%- else %}
-CanFrame can_encode_msg_{{ message.name_snake }}(const CanMsg{{ message.name_pascal }} *msg);
-{%- endif %}
-{%- endfor %}
-
-#endif // {{ device_name_snake | upper }}_CAN_H

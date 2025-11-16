@@ -108,13 +108,22 @@ EncodeablePiece: TypeAlias = Union[Value]
 class PackedEncoderContext:
     """Configuration options for the packed encoder."""
 
-    def __init__(self, unroll_arrays: bool = False):
+    def __init__(
+        self, unroll_arrays: bool = False, preserve_nested_structs: bool = False
+    ):
         self.unroll_arrays = unroll_arrays
+        self.preserve_nested_structs = preserve_nested_structs
 
     def with_unroll_arrays(self, unroll_arrays: bool) -> Self:
         """Unroll arrays into N scalar values."""
         this = copy(self)
         this.unroll_arrays = unroll_arrays
+        return this
+
+    def with_preserve_nested_structs(self, preserve: bool) -> Self:
+        """Preserve nested struct hierarchy instead of flattening."""
+        this = copy(self)
+        this.preserve_nested_structs = preserve
         return this
 
 
@@ -166,11 +175,38 @@ class PackedEncoder:
 
     def _generate_struct(
         self, struct: Struct, extension: Impl, prefix: str = ""
-    ) -> NoReturn:
+    ) -> None:
+        """Generate struct encoding, optionally preserving nested structure."""
         for field in sorted(struct.fields, key=lambda field: field.field_id):
-            if isinstance(field.type, StructType) and not prefix:
-                self._generate_nested_struct(field, extension, prefix)
+            if isinstance(field.type, StructType):
+                if self.ctx.preserve_nested_structs:
+                    # NEW BEHAVIOR: Preserve nested struct with nested_fields
+                    nested_struct = self.fcp.get_struct(field.type.name).unwrap()
+                    nested_values = self._generate_struct_recursive(
+                        nested_struct, extension, self.bitstart
+                    )
+
+                    # Calculate total bit length
+                    total_bitlength = sum(v.bitlength for v in nested_values)
+
+                    # Create a single Value for the nested struct
+                    self.encoding.append(
+                        Value(
+                            name=field.name,
+                            type=field.type,
+                            bitstart=self.bitstart,
+                            bitlength=total_bitlength,
+                            composite_type=Some(field.type.name),
+                            nested_fields=nested_values,
+                            unit=field.unit,
+                        )
+                    )
+                    self.bitstart += total_bitlength
+                else:
+                    # OLD BEHAVIOR: Flatten nested struct
+                    self._generate_nested_struct(field, extension, prefix)
             else:
+                # Regular signal
                 self._generate_signal(field, extension, prefix)
 
     def _generate_nested_struct(
@@ -216,14 +252,66 @@ class PackedEncoder:
                 )
                 self.bitstart += type_length
 
+    def _generate_struct_recursive(
+        self, struct: Struct, extension: Impl, parent_bitstart: int = 0
+    ) -> List[Value]:
+        """Generate Values for a struct, preserving nested structure."""
+        result = []
+        bitstart = parent_bitstart
+
+        for field in sorted(struct.fields, key=lambda f: f.field_id):
+            if isinstance(field.type, StructType):
+                # This is a nested struct - create a Value with nested_fields
+                nested_struct = self.fcp.get_struct(field.type.name).unwrap()
+                nested_values = self._generate_struct_recursive(
+                    nested_struct, extension, bitstart
+                )
+
+                # Calculate total bit length of nested struct
+                total_bitlength = sum(v.bitlength for v in nested_values)
+
+                # Create a single Value representing the nested struct
+                result.append(
+                    Value(
+                        name=field.name,
+                        type=field.type,
+                        bitstart=bitstart,
+                        bitlength=total_bitlength,
+                        composite_type=Some(field.type.name),
+                        nested_fields=nested_values,
+                        unit=field.unit,
+                    )
+                )
+                bitstart += total_bitlength
+            else:
+                # Regular field
+                type_length = self._get_type_length(self.fcp, field.type)
+                fields_data: Dict[str, Any] = (
+                    extension.get_signal(field.name)
+                    .and_then(lambda s: Some(s.fields))
+                    .unwrap_or({})
+                )
+
+                result.append(
+                    Value(
+                        name=field.name,
+                        type=field.type,
+                        bitstart=bitstart,
+                        bitlength=type_length,
+                        endianess=fields_data.get("endianess") or "little",
+                        unit=field.unit,
+                        extended_data=fields_data,
+                    )
+                )
+                bitstart += type_length
+
+        return result
+
     def _generate_signal(
-        self, field: StructField, extension: Impl, prefix: str = ""
+        self, field: "StructField", extension: "Impl", prefix: str = ""
     ) -> None:
-        """Generate a scalar signal Value or flatten nested struct."""
-        if isinstance(field.type, StructType):
-            self._generate_nested_struct(field, extension, prefix)
-            return
-        elif isinstance(field.type, ArrayType) and self.ctx.unroll_arrays:
+        """Generate a scalar signal Value (no nested struct handling here)."""
+        if isinstance(field.type, ArrayType) and self.ctx.unroll_arrays:
             self._generate_array_type(field.type, field, extension, prefix)
             return
 

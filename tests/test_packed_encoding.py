@@ -101,7 +101,7 @@ def test_struct(example_struct: Struct) -> NoReturn:
     example_extension = make_example_extension("B")
     fcp = FcpV2(structs=[example_struct, b_struct], impls=[example_extension])
 
-    packed_encoding = PackedEncoder(fcp, PackedEncoderContext)
+    packed_encoding = PackedEncoder(fcp, PackedEncoderContext())
 
     assert packed_encoding.generate(example_extension) == [
         Value("s1::s1", UnsignedType("u32"), bitstart=0, bitlength=32),
