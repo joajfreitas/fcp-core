@@ -22,14 +22,14 @@ jobs:
             - uses: actions/checkout@v4
             - uses: yezz123/setup-uv@v4
             - run: sudo apt install llvm libgtest-dev libgmock-dev
-            - run: make RUN_UNDER="uvx -p 3.12" ci
+            - run: make RUN_UNDER="uvx -p 3.14" ci
 
 
     tests:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+                python: ["3.9", "3.10", "3.11", "3.12", "3.14"]
         steps:
             - uses: actions/checkout@v4
             - uses: yezz123/setup-uv@v4
