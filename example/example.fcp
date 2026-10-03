@@ -5,32 +5,32 @@ mod temperature; /* Import another FCP file (temperature.fcp) for reuse */
 /* Enums define sets of named constants */
 enum SensorState {
     Inactive = 0,
-    Active   = 1,
-    Error    = 2,
+    Active   = 1
+    Error    = 2
 }
 
 /* Structs define message formats exchanged between devices */
 struct StateMsg {
     s1 @0: u8,   /* Example field: 8-bit unsigned integer */
-    s2 @1: u16,  /* Example field: 16-bit unsigned integer */
+    s2 @1: u16   /* Example field: 16-bit unsigned integer */
 }
 
 struct SensorInformation {
-    state @0: SensorState, /* enums and other structs can also be used as types */
+    state @0: SensorState /* enums and other structs can also be used as types */
 }
 
 struct TemperatureResponse {
-    temperature @0: u8, 
+    temperature @0: u8 
 }
 
 struct SensorReq {
-    sensor_nr @0: u8, 
+    sensor_nr @0: u8 
 }
 
 /* A service is a collection of RPC methods (remote procedures) that a device can expose */
 service SensorService @0 {
     method RequestState(SensorReq) @0 returns SensorInformation, 
-    method GetTemperature(SensorReq) @1 returns TemperatureResponse,
+    method GetTemperature(SensorReq) @1 returns TemperatureResponse
 }
 
 /* A device represents a physical or logical unit in the system.
@@ -38,10 +38,10 @@ service SensorService @0 {
 device ecu {
     protocol can {
         /* Protocol-specific message bindings with unique IDs */
-        impl StateMsg        { id: 10, },
-        impl TemperatureMsg  { id: 20, },
+        impl StateMsg        { id: 10 },
+        impl TemperatureMsg  { id: 20 },
     
-        rpc { request_id: 1025, response_id: 1026, }, /* RPC settings: request/response identifiers for CAN */
-        services: [SensorService], /* Services exposed by this device */
-    },
+        rpc { request_id: 1025, response_id: 1026 }, /* RPC settings: request/response identifiers for CAN */
+        services: [SensorService] /* Services exposed by this device */
+    }
 }
