@@ -74,16 +74,14 @@ class TestTypeVisitor(TypeVisitor):
 
 
 def test_type_visitor() -> None:
-    fcp = get_fcp_from_string(
-        """
+    fcp = get_fcp_from_string("""
 version: "3"
 
 struct S1 {
     field1 @0: u8,
     field2 @1: i8,
 }
-"""
-    ).unwrap()
+""").unwrap()
 
     test_visitor = TestTypeVisitor(fcp)
 

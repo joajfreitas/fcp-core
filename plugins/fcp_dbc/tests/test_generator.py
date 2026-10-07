@@ -119,8 +119,7 @@ def test_verifier(test_name: str) -> None:
 def test_encoding_message_to_big() -> None:
     tmp = NamedTemporaryFile()
     with open(tmp.name, "w") as fp:
-        fp.write(
-            """
+        fp.write("""
 version: "3"
 
 struct Foo {
@@ -136,8 +135,7 @@ device dbc_device {
         },
     },
 }
-"""
-        )
+""")
 
     fcp_v2 = get_fcp(tmp.name).unwrap()
     generator = Generator()

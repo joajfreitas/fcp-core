@@ -5,7 +5,7 @@ mod temperature; /* Import another FCP file (temperature.fcp) for reuse */
 /* Enums define sets of named constants */
 enum SensorState {
     Inactive = 0,
-    Active   = 1
+    Active   = 1,
     Error    = 2
 }
 

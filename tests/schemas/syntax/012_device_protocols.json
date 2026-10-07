@@ -76,9 +76,9 @@
               "line": 16,
               "end_line": 19,
               "column": 9,
-              "end_column": 11,
+              "end_column": 10,
               "start_pos": 209,
-              "end_pos": 288,
+              "end_pos": 287,
               "filename": "tests/schemas/syntax/012_device_protocols.fcp"
             },
             "fields": {
@@ -103,9 +103,9 @@
               "line": 27,
               "end_line": 31,
               "column": 9,
-              "end_column": 11,
+              "end_column": 10,
               "start_pos": 422,
-              "end_pos": 525,
+              "end_pos": 524,
               "filename": "tests/schemas/syntax/012_device_protocols.fcp"
             },
             "fields": {}

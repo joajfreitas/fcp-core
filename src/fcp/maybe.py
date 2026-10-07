@@ -45,7 +45,6 @@ else:  # pragma: no cover
 
 from . import result
 
-
 T = TypeVar("T", covariant=True)  # Success type
 U = TypeVar("U")
 E = TypeVar("E")

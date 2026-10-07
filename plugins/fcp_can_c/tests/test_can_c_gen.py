@@ -27,7 +27,6 @@ from pathlib import Path
 from fcp_can_c import Generator
 from fcp.parser import get_fcp
 
-
 base_dir = os.path.abspath(__file__).replace("/test_can_c_gen.py", "")
 cwd = os.getcwd().split("/")[-1]
 
