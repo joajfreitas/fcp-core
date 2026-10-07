@@ -1,0 +1,35 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "description": "Renovate configuration for fcp-core and its plugin/tooling packages",
+  "labels": ["dependencies"],
+  "schedule": ["before 4am on monday"],
+  "rangeStrategy": "bump",
+  "prConcurrentLimit": 5,
+  "packageRules": [
+    {
+      "description": "Group non-major Python dependency updates",
+      "groupName": "python non-major dependencies",
+      "matchManagers": ["pep621", "pip_requirements"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"]
+    },
+    {
+      "description": "Group pre-commit hook updates",
+      "groupName": "pre-commit hooks",
+      "matchManagers": ["pre-commit"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"]
+    },
+    {
+      "description": "Group GitHub Actions updates",
+      "groupName": "github-actions",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"]
+    },
+    {
+      "description": "Group non-major npm tooling updates",
+      "groupName": "npm tooling non-major",
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"]
+    }
+  ]
+}
