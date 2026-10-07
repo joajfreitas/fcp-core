@@ -20,7 +20,6 @@
 
 """Impl."""
 
-
 from beartype.typing import Any, Dict, List, Optional
 from serde import serde, strict, to_dict, field
 
@@ -90,7 +89,7 @@ class Impl:
             "fields": [
                 {"name": key, "value": str(value)} for key, value in self.fields.items()
             ],
-            "signals": [signal.refection() for signal in self.signals],
+            "signals": [signal.reflection() for signal in self.signals],
             "meta": self.meta.reflection() if self.meta else None,
         }
 

@@ -64,7 +64,6 @@ from .maybe import catch
 from .specs.metadata import MetaData
 from .error import Logger, FcpError, error
 
-
 fcp_parser = Lark(
     """
     start: preamble (struct | enum | mod_expr | service | device)*
@@ -87,22 +86,22 @@ fcp_parser = Lark(
     param: identifier "("? param_argument* ")"? "|"?
     param_argument: value ","?
 
-    enum: "enum" identifier "{" (enum_field ",")* enum_field ","? "}"
+    enum: "enum" identifier "{" (enum_field ",")* enum_field~0..1 ","? "}"
     enum_field : identifier "=" value 
 
     protocol_impl: "impl" identifier ("as" identifier)? "{" (protocol_impl_body ",")* protocol_impl_body ","? "}"
     protocol_impl_body: extension_field | signal_block
-    signal_block: "signal" identifier "{" extension_field+ "}"
+    signal_block: "signal" identifier "{" (extension_field ",")* extension_field ","? "}"
     extension_field: identifier ":" value
 
     service: "service" identifier "@" number "{" (method ",")* method ","? "}"
     method: "method" identifier "(" identifier ")" "@" number "returns" identifier
 
-    device: "device" identifier "{" (device_body ",")* device_body ","? "}"
-    device_body: (protocol_block ",")* protocol_block | (extension_field ",")* extension_field
-    protocol_block: "protocol" identifier "{" (protocol_body ",")* protocol_body ","? "}"
+    device: "device" identifier "{" (device_body ",")* device_body~0..1 ","? "}"
+    device_body: protocol_block | extension_field
+    protocol_block: "protocol" identifier "{" (protocol_body ",")* protocol_body~0..1 ","? "}"
     protocol_body: protocol_impl |  rpc_block | extension_field
-    rpc_block: "rpc" "{" (extension_field ",")* extension_field ","? "}"
+    rpc_block: "rpc" "{" (extension_field ",")* extension_field~0..1 ","? "}"
 
     mod_expr: "mod" identifier ("." identifier)* ";"
 
@@ -379,7 +378,7 @@ class FcpV2Transformer(Transformer):
                     for field in fields
                 ],
                 meta=meta,
-            )  # type:ignore
+            )  # type: ignore
         )
 
         self.fcp.impls.append(
