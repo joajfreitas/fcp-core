@@ -108,7 +108,8 @@ fcp_parser = Lark(
     identifier: CNAME
     string: ESCAPED_STRING
     number: SIGNED_NUMBER | HEX_NUMBER
-    value : array | identifier | number | string
+    value : array | boolean | identifier | number | string
+    !boolean: "true" | "false"
     array: "[" (value ("," value)*)? "]"
 
     COMMENT: C_COMMENT | CPP_COMMENT
@@ -277,6 +278,10 @@ class FcpV2Transformer(Transformer):
     def identifier(self, args: List[Any]) -> str:
         """Parse an identifier node of the fcp AST."""
         return str(args[0].value)
+
+    def boolean(self, args: List[Any]) -> bool:
+        """Parse an boolean node of the fcp AST."""
+        return args[0].value == "true"
 
     def type(self, args: List[Result[Type, FcpError]]) -> Result[Type, FcpError]:
         """Parse a type node of the fcp AST."""
