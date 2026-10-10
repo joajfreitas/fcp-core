@@ -23,6 +23,7 @@
 from serde import serde, strict, to_dict, field
 from beartype.typing import Dict, Any, Optional
 from .metadata import MetaData
+from ..utils import to_snake_case
 
 
 @serde(type_check=strict)
@@ -43,6 +44,18 @@ class Method:
         self.input = input
         self.output = output
         self.meta = meta
+
+    @property
+    def name_snake(self) -> str:
+        return to_snake_case(self.name)
+
+    @property
+    def input_snake(self) -> str:
+        return to_snake_case(self.input)
+
+    @property
+    def output_snake(self) -> str:
+        return to_snake_case(self.output)
 
     def reflection(self) -> Dict[str, Any]:
         """Reflection."""
