@@ -5,7 +5,7 @@
 
 typedef struct {
     uint8_t ide : 1;
-    uint16_t id : 11;
+    uint16_t sid : 11;
     uint32_t eid : 18;
     uint8_t dlc : 4;
     uint8_t data[8];

@@ -1,13 +1,15 @@
-{%- macro render_fields(fields, indent='') -%}
-{%- for field in fields %}
-{%- if field.__class__.__name__ == 'NestedStruct' %}
-{{ indent }}struct { {{ render_fields(field.fields, indent + '    ') }}
+{% macro render_fields(fields, indent='') %}
+{% for field in fields %}
+{% if field.__class__.__name__ == 'NestedStruct' %}
+{{ indent }}struct { 
+{{ render_fields(field.fields, indent + '    ') }}
 {{ indent }}} {{ field.name }};
-{%- else %}
+{% else %}
 {{ indent }}{{ field.data_type }} {{ field.name }}{% if field.is_multiplexer %}[{{ field.multiplexer_count }}]{% endif %};
-{%- endif %}
-{%- endfor -%}
-{%- endmacro %}
+{% endif %}
+{% endfor %}
+{% endmacro -%}
+
 #ifndef {{ device_name_snake | upper }}_CAN_H
 #define {{ device_name_snake | upper }}_CAN_H
 
@@ -15,46 +17,47 @@
 #include <stdbool.h>
 
 #include "can_frame.h"
-{%- if include_global %}
+{% if include_global %}
 #include "global_can.h"
-{%- endif %}
+{% endif %}
 
-{% if messages | length > 0 -%}
+{% if messages | length > 0 %}
 /* {{ device_name_pascal }} Message IDs */
-{%- for message in messages %}
+{% for message in messages %}
 #define CAN_MSG_ID_{{ message.name_snake | upper }} {{ message.frame_id }}
-{%- endfor %}
+{% endfor %}
 
 /* {{ device_name_pascal }} Message Periods */
-{%- for message in messages %}
+{% for message in messages %}
 #define CAN_MSG_PERIOD_{{ message.name_snake | upper }} {{ message.period }}
-{%- endfor %}
-{%- endif %}
+{% endfor %}
+{% endif %}
 
-{%- if enums | length > 0 %}
-{%- for enum in enums %}
+{% if enums | length > 0 %}
+{% for enum in enums %}
 typedef enum {
-    {%- for name, value in enum.values.items() %}
+    {% for name, value in enum.values.items() %}
     {{ name | upper }} = {{ value }},
-    {%- endfor %}
+    {% endfor %}
 } {{ enum.name }};
-{%- endfor -%}
-{%- endif %}
+{% endfor %}
+{% endif %}
 
 {% for message in messages %}
 /* {{ message.name_pascal }} message structure */
-typedef struct { {{ render_fields(message.signals, '    ') }}
+typedef struct { 
+{{ render_fields(message.signals, '    ') -}}
 } CanMsg{{ message.name_pascal }};
 {% endfor %}
 
-{%- if messages|length > 0 %}
+{% if messages|length > 0 %}
 /* {{ device_name_pascal }} device aggregate structure */
 typedef struct {
-    {%- for message in messages %}
+    {% for message in messages %}
     CanMsg{{ message.name_pascal }} {{ message.name_snake }};
-    {%- endfor %}
+    {% endfor %}
 } CanDevice{{ device_name_pascal }};
-{%- endif %}
+{% endif %}
 
 
 /* Check if a CanFrame comes from {{ device_name_pascal }} */
@@ -70,17 +73,17 @@ void can_send_{{ device_name_snake }}_msgs_scheduled(
 {% endif %}
 
 /* Functions to decode CanFrame into CanMsg<name> objects */
-{%- for message in messages %}
+{% for message in messages %}
 CanMsg{{ message.name_pascal }} can_decode_msg_{{ message.name_snake }}(const CanFrame *frame);
-{%- endfor %}
+{% endfor %}
 
 /* Functions to encode CanMsg<name> object into CanFrame */
-{%- for message in messages %}
-{%- if message.is_multiplexer %}
+{% for message in messages %}
+{% if message.is_multiplexer %}
 CanFrame can_encode_msg_{{ message.name_snake }}(const CanMsg{{ message.name_pascal }} *msg, uint32_t {{ message.multiplexer_signal }});
-{%- else %}
+{% else %}
 CanFrame can_encode_msg_{{ message.name_snake }}(const CanMsg{{ message.name_pascal }} *msg);
-{%- endif %}
-{%- endfor %}
+{% endif %}
+{% endfor %}
 
 #endif // {{ device_name_snake | upper }}_CAN_H
