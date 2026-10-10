@@ -35,7 +35,7 @@ from .types import Nil, Never
 from .result import Result, Ok
 from .maybe import catch
 from . import FcpV2
-from .verifier import Verifier
+from .verifier import Verifier, make_general_verifier
 
 
 def _handle_file(result: Dict[str, Union[str, Path]]) -> NoReturn:
@@ -92,7 +92,7 @@ class GeneratorManager:
     """Manager for generators."""
 
     def __init__(self, verifier: Verifier) -> None:
-        self.verifier = verifier
+        self.verifier = make_general_verifier()
 
     def _list_generators(self) -> Any:
         return [
