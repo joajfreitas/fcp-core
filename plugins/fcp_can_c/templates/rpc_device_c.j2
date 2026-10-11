@@ -31,9 +31,9 @@ CanFrame can_encode_rpc_{{ message.name_snake }}(const CanRpc{{ message.name_str
     uint64_t word = 0, *ptr = (uint64_t *)&frame.data;
 
     {% for signal in message.signals %}{% if signal.multiplexer_count > 1 %}
-    word |= can_encode_signal_{{ message.name_snake }}_{{ signal.name }}(rpc->{{ signal.name }}[{{ message.multiplexer_signal }}]);
+    word |= can_encode_signal_{{ message.struct_snake }}_{{ signal.name }}(rpc->{{ signal.name }}[{{ message.multiplexer_signal }}]);
     {% else %}
-    word |= can_encode_signal_{{ message.name_snake }}_{{ signal.name }}(rpc->{{ signal.name }});
+    word |= can_encode_signal_{{ message.struct_snake }}_{{ signal.name }}(rpc->{{ signal.name }});
     {% endif %}{% endfor %}
 
     *ptr = word;
@@ -64,9 +64,9 @@ CanFrame can_encode_rpc_{{ message.name_snake }}_ans(const CanRpc{{ message.name
     uint64_t word = 0, *ptr = (uint64_t *)&frame.data;
 
     {% for signal in message.signals %}{% if signal.multiplexer_count > 1 %}
-    word |= can_encode_signal_{{ message.name_snake }}_{{ signal.name }}(rpc->{{ signal.name }}[rpc->{{ message.multiplexer_signal }}]);
+    word |= can_encode_signal_{{ message.struct_snake }}_{{ signal.name }}(rpc->{{ signal.name }}[rpc->{{ message.multiplexer_signal }}]);
     {% else %}
-    word |= can_encode_signal_{{ message.name_snake }}_{{ signal.name }}(rpc->{{ signal.name }});
+    word |= can_encode_signal_{{ message.struct_snake }}_{{ signal.name }}(rpc->{{ signal.name }});
     {% endif %}{% endfor %}
 
     *ptr = word;
@@ -80,14 +80,32 @@ CanFrame can_encode_rpc_{{ message.name_snake }}_ans(const CanRpc{{ message.name
 
 {%- macro generate_decode_rpc(name, content) %}
 {% for message in content %}
-{% if not message.senders %}
+{% if message.senders %}
 CanRpc{{ message.name_struct }} can_decode_rpc_{{ message.name_snake }}(const CanFrame *rpc) {
     CanRpc{{ message.name_struct }} r = {0};
 
     {% for signal in message.signals %}{% if signal.multiplexer_count <= 1 %}
-    r.{{ signal.name }} = can_decode_signal_{{ message.name_snake }}_{{ signal.name }}(rpc);
+    r.{{ signal.name }} = can_decode_signal_{{ message.struct_snake }}_{{ signal.name }}(rpc);
     {% else %}
-    r.{{ signal.name }}[r.{{ message.multiplexer_signal }}] = can_decode_signal_{{ message.name_snake }}_{{ signal.name }}(rpc);
+    r.{{ signal.name }}[r.{{ message.multiplexer_signal }}] = can_decode_signal_{{ message.struct_snake }}_{{ signal.name }}(rpc);
+    {% endif %}{% endfor %}
+
+    return r;
+}
+{% endif %}
+{% endfor %}
+{% endmacro -%}
+
+{%- macro generate_decode_rpc_ans(name, content) %}
+{% for message in content %}
+{% if not message.senders %}
+CanRpc{{ message.name_struct }} can_decode_rpc_{{ message.name_snake }}_ans(const CanFrame *rpc) {
+    CanRpc{{ message.name_struct }} r = {0};
+
+    {% for signal in message.signals %}{% if signal.multiplexer_count <= 1 %}
+    r.{{ signal.name }} = can_decode_signal_{{ message.struct_snake }}_{{ signal.name }}(rpc);
+    {% else %}
+    r.{{ signal.name }}[r.{{ message.multiplexer_signal }}] = can_decode_signal_{{ message.struct_snake }}_{{ signal.name }}(rpc);
     {% endif %}{% endfor %}
 
     return r;
@@ -136,6 +154,7 @@ bool is_{{ device_name_snake }}_rpc(const CanFrame *frame) {
 {{ generate_decode_encode_macros(rpc_structs) -}}
 /*---------------------------------------- Decode / Encode RPC Structs -------------------------------*/
 {{ generate_decode_rpc(device_name_snake, rpcs) }}
+{{ generate_decode_rpc_ans(device_name_snake, rpcs) }}
 {{ generate_encode_rpc(device_name_snake, rpcs, rpc_blocks) }}
 {{ generate_encode_rpc_ans(device_name_snake, rpcs, rpc_blocks) }}
 /*---------------------------------------- RPC Registration API ------------------------------------*/

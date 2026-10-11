@@ -34,7 +34,7 @@ void reset_fake_can_sender() {
     call_count = 0;
 }
 
-void fake_can_sender(const CanFrame *f) { sent_ids[call_count++] = f->id; }
+void fake_can_sender(const CanFrame *f) { sent_ids[call_count++] = f->sid; }
 
 // Time is 0, no messages should be sent
 void test_0(CanDeviceEcu *ecu_can) {

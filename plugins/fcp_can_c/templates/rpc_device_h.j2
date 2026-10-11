@@ -7,6 +7,38 @@
 {% endfor %}
 {% endmacro -%}
 
+{%- macro generate_rpc_decode(content) %}
+{% for message in rpcs %}
+{% if message.senders %}
+CanRpc{{ message.name_struct }} can_decode_rpc_{{ message.name_snake }}(const CanFrame *rpc);
+{% endif %}
+{% endfor %}
+{% endmacro -%}
+
+{%- macro generate_rpc_decode_ans(content) %}
+{% for message in content %}
+{% if not message.senders %}
+CanRpc{{ message.name_struct }} can_decode_rpc_{{ message.name_snake }}_ans(const CanFrame *rpc);
+{% endif %}
+{% endfor %}
+{% endmacro -%}
+
+{%- macro generate_rpc_encode(content) %}
+{% for message in content %}
+{% if message.senders %}
+CanFrame can_encode_rpc_{{ message.name_snake }}(const CanRpc{{ message.name_struct }} *rpc{% if message.is_multiplexer %}, uint32_t {{ message.multiplexer_signal }}{% endif %});
+{% endif %}
+{% endfor %}
+{% endmacro -%}
+
+{%- macro generate_rpc_encode_ans(content) %}
+{% for message in content %}
+{% if not message.senders %}
+CanFrame can_encode_rpc_{{ message.name_snake }}_ans(const CanRpc{{ message.name_struct }} *rpc);
+{% endif %}
+{% endfor %}
+{% endmacro -%}
+
 #ifndef {{ device_name_upper }}_RPC_H
 #define {{ device_name_upper }}_RPC_H
 
@@ -100,14 +132,10 @@ typedef struct {
 } CanRpc{{ message.name_struct }};
 {% endfor %}
 /*---------------------------------------- RPC Encode/Decode Rpcs -----------------------------------*/
-{%- for message in rpcs +%}
-{% if message.senders %}
-CanFrame can_encode_rpc_{{ message.name_snake }}(const CanRpc{{ message.name_struct }} *rpc{% if message.is_multiplexer %}, uint32_t {{ message.multiplexer_signal }}{% endif %});
-{%- else %}
-CanRpc{{ message.name_struct }} can_decode_rpc_{{ message.name_snake }}(const CanFrame *rpc);
-CanFrame can_encode_rpc_{{ message.name_snake }}_ans(const CanRpc{{ message.name_struct }} *rpc);
-{% endif %}
-{% endfor %}
+{{ generate_rpc_decode(rpcs) }}
+{{ generate_rpc_decode_ans(rpcs) }}
+{{ generate_rpc_encode(rpcs) }}
+{{ generate_rpc_encode_ans(rpcs) -}}
 /*---------------------------------------- Generated Service Handlers -------------------------------*/
 {% for service in services %}
 {% for method in service.methods %}

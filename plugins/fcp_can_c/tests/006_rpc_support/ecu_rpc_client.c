@@ -16,11 +16,11 @@ bool sensorservice_request_state(uint8_t *result) {
     if (!result) return false;
 
     CanRpcSensorReq request = {.request_id = 0x01};
-    CanFrame frame = can_encode_rpc_sensor_req(&request);
+    CanFrame frame = can_encode_rpc_request_state(&request);
 
     ecu_service_dispatch(&frame, capture_response);
 
-    CanRpcSensorInformation response = can_decode_rpc_sensor_information(&rpc_response);
+    CanRpcSensorInformation response = can_decode_rpc_request_state_ans(&rpc_response);
     *result = response.result;
 
     return true;
@@ -32,7 +32,7 @@ bool sensorservice_request_state(uint8_t *result) {
 void ecu_service_handle_request_state(const CanFrame *req, CanFrame *resp) {
     if (!req || !resp) return;
 
-    CanRpcSensorReq request = can_decode_rpc_sensor_req(req);
+    CanRpcSensorReq request = can_decode_rpc_request_state(req);
     CanRpcSensorInformation response = {0};
 
     switch (request.request_id) {
@@ -42,15 +42,15 @@ void ecu_service_handle_request_state(const CanFrame *req, CanFrame *resp) {
         default:   response.result = 0xFF; break;
     }
 
-    *resp = can_encode_rpc_sensor_information(&response);
-    resp->id = ECU_RPC_ANS_ID;
+    *resp = can_encode_rpc_request_state_ans(&response);
+    resp->sid = ECU_CAN_RPC_ANS_ID;
 }
 
 // SENSOR.GET_TEMPERATURE
 void ecu_service_handle_get_temperature(const CanFrame *req, CanFrame *resp) {
     if (!req || !resp) return;
 
-    CanRpcSensorReq request = can_decode_rpc_sensor_req(req);
+    CanRpcSensorReq request = can_decode_rpc_get_temperature(req);
     CanRpcTemperatureResponse response = {0};
 
     switch (request.request_id) {
@@ -59,8 +59,8 @@ void ecu_service_handle_get_temperature(const CanFrame *req, CanFrame *resp) {
         default:   response.result = 0xFF; break;
     }
 
-    *resp = can_encode_rpc_temperature_response(&response);
-    resp->id = ECU_RPC_ANS_ID;
+    *resp = can_encode_rpc_get_temperature_ans(&response);
+    resp->sid = ECU_CAN_RPC_ANS_ID;
 }
 
 /*---------------------------------------- RPC Registration (Example) ----------------------------------------*/

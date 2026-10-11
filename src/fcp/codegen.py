@@ -83,7 +83,7 @@ class CodeGenerator:
         """Function to override from generator. Implements actual code generation."""
         raise NotImplementedError
 
-    def register_checks(self, verifier: Verifier) -> Never:  # type: ignore
+    def register_checks(self, verifier: Verifier) -> None:  # type: ignore
         """Register checks in verifier."""
         pass
 
