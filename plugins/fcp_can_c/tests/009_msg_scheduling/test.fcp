@@ -1,0 +1,33 @@
+version: "3"
+
+struct Pedals {
+    acc_pos @0: u8 | unit("%"),
+    brake_pos @1: u8 | unit("%"),
+}
+
+struct Shutdown {
+    error @0: u8,
+}
+
+struct Button {
+    press @0: u8,
+}
+
+device ecu {
+    protocol can_2b {
+        impl Pedals {
+            id: 0x0A7FFF,
+            period: 15, /* Period in milliseconds */
+        },
+
+        impl Shutdown {
+            id: 0x0B2CD0,
+            period: 20,
+        },
+
+        impl Button {
+            id: 0x0D3AF2,
+            period: -1,
+        },
+    },
+}

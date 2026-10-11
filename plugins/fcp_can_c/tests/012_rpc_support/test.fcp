@@ -1,0 +1,40 @@
+version: "3"
+
+enum SensorState {
+    Inactive = 0,
+    Active = 1,
+    Error = 2,
+}
+
+struct Msg {
+    s1 @0: u8,
+    s2 @1: u16,
+}
+
+struct SensorInformation {
+    result @0: u8,
+}
+
+struct TemperatureResponse {
+    result @0: u8,
+}
+
+struct SensorReq {
+    request_id @0: u8,
+}
+
+service StateService @0 {
+    method RequestState(SensorReq) @0 returns SensorInformation,
+}
+
+service TemperatureService @1 {
+    method GetTemperature(SensorReq) @1 returns TemperatureResponse,
+}
+
+device ecu {
+    protocol can_2b {
+        impl Msg { id: 0x0A7FFF, },
+        rpc { request_id: 0x0B2CD0, response_id: 0x0D3AF2, },
+        services: [StateService, TemperatureService],
+    },
+}
