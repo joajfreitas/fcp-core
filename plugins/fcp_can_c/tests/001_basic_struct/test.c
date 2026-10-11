@@ -30,18 +30,20 @@ void test_encode_msg() {
     };
 
     CanFrame expected_frame = {
-        .id = 10,
+        .eid = 0,
+        .sid = 10,
         .dlc = 2,
         .data = {123, 0x12, 0xAB},
     };
 
     CanFrame frame = can_encode_msg_foo(&msg);
-    VERIFY_TEST(frame.id == expected_frame.id);
+    VERIFY_TEST(frame.sid == expected_frame.sid);
 }
 
 void test_is_dev_msg() {
     CanFrame test_frame = {
-        .id = 10,
+        .eid = 0,
+        .sid = 10,
         .dlc = 2,
         .data = {123, 0x12, 0xAB},
     };
@@ -51,7 +53,8 @@ void test_is_dev_msg() {
 
 void test_dlc() {
     CanFrame frame = {
-        .id = 10,
+        .eid = 0,
+        .sid = 10,
         .dlc = 3,
         .data = {123, 0x12, 0xAB},
     };
@@ -61,7 +64,8 @@ void test_dlc() {
 
 void test_decode_msg() {
     CanFrame test_frame = {
-        .id = 10,
+        .eid = 0,
+        .sid = 10,
         .dlc = 2,
         .data = {123, 0x12, 0xAB},
     };

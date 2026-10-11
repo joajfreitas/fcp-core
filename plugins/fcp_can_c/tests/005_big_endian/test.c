@@ -35,7 +35,7 @@ typedef union {
     }
 
 bool compare_frames(CanFrame *a, CanFrame *b) {
-    if (a->id != b->id) {
+    if (a->sid != b->sid) {
         return false;
     }
 
@@ -54,7 +54,8 @@ bool compare_frames(CanFrame *a, CanFrame *b) {
 
 void test_encode_msg_u8b(CanFrame *f) {
     CanFrame expected = {
-        .id = CAN_MSG_ID_U8_B,
+        .eid = 0,
+        .sid = CAN_MSG_ID_U8_B,
         .data = {0x12, 0, 0, 0, 0, 0, 0, 0},
         .dlc = 1,
     };
@@ -69,7 +70,8 @@ void test_decode_msg_u8b(CanMsgU8B *original, CanFrame *f) {
 
 void test_encode_msg_u16b(CanFrame *f) {
     CanFrame expected = {
-        .id = CAN_MSG_ID_U16_B,
+        .eid = 0,
+        .sid = CAN_MSG_ID_U16_B,
         .data = {0x12, 0x34, 0, 0, 0, 0, 0, 0},
         .dlc = 2,
     };
@@ -84,7 +86,8 @@ void test_decode_msg_u16b(CanMsgU16B *original, CanFrame *f) {
 
 void test_encode_msg_u32b(CanFrame *f) {
     CanFrame expected = {
-        .id = CAN_MSG_ID_U32_B,
+        .eid = 0,
+        .sid = CAN_MSG_ID_U32_B,
         .data = {0x12, 0x34, 0x56, 0x78, 0, 0, 0, 0},
         .dlc = 4,
     };
@@ -99,7 +102,8 @@ void test_decode_msg_u32b(CanMsgU32B *original, CanFrame *f) {
 
 void test_encode_msg_u64b(CanFrame *f) {
     CanFrame expected = {
-        .id = CAN_MSG_ID_U64_B,
+        .eid = 0,
+        .sid = CAN_MSG_ID_U64_B,
         .data = {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0},
         .dlc = 8,
     };
@@ -114,7 +118,8 @@ void test_decode_msg_u64b(CanMsgU64B *original, CanFrame *f) {
 
 void test_encode_msg_i8b(CanFrame *f) {
     CanFrame expected = {
-        .id = CAN_MSG_ID_I8_B,
+        .eid = 0,
+        .sid = CAN_MSG_ID_I8_B,
         .data = {0x12, 0, 0, 0, 0, 0, 0, 0},
         .dlc = 1,
     };
@@ -129,7 +134,8 @@ void test_decode_msg_i8b(CanMsgI8B *original, CanFrame *f) {
 
 void test_encode_msg_i16b(CanFrame *f) {
     CanFrame expected = {
-        .id = CAN_MSG_ID_I16_B,
+        .eid = 0,
+        .sid = CAN_MSG_ID_I16_B,
         .data = {0x12, 0x34, 0, 0, 0, 0, 0, 0},
         .dlc = 2,
     };
@@ -144,7 +150,8 @@ void test_decode_msg_i16b(CanMsgI16B *original, CanFrame *f) {
 
 void test_encode_msg_i32b(CanFrame *f) {
     CanFrame expected = {
-        .id = CAN_MSG_ID_I32_B,
+        .eid = 0,
+        .sid = CAN_MSG_ID_I32_B,
         .data = {0x12, 0x34, 0x56, 0x78, 0, 0, 0, 0},
         .dlc = 4,
     };
@@ -159,7 +166,8 @@ void test_decode_msg_i32b(CanMsgI32B *original, CanFrame *f) {
 
 void test_encode_msg_i64b(CanFrame *f) {
     CanFrame expected = {
-        .id = CAN_MSG_ID_I64_B,
+        .eid = 0,
+        .sid = CAN_MSG_ID_I64_B,
         .data = {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0},
         .dlc = 8,
     };
@@ -176,7 +184,8 @@ void test_encode_msg_f32b(CanFrame *f) {
     F32 v = {.f = 7.45f};
 
     CanFrame expected = {
-        .id = CAN_MSG_ID_F32_B,
+        .eid = 0,
+        .sid = CAN_MSG_ID_F32_B,
         .data = {v.i >> 24, v.i >> 16, v.i >> 8, v.i, 0, 0, 0, 0},
         .dlc = 4,
     };
@@ -193,7 +202,8 @@ void test_encode_msg_f64b(CanFrame *f) {
     F64 v = {.d = 7.4572418329};
 
     CanFrame expected = {
-        .id = CAN_MSG_ID_F64_B,
+        .eid = 0,
+        .sid = CAN_MSG_ID_F64_B,
         .data = {v.i >> 56, v.i >> 48, v.i >> 40, v.i >> 32, v.i >> 24, v.i >> 16, v.i >> 8, v.i},
         .dlc = 8,
     };

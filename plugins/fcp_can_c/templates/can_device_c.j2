@@ -39,7 +39,7 @@
 {% macro generate_encode_statements(signals, message_name, message_obj, struct_prefix='msg->', macro_prefix='') %}
 {% for signal in signals %}
 {% if signal.__class__.__name__ == 'NestedStruct' %}
-{{ generate_encode_statementsself.devices,(signal.fields, message_name, message_obj, struct_prefix + signal.name + '.', macro_prefix + signal.name + '_') }}
+{{ generate_encode_statements(signal.fields, message_name, message_obj, struct_prefix + signal.name + '.', macro_prefix + signal.name + '_') }}
 {% else %}
 {% if signal.multiplexer_count is defined and signal.multiplexer_count > 1 %}
 	word |= can_encode_signal_{{ message_name }}_{{ macro_prefix }}{{ signal.name }}({{ struct_prefix }}{{ signal.name }}[{{ struct_prefix }}{{ signal.multiplexer_signal }}]);
