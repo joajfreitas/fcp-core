@@ -98,8 +98,8 @@ void test_multiple_dispatch() {
 
     got_response = false;
     handler_called = false;
-    CanFrame f1 = {.eid = 0, .sid = ECU_CAN_RPC_GET_ID, .dlc = 3, .data = {1, 1, 0}};
-    CanFrame f2 = {.eid = 0, .sid = ECU_CAN_RPC_GET_ID, .dlc = 3, .data = {2, 2, 0}};
+    CanFrame f1 = {.ide = 0, .sid = ECU_CAN_RPC_GET_ID, .dlc = 3, .data = {1, 1, 0}};
+    CanFrame f2 = {.ide = 0, .sid = ECU_CAN_RPC_GET_ID, .dlc = 3, .data = {2, 2, 0}};
 
     ecu_service_dispatch(&f1, mock_send);
     VERIFY_TEST(got_response && handler_called);
@@ -111,7 +111,7 @@ void test_multiple_dispatch() {
 }
 
 void test_invalid_frames() {
-    CanFrame f = {.eid = 0, .sid = ECU_CAN_RPC_GET_ID, .dlc = 1};
+    CanFrame f = {.ide = 0, .sid = ECU_CAN_RPC_GET_ID, .dlc = 1};
     got_response = false;
     ecu_service_dispatch(&f, mock_send);
     VERIFY_TEST(!got_response);

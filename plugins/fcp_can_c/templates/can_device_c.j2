@@ -75,7 +75,7 @@ bool can_is_{{ device_name_snake }}_msg(const CanFrame *frame) {
     if(!frame) return false;
     
     if(frame->ide == 1) {
-        id = frame->sid & (frame->eid << 11); 
+        id = frame->sid | (frame->eid << 11); 
     } else {
         id = frame->sid;
     }
