@@ -1,0 +1,24 @@
+version: "3"
+
+struct Foo {
+    s1 @0: u8,
+    s2 @1: u16,
+}
+
+struct Bar {
+    s1 @0: f32,
+}
+
+struct Baz {
+    s1 @0: f64,
+}
+
+device ecu {
+    protocol can2b {
+        impl Foo { id: 0x0A7FFF, },
+        impl Bar { id: 0x0B2CD0, },
+        impl Baz { id: 0x0D3AF2, },
+    },
+}
+
+

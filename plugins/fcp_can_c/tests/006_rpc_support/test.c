@@ -33,13 +33,13 @@ static bool got_response = false;
 void mock_send(const CanFrame *frame) {
     memcpy(&intercepted_response, frame, sizeof(CanFrame));
     got_response = true;
-    printf("[DEBUG] Intercepted response: ID=0x%X DLC=%d\n", frame->id, frame->dlc);
+    printf("[DEBUG] Intercepted response: ID=0x%X DLC=%d\n", frame->sid, frame->dlc);
 }
 
 static bool handler_called = false;
 void test_handler(const CanFrame *req, CanFrame *resp) {
     handler_called = true;
-    resp->id = ECU_RPC_ANS_ID;
+    resp->sid = ECU_CAN_RPC_ANS_ID;
     resp->data[2] = 0x55; // test payload
 }
 
@@ -47,21 +47,21 @@ void test_handler(const CanFrame *req, CanFrame *resp) {
 
 void test_rpc_encode_decode_roundtrip() {
     CanRpcSensorReq req = {.request_id = 0x12};
-    CanFrame frame = can_encode_rpc_sensor_req(&req);
-    CanRpcSensorReq decoded = can_decode_rpc_sensor_req(&frame);
-    VERIFY_TEST(decoded.request_id == req.request_id && frame.id == ECU_RPC_GET_ID && frame.dlc == 3);
+    CanFrame frame = can_encode_rpc_request_state(&req);
+    CanRpcSensorReq decoded = can_decode_rpc_request_state(&frame);
+    VERIFY_TEST(decoded.request_id == req.request_id && frame.sid == ECU_CAN_RPC_GET_ID && frame.dlc == 3);
 }
 
 void test_rpc_response_roundtrip() {
     CanRpcSensorInformation resp = {.result = 0xA5};
-    CanFrame frame = can_encode_rpc_sensor_information(&resp);
-    CanRpcSensorInformation decoded = can_decode_rpc_sensor_information(&frame);
+    CanFrame frame = can_encode_rpc_request_state_ans(&resp);
+    CanRpcSensorInformation decoded = can_decode_rpc_request_state_ans(&frame);
     VERIFY_TEST(decoded.result == resp.result);
 }
 
 void test_rpc_table_management() {
     // Reset table
-    for (size_t i = 0; i < 32; i++) ecu_rpc_unregister(i, i);
+    for (size_t i = 0; i < MAX_RPC_ENTRIES; i++) ecu_rpc_unregister(i, i);
 
     // Register single handler
     VERIFY_TEST(ecu_rpc_register(0, 0, test_handler));
@@ -86,10 +86,10 @@ void test_rpc_dispatch_end_to_end() {
     handler_called = false;
 
     CanRpcSensorReq req = {.request_id = 0x01};
-    CanFrame frame = can_encode_rpc_sensor_req(&req);
+    CanFrame frame = can_encode_rpc_request_state(&req);
     ecu_service_dispatch(&frame, mock_send);
 
-    VERIFY_TEST(got_response && handler_called && intercepted_response.id == ECU_RPC_ANS_ID);
+    VERIFY_TEST(got_response && handler_called && intercepted_response.sid == ECU_CAN_RPC_ANS_ID);
 }
 
 void test_multiple_dispatch() {
@@ -98,8 +98,8 @@ void test_multiple_dispatch() {
 
     got_response = false;
     handler_called = false;
-    CanFrame f1 = {.id = ECU_RPC_GET_ID, .dlc = 3, .data = {1, 1, 0}};
-    CanFrame f2 = {.id = ECU_RPC_GET_ID, .dlc = 3, .data = {2, 2, 0}};
+    CanFrame f1 = {.ide = 0, .sid = ECU_CAN_RPC_GET_ID, .dlc = 3, .data = {1, 1, 0}};
+    CanFrame f2 = {.ide = 0, .sid = ECU_CAN_RPC_GET_ID, .dlc = 3, .data = {2, 2, 0}};
 
     ecu_service_dispatch(&f1, mock_send);
     VERIFY_TEST(got_response && handler_called);
@@ -111,7 +111,7 @@ void test_multiple_dispatch() {
 }
 
 void test_invalid_frames() {
-    CanFrame f = {.id = ECU_RPC_GET_ID, .dlc = 1};
+    CanFrame f = {.ide = 0, .sid = ECU_CAN_RPC_GET_ID, .dlc = 1};
     got_response = false;
     ecu_service_dispatch(&f, mock_send);
     VERIFY_TEST(!got_response);
@@ -126,8 +126,8 @@ void test_invalid_frames() {
 // Signal edge cases: scaling, offsets, endianness
 void test_signal_edge_cases() {
     CanRpcSensorReq req = {.request_id = 0xFF};
-    CanFrame frame = can_encode_rpc_sensor_req(&req);
-    CanRpcSensorReq decoded = can_decode_rpc_sensor_req(&frame);
+    CanFrame frame = can_encode_rpc_request_state(&req);
+    CanRpcSensorReq decoded = can_decode_rpc_request_state(&frame);
     VERIFY_TEST(decoded.request_id == req.request_id);
 }
 
