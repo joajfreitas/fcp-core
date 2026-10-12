@@ -14,7 +14,7 @@ struct Button {
 }
 
 device ecu {
-    protocol can_2b {
+    protocol can2b {
         impl Pedals {
             id: 0x0A7FFF,
             period: 15, /* Period in milliseconds */

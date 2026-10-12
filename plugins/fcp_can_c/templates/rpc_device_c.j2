@@ -17,7 +17,7 @@
 {% for rpc_block in blocks %}
 {% if message.is_can_2b == rpc_block.rpc_can_mode %}
 {% if message.senders %}
-CanFrame can_encode_rpc_{{ message.name_snake }}(const CanRpc{{ message.name_struct }} *rpc{% if message.is_multiplexer %}, uint32_t {{ message.multiplexer_signal }}{% endif %}) {
+CanFrame {{ message.protocol }}_encode_rpc_{{ message.name_snake }}(const CanRpc{{ message.name_struct }} *rpc{% if message.is_multiplexer %}, uint32_t {{ message.multiplexer_signal }}{% endif %}) {
     {% if message.is_can_2b %}
     CanFrame frame = {
         .ide = 1,
@@ -50,7 +50,7 @@ CanFrame can_encode_rpc_{{ message.name_snake }}(const CanRpc{{ message.name_str
 {% for rpc_block in blocks %}
 {% if message.is_can_2b == rpc_block.rpc_can_mode %}
 {% if not message.senders %}
-CanFrame can_encode_rpc_{{ message.name_snake }}_ans(const CanRpc{{ message.name_struct }} *rpc) {
+CanFrame {{ message.protocol }}_encode_rpc_{{ message.name_snake }}_ans(const CanRpc{{ message.name_struct }} *rpc) {
     {% if message.is_can_2b %}
     CanFrame frame = {
         .ide = 1,
@@ -81,7 +81,7 @@ CanFrame can_encode_rpc_{{ message.name_snake }}_ans(const CanRpc{{ message.name
 {%- macro generate_decode_rpc(name, content) %}
 {% for message in content %}
 {% if message.senders %}
-CanRpc{{ message.name_struct }} can_decode_rpc_{{ message.name_snake }}(const CanFrame *rpc) {
+CanRpc{{ message.name_struct }} {{ message.protocol }}_decode_rpc_{{ message.name_snake }}(const CanFrame *rpc) {
     CanRpc{{ message.name_struct }} r = {0};
 
     {% for signal in message.signals %}{% if signal.multiplexer_count <= 1 %}
@@ -99,7 +99,7 @@ CanRpc{{ message.name_struct }} can_decode_rpc_{{ message.name_snake }}(const Ca
 {%- macro generate_decode_rpc_ans(name, content) %}
 {% for message in content %}
 {% if not message.senders %}
-CanRpc{{ message.name_struct }} can_decode_rpc_{{ message.name_snake }}_ans(const CanFrame *rpc) {
+CanRpc{{ message.name_struct }} {{ message.protocol }}_decode_rpc_{{ message.name_snake }}_ans(const CanFrame *rpc) {
     CanRpc{{ message.name_struct }} r = {0};
 
     {% for signal in message.signals %}{% if signal.multiplexer_count <= 1 %}

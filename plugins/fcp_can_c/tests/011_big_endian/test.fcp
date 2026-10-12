@@ -41,7 +41,7 @@ struct F64B {
 }
 
 device ecu {
-    protocol can_2b {
+    protocol can2b {
         impl U8B {
             id: 0x0A7FFF,
             signal val {

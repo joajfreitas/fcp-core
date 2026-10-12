@@ -14,7 +14,7 @@ struct Baz {
 }
 
 device ecu {
-    protocol can_2b {
+    protocol can2b {
         impl Foo { id: 0x0A7FFF, },
         impl Bar { id: 0x0B2CD0, },
         impl Baz { id: 0x0D3AF2, },

@@ -10,7 +10,7 @@
 {%- macro generate_rpc_decode(content) %}
 {% for message in rpcs %}
 {% if message.senders %}
-CanRpc{{ message.name_struct }} can_decode_rpc_{{ message.name_snake }}(const CanFrame *rpc);
+CanRpc{{ message.name_struct }} {{ message.protocol }}_decode_rpc_{{ message.name_snake }}(const CanFrame *rpc);
 {% endif %}
 {% endfor %}
 {% endmacro -%}
@@ -18,7 +18,7 @@ CanRpc{{ message.name_struct }} can_decode_rpc_{{ message.name_snake }}(const Ca
 {%- macro generate_rpc_decode_ans(content) %}
 {% for message in content %}
 {% if not message.senders %}
-CanRpc{{ message.name_struct }} can_decode_rpc_{{ message.name_snake }}_ans(const CanFrame *rpc);
+CanRpc{{ message.name_struct }} {{ message.protocol }}_decode_rpc_{{ message.name_snake }}_ans(const CanFrame *rpc);
 {% endif %}
 {% endfor %}
 {% endmacro -%}
@@ -26,7 +26,7 @@ CanRpc{{ message.name_struct }} can_decode_rpc_{{ message.name_snake }}_ans(cons
 {%- macro generate_rpc_encode(content) %}
 {% for message in content %}
 {% if message.senders %}
-CanFrame can_encode_rpc_{{ message.name_snake }}(const CanRpc{{ message.name_struct }} *rpc{% if message.is_multiplexer %}, uint32_t {{ message.multiplexer_signal }}{% endif %});
+CanFrame {{ message.protocol }}_encode_rpc_{{ message.name_snake }}(const CanRpc{{ message.name_struct }} *rpc{% if message.is_multiplexer %}, uint32_t {{ message.multiplexer_signal }}{% endif %});
 {% endif %}
 {% endfor %}
 {% endmacro -%}
@@ -34,7 +34,7 @@ CanFrame can_encode_rpc_{{ message.name_snake }}(const CanRpc{{ message.name_str
 {%- macro generate_rpc_encode_ans(content) %}
 {% for message in content %}
 {% if not message.senders %}
-CanFrame can_encode_rpc_{{ message.name_snake }}_ans(const CanRpc{{ message.name_struct }} *rpc);
+CanFrame {{ message.protocol }}_encode_rpc_{{ message.name_snake }}_ans(const CanRpc{{ message.name_struct }} *rpc);
 {% endif %}
 {% endfor %}
 {% endmacro -%}
@@ -142,7 +142,8 @@ typedef struct {
 /**
  * @brief Handler for {{ service.name }}.{{ method.name }} RPC method.
  */
-void {{ device_name_snake }}_service_handle_{{ method.name_snake }}(const CanFrame *request, CanFrame *response);
+void {{ device_name_snake }}_can_service_handle_{{ method.name_snake }}(const CanFrame *request, CanFrame *response);
+void {{ device_name_snake }}_can2b_service_handle_{{ method.name_snake }}(const CanFrame *request, CanFrame *response);
 {% endfor %}
 {% endfor %}
 

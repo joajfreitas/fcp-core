@@ -56,14 +56,14 @@
 #include "can_signal_parser.h"
 
 /*-------------------- Decode Signals ---------------------*/
-{% for message in messages %}
+{% for message in structs %}
 // {{ message.name_pascal }}
 {{ generate_decode_macros(message.signals, message.name_snake) -}}
 {% endfor %}
 /*---------------------------------------------------------*/
 
 /*-------------------- Encode Signals ---------------------*/
-{% for message in messages %}
+{% for message in structs %}
 // {{ message.name_pascal }}
 {{ generate_encode_macros(message.signals, message.name_snake) -}}
 {% endfor %}
@@ -83,9 +83,9 @@ bool can_is_{{ device_name_snake }}_msg(const CanFrame *frame) {
     return 
 {% for message in messages %}
         {% if not loop.last %}
-        id == CAN_MSG_ID_{{ message.name_snake | upper }} ||
+        id == {{ message.protocol | upper }}_MSG_ID_{{ message.name_snake | upper }} ||
         {% else %}
-        id == CAN_MSG_ID_{{ message.name_snake | upper }};
+        id == {{ message.protocol | upper }}_MSG_ID_{{ message.name_snake | upper }};
         {% endif %}
 {% endfor %}
 }
@@ -101,8 +101,8 @@ void can_send_{{ device_name_snake }}_msgs_scheduled(const CanDevice{{ device_na
     last_call_t = time;
 {% for message in messages %}
     // Check if enough time has passed for {{ message.name_pascal }}
-    if (CAN_MSG_PERIOD_{{ message.name_snake | upper }} != -1 && (time - last_send_t[{{ loop.index0 }}] >= CAN_MSG_PERIOD_{{ message.name_snake | upper }})) {
-        CanFrame frame = can_encode_msg_{{ message.name_snake }}(&dev->{{ message.name_snake }});
+    if ({{ message.protocol | upper }}_MSG_PERIOD_{{ message.name_snake | upper }} != -1 && (time - last_send_t[{{ loop.index0 }}] >= {{ message.protocol | upper }}_MSG_PERIOD_{{ message.name_snake | upper }})) {
+        CanFrame frame = {{ message.protocol }}_encode_msg_{{ message.name_snake }}(&dev->{{ message.name_snake }});
         send_can_func(&frame);
         last_send_t[{{ loop.index0 }}] = time;
     }
@@ -112,7 +112,7 @@ void can_send_{{ device_name_snake }}_msgs_scheduled(const CanDevice{{ device_na
 
 {% for message in messages %}
 
-CanMsg{{ message.name_pascal }} can_decode_msg_{{ message.name_snake }}(const CanFrame *msg) {
+CanMsg{{ message.name_pascal }} {{ message.protocol }}_decode_msg_{{ message.name_snake }}(const CanFrame *msg) {
 	CanMsg{{ message.name_pascal }} msg_struct = {0};
 
 {{ generate_decode_statements(message.signals, message.name_snake) -}}
@@ -131,7 +131,7 @@ CanMsg{{ message.name_pascal }} can_decode_msg_{{ message.name_snake }}(const Ca
 {% for message in messages %}
 {% if message.is_multiplexer %}
 
-CanFrame can_encode_msg_{{ message.name_snake }}(const CanMsg{{ message.name_pascal }} *msg, uint32_t {{ message.multiplexer_signal }}) {
+CanFrame {{ message.protocol }}_encode_msg_{{ message.name_snake }}(const CanMsg{{ message.name_pascal }} *msg, uint32_t {{ message.multiplexer_signal }}) {
 	{% if message.is_can_2b %}
     CanFrame message = {
         .ide = 1, 
@@ -151,7 +151,7 @@ CanFrame can_encode_msg_{{ message.name_snake }}(const CanMsg{{ message.name_pas
 }
 {% else %}
 
-CanFrame can_encode_msg_{{ message.name_snake }}(const CanMsg{{ message.name_pascal }} *msg) {
+CanFrame {{ message.protocol }}_encode_msg_{{ message.name_snake }}(const CanMsg{{ message.name_pascal }} *msg) {
     {% if message.is_can_2b %}
     CanFrame message = {
         .ide = 1, 

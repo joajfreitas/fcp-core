@@ -38,7 +38,7 @@ struct SensorInformation {
 }
 
 device ecu {
-    protocol can_2b {
+    protocol can2b {
         impl SensorInformation { id: 0x0A7FFF, },
         impl Level3Struct { id: 0x0B2CD0, },
         impl Level5Struct { id: 0x0D3AF2, },

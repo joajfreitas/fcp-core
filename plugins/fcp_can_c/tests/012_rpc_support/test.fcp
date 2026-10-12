@@ -32,7 +32,7 @@ service TemperatureService @1 {
 }
 
 device ecu {
-    protocol can_2b {
+    protocol can2b {
         impl Msg { id: 0x0A7FFF, },
         rpc { request_id: 0x0B2CD0, response_id: 0x0D3AF2, },
         services: [StateService, TemperatureService],
