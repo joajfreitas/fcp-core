@@ -31,7 +31,7 @@ from pathlib import Path
 from beartype.typing import Any, Dict, Union, NoReturn, List
 from types import ModuleType
 
-from .types import Nil, Never
+from .types import Nil
 from .result import Result, Ok
 from .maybe import catch
 from . import FcpV2

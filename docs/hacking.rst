@@ -15,12 +15,24 @@ Directory structure
     │   │   ├── fcp_can_c               - Source for fcp_can_c
     │   │   ├── templates               - Jinja templates used for code generation
     │   │   └── tests                   - Unit tests for fcp_can_c
-    │   │       ├── 001_basic_struct    - Basic struct test for CAN C
-    │   │       ├── 002_nested_enum     - Nested enum test for CAN C
-    │   │       ├── 003_msg_scheduling  - Msg scheduling test for CAN C
-    │   │       └── 004_little_endian   - Testing little endian encoding for CAN C all data types
-    │   │       └── 005_big_endian      - Testing big endian encoding for CAN C all data types
-    │   │       └── 006_rpc_support     - Testing rpc support for CAN C
+    │   │       ├── 001_basic_struct    - Basic struct test for CAN2A C
+    │   │       ├── 002_nested_enum     - Nested enum test for CAN2A C
+    │   │       ├── 003_msg_scheduling  - Msg scheduling test for CAN2A C
+    │   │       ├── 004_little_endian   - Testing little endian encoding for CAN2A C all data types
+    │   │       ├── 005_big_endian      - Testing big endian encoding for CAN2A C all data types
+    │   │       ├── 006_rpc_support     - Testing rpc support for CAN2A C
+    │   │       ├── 007_basic_struct    - Basic struct test for CAN2B C
+    │   │       ├── 008_nested_enum     - Nested enum test for CAN2B C
+    │   │       ├── 009_msg_scheduling  - Msg scheduling test for CAN2B C
+    │   │       ├── 010_little_endian   - Testing little endian encoding for CAN2B C all data types
+    │   │       ├── 011_big_endian      - Testing big endian encoding for CAN2B C all data types
+    │   │       ├── 012_rpc_support     - Testing rpc support for CAN2B C
+    │   │       ├── 013_basic_struct    - Basic struct test for CAN2B and CAN2A C
+    │   │       ├── 014_nested_enum     - Nested enum test for CAN2B and CAN2A C
+    │   │       ├── 015_msg_scheduling  - Msg scheduling test for CAN2B and CAN2A C
+    │   │       ├── 016_little_endian   - Testing little endian encoding for CAN2B and CAN2A C all data types
+    │   │       ├── 017_big_endian      - Testing big endian encoding for CAN2B and CAN2A C all data types
+    │   │       └── 018_rpc_support     - Testing rpc support for CAN2B and CAN2A C
     │   ├── fcp_cpp                     - Example plugin
     │   │   └── fcp_cpp                 - Source for fcp_dbc
     │   ├── fcp_dbc                     - CAN DBC generator
