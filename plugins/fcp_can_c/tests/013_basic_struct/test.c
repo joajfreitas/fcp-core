@@ -23,16 +23,15 @@ bool all_tests_passed = true;
         exit(EXIT_FAILURE); \
     }
 
-void test_encode_msg() {
+void test_encode_msg_can() {
     CanMsgFoo msg = {
         .s1 = 123,
         .s2 = 0xAB12,
     };
 
     CanFrame expected_frame = {
-        .ide = 1,
-        .sid = 0x0A7FFF & 0x07FF,
-        .eid = (0x0A7FFF >> 11) & 0x03FFFF,
+        .ide = 0,
+        .sid = 10,
         .dlc = 2,
         .data = {123, 0x12, 0xAB},
     };
@@ -41,11 +40,10 @@ void test_encode_msg() {
     VERIFY_TEST(frame.sid == expected_frame.sid);
 }
 
-void test_is_dev_msg() {
+void test_is_dev_msg_can() {
     CanFrame test_frame = {
-        .ide = 1,
-        .sid = 0x0A7FFF & 0x07FF,
-        .eid = (0x0A7FFF >> 11) & 0x03FFFF,
+        .ide = 0,
+        .sid = 10,
         .dlc = 2,
         .data = {123, 0x12, 0xAB},
     };
@@ -53,11 +51,10 @@ void test_is_dev_msg() {
     VERIFY_TEST(can_is_ecu_msg(&test_frame));
 }
 
-void test_dlc() {
+void test_dlc_can() {
     CanFrame frame = {
-        .ide = 1,
-        .sid = 0x0A7FFF & 0x07FF,
-        .eid = (0x0A7FFF >> 11) & 0x03FFFF,
+        .ide = 0,
+        .sid = 10,
         .dlc = 3,
         .data = {123, 0x12, 0xAB},
     };
@@ -65,11 +62,10 @@ void test_dlc() {
     VERIFY_TEST(frame.dlc == 3);
 }
 
-void test_decode_msg() {
+void test_decode_msg_can() {
     CanFrame test_frame = {
-        .ide = 1,
-        .sid = 0x0A7FFF & 0x07FF,
-        .eid = (0x0A7FFF >> 11) & 0x03FFFF,
+        .ide = 0,
+        .sid = 10,
         .dlc = 2,
         .data = {123, 0x12, 0xAB},
     };
@@ -85,7 +81,7 @@ void test_decode_msg() {
     VERIFY_TEST(signals_match);
 }
 
-void test_float_value() {
+void test_float_value_can() {
     CanMsgBar msg = {
         .s1 = 3.14,
     };
@@ -96,7 +92,7 @@ void test_float_value() {
     VERIFY_TEST(msg.s1 == decoded.s1);
 }
 
-void test_double_value() {
+void test_double_value_can() {
     CanMsgBaz msg = {
         .s1 = 3.14159265359,
     };
@@ -107,11 +103,100 @@ void test_double_value() {
     VERIFY_TEST(msg.s1 == decoded.s1);
 }
 
+void test_encode_msg_can2b() {
+    CanMsgFoo msg = {
+        .s1 = 123,
+        .s2 = 0xAB12,
+    };
+
+    CanFrame expected_frame = {
+        .ide = 1,
+        .sid = 0x0A7FFF & 0x07FF,
+        .eid = (0x0A7FFF >> 11) & 0x03FFFF,
+        .dlc = 2,
+        .data = {123, 0x12, 0xAB},
+    };
+
+    CanFrame frame = can2b_encode_msg_foo(&msg);
+    VERIFY_TEST(frame.sid == expected_frame.sid);
+}
+
+void test_is_dev_msg_can2b() {
+    CanFrame test_frame = {
+        .ide = 1,
+        .sid = 0x0A7FFF & 0x07FF,
+        .eid = (0x0A7FFF >> 11) & 0x03FFFF,
+        .dlc = 2,
+        .data = {123, 0x12, 0xAB},
+    };
+
+    VERIFY_TEST(can_is_ecu_msg(&test_frame));
+}
+
+void test_dlc_can2b() {
+    CanFrame frame = {
+        .ide = 1,
+        .sid = 0x0A7FFF & 0x07FF,
+        .eid = (0x0A7FFF >> 11) & 0x03FFFF,
+        .dlc = 3,
+        .data = {123, 0x12, 0xAB},
+    };
+
+    VERIFY_TEST(frame.dlc == 3);
+}
+
+void test_decode_msg_can2b() {
+    CanFrame test_frame = {
+        .ide = 1,
+        .sid = 0x0A7FFF & 0x07FF,
+        .eid = (0x0A7FFF >> 11) & 0x03FFFF,
+        .dlc = 2,
+        .data = {123, 0x12, 0xAB},
+    };
+
+    CanMsgFoo expected_msg = {
+        .s1 = 123,
+        .s2 = 0xAB12,
+    };
+
+    CanMsgFoo msg = can2b_decode_msg_foo(&test_frame);
+
+    bool signals_match = msg.s1 == expected_msg.s1 && msg.s2 == expected_msg.s2;
+    VERIFY_TEST(signals_match);
+}
+
+void test_float_value_can2b() {
+    CanMsgBar msg = {
+        .s1 = 3.14,
+    };
+
+    CanFrame f = can2b_encode_msg_bar(&msg);
+    CanMsgBar decoded = can2b_decode_msg_bar(&f);
+
+    VERIFY_TEST(msg.s1 == decoded.s1);
+}
+
+void test_double_value_can2b() {
+    CanMsgBaz msg = {
+        .s1 = 3.14159265359,
+    };
+
+    CanFrame f = can2b_encode_msg_baz(&msg);
+    CanMsgBaz decoded = can2b_decode_msg_baz(&f);
+
+    VERIFY_TEST(msg.s1 == decoded.s1);
+}
+
 int main() {
-    test_encode_msg();
-    test_is_dev_msg();
-    test_dlc();
-    test_decode_msg();
+    test_encode_msg_can();
+    test_is_dev_msg_can();
+    test_dlc_can();
+    test_decode_msg_can();
+
+    test_encode_msg_can2b();
+    test_is_dev_msg_can2b();
+    test_dlc_can2b();
+    test_decode_msg_can2b();
 
     ASSERT_TESTS();
 

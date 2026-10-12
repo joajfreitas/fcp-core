@@ -24,12 +24,12 @@
 {% if messages | length > 0 %}
 /* {{ device_name_pascal }} Message IDs */
 {% for message in messages %}
-#define CAN_MSG_ID_{{ message.name_snake | upper }} {{ message.frame_id }}
+#define {{ message.protocol | upper }}_MSG_ID_{{ message.name_snake | upper }} {{ message.frame_id }}
 {% endfor %}
 
 /* {{ device_name_pascal }} Message Periods */
 {% for message in messages %}
-#define CAN_MSG_PERIOD_{{ message.name_snake | upper }} {{ message.period }}
+#define {{ message.protocol | upper }}_MSG_PERIOD_{{ message.name_snake | upper }} {{ message.period }}
 {% endfor %}
 {% endif %}
 
@@ -43,17 +43,17 @@ typedef enum {
 {% endfor %}
 {% endif %}
 
-{% for message in messages %}
+{% for message in structs %}
 /* {{ message.name_pascal }} message structure */
 typedef struct { 
 {{ render_fields(message.signals, '    ') -}}
 } CanMsg{{ message.name_pascal }};
 {% endfor %}
 
-{% if messages|length > 0 %}
+{% if structs | length > 0 %}
 /* {{ device_name_pascal }} device aggregate structure */
 typedef struct {
-    {% for message in messages %}
+    {% for message in structs %}
     CanMsg{{ message.name_pascal }} {{ message.name_snake }};
     {% endfor %}
 } CanDevice{{ device_name_pascal }};
@@ -74,15 +74,15 @@ void can_send_{{ device_name_snake }}_msgs_scheduled(
 
 /* Functions to decode CanFrame into CanMsg<name> objects */
 {% for message in messages %}
-CanMsg{{ message.name_pascal }} can_decode_msg_{{ message.name_snake }}(const CanFrame *frame);
+CanMsg{{ message.name_pascal }} {{ message.protocol }}_decode_msg_{{ message.name_snake }}(const CanFrame *frame);
 {% endfor %}
 
 /* Functions to encode CanMsg<name> object into CanFrame */
 {% for message in messages %}
 {% if message.is_multiplexer %}
-CanFrame can_encode_msg_{{ message.name_snake }}(const CanMsg{{ message.name_pascal }} *msg, uint32_t {{ message.multiplexer_signal }});
+CanFrame {{ message.protocol }}_encode_msg_{{ message.name_snake }}(const CanMsg{{ message.name_pascal }} *msg, uint32_t {{ message.multiplexer_signal }});
 {% else %}
-CanFrame can_encode_msg_{{ message.name_snake }}(const CanMsg{{ message.name_pascal }} *msg);
+CanFrame {{ message.protocol }}_encode_msg_{{ message.name_snake }}(const CanMsg{{ message.name_pascal }} *msg);
 {% endif %}
 {% endfor %}
 

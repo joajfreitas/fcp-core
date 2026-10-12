@@ -307,6 +307,7 @@ def initialize_can_data(
     List[CanMessage],
     List[CanMessage],
     List[CanMessage],
+    List[CanMessage],
     List[Service],
 ]:
     """Initialize CAN data from an FCP.
@@ -323,6 +324,7 @@ def initialize_can_data(
     devices: List[CanNode] = []
     rpc: List[CanMessage] = []
     rpc_structs: List[CanMessage] = []
+    message_structs: List[CanMessage] = []
 
     encoder = make_encoder(
         "packed",
@@ -405,8 +407,8 @@ def initialize_can_data(
                 },
             )
 
-        if isinstance(protocols, dict) and isinstance(protocols.get("can_2b"), dict):
-            can_protocol = cast(Dict[str, Any], protocols["can_2b"])
+        if isinstance(protocols, dict) and isinstance(protocols.get("can2b"), dict):
+            can_protocol = cast(Dict[str, Any], protocols["can2b"])
             rpc_get_id = None
             rpc_ans_id = None
             can_mode = True
@@ -433,10 +435,10 @@ def initialize_can_data(
             protocol_fields = cast(Dict[str, Any], can_protocol.get("fields", {}))
             services_from_protocol = protocol_fields.get("services")
             if isinstance(services_from_protocol, list):
-                device_services[dev.name].setdefault("can_2b", services_from_protocol)
+                device_services[dev.name].setdefault("can2b", services_from_protocol)
 
             device_rpc_info[dev.name].setdefault(
-                "can_2b",
+                "can2b",
                 {
                     "rpc_get_id": rpc_get_id,
                     "rpc_ans_id": rpc_ans_id,
@@ -449,7 +451,7 @@ def initialize_can_data(
 
         for service_name in service_protocol.get("can", []):
             service_devices.setdefault(service_name, []).append(dev.name)
-        for service_name in service_protocol.get("can_2b", []):
+        for service_name in service_protocol.get("can2b", []):
             service_devices.setdefault(service_name, []).append(dev.name)
 
     used_devices = {"global"}
@@ -461,11 +463,11 @@ def initialize_can_data(
     rpc_messages: Set[Tuple[str, str, int, str]] = set()
 
     extensions = [
-        ext for term in ("can", "can_2b") for ext in fcp.get_matching_impls(term)
+        ext for term in ("can", "can2b") for ext in fcp.get_matching_impls(term)
     ]
 
     for extension in extensions:
-        if extension.protocol == "can_2b":
+        if extension.protocol == "can2b":
             can_mode = True
         else:
             can_mode = False
@@ -530,19 +532,21 @@ def initialize_can_data(
             )
 
         if frame_id is not None:
-            messages.append(
-                CanMessage(
-                    frame_id=frame_id,
-                    name_pascal=extension.name,
-                    name_struct="",
-                    dlc=dlc,
-                    signals=signals,
-                    senders=[device_name],
-                    protocol=extension.protocol,
-                    period=cast(int, period) if period is not None else -1,
-                    is_can_2b=can_mode,
-                )
-            )
+            message = CanMessage(
+                                frame_id=frame_id,
+                                name_pascal=extension.name,
+                                name_struct="",
+                                dlc=dlc,
+                                signals=signals,
+                                senders=[device_name],
+                                protocol=extension.protocol,
+                                period=cast(int, period) if period is not None else -1,
+                                is_can_2b=can_mode,
+                            )
+            messages.append(message)
+
+            if not any(extension.name == temp.name_pascal for temp in message_structs):
+                message_structs.append(message)
 
     for service in fcp.services:
         target_devices = service_devices.get(service.name, ["global"])
@@ -550,11 +554,11 @@ def initialize_can_data(
         for device_name in target_devices:
             rpc_protocols = device_rpc_info.get(device_name, {})
 
-            for terms in ("can", "can_2b"):
-                if terms not in rpc_protocols:
+            for term in ("can", "can2b"):
+                if term not in rpc_protocols:
                     continue
 
-                rpc_ids = rpc_protocols.get(terms, {})
+                rpc_ids = rpc_protocols.get(term, {})
                 get_id = rpc_ids.get("rpc_get_id")
                 ans_id = rpc_ids.get("rpc_ans_id")
                 can_mode = rpc_ids.get("rpc_can_mode", False)
@@ -582,7 +586,7 @@ def initialize_can_data(
                                 rpc_get_id=rpc_get_id,
                                 rpc_ans_id=rpc_ans_id,
                                 rpc_can_mode=rpc_can_mode,
-                                protocol=terms,
+                                protocol=term,
                             )
                         ],
                     )
@@ -591,7 +595,7 @@ def initialize_can_data(
                     used_devices.add(device_name)
                 elif (
                     device is not None
-                    and terms not in protocols
+                    and term not in protocols
                     and device.rpc_block is not None
                 ):
                     device.rpc_block.append(
@@ -599,7 +603,7 @@ def initialize_can_data(
                             rpc_get_id=rpc_get_id,
                             rpc_ans_id=rpc_ans_id,
                             rpc_can_mode=rpc_can_mode,
-                            protocol=terms,
+                            protocol=term,
                         )
                     )
 
@@ -635,7 +639,7 @@ def initialize_can_data(
                             dlc=dlc,
                             signals=signals,
                             senders=[device_name] if direction == "request" else [],
-                            protocol=terms,
+                            protocol=term,
                             period=-1,
                             is_can_2b=bool(rpc_can_mode),
                         )
@@ -651,7 +655,7 @@ def initialize_can_data(
 
                         rpc_messages.add(key)
 
-    return (enums, devices, messages, rpc, rpc_structs, fcp.services)
+    return (enums, devices, messages, message_structs, rpc, rpc_structs, fcp.services)
 
 
 class CanCWriter:
@@ -671,6 +675,7 @@ class CanCWriter:
             self.enums,
             self.devices,
             self.messages,
+            self.message_structs,
             self.rpcs,
             self.rpc_structs,
             self.services,
@@ -690,6 +695,7 @@ class CanCWriter:
             "device_rpc_c": self.env.get_template("rpc_device_c.j2"),
         }
         self.device_messages = map_messages_to_devices(self.messages)
+        self.device_messages_structs = map_messages_to_devices(self.message_structs)
 
     def generate_static_files(self) -> Generator[Tuple[str, str], None, None]:
         """Generate all static C files.
@@ -715,6 +721,7 @@ class CanCWriter:
         for device in self.devices:
             device_name = device.name
             messages = self.device_messages.get(device_name, [])
+            structs = self.device_messages_structs.get(device_name, [])
 
             enums_to_include = self.enums if device_name == "global" else []
 
@@ -724,6 +731,7 @@ class CanCWriter:
                     device_name_pascal=to_pascal_case(device_name),
                     device_name_snake=to_snake_case(device_name),
                     messages=messages,
+                    structs=structs,
                     include_global=device_name != "global" and global_device_exists,
                     is_global_device=device_name == "global",
                     enums=enums_to_include,
@@ -738,12 +746,14 @@ class CanCWriter:
 
         """
         for device_name, messages in self.device_messages.items():
+            structs = self.device_messages_structs.get(device_name, [])
             yield (
                 to_snake_case(device_name),
                 self.templates["device_can_c"].render(
                     device_name_pascal=to_pascal_case(device_name),
                     device_name_snake=to_snake_case(device_name),
                     messages=messages,
+                    structs=structs,
                 ),
             )
 

@@ -29,7 +29,7 @@ bool sensorservice_request_state(uint8_t *result) {
 
 /*---------------------------------------- Service Handlers ----------------------------------------*/
 
-void ecu_service_handle_request_state(const CanFrame *req, CanFrame *resp) {
+void ecu_can_service_handle_request_state(const CanFrame *req, CanFrame *resp) {
     if (!req || !resp) return;
 
     CanRpcSensorReq request = can_decode_rpc_request_state(req);
@@ -47,7 +47,7 @@ void ecu_service_handle_request_state(const CanFrame *req, CanFrame *resp) {
 }
 
 // SENSOR.GET_TEMPERATURE
-void ecu_service_handle_get_temperature(const CanFrame *req, CanFrame *resp) {
+void ecu_can_service_handle_get_temperature(const CanFrame *req, CanFrame *resp) {
     if (!req || !resp) return;
 
     CanRpcSensorReq request = can_decode_rpc_get_temperature(req);
@@ -66,6 +66,6 @@ void ecu_service_handle_get_temperature(const CanFrame *req, CanFrame *resp) {
 /*---------------------------------------- RPC Registration (Example) ----------------------------------------*/
 
 void ecu_rpc_client_init(void) {
-    ecu_rpc_register(0, 0, ecu_service_handle_request_state);
-    ecu_rpc_register(0, 1, ecu_service_handle_get_temperature);
+    ecu_rpc_register(0, 0, ecu_can_service_handle_request_state);
+    ecu_rpc_register(0, 1, ecu_can_service_handle_get_temperature);
 }

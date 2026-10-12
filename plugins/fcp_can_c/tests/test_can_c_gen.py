@@ -50,6 +50,12 @@ def get_path(test_name: str) -> str:
         "010_little_endian",
         "011_big_endian",
         "012_rpc_support",
+        "013_basic_struct",
+        "014_nested_enum",
+        "015_msg_scheduling",
+        "016_little_endian",
+        "017_big_endian",
+        "018_rpc_support",
     ],
 )  # type: ignore
 def test_can_c_gen(test_name: str) -> None:

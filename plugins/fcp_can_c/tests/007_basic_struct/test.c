@@ -37,7 +37,7 @@ void test_encode_msg() {
         .data = {123, 0x12, 0xAB},
     };
 
-    CanFrame frame = can_encode_msg_foo(&msg);
+    CanFrame frame = can2b_encode_msg_foo(&msg);
     VERIFY_TEST(frame.sid == expected_frame.sid);
 }
 
@@ -79,7 +79,7 @@ void test_decode_msg() {
         .s2 = 0xAB12,
     };
 
-    CanMsgFoo msg = can_decode_msg_foo(&test_frame);
+    CanMsgFoo msg = can2b_decode_msg_foo(&test_frame);
 
     bool signals_match = msg.s1 == expected_msg.s1 && msg.s2 == expected_msg.s2;
     VERIFY_TEST(signals_match);
@@ -90,8 +90,8 @@ void test_float_value() {
         .s1 = 3.14,
     };
 
-    CanFrame f = can_encode_msg_bar(&msg);
-    CanMsgBar decoded = can_decode_msg_bar(&f);
+    CanFrame f = can2b_encode_msg_bar(&msg);
+    CanMsgBar decoded = can2b_decode_msg_bar(&f);
 
     VERIFY_TEST(msg.s1 == decoded.s1);
 }
@@ -101,8 +101,8 @@ void test_double_value() {
         .s1 = 3.14159265359,
     };
 
-    CanFrame f = can_encode_msg_baz(&msg);
-    CanMsgBaz decoded = can_decode_msg_baz(&f);
+    CanFrame f = can2b_encode_msg_baz(&msg);
+    CanMsgBaz decoded = can2b_decode_msg_baz(&f);
 
     VERIFY_TEST(msg.s1 == decoded.s1);
 }

@@ -41,7 +41,7 @@ struct F64L {
 }
 
 device ecu {
-    protocol can_2b {
+    protocol can2b {
         impl U8L { id: 0x0A7FFF, },
         impl U16L { id: 0x0B2CD0, },
         impl U32L { id: 0x0D3AF2, },

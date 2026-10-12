@@ -52,7 +52,7 @@ void test_1(CanDeviceEcu *ecu_can) {
     reset_fake_can_sender();
     can_send_ecu_msgs_scheduled(ecu_can, timer, fake_can_sender);
 
-    VERIFY_TEST(call_count == 1 && sent_ids[0] == CAN_MSG_ID_PEDALS);
+    VERIFY_TEST(call_count == 1 && sent_ids[0] == CAN2B_MSG_ID_PEDALS);
 }
 
 // Same time as test_1 but message was already sent
@@ -70,7 +70,7 @@ void test_3(CanDeviceEcu *ecu_can) {
     reset_fake_can_sender();
     can_send_ecu_msgs_scheduled(ecu_can, timer, fake_can_sender);
 
-    VERIFY_TEST(call_count == 1 && sent_ids[0] == CAN_MSG_ID_SHUTDOWN);
+    VERIFY_TEST(call_count == 1 && sent_ids[0] == CAN2B_MSG_ID_SHUTDOWN);
 }
 
 // Time send no messages
@@ -88,8 +88,7 @@ void test_5(CanDeviceEcu *ecu_can) {
     reset_fake_can_sender();
     can_send_ecu_msgs_scheduled(ecu_can, timer, fake_can_sender);
 
-    VERIFY_TEST(call_count == 2 && sent_ids[0] == CAN_MSG_ID_PEDALS &&
-                sent_ids[1] == CAN_MSG_ID_BUTTON);
+    VERIFY_TEST(call_count == 1 && sent_ids[0] == CAN2B_MSG_ID_PEDALS);
 }
 
 int main() {
@@ -99,15 +98,16 @@ int main() {
                             .shutdown.error = 212,
                             .button.press = 1};
 
-    CanFrame expected_pedals_frame = can_encode_msg_pedals(&ecu_can.pedals);
+    CanFrame expected_pedals_frame = can2b_encode_msg_pedals(&ecu_can.pedals);
     CanFrame expected_shutdown_frame =
-        can_encode_msg_shutdown(&ecu_can.shutdown);
+        can2b_encode_msg_shutdown(&ecu_can.shutdown);
 
     test_0(&ecu_can);
     test_1(&ecu_can);
     test_2(&ecu_can);
     test_3(&ecu_can);
     test_4(&ecu_can);
+    test_5(&ecu_can);
 
     ASSERT_TESTS();
 

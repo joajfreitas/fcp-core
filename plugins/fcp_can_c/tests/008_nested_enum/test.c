@@ -32,16 +32,16 @@ void test_encode_decode_sensor_information() {
     };
 
     // Encode
-    CanFrame frame = can_encode_msg_sensor_information(&msg);
+    CanFrame frame = can2b_encode_msg_sensor_information(&msg);
     printf("Encoded frame bytes: ");
     for (int i = 0; i < frame.dlc; i++)
         printf("%d ", frame.data[i]);
     printf("\n");
 
-    VERIFY_TEST((frame.sid | (frame.eid << 11)) == CAN_MSG_ID_SENSOR_INFORMATION);
+    VERIFY_TEST((frame.sid | (frame.eid << 11)) == CAN2B_MSG_ID_SENSOR_INFORMATION);
 
     // Decode
-    CanMsgSensorInformation decoded = can_decode_msg_sensor_information(&frame);
+    CanMsgSensorInformation decoded = can2b_decode_msg_sensor_information(&frame);
     VERIFY_TEST(decoded.e == msg.e);
     VERIFY_TEST(decoded.l1.s1 == msg.l1.s1);
     VERIFY_TEST(decoded.l1.s2 == msg.l1.s2);
@@ -60,11 +60,11 @@ void test_level3_struct() {
     };
 
     // Encode
-    CanFrame frame = can_encode_msg_level3_struct(&msg);
-    VERIFY_TEST((frame.sid | (frame.eid << 11)) == CAN_MSG_ID_LEVEL3_STRUCT);
+    CanFrame frame = can2b_encode_msg_level3_struct(&msg);
+    VERIFY_TEST((frame.sid | (frame.eid << 11)) == CAN2B_MSG_ID_LEVEL3_STRUCT);
 
     // Decode
-    CanMsgLevel3Struct decoded = can_decode_msg_level3_struct(&frame);
+    CanMsgLevel3Struct decoded = can2b_decode_msg_level3_struct(&frame);
     VERIFY_TEST(decoded.l2.l1.s1 == msg.l2.l1.s1);
     VERIFY_TEST(decoded.l2.l1.s2 == msg.l2.l1.s2);
     VERIFY_TEST(decoded.l2.val2 == msg.l2.val2);
@@ -91,11 +91,11 @@ void test_level5_struct() {
     };
 
     // Encode
-    CanFrame frame = can_encode_msg_level5_struct(&msg);
-    VERIFY_TEST((frame.sid | (frame.eid << 11)) == CAN_MSG_ID_LEVEL5_STRUCT);
+    CanFrame frame = can2b_encode_msg_level5_struct(&msg);
+    VERIFY_TEST((frame.sid | (frame.eid << 11)) == CAN2B_MSG_ID_LEVEL5_STRUCT);
 
     // Decode
-    CanMsgLevel5Struct decoded = can_decode_msg_level5_struct(&frame);
+    CanMsgLevel5Struct decoded = can2b_decode_msg_level5_struct(&frame);
     VERIFY_TEST(decoded.l4.l3.l2.l1.s1 == msg.l4.l3.l2.l1.s1);
     VERIFY_TEST(decoded.l4.l3.l2.l1.s2 == msg.l4.l3.l2.l1.s2);
     VERIFY_TEST(decoded.l4.l3.l2.val2 == msg.l4.l3.l2.val2);
