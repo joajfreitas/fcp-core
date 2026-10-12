@@ -167,7 +167,7 @@ class Enum:
 
 
 class CanRpc:
-    """Class to represent an RPC block"""
+    """Class to represent an RPC block."""
 
     def __init__(
         self,
@@ -533,16 +533,16 @@ def initialize_can_data(
 
         if frame_id is not None:
             message = CanMessage(
-                                frame_id=frame_id,
-                                name_pascal=extension.name,
-                                name_struct="",
-                                dlc=dlc,
-                                signals=signals,
-                                senders=[device_name],
-                                protocol=extension.protocol,
-                                period=cast(int, period) if period is not None else -1,
-                                is_can_2b=can_mode,
-                            )
+                frame_id=frame_id,
+                name_pascal=extension.name,
+                name_struct="",
+                dlc=dlc,
+                signals=signals,
+                senders=[device_name],
+                protocol=extension.protocol,
+                period=cast(int, period) if period is not None else -1,
+                is_can_2b=can_mode,
+            )
             messages.append(message)
 
             if not any(extension.name == temp.name_pascal for temp in message_structs):
@@ -644,7 +644,6 @@ def initialize_can_data(
                             is_can_2b=bool(rpc_can_mode),
                         )
 
-                        
                         rpc.append(message)
 
                         if not any(

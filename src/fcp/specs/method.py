@@ -47,14 +47,17 @@ class Method:
 
     @property
     def name_snake(self) -> str:
+        """Convert the method name to snake case."""
         return to_snake_case(self.name)
 
     @property
     def input_snake(self) -> str:
+        """Convert the method input to snake case."""
         return to_snake_case(self.input)
 
     @property
     def output_snake(self) -> str:
+        """Convert the method output to snake case."""
         return to_snake_case(self.output)
 
     def reflection(self) -> Dict[str, Any]:
