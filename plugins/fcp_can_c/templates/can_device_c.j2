@@ -69,7 +69,7 @@
 {% endfor %}
 /*---------------------------------------------------------*/
 
-bool {{ protocol }}_is_{{ device_name_snake }}_msg(const {% if can_mode %}Can2B{% else %}Can{% endif %}Frame *frame) {
+bool {{ protocol }}_is_{{ device_name_snake }}_msg(const {{ protocol | upper }}Frame *frame) {
     uint32_t id;
 
     if(!frame) return false;
@@ -92,7 +92,7 @@ bool {{ protocol }}_is_{{ device_name_snake }}_msg(const {% if can_mode %}Can2B{
 
 {% if not is_global_device %}
 
-void {{ protocol }}_send_{{ device_name_snake }}_msgs_scheduled(const {% if can_mode %}Can2B{% else %}Can{% endif %}Device{{ device_name_pascal }} *dev, uint32_t time, void (*send_can_func)(const {% if can_mode %}Can2B{% else %}Can{% endif %}Frame *)) {
+void {{ protocol }}_send_{{ device_name_snake }}_msgs_scheduled(const {{ protocol | upper }}Device{{ device_name_pascal }} *dev, uint32_t time, void (*send_can_func)(const {{ protocol | upper }}Frame *)) {
     static uint32_t last_call_t = 0;
     static uint32_t last_send_t[{{ messages | length }}] = {0};
 
@@ -102,7 +102,7 @@ void {{ protocol }}_send_{{ device_name_snake }}_msgs_scheduled(const {% if can_
 {% for message in messages %}
     // Check if enough time has passed for {{ message.name_pascal }}
     if ({{ message.protocol | upper }}_MSG_PERIOD_{{ message.name_snake | upper }} != -1 && (time - last_send_t[{{ loop.index0 }}] >= {{ message.protocol | upper }}_MSG_PERIOD_{{ message.name_snake | upper }})) {
-    {{ '    ' }}{% if can_mode %}Can2B{% else %}Can{% endif %}Frame frame = {{ message.protocol }}_encode_msg_{{ message.name_snake }}(&dev->{{ message.name_snake }});
+    {{ '    ' }}{{ protocol | upper }}Frame frame = {{ message.protocol }}_encode_msg_{{ message.name_snake }}(&dev->{{ message.name_snake }});
         send_can_func(&frame);
         last_send_t[{{ loop.index0 }}] = time;
     }
@@ -112,8 +112,8 @@ void {{ protocol }}_send_{{ device_name_snake }}_msgs_scheduled(const {% if can_
 
 {% for message in messages %}
 
-{% if can_mode %}Can2B{% else %}Can{% endif %}Msg{{ message.name_pascal }} {{ message.protocol }}_decode_msg_{{ message.name_snake }}(const {% if can_mode %}Can2B{% else %}Can{% endif %}Frame *msg) {
-{{ '    ' }}{% if can_mode %}Can2B{% else %}Can{% endif %}Msg{{ message.name_pascal }} msg_struct = {0};
+{{ protocol | upper }}Msg{{ message.name_pascal }} {{ message.protocol }}_decode_msg_{{ message.name_snake }}(const {{ protocol | upper }}Frame *msg) {
+{{ '    ' }}{{ protocol | upper }}Msg{{ message.name_pascal }} msg_struct = {0};
 
 {{ generate_decode_statements(message.signals, message.name_snake) -}}
 {% for signal in message.signals %}
@@ -131,16 +131,16 @@ void {{ protocol }}_send_{{ device_name_snake }}_msgs_scheduled(const {% if can_
 {% for message in messages %}
 {% if message.is_multiplexer %}
 
-{% if can_mode %}Can2B{% else %}Can{% endif %}Frame {{ message.protocol }}_encode_msg_{{ message.name_snake }}(const {% if can_mode %}Can2B{% else %}Can{% endif %}Msg{{ message.name_pascal }} *msg, uint32_t {{ message.multiplexer_signal }}) {
+{{ protocol | upper }}Frame {{ message.protocol }}_encode_msg_{{ message.name_snake }}(const {{ protocol | upper }}Msg{{ message.name_pascal }} *msg, uint32_t {{ message.multiplexer_signal }}) {
 	{% if message.is_can_2b %}
-    Can2BFrame message = {
+    CAN2BFrame message = {
         .ide = 1, 
         .sid = {{ message.frame_id }} & 0x07FF,
         .eid = ({{ message.frame_id }} >> 11) & 0x03FFFF,
         .dlc = {{ message.dlc }}
     };
     {% else %}
-    CanFrame message = {.ide = 0, .sid = {{ message.frame_id }}, .dlc = {{ message.dlc }}};
+    CANFrame message = {.ide = 0, .sid = {{ message.frame_id }}, .dlc = {{ message.dlc }}};
     {% endif %}
     uint64_t word = 0;
 	uint64_t *ptr = (uint64_t *) &message.data;
@@ -151,16 +151,16 @@ void {{ protocol }}_send_{{ device_name_snake }}_msgs_scheduled(const {% if can_
 }
 {% else %}
 
-{% if can_mode %}Can2B{% else %}Can{% endif %}Frame {{ message.protocol }}_encode_msg_{{ message.name_snake }}(const {% if can_mode %}Can2B{% else %}Can{% endif %}Msg{{ message.name_pascal }} *msg) {
+{{ protocol | upper }}Frame {{ message.protocol }}_encode_msg_{{ message.name_snake }}(const {{ protocol | upper }}Msg{{ message.name_pascal }} *msg) {
     {% if message.is_can_2b %}
-    Can2BFrame message = {
+    CAN2BFrame message = {
         .ide = 1, 
         .sid = {{ message.frame_id }} & 0x07FF,
         .eid = ({{ message.frame_id }} >> 11) & 0x03FFFF,
         .dlc = {{ message.dlc }}
     };
     {% else %}
-    CanFrame message = {.ide = 0, .sid = {{ message.frame_id }}, .dlc = {{ message.dlc }}};
+    CANFrame message = {.ide = 0, .sid = {{ message.frame_id }}, .dlc = {{ message.dlc }}};
     {% endif %}
 	uint64_t word = 0;
 	uint64_t *ptr = (uint64_t *) &message.data;
