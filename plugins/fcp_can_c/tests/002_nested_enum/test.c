@@ -38,7 +38,7 @@ void test_encode_decode_sensor_information() {
         printf("%d ", frame.data[i]);
     printf("\n");
 
-    VERIFY_TEST(frame.id == CAN_MSG_ID_SENSOR_INFORMATION);
+    VERIFY_TEST(frame.sid == CAN_MSG_ID_SENSOR_INFORMATION);
 
     // Decode
     CanMsgSensorInformation decoded = can_decode_msg_sensor_information(&frame);
@@ -61,7 +61,7 @@ void test_level3_struct() {
 
     // Encode
     CanFrame frame = can_encode_msg_level3_struct(&msg);
-    VERIFY_TEST(frame.id == CAN_MSG_ID_LEVEL3_STRUCT);
+    VERIFY_TEST(frame.sid == CAN_MSG_ID_LEVEL3_STRUCT);
 
     // Decode
     CanMsgLevel3Struct decoded = can_decode_msg_level3_struct(&frame);
@@ -92,7 +92,7 @@ void test_level5_struct() {
 
     // Encode
     CanFrame frame = can_encode_msg_level5_struct(&msg);
-    VERIFY_TEST(frame.id == CAN_MSG_ID_LEVEL5_STRUCT);
+    VERIFY_TEST(frame.sid == CAN_MSG_ID_LEVEL5_STRUCT);
 
     // Decode
     CanMsgLevel5Struct decoded = can_decode_msg_level5_struct(&frame);

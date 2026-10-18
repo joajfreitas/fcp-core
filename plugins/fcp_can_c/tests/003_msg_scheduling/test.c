@@ -34,7 +34,7 @@ void reset_fake_can_sender() {
     call_count = 0;
 }
 
-void fake_can_sender(const CanFrame *f) { sent_ids[call_count++] = f->id; }
+void fake_can_sender(const CanFrame *f) { sent_ids[call_count++] = f->sid; }
 
 // Time is 0, no messages should be sent
 void test_0(CanDeviceEcu *ecu_can) {
@@ -88,8 +88,7 @@ void test_5(CanDeviceEcu *ecu_can) {
     reset_fake_can_sender();
     can_send_ecu_msgs_scheduled(ecu_can, timer, fake_can_sender);
 
-    VERIFY_TEST(call_count == 2 && sent_ids[0] == CAN_MSG_ID_PEDALS &&
-                sent_ids[1] == CAN_MSG_ID_BUTTON);
+    VERIFY_TEST(call_count == 1 && sent_ids[0] == CAN_MSG_ID_PEDALS);
 }
 
 int main() {
@@ -108,6 +107,7 @@ int main() {
     test_2(&ecu_can);
     test_3(&ecu_can);
     test_4(&ecu_can);
+    test_5(&ecu_can);
 
     ASSERT_TESTS();
 

@@ -1,0 +1,115 @@
+version: "3"
+
+struct U8B {
+    val @0: u8,
+}
+
+struct U16B {
+    val @0: u16,
+}
+
+struct U32B {
+    val @0: u32,
+}
+
+struct U64B {
+    val @0: u64,
+}
+
+struct I8B {
+    val @0: i8,
+}
+
+struct I16B {
+    val @0: i16,
+}
+
+struct I32B {
+    val @0: i32,
+}
+
+struct I64B {
+    val @0: i64,
+}
+
+struct F32B {
+    val @0: f32,
+}
+
+struct F64B {
+    val @0: f64,
+}
+
+device ecu {
+    protocol can2b {
+        impl U8B {
+            id: 0x0A7FFF,
+            signal val {
+                endianness: "big",
+            },
+        },
+
+        impl U16B {
+            id: 0x0B2CD0,
+            signal val {
+                endianness: "big",
+            },
+        },
+
+        impl U32B {
+            id: 0x0D3AF2,
+            signal val {
+                endianness: "big",
+            },
+        },
+
+        impl U64B {
+            id: 0x0C231A,
+            signal val {
+                endianness: "big",
+            },
+        },
+
+        impl I8B {
+            id: 0x0F32CD,
+            signal val {
+                endianness: "big",
+            },
+        },
+
+        impl I16B {
+            id: 0x0324CD,
+            signal val {
+                endianness: "big",
+            },
+        },
+
+        impl I32B {
+            id: 0x792DF,
+            signal val {
+                endianness: "big",
+            },
+        },
+
+        impl I64B {
+            id: 0x0934CD,
+            signal val {
+                endianness: "big",
+            },
+        },
+
+        impl F32B {
+            id: 0xEDE34,
+            signal val {
+                endianness: "big",
+            },
+        },
+
+        impl F64B {
+            id: 0x534EF,
+            signal val {
+                endianness: "big",
+            },
+        },
+    },
+}
