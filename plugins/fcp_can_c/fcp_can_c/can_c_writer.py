@@ -735,7 +735,7 @@ class CanCWriter:
                         device_name_pascal=to_pascal_case(device_name),
                         device_name_snake=to_snake_case(device_name),
                         messages=messages,
-                        can_mode=False,
+                        protocol="can",
                         include_global=device_name != "global" and global_device_exists,
                         is_global_device=device_name == "global",
                         enums=enums_to_include,
@@ -752,7 +752,7 @@ class CanCWriter:
                         device_name_pascal=to_pascal_case(device_name),
                         device_name_snake=to_snake_case(device_name),
                         messages=messages,
-                        can_mode=True,
+                        protocol="can2b",
                         include_global=device_name != "global" and global_device_exists,
                         is_global_device=device_name == "global",
                         enums=enums_to_include,
@@ -873,48 +873,48 @@ class CanCWriter:
 
         """
         for device_name in self._devices_with_rpc:       
-                    device = next(aux for aux in self.devices if aux.name == device_name)
+            device = next(aux for aux in self.devices if aux.name == device_name)
                     
-                    rpcs = self.device_rpcs.get(device_name, {})
+            rpcs = self.device_rpcs.get(device_name, {})
         
-                    rpc = [message for message in rpcs if message.is_can_2b == False]
-                    rpc_struct = self.rpc_structs[device_name]['can']
-                    rpc_block = next(aux for aux in device.rpc_block if aux.rpc_can_mode == False) # type: ignore
+            rpc = [message for message in rpcs if message.is_can_2b == False]
+            rpc_struct = self.rpc_structs[device_name]['can']
+            rpc_block = next(aux for aux in device.rpc_block if aux.rpc_can_mode == False) # type: ignore
         
-                    if rpc and rpc_block:
-                        yield (
-                            device_name,
-                            "can",
-                            self.templates["device_rpc_c"].render(
-                                device_name_pascal=to_pascal_case(device_name),
-                                device_name_snake=to_snake_case(device_name),
-                                rpcs=rpc,
-                                rpc_structs=rpc_struct,
-                                rpc_get_id=rpc_block.rpc_get_id,
-                                rpc_ans_id=rpc_block.rpc_ans_id,
-                                can_mode=False,
-                                protocol="can",
-                                services=self.services,
-                                ),
-                            )
+            if rpc and rpc_block:
+                yield (
+                    device_name,
+                    "can",
+                    self.templates["device_rpc_c"].render(
+                        device_name_pascal=to_pascal_case(device_name),
+                        device_name_snake=to_snake_case(device_name),
+                        rpcs=rpc,
+                        rpc_structs=rpc_struct,
+                        rpc_get_id=rpc_block.rpc_get_id,
+                        rpc_ans_id=rpc_block.rpc_ans_id,
+                        can_mode=False,
+                        protocol="can",
+                        services=self.services,
+                        ),
+                    )
         
-                    rpc = [message for message in rpcs if message.is_can_2b == True]
-                    rpc_struct = self.rpc_structs[device_name]['can2b']
-                    rpc_block = next(aux for aux in device.rpc_block if aux.rpc_can_mode == True) # type: ignore
+            rpc = [message for message in rpcs if message.is_can_2b == True]
+            rpc_struct = self.rpc_structs[device_name]['can2b']
+            rpc_block = next(aux for aux in device.rpc_block if aux.rpc_can_mode == True) # type: ignore
                     
-                    if rpc and rpc_block:
-                        yield (
-                            device_name,
-                            "can2b",
-                            self.templates["device_rpc_c"].render(
-                                device_name_pascal=to_pascal_case(device_name),
-                                device_name_snake=to_snake_case(device_name),
-                                rpcs=rpc,
-                                rpc_structs=rpc_struct,
-                                rpc_get_id=rpc_block.rpc_get_id,
-                                rpc_ans_id=rpc_block.rpc_ans_id,
-                                can_mode=True,
-                                protocol="can2b",
-                                services=self.services,
-                                ),
-                            )
+            if rpc and rpc_block:
+                yield (
+                    device_name,
+                    "can2b",
+                    self.templates["device_rpc_c"].render(
+                        device_name_pascal=to_pascal_case(device_name),
+                        device_name_snake=to_snake_case(device_name),
+                        rpcs=rpc,
+                        rpc_structs=rpc_struct,
+                        rpc_get_id=rpc_block.rpc_get_id,
+                        rpc_ans_id=rpc_block.rpc_ans_id,
+                        can_mode=True,
+                        protocol="can2b",
+                        services=self.services,
+                        ),
+                    )

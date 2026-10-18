@@ -14,7 +14,7 @@ extern "C" {
 #define get_bit(word, pos) (word >> pos) & 0x1
 
 /** @def can_word(msg) (*((uint64_t *) (msg->data)))
- *  Convert CanFrame to uint64_t word with data contents.
+ *  Convert struct _can_frame to uint64_t word with data contents.
  */
 #define can_word(msg) (*((uint64_t *)(msg->data)))
 
@@ -207,7 +207,7 @@ int64_t bitfield_sign_conv(uint64_t bitfield, uint8_t length) {
     }
 }
 
-uint64_t can_decode_signal_as_uint64_t(const CanFrame *msg, uint32_t start, uint32_t length,
+uint64_t can_decode_signal_as_uint64_t(const struct _can_frame *msg, uint32_t start, uint32_t length,
                                        float scale, float offset, bool is_big_endian) {
     uint64_t bitfield = get_bitfield(can_word(msg), start, length);
     if (is_big_endian) bitfield = swap_bytes_int(bitfield, U64);
@@ -223,7 +223,7 @@ uint64_t can_encode_signal_from_uint64_t(uint64_t signal, uint32_t start, uint32
     return is_big_endian ? swap_bytes_int(bitfield, U64) : bitfield;
 }
 
-uint32_t can_decode_signal_as_uint32_t(const CanFrame *msg, uint32_t start, uint32_t length,
+uint32_t can_decode_signal_as_uint32_t(const struct _can_frame *msg, uint32_t start, uint32_t length,
                                        float scale, float offset, bool is_big_endian) {
     uint32_t bitfield = (uint32_t)get_bitfield(can_word(msg), start, length);
     if (is_big_endian) bitfield = swap_bytes_int(bitfield, U32);
@@ -239,7 +239,7 @@ uint64_t can_encode_signal_from_uint32_t(uint32_t signal, uint32_t start, uint32
     return is_big_endian ? swap_bytes_int(bitfield, U32) : bitfield;
 }
 
-uint16_t can_decode_signal_as_uint16_t(const CanFrame *msg, uint32_t start, uint32_t length,
+uint16_t can_decode_signal_as_uint16_t(const struct _can_frame *msg, uint32_t start, uint32_t length,
                                        float scale, float offset, bool is_big_endian) {
     uint16_t bitfield = (uint16_t)get_bitfield(can_word(msg), start, length);
     if (is_big_endian) bitfield = swap_bytes_int(bitfield, U16);
@@ -255,7 +255,7 @@ uint64_t can_encode_signal_from_uint16_t(uint16_t signal, uint32_t start, uint32
     return is_big_endian ? swap_bytes_int(bitfield, U16) : bitfield;
 }
 
-uint8_t can_decode_signal_as_uint8_t(const CanFrame *msg, uint32_t start, uint32_t length,
+uint8_t can_decode_signal_as_uint8_t(const struct _can_frame *msg, uint32_t start, uint32_t length,
                                      float scale, float offset, bool is_big_endian) {
     uint8_t bitfield = (uint8_t)get_bitfield(can_word(msg), start, length);
     if (is_big_endian) bitfield = swap_bytes_int(bitfield, U8);
@@ -272,7 +272,7 @@ uint64_t can_encode_signal_from_uint8_t(uint8_t signal, uint32_t start, uint32_t
 }
 
 /* Only works up to 32 bit */
-double can_decode_signal_as_double(const CanFrame *msg, uint32_t start, uint32_t length,
+double can_decode_signal_as_double(const struct _can_frame *msg, uint32_t start, uint32_t length,
                                    float scale, float offset, bool is_big_endian) {
     u_f64 bitfield;
     memcpy(&bitfield.i, msg->data, 8);
@@ -290,7 +290,7 @@ uint64_t can_encode_signal_from_double(double signal, uint32_t start, uint32_t l
 }
 
 /* Only works up to 32 bit */
-float can_decode_signal_as_float(const CanFrame *msg, uint32_t start, uint32_t length, float scale,
+float can_decode_signal_as_float(const struct _can_frame *msg, uint32_t start, uint32_t length, float scale,
                                  float offset, bool is_big_endian) {
     u_f32 bitfield = {.i = get_bitfield(can_word(msg), start, length)};
     if (is_big_endian) bitfield.i = swap_bytes_int(bitfield.i, U32);
@@ -306,7 +306,7 @@ uint64_t can_encode_signal_from_float(float signal, uint32_t start, uint32_t len
     return is_big_endian ? swap_bytes_int(bitfield.i, U32) : bitfield.i;
 }
 
-int64_t can_decode_signal_as_int64_t(const CanFrame *msg, uint32_t start, uint32_t length,
+int64_t can_decode_signal_as_int64_t(const struct _can_frame *msg, uint32_t start, uint32_t length,
                                      float scale, float offset, bool is_big_endian) {
     int64_t bitfield = get_bitfield(can_word(msg), start, length);
     if (is_big_endian) bitfield = swap_bytes_int(bitfield, I64);
@@ -322,7 +322,7 @@ uint64_t can_encode_signal_from_int64_t(int64_t signal, uint32_t start, uint32_t
     return is_big_endian ? swap_bytes_int(bitfield, I64) : bitfield;
 }
 
-int32_t can_decode_signal_as_int32_t(const CanFrame *msg, uint32_t start, uint32_t length,
+int32_t can_decode_signal_as_int32_t(const struct _can_frame *msg, uint32_t start, uint32_t length,
                                      float scale, float offset, bool is_big_endian) {
     int64_t bitfield = bitfield_sign_conv(get_bitfield(can_word(msg), start, length), length);
     if (is_big_endian) bitfield = swap_bytes_int(bitfield, I32);
@@ -338,7 +338,7 @@ uint64_t can_encode_signal_from_int32_t(int32_t signal, uint32_t start, uint32_t
     return is_big_endian ? swap_bytes_int(bitfield, I32) : bitfield;
 }
 
-int16_t can_decode_signal_as_int16_t(const CanFrame *msg, uint32_t start, uint32_t length,
+int16_t can_decode_signal_as_int16_t(const struct _can_frame *msg, uint32_t start, uint32_t length,
                                      float scale, float offset, bool is_big_endian) {
     int64_t bitfield = bitfield_sign_conv(get_bitfield(can_word(msg), start, length), length);
     if (is_big_endian) bitfield = swap_bytes_int(bitfield, I16);
@@ -354,7 +354,7 @@ uint64_t can_encode_signal_from_int16_t(int16_t signal, uint32_t start, uint32_t
     return is_big_endian ? swap_bytes_int(bitfield, I16) : bitfield;
 }
 
-int8_t can_decode_signal_as_int8_t(const CanFrame *msg, uint32_t start, uint32_t length,
+int8_t can_decode_signal_as_int8_t(const struct _can_frame *msg, uint32_t start, uint32_t length,
                                    float scale, float offset, bool is_big_endian) {
     int64_t bitfield = bitfield_sign_conv(get_bitfield(can_word(msg), start, length), length);
     if (is_big_endian) bitfield = swap_bytes_int(bitfield, I8);
@@ -370,7 +370,7 @@ uint64_t can_encode_signal_from_int8_t(int8_t signal, uint32_t start, uint32_t l
     return is_big_endian ? swap_bytes_int(bitfield, I8) : bitfield;
 }
 
-float can_decode_signal_float_as_float(const CanFrame *msg, uint32_t start, uint32_t length,
+float can_decode_signal_float_as_float(const struct _can_frame *msg, uint32_t start, uint32_t length,
                                        float scale, float offset, bool is_big_endian) {
     if (length != 32) {
         return 0.0f;
@@ -391,7 +391,7 @@ uint64_t can_encode_signal_float_from_float(float signal, uint32_t start, uint32
     return is_big_endian ? swap_uint32(word) : word;
 }
 
-double can_decode_signal_double_as_double(const CanFrame *msg, uint32_t start, uint32_t length,
+double can_decode_signal_double_as_double(const struct _can_frame *msg, uint32_t start, uint32_t length,
                                           float scale, float offset, bool is_big_endian) {
     if (length != 64) {
         return 0.0;
