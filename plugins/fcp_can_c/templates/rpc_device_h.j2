@@ -1,16 +1,7 @@
-{% macro generate_rpc_ids(name, content) %}
-{% for rpc_block in content %}
-{% if rpc_block.rpc_ans_id is not none or rpc_block.rpc_get_id is not none%}
-#define {{ name | upper }}_{{ rpc_block.protocol | upper }}_RPC_GET_ID {{ rpc_block.rpc_get_id }}
-#define {{ name | upper }}_{{ rpc_block.protocol | upper }}_RPC_ANS_ID {{ rpc_block.rpc_ans_id }}
-{% endif %}
-{% endfor %}
-{% endmacro -%}
-
-{%- macro generate_rpc_decode(content) %}
-{% for message in rpcs %}
+{% macro generate_rpc_decode(content) %}
+{% for message in content %}
 {% if message.senders %}
-CanRpc{{ message.name_struct }} {{ message.protocol }}_decode_rpc_{{ message.name_snake }}(const CanFrame *rpc);
+{% if can_mode %}Can2B{% else %}Can{% endif %}Rpc{{ message.name_struct }} {{ message.protocol }}_decode_rpc_{{ message.name_snake }}(const {% if can_mode %}Can2B{% else %}Can{% endif %}Frame *rpc);
 {% endif %}
 {% endfor %}
 {% endmacro -%}
@@ -18,7 +9,7 @@ CanRpc{{ message.name_struct }} {{ message.protocol }}_decode_rpc_{{ message.nam
 {%- macro generate_rpc_decode_ans(content) %}
 {% for message in content %}
 {% if not message.senders %}
-CanRpc{{ message.name_struct }} {{ message.protocol }}_decode_rpc_{{ message.name_snake }}_ans(const CanFrame *rpc);
+{% if can_mode %}Can2B{% else %}Can{% endif %}Rpc{{ message.name_struct }} {{ message.protocol }}_decode_rpc_{{ message.name_snake }}_ans(const {% if can_mode %}Can2B{% else %}Can{% endif %}Frame *rpc);
 {% endif %}
 {% endfor %}
 {% endmacro -%}
@@ -26,7 +17,7 @@ CanRpc{{ message.name_struct }} {{ message.protocol }}_decode_rpc_{{ message.nam
 {%- macro generate_rpc_encode(content) %}
 {% for message in content %}
 {% if message.senders %}
-CanFrame {{ message.protocol }}_encode_rpc_{{ message.name_snake }}(const CanRpc{{ message.name_struct }} *rpc{% if message.is_multiplexer %}, uint32_t {{ message.multiplexer_signal }}{% endif %});
+{% if can_mode %}Can2B{% else %}Can{% endif %}Frame {{ message.protocol }}_encode_rpc_{{ message.name_snake }}(const {% if can_mode %}Can2B{% else %}Can{% endif %}Rpc{{ message.name_struct }} *rpc{% if message.is_multiplexer %}, uint32_t {{ message.multiplexer_signal }}{% endif %});
 {% endif %}
 {% endfor %}
 {% endmacro -%}
@@ -34,21 +25,22 @@ CanFrame {{ message.protocol }}_encode_rpc_{{ message.name_snake }}(const CanRpc
 {%- macro generate_rpc_encode_ans(content) %}
 {% for message in content %}
 {% if not message.senders %}
-CanFrame {{ message.protocol }}_encode_rpc_{{ message.name_snake }}_ans(const CanRpc{{ message.name_struct }} *rpc);
+{% if can_mode %}Can2B{% else %}Can{% endif %}Frame {{ message.protocol }}_encode_rpc_{{ message.name_snake }}_ans(const {% if can_mode %}Can2B{% else %}Can{% endif %}Rpc{{ message.name_struct }} *rpc);
 {% endif %}
 {% endfor %}
 {% endmacro -%}
 
-#ifndef {{ device_name_upper }}_RPC_H
-#define {{ device_name_upper }}_RPC_H
+#ifndef {{ device_name_snake | upper }}_{{ protocol | upper}}_RPC_H
+#define {{ device_name_snake | upper }}_{{ protocol | upper}}_RPC_H
 
 #include <stdint.h>
 #include <stdbool.h>
 #include "can_frame.h"
 
 /*---------------------------------------- Type Definitions ----------------------------------------*/
-{{ generate_rpc_ids(device_name_snake, rpc_blocks) }}
-#define MAX_RPC_ENTRIES {{ rpcs|length }}
+#define {{ device_name_snake | upper }}_{{ protocol | upper }}_RPC_GET_ID {{ rpc_get_id }}
+#define {{ device_name_snake | upper }}_{{ protocol | upper }}_RPC_ANS_ID {{ rpc_ans_id }}
+#define MAX_RPC_ENTRIES {{ messages|length }}
 
 typedef union {
     struct {
@@ -56,7 +48,7 @@ typedef union {
         uint8_t method;
     };
     uint16_t rpc_id;
-} CanRpcId;
+} {% if can_mode %}Can2B{% else %}Can{% endif %}RpcId;
 
 
 /**
@@ -67,14 +59,14 @@ typedef union {
  * @param request  Pointer to the incoming CAN frame.
  * @param response Pointer to the CAN frame that will be filled as the response.
  */
-typedef void (*{{ device_name_pascal }}RpcHandler)(const CanFrame *request, CanFrame *response);
+typedef void (*{{ device_name_pascal }}{% if can_mode %}Can2B{% else %}Can{% endif %}RpcHandler)(const {% if can_mode %}Can2B{% else %}Can{% endif %}Frame *request, {% if can_mode %}Can2B{% else %}Can{% endif %}Frame *response);
 
 /*---------------------------------------- RPC Utility Functions -----------------------------------*/
 
 /**
  * @brief Check if a CAN frame belongs to this device's RPC namespace.
  */
-bool is_{{ device_name_snake }}_rpc(const CanFrame *frame);
+bool is_{{ device_name_snake }}_{{ protocol }}_rpc(const {% if can_mode %}Can2B{% else %}Can{% endif %}Frame *frame);
 
 /**
  * @brief Main RPC dispatcher.
@@ -82,9 +74,9 @@ bool is_{{ device_name_snake }}_rpc(const CanFrame *frame);
  * Finds and invokes the handler corresponding to a service + method ID.
  * Automatically sends back a response using the provided callback.
  */
-void {{ device_name_snake }}_service_dispatch(
-    const CanFrame *frame,
-    void (*send_func)(const CanFrame *)
+void {{ device_name_snake }}_{{ protocol }}_service_dispatch(
+    const {% if can_mode %}Can2B{% else %}Can{% endif %}Frame *frame,
+    void (*send_func)(const {% if can_mode %}Can2B{% else %}Can{% endif %}Frame *)
 );
 
 /*---------------------------------------- RPC Registration API ------------------------------------*/
@@ -99,7 +91,7 @@ void {{ device_name_snake }}_service_dispatch(
  * @param handler    Function pointer to the handler.
  * @return true if successfully registered or updated, false otherwise.
  */
-bool {{ device_name_snake }}_rpc_register(uint8_t service, uint8_t method, {{ device_name_pascal }}RpcHandler handler);
+bool {{ device_name_snake }}_{{ protocol }}_rpc_register(uint8_t service, uint8_t method, {{ device_name_pascal }}{% if can_mode %}Can2B{% else %}Can{% endif %}RpcHandler handler);
 
 /**
  * @brief Unregister an RPC handler dynamically.
@@ -110,14 +102,14 @@ bool {{ device_name_snake }}_rpc_register(uint8_t service, uint8_t method, {{ de
  * @param method  RPC method identifier.
  * @return true if successfully unregistered, false if not found.
  */
-bool {{ device_name_snake }}_rpc_unregister(uint8_t service, uint8_t method);
+bool {{ device_name_snake }}_{{ protocol }}_rpc_unregister(uint8_t service, uint8_t method);
 
 /**
  * @brief Initialize and pre-register all statically generated RPC handlers.
  * 
  * Should be called once during system startup.
  */
-void {{ device_name_snake }}_rpc_init(void);
+void {{ device_name_snake }}_{{ protocol }}_rpc_init(void);
 
 /*---------------------------------------- RPC Encode/Decode Structs --------------------------------*/
 {%- for message in rpc_structs +%}
@@ -129,21 +121,20 @@ typedef struct {
     {{ signal.scalar_type }} {{ signal.name }};
     {% endif %}
     {% endfor %}
-} CanRpc{{ message.name_struct }};
+} {% if can_mode %}Can2B{% else %}Can{% endif %}Rpc{{ message.name_struct }};
 {% endfor %}
 /*---------------------------------------- RPC Encode/Decode Rpcs -----------------------------------*/
-{{ generate_rpc_decode(rpcs) }}
-{{ generate_rpc_decode_ans(rpcs) }}
-{{ generate_rpc_encode(rpcs) }}
-{{ generate_rpc_encode_ans(rpcs) -}}
+{{ generate_rpc_decode(messages) }}
+{{ generate_rpc_decode_ans(messages) }}
+{{ generate_rpc_encode(messages) }}
+{{ generate_rpc_encode_ans(messages) -}}
 /*---------------------------------------- Generated Service Handlers -------------------------------*/
 {% for service in services %}
 {% for method in service.methods %}
 /**
  * @brief Handler for {{ service.name }}.{{ method.name }} RPC method.
  */
-void {{ device_name_snake }}_can_service_handle_{{ method.name_snake }}(const CanFrame *request, CanFrame *response);
-void {{ device_name_snake }}_can2b_service_handle_{{ method.name_snake }}(const CanFrame *request, CanFrame *response);
+void {{ device_name_snake }}_{{ protocol }}_service_handle_{{ method.name_snake }}(const {% if can_mode %}Can2B{% else %}Can{% endif %}Frame *request, {% if can_mode %}Can2B{% else %}Can{% endif %}Frame *response);
 {% endfor %}
 {% endfor %}
 

@@ -305,9 +305,9 @@ def initialize_can_data(
     List[Enum],
     List[CanNode],
     List[CanMessage],
+    Dict[str, List[CanMessage]],
     List[CanMessage],
-    List[CanMessage],
-    List[CanMessage],
+    Dict[str, Dict[str, List[CanMessage]]],
     List[Service],
 ]:
     """Initialize CAN data from an FCP.
@@ -323,8 +323,8 @@ def initialize_can_data(
     messages = []
     devices: List[CanNode] = []
     rpc: List[CanMessage] = []
-    rpc_structs: List[CanMessage] = []
-    message_structs: List[CanMessage] = []
+    rpc_structs: Dict[str, Dict[str, List[CanMessage]]] = {}
+    device_rpcs: Dict[str ,List[CanMessage]] = {}
 
     encoder = make_encoder(
         "packed",
@@ -545,18 +545,20 @@ def initialize_can_data(
             )
             messages.append(message)
 
-            if not any(extension.name == temp.name_pascal for temp in message_structs):
-                message_structs.append(message)
 
     for service in fcp.services:
         target_devices = service_devices.get(service.name, ["global"])
 
         for device_name in target_devices:
             rpc_protocols = device_rpc_info.get(device_name, {})
+            device_rpcs.setdefault(device_name, [])
+            rpc_structs.setdefault(device_name, {})
 
             for term in ("can", "can2b"):
                 if term not in rpc_protocols:
                     continue
+
+                rpc_structs[device_name].setdefault(term, [])
 
                 rpc_ids = rpc_protocols.get(term, {})
                 get_id = rpc_ids.get("rpc_get_id")
@@ -645,16 +647,17 @@ def initialize_can_data(
                         )
 
                         rpc.append(message)
+                        device_rpcs[device_name].append(message)
 
                         if not any(
                             struct_rpc.name_struct == struct_name
-                            for struct_rpc in rpc_structs
+                            for struct_rpc in rpc_structs[device_name][term]
                         ):
-                            rpc_structs.append(message)
+                            rpc_structs[device_name][term].append(message)
 
                         rpc_messages.add(key)
 
-    return (enums, devices, messages, message_structs, rpc, rpc_structs, fcp.services)
+    return (enums, devices, messages, device_rpcs, rpc, rpc_structs, fcp.services)
 
 
 class CanCWriter:
@@ -674,7 +677,7 @@ class CanCWriter:
             self.enums,
             self.devices,
             self.messages,
-            self.message_structs,
+            self.device_rpcs,
             self.rpcs,
             self.rpc_structs,
             self.services,
@@ -694,7 +697,6 @@ class CanCWriter:
             "device_rpc_c": self.env.get_template("rpc_device_c.j2"),
         }
         self.device_messages = map_messages_to_devices(self.messages)
-        self.device_messages_structs = map_messages_to_devices(self.message_structs)
 
     def generate_static_files(self) -> Generator[Tuple[str, str], None, None]:
         """Generate all static C files.
@@ -708,7 +710,7 @@ class CanCWriter:
             with open(f"{self.templates_dir}/{file}", "r") as f:
                 yield file, f.read()
 
-    def generate_device_headers(self) -> Generator[Tuple[str, str], None, None]:
+    def generate_device_headers(self) -> Generator[Tuple[str, str, str], None, None]:
         """Generate C header files for devices.
 
         Returns:
@@ -719,44 +721,83 @@ class CanCWriter:
 
         for device in self.devices:
             device_name = device.name
-            messages = self.device_messages.get(device_name, [])
-            structs = self.device_messages_structs.get(device_name, [])
+            all_messages = self.device_messages.get(device_name, [])
 
             enums_to_include = self.enums if device_name == "global" else []
 
-            yield (
-                device_name,
-                self.templates["device_can_h"].render(
-                    device_name_pascal=to_pascal_case(device_name),
-                    device_name_snake=to_snake_case(device_name),
-                    messages=messages,
-                    structs=structs,
-                    include_global=device_name != "global" and global_device_exists,
-                    is_global_device=device_name == "global",
-                    enums=enums_to_include,
-                ),
-            )
+            messages = [message for message in all_messages if message.is_can_2b == False]
 
-    def generate_device_sources(self) -> Generator[Tuple[str, str], None, None]:
+            if messages or (device_name == "global" and enums_to_include):
+                yield (
+                    device_name,
+                    "can",
+                    self.templates["device_can_h"].render(
+                        device_name_pascal=to_pascal_case(device_name),
+                        device_name_snake=to_snake_case(device_name),
+                        messages=messages,
+                        can_mode=False,
+                        include_global=device_name != "global" and global_device_exists,
+                        is_global_device=device_name == "global",
+                        enums=enums_to_include,
+                        ),
+                    )
+
+            messages = [message for message in all_messages if message.is_can_2b == True]
+
+            if messages or (device_name == "global" and enums_to_include):
+                yield (
+                    device_name,
+                    "can2b",
+                    self.templates["device_can_h"].render(
+                        device_name_pascal=to_pascal_case(device_name),
+                        device_name_snake=to_snake_case(device_name),
+                        messages=messages,
+                        can_mode=True,
+                        include_global=device_name != "global" and global_device_exists,
+                        is_global_device=device_name == "global",
+                        enums=enums_to_include,
+                    ),
+                )
+
+    def generate_device_sources(self) -> Generator[Tuple[str, str, str], None, None]:
         """Generate C source files for devices.
 
         Returns:
             Generator: Tuple containing the device name and the file content.
 
         """
-        for device_name, messages in self.device_messages.items():
-            structs = self.device_messages_structs.get(device_name, [])
-            yield (
-                to_snake_case(device_name),
-                self.templates["device_can_c"].render(
-                    device_name_pascal=to_pascal_case(device_name),
-                    device_name_snake=to_snake_case(device_name),
-                    messages=messages,
-                    structs=structs,
-                ),
-            )
+        for device_name, all_messages in self.device_messages.items():
+            messages = [message for message in all_messages if message.is_can_2b == False]
 
-    def generate_rpc_headers(self) -> Generator[Tuple[str, str], None, None]:
+            if messages:
+                yield (
+                    to_snake_case(device_name),
+                    "can",
+                    self.templates["device_can_c"].render(
+                        device_name_pascal=to_pascal_case(device_name),
+                        device_name_snake=to_snake_case(device_name),
+                        messages=messages,
+                        can_mode=False,
+                        protocol="can",
+                    ),
+                )
+
+            messages = [message for message in all_messages if message.is_can_2b == True]
+
+            if messages:
+                yield (
+                    to_snake_case(device_name),
+                    "can2b",
+                    self.templates["device_can_c"].render(
+                        device_name_pascal=to_pascal_case(device_name),
+                        device_name_snake=to_snake_case(device_name),
+                        messages=messages,
+                        can_mode=True,
+                        protocol="can2b",
+                        ),
+                    )
+
+    def generate_rpc_headers(self) -> Generator[Tuple[str, str, str], None, None]:
         """Generate C header files for devices with RPC.
 
         Returns:
@@ -780,40 +821,100 @@ class CanCWriter:
             device_name = device.name
             self._devices_with_rpc.add(device_name)
 
-            yield (
-                device_name,
-                self.templates["device_rpc_h"].render(
-                    device_name_pascal=to_pascal_case(device_name),
-                    device_name_snake=to_snake_case(device_name),
-                    rpc_blocks=device.rpc_block,
-                    rpcs=self.rpcs,
-                    rpc_structs=self.rpc_structs,
-                    services=self.services,
-                ),
-            )
+            rpc = self.device_rpcs.get(device_name, {})
 
-    def generate_rpc_sources(self) -> Generator[Tuple[str, str], None, None]:
+            messages = [message for message in rpc if message.is_can_2b == False]
+            rpc_struct = self.rpc_structs[device.name]['can']
+            rpc_block = next(aux for aux in device.rpc_block if aux.rpc_can_mode == False)
+
+            if messages and rpc_block:
+                yield (
+                    device_name,
+                    "can",
+                    self.templates["device_rpc_h"].render(
+                        device_name_pascal=to_pascal_case(device_name),
+                        device_name_snake=to_snake_case(device_name),
+                        messages=messages,
+                        rpc_structs=rpc_struct,
+                        rpc_get_id=rpc_block.rpc_get_id,
+                        rpc_ans_id=rpc_block.rpc_ans_id,
+                        can_mode=False,
+                        protocol="can",
+                        services=self.services,
+                        ),
+                    )
+
+            messages = [message for message in rpc if message.is_can_2b == True]
+            rpc_struct = self.rpc_structs[device.name]['can2b']
+            rpc_block = next(aux for aux in device.rpc_block if aux.rpc_can_mode == True)
+            
+            if messages and rpc_block:
+                yield (
+                    device_name,
+                    "can2b",
+                    self.templates["device_rpc_h"].render(
+                        device_name_pascal=to_pascal_case(device_name),
+                        device_name_snake=to_snake_case(device_name),
+                        messages=messages,
+                        rpc_structs=rpc_struct,
+                        rpc_get_id=rpc_block.rpc_get_id,
+                        rpc_ans_id=rpc_block.rpc_ans_id,
+                        can_mode=True,
+                        protocol="can2b",
+                        services=self.services,
+                        ),
+                    )
+
+    def generate_rpc_sources(self) -> Generator[Tuple[str, str, str], None, None]:
         """Generate C source files for devices with RPC.
 
         Returns:
             Generator: Tuple containing the device name and the file content.
 
         """
-        for device_name, messages in self.device_messages.items():
-            if device_name not in self._devices_with_rpc:
-                continue
-
-            device = next(d for d in self.devices if d.name == device_name)
-
-            yield (
-                to_snake_case(device_name),
-                self.templates["device_rpc_c"].render(
-                    device_name_pascal=to_pascal_case(device_name),
-                    device_name_snake=to_snake_case(device_name),
-                    messages=messages,
-                    rpc_blocks=device.rpc_block,
-                    rpcs=self.rpcs,
-                    rpc_structs=self.rpc_structs,
-                    services=self.services,
-                ),
-            )
+        for device_name in self._devices_with_rpc:       
+                    device = next(aux for aux in self.devices if aux.name == device_name)
+                    
+                    rpcs = self.device_rpcs.get(device_name, {})
+        
+                    rpc = [message for message in rpcs if message.is_can_2b == False]
+                    rpc_struct = self.rpc_structs[device_name]['can']
+                    rpc_block = next(aux for aux in device.rpc_block if aux.rpc_can_mode == False) # type: ignore
+        
+                    if rpc and rpc_block:
+                        yield (
+                            device_name,
+                            "can",
+                            self.templates["device_rpc_c"].render(
+                                device_name_pascal=to_pascal_case(device_name),
+                                device_name_snake=to_snake_case(device_name),
+                                rpcs=rpc,
+                                rpc_structs=rpc_struct,
+                                rpc_get_id=rpc_block.rpc_get_id,
+                                rpc_ans_id=rpc_block.rpc_ans_id,
+                                can_mode=False,
+                                protocol="can",
+                                services=self.services,
+                                ),
+                            )
+        
+                    rpc = [message for message in rpcs if message.is_can_2b == True]
+                    rpc_struct = self.rpc_structs[device_name]['can2b']
+                    rpc_block = next(aux for aux in device.rpc_block if aux.rpc_can_mode == True) # type: ignore
+                    
+                    if rpc and rpc_block:
+                        yield (
+                            device_name,
+                            "can2b",
+                            self.templates["device_rpc_c"].render(
+                                device_name_pascal=to_pascal_case(device_name),
+                                device_name_snake=to_snake_case(device_name),
+                                rpcs=rpc,
+                                rpc_structs=rpc_struct,
+                                rpc_get_id=rpc_block.rpc_get_id,
+                                rpc_ans_id=rpc_block.rpc_ans_id,
+                                can_mode=True,
+                                protocol="can2b",
+                                services=self.services,
+                                ),
+                            )
