@@ -3,12 +3,14 @@
 
 #include <stdint.h>
 
-typedef struct {
+typedef struct _can_frame {
     uint8_t ide : 1;
     uint16_t sid : 11;
     uint32_t eid : 18;
     uint8_t dlc : 4;
     uint8_t data[8];
 } CanFrame;
+
+typedef struct _can_frame Can2BFrame;
 
 #endif
