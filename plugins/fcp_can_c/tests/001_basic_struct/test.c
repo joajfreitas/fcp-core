@@ -24,24 +24,24 @@ bool all_tests_passed = true;
     }
 
 void test_encode_msg() {
-    CanMsgFoo msg = {
+    CANMsgFoo msg = {
         .s1 = 123,
         .s2 = 0xAB12,
     };
 
-    CanFrame expected_frame = {
+    CANFrame expected_frame = {
         .ide = 0,
         .sid = 10,
         .dlc = 2,
         .data = {123, 0x12, 0xAB},
     };
 
-    CanFrame frame = can_encode_msg_foo(&msg);
+    CANFrame frame = can_encode_msg_foo(&msg);
     VERIFY_TEST(frame.sid == expected_frame.sid);
 }
 
 void test_is_dev_msg() {
-    CanFrame test_frame = {
+    CANFrame test_frame = {
         .ide = 0,
         .sid = 10,
         .dlc = 2,
@@ -52,7 +52,7 @@ void test_is_dev_msg() {
 }
 
 void test_dlc() {
-    CanFrame frame = {
+    CANFrame frame = {
         .ide = 0,
         .sid = 10,
         .dlc = 3,
@@ -63,42 +63,42 @@ void test_dlc() {
 }
 
 void test_decode_msg() {
-    CanFrame test_frame = {
+    CANFrame test_frame = {
         .ide = 0,
         .sid = 10,
         .dlc = 2,
         .data = {123, 0x12, 0xAB},
     };
 
-    CanMsgFoo expected_msg = {
+    CANMsgFoo expected_msg = {
         .s1 = 123,
         .s2 = 0xAB12,
     };
 
-    CanMsgFoo msg = can_decode_msg_foo(&test_frame);
+    CANMsgFoo msg = can_decode_msg_foo(&test_frame);
 
     bool signals_match = msg.s1 == expected_msg.s1 && msg.s2 == expected_msg.s2;
     VERIFY_TEST(signals_match);
 }
 
 void test_float_value() {
-    CanMsgBar msg = {
+    CANMsgBar msg = {
         .s1 = 3.14,
     };
 
-    CanFrame f = can_encode_msg_bar(&msg);
-    CanMsgBar decoded = can_decode_msg_bar(&f);
+    CANFrame f = can_encode_msg_bar(&msg);
+    CANMsgBar decoded = can_decode_msg_bar(&f);
 
     VERIFY_TEST(msg.s1 == decoded.s1);
 }
 
 void test_double_value() {
-    CanMsgBaz msg = {
+    CANMsgBaz msg = {
         .s1 = 3.14159265359,
     };
 
-    CanFrame f = can_encode_msg_baz(&msg);
-    CanMsgBaz decoded = can_decode_msg_baz(&f);
+    CANFrame f = can_encode_msg_baz(&msg);
+    CANMsgBaz decoded = can_decode_msg_baz(&f);
 
     VERIFY_TEST(msg.s1 == decoded.s1);
 }

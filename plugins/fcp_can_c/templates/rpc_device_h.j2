@@ -1,6 +1,6 @@
 {% macro generate_rpc_decode(content) %}
 {% for message in content %}
-{% if message.senders %}
+{% if message.senders and message.signals %}
 {{ protocol | upper }}Rpc{{ message.name_struct }} {{ message.protocol }}_decode_rpc_{{ message.name_snake }}(const {{ protocol | upper }}Frame *rpc);
 {% endif %}
 {% endfor %}
@@ -16,8 +16,10 @@
 
 {%- macro generate_rpc_encode(content) %}
 {% for message in content %}
-{% if message.senders %}
+{% if message.senders and message.signals %}
 {{ protocol | upper }}Frame {{ message.protocol }}_encode_rpc_{{ message.name_snake }}(const {{ protocol | upper }}Rpc{{ message.name_struct }} *rpc{% if message.is_multiplexer %}, uint32_t {{ message.multiplexer_signal }}{% endif %});
+{% elif message.senders and not message.signals %}
+{{ protocol | upper }}Frame {{ message.protocol }}_encode_rpc_{{ message.name_snake }}(void);
 {% endif %}
 {% endfor %}
 {% endmacro -%}
@@ -40,7 +42,7 @@
 /*---------------------------------------- Type Definitions ----------------------------------------*/
 #define {{ device_name_snake | upper }}_{{ protocol | upper }}_RPC_GET_ID {{ rpc_get_id }}
 #define {{ device_name_snake | upper }}_{{ protocol | upper }}_RPC_ANS_ID {{ rpc_ans_id }}
-#define MAX_RPC_ENTRIES {{ messages|length }}
+#define MAX_{{ device_name_snake | upper }}_{{ protocol | upper }}_RPC_ENTRIES {{ (messages | length) // 2}}
 
 typedef union {
     struct {

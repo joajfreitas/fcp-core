@@ -5,6 +5,8 @@ SRCDIR = .
 
 SRCS = $(SRCDIR)/test.c $(wildcard $(LIBDIR)/*.c)
 OBJS = $(SRCS:.c=.o)
+
+OBJECTS = $(OBJS)
 OUTPUT = test
 
 CFLAGS = -I$(LIBDIR) -Wall 

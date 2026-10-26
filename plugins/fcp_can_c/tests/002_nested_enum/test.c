@@ -23,7 +23,7 @@ bool all_tests_passed = true;
     }
 
 void test_encode_decode_sensor_information() {
-    CanMsgSensorInformation msg = {
+    CANMsgSensorInformation msg = {
         .e = C,           // InnerEnum
         .l1 = {           // Level1Struct
             .s1 = 7,
@@ -32,7 +32,7 @@ void test_encode_decode_sensor_information() {
     };
 
     // Encode
-    CanFrame frame = can_encode_msg_sensor_information(&msg);
+    CANFrame frame = can_encode_msg_sensor_information(&msg);
     printf("Encoded frame bytes: ");
     for (int i = 0; i < frame.dlc; i++)
         printf("%d ", frame.data[i]);
@@ -41,14 +41,14 @@ void test_encode_decode_sensor_information() {
     VERIFY_TEST(frame.sid == CAN_MSG_ID_SENSOR_INFORMATION);
 
     // Decode
-    CanMsgSensorInformation decoded = can_decode_msg_sensor_information(&frame);
+    CANMsgSensorInformation decoded = can_decode_msg_sensor_information(&frame);
     VERIFY_TEST(decoded.e == msg.e);
     VERIFY_TEST(decoded.l1.s1 == msg.l1.s1);
     VERIFY_TEST(decoded.l1.s2 == msg.l1.s2);
 }
 
 void test_level3_struct() {
-    CanMsgLevel3Struct msg = {
+    CANMsgLevel3Struct msg = {
         .l2 = {                    // Level2Struct
             .l1 = {                // Level1Struct
                 .s1 = 10,
@@ -60,11 +60,11 @@ void test_level3_struct() {
     };
 
     // Encode
-    CanFrame frame = can_encode_msg_level3_struct(&msg);
+    CANFrame frame = can_encode_msg_level3_struct(&msg);
     VERIFY_TEST(frame.sid == CAN_MSG_ID_LEVEL3_STRUCT);
 
     // Decode
-    CanMsgLevel3Struct decoded = can_decode_msg_level3_struct(&frame);
+    CANMsgLevel3Struct decoded = can_decode_msg_level3_struct(&frame);
     VERIFY_TEST(decoded.l2.l1.s1 == msg.l2.l1.s1);
     VERIFY_TEST(decoded.l2.l1.s2 == msg.l2.l1.s2);
     VERIFY_TEST(decoded.l2.val2 == msg.l2.val2);
@@ -72,7 +72,7 @@ void test_level3_struct() {
 }
 
 void test_level5_struct() {
-    CanMsgLevel5Struct msg = {
+    CANMsgLevel5Struct msg = {
         .l4 = {                            // Level4Struct
             .l3 = {                        // Level3Struct
                 .l2 = {                    // Level2Struct
@@ -91,11 +91,11 @@ void test_level5_struct() {
     };
 
     // Encode
-    CanFrame frame = can_encode_msg_level5_struct(&msg);
+    CANFrame frame = can_encode_msg_level5_struct(&msg);
     VERIFY_TEST(frame.sid == CAN_MSG_ID_LEVEL5_STRUCT);
 
     // Decode
-    CanMsgLevel5Struct decoded = can_decode_msg_level5_struct(&frame);
+    CANMsgLevel5Struct decoded = can_decode_msg_level5_struct(&frame);
     VERIFY_TEST(decoded.l4.l3.l2.l1.s1 == msg.l4.l3.l2.l1.s1);
     VERIFY_TEST(decoded.l4.l3.l2.l1.s2 == msg.l4.l3.l2.l1.s2);
     VERIFY_TEST(decoded.l4.l3.l2.val2 == msg.l4.l3.l2.val2);

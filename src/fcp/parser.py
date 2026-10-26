@@ -95,7 +95,8 @@ fcp_parser = Lark(
     extension_field: identifier ":" value
 
     service: "service" identifier "@" number "{" (method ",")* method ","? "}"
-    method: "method" identifier "(" identifier ")" "@" number "returns" identifier
+    method: "method" identifier "(" identifier ")" "@" number "returns" identifier -> method_normal
+          | "method" identifier "@" number "returns" identifier -> method_no_input
 
     device: "device" identifier "{" (device_body ",")* device_body~0..1 ","? "}"
     device_body: protocol_block | extension_field
@@ -131,6 +132,7 @@ fcp_parser = Lark(
     %ignore COMMENT
     """,
     propagate_positions=True,
+    maybe_placeholders=True
 )
 
 
@@ -599,10 +601,16 @@ class FcpV2Transformer(Transformer):
         return Ok(())
 
     @v_args(tree=True)  # type: ignore
-    def method(self, tree: ParseTree) -> method.Method:
+    def method_normal(self, tree: ParseTree) -> method.Method:
         """Parse a method node of the fcp AST."""
         name, input, id, output = tree.children
         return method.Method(name, id, input, output, meta=_get_meta(tree, self))
+
+    @v_args(tree=True)  # type: ignore
+    def method_no_input(self, tree: ParseTree) -> method.Method:
+        """Parse a method node of the fcp AST."""
+        name, id, output = tree.children
+        return method.Method(name, id, None, output, meta=_get_meta(tree, self))
 
     def signal_field(self, args: List[Any]) -> Tuple[str, Any]:
         """Parse a signal_field node of the fcp AST."""

@@ -28,7 +28,7 @@ service StateService @0 {
 }
 
 service TemperatureService @1 {
-    method GetTemperature(SensorReq) @1 returns TemperatureResponse,
+    method GetTemperature @0 returns TemperatureResponse,
 }
 
 device ecu {
