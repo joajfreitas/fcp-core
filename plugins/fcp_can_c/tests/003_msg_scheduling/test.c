@@ -34,10 +34,10 @@ void reset_fake_can_sender() {
     call_count = 0;
 }
 
-void fake_can_sender(const CanFrame *f) { sent_ids[call_count++] = f->sid; }
+void fake_can_sender(const CANFrame *f) { sent_ids[call_count++] = f->sid; }
 
 // Time is 0, no messages should be sent
-void test_0(CanDeviceEcu *ecu_can) {
+void test_0(CANDeviceEcu *ecu_can) {
     timer = 0;
     call_count = 0;
 
@@ -47,7 +47,7 @@ void test_0(CanDeviceEcu *ecu_can) {
 }
 
 // Time to send pedals message
-void test_1(CanDeviceEcu *ecu_can) {
+void test_1(CANDeviceEcu *ecu_can) {
     timer = 15;
     reset_fake_can_sender();
     can_send_ecu_msgs_scheduled(ecu_can, timer, fake_can_sender);
@@ -56,7 +56,7 @@ void test_1(CanDeviceEcu *ecu_can) {
 }
 
 // Same time as test_1 but message was already sent
-void test_2(CanDeviceEcu *ecu_can) {
+void test_2(CANDeviceEcu *ecu_can) {
     timer = 15;
     reset_fake_can_sender();
     can_send_ecu_msgs_scheduled(ecu_can, timer, fake_can_sender);
@@ -65,7 +65,7 @@ void test_2(CanDeviceEcu *ecu_can) {
 }
 
 // Time to send button message
-void test_3(CanDeviceEcu *ecu_can) {
+void test_3(CANDeviceEcu *ecu_can) {
     timer = 20;
     reset_fake_can_sender();
     can_send_ecu_msgs_scheduled(ecu_can, timer, fake_can_sender);
@@ -74,7 +74,7 @@ void test_3(CanDeviceEcu *ecu_can) {
 }
 
 // Time send no messages
-void test_4(CanDeviceEcu *ecu_can) {
+void test_4(CANDeviceEcu *ecu_can) {
     timer = 25;
     reset_fake_can_sender();
     can_send_ecu_msgs_scheduled(ecu_can, timer, fake_can_sender);
@@ -83,7 +83,7 @@ void test_4(CanDeviceEcu *ecu_can) {
 }
 
 // Send pedals and button messages
-void test_5(CanDeviceEcu *ecu_can) {
+void test_5(CANDeviceEcu *ecu_can) {
     timer = 30;
     reset_fake_can_sender();
     can_send_ecu_msgs_scheduled(ecu_can, timer, fake_can_sender);
@@ -93,13 +93,13 @@ void test_5(CanDeviceEcu *ecu_can) {
 
 int main() {
 
-    CanDeviceEcu ecu_can = {.pedals.acc_pos = 30,
+    CANDeviceEcu ecu_can = {.pedals.acc_pos = 30,
                             .pedals.brake_pos = 0,
                             .shutdown.error = 212,
                             .button.press = 1};
 
-    CanFrame expected_pedals_frame = can_encode_msg_pedals(&ecu_can.pedals);
-    CanFrame expected_shutdown_frame =
+    CANFrame expected_pedals_frame = can_encode_msg_pedals(&ecu_can.pedals);
+    CANFrame expected_shutdown_frame =
         can_encode_msg_shutdown(&ecu_can.shutdown);
 
     test_0(&ecu_can);

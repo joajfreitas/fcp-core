@@ -3,7 +3,7 @@ CC = clang
 LIBDIR = generated_code
 SRCDIR = .
 
-SRCS = $(wildcard $(SRCDIR)/*.c) $(wildcard $(LIBDIR)/*.c)
+SRCS = $(wildcard $(SRCDIR)/*.c $(LIBDIR)/*.c)
 OBJS = $(SRCS:.c=.o)
 
 OBJECTS = $(OBJS)

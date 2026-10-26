@@ -34,7 +34,7 @@ typedef union {
         exit(EXIT_FAILURE); \
     }
 
-bool compare_frames(CanFrame *a, CanFrame *b) {
+bool compare_frames(CANFrame *a, CANFrame *b) {
     if (a->ide != b->ide) {
         return false;
     }
@@ -56,8 +56,8 @@ bool compare_frames(CanFrame *a, CanFrame *b) {
     return true;
 }
 
-void test_encode_msg_u8b(CanFrame *f) {
-    CanFrame expected = {
+void test_encode_msg_u8b(CANFrame *f) {
+    CANFrame expected = {
         .ide = 0,
         .sid = CAN_MSG_ID_U8_B,
         .data = {0x12, 0, 0, 0, 0, 0, 0, 0},
@@ -66,14 +66,14 @@ void test_encode_msg_u8b(CanFrame *f) {
     VERIFY_TEST(compare_frames(f, &expected));
 }
 
-void test_decode_msg_u8b(CanMsgU8B *original, CanFrame *f) {
-    CanMsgU8B decoded = can_decode_msg_u8_b(f);
+void test_decode_msg_u8b(CANMsgU8B *original, CANFrame *f) {
+    CANMsgU8B decoded = can_decode_msg_u8_b(f);
 
     VERIFY_TEST(original->val == decoded.val);
 }
 
-void test_encode_msg_u16b(CanFrame *f) {
-    CanFrame expected = {
+void test_encode_msg_u16b(CANFrame *f) {
+    CANFrame expected = {
         .ide = 0,
         .sid = CAN_MSG_ID_U16_B,
         .data = {0x12, 0x34, 0, 0, 0, 0, 0, 0},
@@ -82,14 +82,14 @@ void test_encode_msg_u16b(CanFrame *f) {
     VERIFY_TEST(compare_frames(f, &expected));
 }
 
-void test_decode_msg_u16b(CanMsgU16B *original, CanFrame *f) {
-    CanMsgU16B decoded = can_decode_msg_u16_b(f);
+void test_decode_msg_u16b(CANMsgU16B *original, CANFrame *f) {
+    CANMsgU16B decoded = can_decode_msg_u16_b(f);
 
     VERIFY_TEST(original->val == decoded.val);
 }
 
-void test_encode_msg_u32b(CanFrame *f) {
-    CanFrame expected = {
+void test_encode_msg_u32b(CANFrame *f) {
+    CANFrame expected = {
         .ide = 0,
         .sid = CAN_MSG_ID_U32_B,
         .data = {0x12, 0x34, 0x56, 0x78, 0, 0, 0, 0},
@@ -98,14 +98,14 @@ void test_encode_msg_u32b(CanFrame *f) {
     VERIFY_TEST(compare_frames(f, &expected));
 }
 
-void test_decode_msg_u32b(CanMsgU32B *original, CanFrame *f) {
-    CanMsgU32B decoded = can_decode_msg_u32_b(f);
+void test_decode_msg_u32b(CANMsgU32B *original, CANFrame *f) {
+    CANMsgU32B decoded = can_decode_msg_u32_b(f);
 
     VERIFY_TEST(original->val == decoded.val);
 }
 
-void test_encode_msg_u64b(CanFrame *f) {
-    CanFrame expected = {
+void test_encode_msg_u64b(CANFrame *f) {
+    CANFrame expected = {
         .ide = 0,
         .sid = CAN_MSG_ID_U64_B,
         .data = {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0},
@@ -114,14 +114,14 @@ void test_encode_msg_u64b(CanFrame *f) {
     VERIFY_TEST(compare_frames(f, &expected));
 }
 
-void test_decode_msg_u64b(CanMsgU64B *original, CanFrame *f) {
-    CanMsgU64B decoded = can_decode_msg_u64_b(f);
+void test_decode_msg_u64b(CANMsgU64B *original, CANFrame *f) {
+    CANMsgU64B decoded = can_decode_msg_u64_b(f);
 
     VERIFY_TEST(original->val == decoded.val);
 }
 
-void test_encode_msg_i8b(CanFrame *f) {
-    CanFrame expected = {
+void test_encode_msg_i8b(CANFrame *f) {
+    CANFrame expected = {
         .ide = 0,
         .sid = CAN_MSG_ID_I8_B,
         .data = {0x12, 0, 0, 0, 0, 0, 0, 0},
@@ -130,14 +130,14 @@ void test_encode_msg_i8b(CanFrame *f) {
     VERIFY_TEST(compare_frames(f, &expected));
 }
 
-void test_decode_msg_i8b(CanMsgI8B *original, CanFrame *f) {
-    CanMsgI8B decoded = can_decode_msg_i8_b(f);
+void test_decode_msg_i8b(CANMsgI8B *original, CANFrame *f) {
+    CANMsgI8B decoded = can_decode_msg_i8_b(f);
 
     VERIFY_TEST(original->val == decoded.val);
 }
 
-void test_encode_msg_i16b(CanFrame *f) {
-    CanFrame expected = {
+void test_encode_msg_i16b(CANFrame *f) {
+    CANFrame expected = {
         .ide = 0,
         .sid = CAN_MSG_ID_I16_B,
         .data = {0x12, 0x34, 0, 0, 0, 0, 0, 0},
@@ -146,14 +146,14 @@ void test_encode_msg_i16b(CanFrame *f) {
     VERIFY_TEST(compare_frames(f, &expected));
 }
 
-void test_decode_msg_i16b(CanMsgI16B *original, CanFrame *f) {
-    CanMsgI16B decoded = can_decode_msg_i16_b(f);
+void test_decode_msg_i16b(CANMsgI16B *original, CANFrame *f) {
+    CANMsgI16B decoded = can_decode_msg_i16_b(f);
 
     VERIFY_TEST(original->val == decoded.val);
 }
 
-void test_encode_msg_i32b(CanFrame *f) {
-    CanFrame expected = {
+void test_encode_msg_i32b(CANFrame *f) {
+    CANFrame expected = {
         .ide = 0,
         .sid = CAN_MSG_ID_I32_B,
         .data = {0x12, 0x34, 0x56, 0x78, 0, 0, 0, 0},
@@ -162,14 +162,14 @@ void test_encode_msg_i32b(CanFrame *f) {
     VERIFY_TEST(compare_frames(f, &expected));
 }
 
-void test_decode_msg_i32b(CanMsgI32B *original, CanFrame *f) {
-    CanMsgI32B decoded = can_decode_msg_i32_b(f);
+void test_decode_msg_i32b(CANMsgI32B *original, CANFrame *f) {
+    CANMsgI32B decoded = can_decode_msg_i32_b(f);
 
     VERIFY_TEST(original->val == decoded.val);
 }
 
-void test_encode_msg_i64b(CanFrame *f) {
-    CanFrame expected = {
+void test_encode_msg_i64b(CANFrame *f) {
+    CANFrame expected = {
         .ide = 0,
         .sid = CAN_MSG_ID_I64_B,
         .data = {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0},
@@ -178,16 +178,16 @@ void test_encode_msg_i64b(CanFrame *f) {
     VERIFY_TEST(compare_frames(f, &expected));
 }
 
-void test_decode_msg_i64b(CanMsgI64B *original, CanFrame *f) {
-    CanMsgI64B decoded = can_decode_msg_i64_b(f);
+void test_decode_msg_i64b(CANMsgI64B *original, CANFrame *f) {
+    CANMsgI64B decoded = can_decode_msg_i64_b(f);
 
     VERIFY_TEST(original->val == decoded.val);
 }
 
-void test_encode_msg_f32b(CanFrame *f) {
+void test_encode_msg_f32b(CANFrame *f) {
     F32 v = {.f = 7.45f};
 
-    CanFrame expected = {
+    CANFrame expected = {
         .ide = 0,
         .sid = CAN_MSG_ID_F32_B,
         .data = {v.i >> 24, v.i >> 16, v.i >> 8, v.i, 0, 0, 0, 0},
@@ -196,16 +196,16 @@ void test_encode_msg_f32b(CanFrame *f) {
     VERIFY_TEST(compare_frames(f, &expected));
 }
 
-void test_decode_msg_f32b(CanMsgF32B *original, CanFrame *f) {
-    CanMsgF32B decoded = can_decode_msg_f32_b(f);
+void test_decode_msg_f32b(CANMsgF32B *original, CANFrame *f) {
+    CANMsgF32B decoded = can_decode_msg_f32_b(f);
 
     VERIFY_TEST(original->val == decoded.val);
 }
 
-void test_encode_msg_f64b(CanFrame *f) {
+void test_encode_msg_f64b(CANFrame *f) {
     F64 v = {.d = 7.4572418329};
 
-    CanFrame expected = {
+    CANFrame expected = {
         .ide = 0,
         .sid = CAN_MSG_ID_F64_B,
         .data = {v.i >> 56, v.i >> 48, v.i >> 40, v.i >> 32, v.i >> 24, v.i >> 16, v.i >> 8, v.i},
@@ -214,8 +214,8 @@ void test_encode_msg_f64b(CanFrame *f) {
     VERIFY_TEST(compare_frames(f, &expected));
 }
 
-void test_decode_msg_f64b(CanMsgF64B *original, CanFrame *f) {
-    CanMsgF64B decoded = can_decode_msg_f64_b(f);
+void test_decode_msg_f64b(CANMsgF64B *original, CANFrame *f) {
+    CANMsgF64B decoded = can_decode_msg_f64_b(f);
 
     VERIFY_TEST(original->val == decoded.val);
 }
@@ -223,27 +223,27 @@ void test_decode_msg_f64b(CanMsgF64B *original, CanFrame *f) {
 int main() {
     printf("Running Tests...\n\n");
 
-    CanMsgU8B msg_u8b = {.val = 0x12};
-    CanMsgU16B msg_u16b = {.val = 0x1234};
-    CanMsgU32B msg_u32b = {.val = 0x12345678};
-    CanMsgU64B msg_u64b = {.val = 0x123456789abcdef0};
-    CanMsgI8B msg_i8b = {.val = 0x12};
-    CanMsgI16B msg_i16b = {.val = 0x1234};
-    CanMsgI32B msg_i32b = {.val = 0x12345678};
-    CanMsgI64B msg_i64b = {.val = 0x123456789abcdef0};
-    CanMsgF32B msg_f32b = {.val = 7.45};
-    CanMsgF64B msg_f64b = {.val = 7.4572418329};
+    CANMsgU8B msg_u8b = {.val = 0x12};
+    CANMsgU16B msg_u16b = {.val = 0x1234};
+    CANMsgU32B msg_u32b = {.val = 0x12345678};
+    CANMsgU64B msg_u64b = {.val = 0x123456789abcdef0};
+    CANMsgI8B msg_i8b = {.val = 0x12};
+    CANMsgI16B msg_i16b = {.val = 0x1234};
+    CANMsgI32B msg_i32b = {.val = 0x12345678};
+    CANMsgI64B msg_i64b = {.val = 0x123456789abcdef0};
+    CANMsgF32B msg_f32b = {.val = 7.45};
+    CANMsgF64B msg_f64b = {.val = 7.4572418329};
 
-    CanFrame frame_u8b = can_encode_msg_u8_b(&msg_u8b);
-    CanFrame frame_u16b = can_encode_msg_u16_b(&msg_u16b);
-    CanFrame frame_u32b = can_encode_msg_u32_b(&msg_u32b);
-    CanFrame frame_u64b = can_encode_msg_u64_b(&msg_u64b);
-    CanFrame frame_i8b = can_encode_msg_i8_b(&msg_i8b);
-    CanFrame frame_i16b = can_encode_msg_i16_b(&msg_i16b);
-    CanFrame frame_i32b = can_encode_msg_i32_b(&msg_i32b);
-    CanFrame frame_i64b = can_encode_msg_i64_b(&msg_i64b);
-    CanFrame frame_f32b = can_encode_msg_f32_b(&msg_f32b);
-    CanFrame frame_f64b = can_encode_msg_f64_b(&msg_f64b);
+    CANFrame frame_u8b = can_encode_msg_u8_b(&msg_u8b);
+    CANFrame frame_u16b = can_encode_msg_u16_b(&msg_u16b);
+    CANFrame frame_u32b = can_encode_msg_u32_b(&msg_u32b);
+    CANFrame frame_u64b = can_encode_msg_u64_b(&msg_u64b);
+    CANFrame frame_i8b = can_encode_msg_i8_b(&msg_i8b);
+    CANFrame frame_i16b = can_encode_msg_i16_b(&msg_i16b);
+    CANFrame frame_i32b = can_encode_msg_i32_b(&msg_i32b);
+    CANFrame frame_i64b = can_encode_msg_i64_b(&msg_i64b);
+    CANFrame frame_f32b = can_encode_msg_f32_b(&msg_f32b);
+    CANFrame frame_f64b = can_encode_msg_f64_b(&msg_f64b);
 
     printf("\033[34m\nRunning Encoding Tests on Big Endian...\033[0m\n\n");
 

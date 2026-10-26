@@ -32,12 +32,12 @@ class Method:
 
     name: str
     id: int
-    input: str
+    input: Optional[str]
     output: str
     meta: Optional[MetaData] = field(skip=True)
 
     def __init__(
-        self, name: str, id: int, input: str, output: str, meta: Optional[MetaData]
+        self, name: str, id: int, input: Optional[str], output: str, meta: Optional[MetaData]
     ) -> None:
         self.name = name
         self.id = id
@@ -51,8 +51,10 @@ class Method:
         return to_snake_case(self.name)
 
     @property
-    def input_snake(self) -> str:
+    def input_snake(self) -> Optional[str]:
         """Convert the method input to snake case."""
+        if self.input is None:
+            return None
         return to_snake_case(self.input)
 
     @property
