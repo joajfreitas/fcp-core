@@ -132,7 +132,7 @@ fcp_parser = Lark(
     %ignore COMMENT
     """,
     propagate_positions=True,
-    maybe_placeholders=True
+    maybe_placeholders=True,
 )
 
 

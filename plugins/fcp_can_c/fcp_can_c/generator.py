@@ -73,17 +73,25 @@ class Generator(CodeGenerator):
         for filename, contents in writer.generate_static_files():
             files.append(to_dict("file", f"{base_dir}/{filename}", contents))
 
-        for filename, protocol, contents  in writer.generate_device_headers():
-            files.append(to_dict("file", f"{base_dir}/{filename}_{protocol}.h", contents))
+        for filename, protocol, contents in writer.generate_device_headers():
+            files.append(
+                to_dict("file", f"{base_dir}/{filename}_{protocol}.h", contents)
+            )
 
         for filename, protocol, contents in writer.generate_device_sources():
-            files.append(to_dict("file", f"{base_dir}/{filename}_{protocol}.c", contents))
+            files.append(
+                to_dict("file", f"{base_dir}/{filename}_{protocol}.c", contents)
+            )
 
         for filename, protocol, contents in writer.generate_rpc_headers():
-            files.append(to_dict("file", f"{base_dir}/{filename}_{protocol}_rpc.h", contents))
+            files.append(
+                to_dict("file", f"{base_dir}/{filename}_{protocol}_rpc.h", contents)
+            )
 
         for filename, protocol, contents in writer.generate_rpc_sources():
-            files.append(to_dict("file", f"{base_dir}/{filename}_{protocol}_rpc.c", contents))
+            files.append(
+                to_dict("file", f"{base_dir}/{filename}_{protocol}_rpc.c", contents)
+            )
 
         return files
 

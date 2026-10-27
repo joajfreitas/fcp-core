@@ -328,7 +328,7 @@ def initialize_can_data(
     devices: List[CanNode] = []
     rpc: List[CanMessage] = []
     rpc_structs: Dict[str, Dict[str, List[CanMessage]]] = {}
-    device_rpcs: Dict[str ,List[CanMessage]] = {}
+    device_rpcs: Dict[str, List[CanMessage]] = {}
 
     encoder = make_encoder(
         "packed",
@@ -342,12 +342,7 @@ def initialize_can_data(
         values = {v.name: v.value for v in enum.enumeration}
         enums.append(Enum(name=enum.name, values=values))
 
-    devices.append(
-        CanNode(
-            "global",
-            []
-        )
-    )
+    devices.append(CanNode("global", []))
 
     device_rpc_info: Dict[
         str, Dict[str, Dict[str, Optional[int | bool | List[str]]]]
@@ -622,7 +617,11 @@ def initialize_can_data(
                             impl = default_impl_by_name.get(struct_name)
                             if impl is None:
                                 impl = next(
-                                    (ext for ext in fcp.impls if ext.name == struct_name),
+                                    (
+                                        ext
+                                        for ext in fcp.impls
+                                        if ext.name == struct_name
+                                    ),
                                     None,
                                 )
 
@@ -639,13 +638,18 @@ def initialize_can_data(
                         if key in rpc_messages:
                             continue
 
-                        method_id, service_id = next((aux.id, service.id) for service in fcp.services for aux in service.methods if aux.name == method.name)
+                        method_id, service_id = next(
+                            (aux.id, service.id)
+                            for service in fcp.services
+                            for aux in service.methods
+                            if aux.name == method.name
+                        )
 
                         message = CanMessage(
                             frame_id=cast(int, frame_id),
                             name_pascal=name,
                             name_struct=struct_name,
-                            dlc=dlc+2,
+                            dlc=dlc + 2,
                             method_id=method_id,
                             service_id=service_id,
                             signals=signals,
@@ -728,7 +732,9 @@ class CanCWriter:
         """
         enums_exists = any(self.enums)
         messages_global = any(self.device_messages.get("global", []))
-        global_device_exists = any(device.name == "global" for device in self.devices) and (enums_exists or messages_global)
+        global_device_exists = any(
+            device.name == "global" for device in self.devices
+        ) and (enums_exists or messages_global)
 
         for device in self.devices:
             device_name = device.name
@@ -750,8 +756,8 @@ class CanCWriter:
                         include_global=device_name != "global" and global_device_exists,
                         is_global_device=device_name == "global",
                         enums=enums_to_include,
-                        ),
-                    )
+                    ),
+                )
 
             messages = [message for message in all_messages if message.is_can_2b]
 
@@ -805,8 +811,8 @@ class CanCWriter:
                         messages=messages,
                         can_mode=True,
                         protocol="can2b",
-                        ),
-                    )
+                    ),
+                )
 
     def generate_rpc_headers(self) -> Generator[Tuple[str, str, str], None, None]:
         """Generate C header files for devices with RPC.
@@ -835,8 +841,10 @@ class CanCWriter:
             rpc = self.device_rpcs.get(device_name, {})
 
             messages = [message for message in rpc if not message.is_can_2b]
-            rpc_struct = self.rpc_structs[device.name].get('can')
-            rpc_block = next((aux for aux in device.rpc_block if not aux.rpc_can_mode), None)
+            rpc_struct = self.rpc_structs[device.name].get("can")
+            rpc_block = next(
+                (aux for aux in device.rpc_block if not aux.rpc_can_mode), None
+            )
 
             if messages and rpc_block and rpc_struct:
                 yield (
@@ -852,15 +860,17 @@ class CanCWriter:
                         can_mode=False,
                         protocol="can",
                         services=self.services,
-                        ),
-                    )
+                    ),
+                )
             else:
                 pass
 
             messages = [message for message in rpc if message.is_can_2b]
-            rpc_struct = self.rpc_structs[device.name].get('can2b')
-            rpc_block = next((aux for aux in device.rpc_block if aux.rpc_can_mode), None)
-            
+            rpc_struct = self.rpc_structs[device.name].get("can2b")
+            rpc_block = next(
+                (aux for aux in device.rpc_block if aux.rpc_can_mode), None
+            )
+
             if messages and rpc_block and rpc_struct:
                 yield (
                     device_name,
@@ -875,8 +885,8 @@ class CanCWriter:
                         can_mode=True,
                         protocol="can2b",
                         services=self.services,
-                        ),
-                    )
+                    ),
+                )
             else:
                 pass
 
@@ -887,15 +897,15 @@ class CanCWriter:
             Generator: Tuple containing the device name and the file content.
 
         """
-        for device_name in self._devices_with_rpc:       
+        for device_name in self._devices_with_rpc:
             device = next(aux for aux in self.devices if aux.name == device_name)
-                    
+
             rpcs = self.device_rpcs.get(device_name, {})
-        
+
             rpc = [message for message in rpcs if not message.is_can_2b]
-            rpc_struct = self.rpc_structs[device_name].get('can')
-            rpc_block = next((aux for aux in device.rpc_block if not aux.rpc_can_mode), None) # type: ignore
-        
+            rpc_struct = self.rpc_structs[device_name].get("can")
+            rpc_block = next((aux for aux in device.rpc_block if not aux.rpc_can_mode), None)  # type: ignore
+
             if rpc and rpc_block and rpc_struct:
                 yield (
                     device_name,
@@ -910,15 +920,15 @@ class CanCWriter:
                         can_mode=False,
                         protocol="can",
                         services=self.services,
-                        ),
-                    )
+                    ),
+                )
             else:
                 pass
-        
+
             rpc = [message for message in rpcs if message.is_can_2b]
-            rpc_struct = self.rpc_structs[device_name].get('can2b')
-            rpc_block = next((aux for aux in device.rpc_block if aux.rpc_can_mode), None) # type: ignore
-                    
+            rpc_struct = self.rpc_structs[device_name].get("can2b")
+            rpc_block = next((aux for aux in device.rpc_block if aux.rpc_can_mode), None)  # type: ignore
+
             if rpc and rpc_block and rpc_struct:
                 yield (
                     device_name,
@@ -933,7 +943,7 @@ class CanCWriter:
                         can_mode=True,
                         protocol="can2b",
                         services=self.services,
-                        ),
-                    )
+                    ),
+                )
             else:
                 pass
