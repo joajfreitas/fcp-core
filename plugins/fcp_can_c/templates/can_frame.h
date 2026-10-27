@@ -8,9 +8,10 @@ typedef struct _can_frame {
     uint16_t sid : 11;
     uint32_t eid : 18;
     uint8_t dlc : 4;
-    uint8_t data[8];
+    uint8_t data[8] __attribute__((aligned(2)));
 } CANFrame;
 
 typedef struct _can_frame CAN2BFrame;
+typedef struct _can_frame CANdata;
 
 #endif

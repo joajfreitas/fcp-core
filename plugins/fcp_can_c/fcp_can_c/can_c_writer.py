@@ -736,7 +736,7 @@ class CanCWriter:
 
             enums_to_include = self.enums if device_name == "global" else []
 
-            messages = [message for message in all_messages if message.is_can_2b == False]
+            messages = [message for message in all_messages if not message.is_can_2b]
 
             if messages or (device_name == "global" and enums_to_include):
                 yield (
@@ -753,7 +753,7 @@ class CanCWriter:
                         ),
                     )
 
-            messages = [message for message in all_messages if message.is_can_2b == True]
+            messages = [message for message in all_messages if message.is_can_2b]
 
             if messages or (device_name == "global" and enums_to_include):
                 yield (
@@ -778,7 +778,7 @@ class CanCWriter:
 
         """
         for device_name, all_messages in self.device_messages.items():
-            messages = [message for message in all_messages if message.is_can_2b == False]
+            messages = [message for message in all_messages if not message.is_can_2b]
 
             if messages:
                 yield (
@@ -793,7 +793,7 @@ class CanCWriter:
                     ),
                 )
 
-            messages = [message for message in all_messages if message.is_can_2b == True]
+            messages = [message for message in all_messages if message.is_can_2b]
 
             if messages:
                 yield (
@@ -834,9 +834,9 @@ class CanCWriter:
 
             rpc = self.device_rpcs.get(device_name, {})
 
-            messages = [message for message in rpc if message.is_can_2b == False]
+            messages = [message for message in rpc if not message.is_can_2b]
             rpc_struct = self.rpc_structs[device.name].get('can')
-            rpc_block = next((aux for aux in device.rpc_block if aux.rpc_can_mode == False), None)
+            rpc_block = next((aux for aux in device.rpc_block if not aux.rpc_can_mode), None)
 
             if messages and rpc_block and rpc_struct:
                 yield (
@@ -857,9 +857,9 @@ class CanCWriter:
             else:
                 pass
 
-            messages = [message for message in rpc if message.is_can_2b == True]
+            messages = [message for message in rpc if message.is_can_2b]
             rpc_struct = self.rpc_structs[device.name].get('can2b')
-            rpc_block = next((aux for aux in device.rpc_block if aux.rpc_can_mode == True), None)
+            rpc_block = next((aux for aux in device.rpc_block if aux.rpc_can_mode), None)
             
             if messages and rpc_block and rpc_struct:
                 yield (
@@ -892,9 +892,9 @@ class CanCWriter:
                     
             rpcs = self.device_rpcs.get(device_name, {})
         
-            rpc = [message for message in rpcs if message.is_can_2b == False]
+            rpc = [message for message in rpcs if not message.is_can_2b]
             rpc_struct = self.rpc_structs[device_name].get('can')
-            rpc_block = next((aux for aux in device.rpc_block if aux.rpc_can_mode == False), None) # type: ignore
+            rpc_block = next((aux for aux in device.rpc_block if not aux.rpc_can_mode), None) # type: ignore
         
             if rpc and rpc_block and rpc_struct:
                 yield (
@@ -915,9 +915,9 @@ class CanCWriter:
             else:
                 pass
         
-            rpc = [message for message in rpcs if message.is_can_2b == True]
+            rpc = [message for message in rpcs if message.is_can_2b]
             rpc_struct = self.rpc_structs[device_name].get('can2b')
-            rpc_block = next((aux for aux in device.rpc_block if aux.rpc_can_mode == True), None) # type: ignore
+            rpc_block = next((aux for aux in device.rpc_block if aux.rpc_can_mode), None) # type: ignore
                     
             if rpc and rpc_block and rpc_struct:
                 yield (
