@@ -37,7 +37,12 @@ class Method:
     meta: Optional[MetaData] = field(skip=True)
 
     def __init__(
-        self, name: str, id: int, input: Optional[str], output: str, meta: Optional[MetaData]
+        self,
+        name: str,
+        id: int,
+        input: Optional[str],
+        output: str,
+        meta: Optional[MetaData],
     ) -> None:
         self.name = name
         self.id = id
