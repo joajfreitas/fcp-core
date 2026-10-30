@@ -453,7 +453,7 @@ class PackedEncoder:
                 EnumType(impl.type),  # type: ignore
                 impl,
             )
-        
+
         return self.encoding
 
 
