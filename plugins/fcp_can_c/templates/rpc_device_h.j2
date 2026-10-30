@@ -70,7 +70,6 @@ typedef union {
  * @param response Pointer to the CAN frame that will be filled as the response.
  */
 typedef void (*{{ device_name_pascal }}{{ protocol | upper }}RpcHandler)(const {{ protocol | upper }}Frame *request, {{ protocol | upper }}Frame *response);
-
 /*---------------------------------------- RPC Utility Functions -----------------------------------*/
 
 /**
@@ -88,7 +87,6 @@ void {{ device_name_snake }}_{{ protocol }}_service_dispatch(
     const {{ protocol | upper }}Frame *frame,
     void (*send_func)(const {{ protocol | upper }}Frame *)
 );
-
 /*---------------------------------------- RPC Registration API ------------------------------------*/
 
 /**
@@ -120,7 +118,6 @@ bool {{ device_name_snake }}_{{ protocol }}_rpc_unregister(uint8_t service, uint
  * Should be called once during system startup.
  */
 void {{ device_name_snake }}_{{ protocol }}_rpc_init(void);
-
 /*---------------------------------------- RPC Encode/Decode Structs --------------------------------*/
 {%- for message in rpc_structs +%}
 {% if message.signals[0].name %}
