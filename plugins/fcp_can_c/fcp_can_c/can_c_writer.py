@@ -122,7 +122,7 @@ class CanSignal:
     @property
     def data_snake(self) -> str:
         """Convert the method name to snake case."""
-        return to_snake_case(self.data_type)
+        return str(to_snake_case(self.data_type))
 
 
 @dataclass
