@@ -21,6 +21,7 @@ Directory structure
     │   │       ├── 004_little_endian   - Testing little endian encoding for CAN2A C all data types
     │   │       ├── 005_big_endian      - Testing big endian encoding for CAN2A C all data types
     │   │       ├── 006_rpc_support     - Testing rpc support for CAN2A C
+    │   │       ├── 007_verify_colisions- Test to verify if the hadle function is duplicated in any .h file
     │   │       ├── 007_basic_struct    - Basic struct test for CAN2B C
     │   │       ├── 008_nested_enum     - Nested enum test for CAN2B C
     │   │       ├── 009_msg_scheduling  - Msg scheduling test for CAN2B C
