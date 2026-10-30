@@ -118,9 +118,9 @@ void {{ device_name_snake }}_{{ protocol }}_rpc_init(void);
 typedef struct {
     {% for signal in message.signals %}
     {% if signal.multiplexer_count > 1 %}
-    {{ signal.scalar_type }} {{ signal.name }}[{{ signal.multiplexer_count }}];
+    {{ signal.data_type }} {{ signal.name }}[{{ signal.multiplexer_count }}];
     {% else %}
-    {{ signal.scalar_type }} {{ signal.name }};
+    {{ signal.data_type }} {{ signal.name }};
     {% endif %}
     {% endfor %}
 } {{ protocol | upper }}Rpc{{ message.name_struct }};
