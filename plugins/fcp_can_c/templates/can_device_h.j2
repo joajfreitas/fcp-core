@@ -40,14 +40,20 @@
 {% endif -%}
 
 {% if enums | length > 0 %}
-{% for enum in enums %}
+{%- for enum in enums +%}
 typedef enum {
     {% for name, value in enum.values.items() %}
-    {{ name | upper }} = {{ value }},
+    {% if loop.first %}
+    {{ name }} = {{ value }}{% if not loop.last %},{% endif +%}
+    {% elif (loop.previtem)[1] != value - 1 %}
+    {{ name }} = {{ value }}{% if not loop.last %},{% endif +%}
+    {% else %}
+    {{ name }}{% if not loop.last %},{% endif +%}
+    {% endif %}
     {% endfor %}
 } {{ enum.name }};
 {% endfor %}
-{% endif %}
+{% endif -%}
 
 {% for message in messages %}
 /* {{ message.name_pascal }} message structure */
