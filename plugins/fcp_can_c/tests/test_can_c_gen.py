@@ -47,7 +47,6 @@ def get_path(test_name: str) -> str:
         "007_verify_colisions",
     ],
 )  # type: ignore
-
 def test_can_c_gen(test_name: str) -> None:
     fcp_v2 = get_fcp(Path(get_path(test_name) + "/test.fcp")).unwrap()
     generator = Generator()
