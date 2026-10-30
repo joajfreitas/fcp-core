@@ -32,10 +32,12 @@ class Enumeration:
     """Enum member AST node."""
 
     name: str
-    value: int
+    value: Optional[int]
     meta: Optional[MetaData] = field(default=None, skip=True)
 
-    def __init__(self, name: str, value: int, meta: Optional[MetaData] = None):
+    def __init__(
+        self, name: str, value: Optional[int], meta: Optional[MetaData] = None
+    ):
         self.name = name
         self.value = value
         self.meta = meta

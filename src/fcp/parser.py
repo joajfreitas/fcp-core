@@ -87,7 +87,7 @@ fcp_parser = Lark(
     param_argument: value ","?
 
     enum: "enum" identifier "{" (enum_field ",")* enum_field~0..1 ","? "}"
-    enum_field : identifier "=" value 
+    enum_field : identifier ("=" value)? 
 
     protocol_impl: "impl" identifier ("as" identifier)? "{" (protocol_impl_body ",")* protocol_impl_body ","? "}"
     protocol_impl_body: extension_field | signal_block
@@ -423,7 +423,11 @@ class FcpV2Transformer(Transformer):
     @v_args(tree=True)  # type: ignore
     def enum_field(self, tree: ParseTree) -> enum.Enumeration:
         """Parse an enum_field node of the fcp AST."""
-        name, value = tree.children
+        try:
+            name, value = tree.children
+        except ValueError:
+            name = tree.children[0]
+            value = None
 
         meta = _get_meta(tree, self)
 
@@ -432,7 +436,19 @@ class FcpV2Transformer(Transformer):
     @v_args(tree=True)  # type: ignore
     def enum(self, tree: ParseTree) -> Result[Nil, FcpError]:
         """Parse an enum node of the fcp AST."""
+        last_value = None
         name, *fields = tree.children
+
+        for field in fields:
+            if last_value is None:
+                last_value = field.value if field.value else 0
+                field.value = last_value
+                continue
+            if field.value is not None:
+                last_value = field.value
+                continue
+            field.value = last_value + 1
+            last_value = field.value
 
         meta = _get_meta(tree, self)
         self.fcp.enums.append(enum.Enum(name=name, enumeration=fields, meta=meta))
