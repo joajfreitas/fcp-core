@@ -428,7 +428,7 @@ class FcpV2Transformer(Transformer):
         except ValueError:
             name = tree.children[0]
             value = None
-        
+
         meta = _get_meta(tree, self)
 
         return enum.Enumeration(name=name, value=value, meta=meta)
