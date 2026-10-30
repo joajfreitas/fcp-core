@@ -139,7 +139,6 @@
 {% endmacro -%}
 
 #include "{{ device_name_snake }}_{{ protocol }}_rpc.h"
-#include "{{ device_name_snake }}_{{ protocol }}.h"
 #include "can_signal_parser.h"
 
 #include <string.h>
@@ -177,10 +176,10 @@ bool is_{{ device_name_snake }}_{{ protocol }}_rpc(const {{ protocol | upper }}F
     can_encode_signal_from_uint8_t((signal), 0, 8, 1.0, 0.0, false)
 
 #define can_decode_signal_method_id(rpc) \
-    can_decode_signal_as_uint8_t((rpc), 0, 8, 1.0, 0.0, false)
+    can_decode_signal_as_uint8_t((rpc), 8, 8, 1.0, 0.0, false)
 
 #define can_encode_signal_method_id(signal) \
-    can_encode_signal_from_uint8_t((signal), 0, 8, 1.0, 0.0, false)
+    can_encode_signal_from_uint8_t((signal), 8, 8, 1.0, 0.0, false)
 
 {{ generate_decode_encode_macros(rpc_structs) -}}
 /*---------------------------------------- Decode / Encode RPC Structs -------------------------------*/
