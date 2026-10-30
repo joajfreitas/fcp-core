@@ -36,6 +36,7 @@ from beartype.typing import (
 from math import ceil
 from jinja2 import Environment, FileSystemLoader
 from fcp.specs.v2 import FcpV2
+from fcp.specs.impl import Impl
 from fcp.specs.service import Service
 from dataclasses import dataclass
 from fcp.encoding import make_encoder, EncodeablePiece, Value, PackedEncoderContext
@@ -117,6 +118,11 @@ class CanSignal:
         self.multiplexer_count = (
             len(self.multiplexer_ids) if self.multiplexer_ids else 0
         )
+
+    @property
+    def data_snake(self) -> str:
+        """Convert the method name to snake case."""
+        return to_snake_case(self.data_type)
 
 
 @dataclass
@@ -626,6 +632,17 @@ def initialize_can_data(
                                 )
 
                             if impl is None:
+                                enum = fcp.get_enum(struct_name).unwrap_or(None)
+                                impl = Impl(
+                                        name=enum.name,
+                                        protocol='default',
+                                        type=enum.name,
+                                        fields={},
+                                        signals=[],
+                                        meta=enum.meta,
+                                    ) if enum else None
+
+                            if impl is None:
                                 continue
 
                             encoding = encoder.generate(impl)
@@ -662,10 +679,9 @@ def initialize_can_data(
                         rpc.append(message)
                         device_rpcs[device_name].append(message)
 
-                        if struct_name and not any(
-                            struct_rpc.name_struct == struct_name
-                            for struct_rpc in rpc_structs[device_name][term]
-                        ):
+                        already_inside = any(struct_rpc.name_struct == struct_name for struct_rpc in rpc_structs[device_name][term])
+
+                        if struct_name and not already_inside:
                             rpc_structs[device_name][term].append(message)
 
                         rpc_messages.add(key)

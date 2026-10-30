@@ -1,6 +1,8 @@
 {% macro generate_rpc_decode(content) %}
 {% for message in content %}
-{% if message.senders and message.signals %}
+{% if message.senders and (message.signals | length == 1) and not message.signals[0].name %}
+{{ message.signals[0].data_type }} {{ message.protocol }}_decode_rpc_{{ message.name_snake }}(const {{ protocol | upper }}Frame *rpc);
+{% elif message.senders and message.signals %}
 {{ protocol | upper }}Rpc{{ message.name_struct }} {{ message.protocol }}_decode_rpc_{{ message.name_snake }}(const {{ protocol | upper }}Frame *rpc);
 {% endif %}
 {% endfor %}
@@ -8,7 +10,9 @@
 
 {%- macro generate_rpc_decode_ans(content) %}
 {% for message in content %}
-{% if not message.senders %}
+{% if not message.senders and (message.signals | length == 1) and not message.signals[0].name %}
+{{ message.signals[0].data_type }} {{ message.protocol }}_decode_rpc_{{ message.name_snake }}_ans(const {{ protocol | upper }}Frame *rpc);
+{% elif not message.senders %}
 {{ protocol | upper }}Rpc{{ message.name_struct }} {{ message.protocol }}_decode_rpc_{{ message.name_snake }}_ans(const {{ protocol | upper }}Frame *rpc);
 {% endif %}
 {% endfor %}
@@ -16,7 +20,9 @@
 
 {%- macro generate_rpc_encode(content) %}
 {% for message in content %}
-{% if message.senders and message.signals %}
+{% if message.senders and (message.signals | length == 1) and not message.signals[0].name %}
+{{ protocol | upper }}Frame {{ message.protocol }}_encode_rpc_{{ message.name_snake }}(const {{message.signals[0].data_type}} *rpc);
+{% elif message.senders and message.signals %}
 {{ protocol | upper }}Frame {{ message.protocol }}_encode_rpc_{{ message.name_snake }}(const {{ protocol | upper }}Rpc{{ message.name_struct }} *rpc{% if message.is_multiplexer %}, uint32_t {{ message.multiplexer_signal }}{% endif %});
 {% elif message.senders and not message.signals %}
 {{ protocol | upper }}Frame {{ message.protocol }}_encode_rpc_{{ message.name_snake }}(void);
@@ -26,7 +32,9 @@
 
 {%- macro generate_rpc_encode_ans(content) %}
 {% for message in content %}
-{% if not message.senders %}
+{% if not message.senders and (message.signals | length == 1) and not message.signals[0].name %}
+{{ protocol | upper }}Frame {{ message.protocol }}_encode_rpc_{{ message.name_snake }}_ans(const {{ message.signals[0].data_type }} *rpc);
+{% elif not message.senders %}
 {{ protocol | upper }}Frame {{ message.protocol }}_encode_rpc_{{ message.name_snake }}_ans(const {{ protocol | upper }}Rpc{{ message.name_struct }} *rpc);
 {% endif %}
 {% endfor %}
@@ -115,6 +123,7 @@ void {{ device_name_snake }}_{{ protocol }}_rpc_init(void);
 
 /*---------------------------------------- RPC Encode/Decode Structs --------------------------------*/
 {%- for message in rpc_structs +%}
+{% if message.signals[0].name %}
 typedef struct {
     {% for signal in message.signals %}
     {% if signal.multiplexer_count > 1 %}
@@ -124,6 +133,7 @@ typedef struct {
     {% endif %}
     {% endfor %}
 } {{ protocol | upper }}Rpc{{ message.name_struct }};
+{% endif %}
 {% endfor %}
 /*---------------------------------------- RPC Encode/Decode Rpcs -----------------------------------*/
 {{ generate_rpc_decode(messages) }}
