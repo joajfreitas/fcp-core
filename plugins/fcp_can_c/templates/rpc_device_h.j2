@@ -131,13 +131,13 @@ typedef struct {
 {{ generate_rpc_encode(messages) }}
 {{ generate_rpc_encode_ans(messages) -}}
 /*---------------------------------------- Generated Service Handlers -------------------------------*/
-{% for service in services %}
-{% for method in service.methods %}
+{% for service in messages %}
+{% if service.senders %}
 /**
- * @brief Handler for {{ service.name }}.{{ method.name }} RPC method.
+ * @brief Handler for {{ service.name_pascal }}.{{ service.name_struct }} RPC method.
  */
-void {{ device_name_snake }}_{{ protocol }}_service_handle_{{ method.name_snake }}(const {{ protocol | upper }}Frame *request, {{ protocol | upper }}Frame *response);
-{% endfor %}
+void {{ device_name_snake }}_{{ protocol }}_service_handle_{{ service.name_snake }}(const {{ protocol | upper }}Frame *request, {{ protocol | upper }}Frame *response);
+{% endif %}
 {% endfor %}
 
 #endif /* {{ device_name_upper }}_RPC_H */
