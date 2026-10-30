@@ -633,14 +633,18 @@ def initialize_can_data(
 
                             if impl is None:
                                 enum = fcp.get_enum(struct_name).unwrap_or(None)
-                                impl = Impl(
+                                impl = (
+                                    Impl(
                                         name=enum.name,
-                                        protocol='default',
+                                        protocol="default",
                                         type=enum.name,
                                         fields={},
                                         signals=[],
                                         meta=enum.meta,
-                                    ) if enum else None
+                                    )
+                                    if enum
+                                    else None
+                                )
 
                             if impl is None:
                                 continue
@@ -679,7 +683,10 @@ def initialize_can_data(
                         rpc.append(message)
                         device_rpcs[device_name].append(message)
 
-                        already_inside = any(struct_rpc.name_struct == struct_name for struct_rpc in rpc_structs[device_name][term])
+                        already_inside = any(
+                            struct_rpc.name_struct == struct_name
+                            for struct_rpc in rpc_structs[device_name][term]
+                        )
 
                         if struct_name and not already_inside:
                             rpc_structs[device_name][term].append(message)
