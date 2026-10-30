@@ -1,0 +1,82 @@
+version: "3"
+
+enum CalibrateSelec {
+    Calibrate_all = 0,
+    Calibrate_left = 1,
+    Calibrate_right = 2,
+}
+
+enum Return {
+    Sucess = 0,
+    Error = 1
+}
+
+enum Status {
+    Off = 0,
+    On = 1
+}
+
+enum DashLeds {
+    RTD = 0,
+    TSOFF = 1,
+    AMS = 2,
+    IMD = 3,
+    JARDA = 4,
+    EBS = 5
+}
+
+struct SuspotRearPot {
+    rl_pot_adc @0: u16,
+    rr_pot_adc @1: u16,
+    rl_pot_travel @2: i16,
+    rr_pot_travel @3: i16,
+}
+
+struct SuspotFrontPot {
+    fl_pot_adc @0: u16,
+    fr_pot_adc @1: u16,
+    fl_pot_travel @2: i16,
+    fr_pot_travel @3: i16,
+}
+
+struct SelectPot {
+    pot @0: CalibrateSelec
+}
+
+struct ReturnValue {
+    value @0: Return
+}
+
+struct SelectLed {
+    status @0: Status,
+    led_id @1: DashLeds
+}
+
+struct ChangeMode {
+    status @0: Status
+}
+
+service SuspotCalibrate @0 {
+    method CalibratePots(SelectPot) @0 returns ReturnValue
+}
+
+service LedStats @1 {
+    method ChangeLedStatus(SelectLed) @0 returns ReturnValue,
+    method SnakeLeds(ChangeMode) @1 returns ReturnValue
+}
+
+device suspot {
+    protocol can {
+        impl SuspotRearPot { id: 10, },
+        impl SuspotFrontPot { id: 11, },
+        rpc { request_id: 1025, response_id: 1026, },
+        services: [SuspotCalibrate],
+    },
+}
+
+device dash {
+    protocol can {    
+        rpc { request_id: 125, response_id: 126, },
+        services: [LedStats],
+    }
+}
