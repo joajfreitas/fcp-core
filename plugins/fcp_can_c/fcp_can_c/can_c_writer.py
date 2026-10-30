@@ -718,7 +718,12 @@ class CanCWriter:
             Generator: Tuple containing the file name and the file content.
 
         """
-        static_files = ["can_frame.h", "can_signal_parser.h", "can_signal_parser.c"]
+        static_files = [
+            "can_frame.h",
+            "can_signal_parser.h",
+            "can_signal_parser.c",
+            "module.mk",
+        ]
         for file in static_files:
             with open(f"{self.templates_dir}/{file}", "r") as f:
                 yield file, f.read()
