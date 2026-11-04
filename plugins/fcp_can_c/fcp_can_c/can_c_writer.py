@@ -186,7 +186,6 @@ class Enum:
     name: str
     values: Dict[str, int | None]
 
-
 class CanRpc:
     """Class to represent an RPC block."""
 
@@ -445,7 +444,7 @@ def initialize_can_data(fcp: FcpV2) -> CanData:
 
         service_protocol = device_services.get(dev.name, {})
 
-        for protocol, service_name in service_protocol.items():
+        for _, service_name in service_protocol.items():
             for service in service_name:
                 service_devices.setdefault(service, []).append(dev.name)
 
@@ -553,7 +552,7 @@ def initialize_can_data(fcp: FcpV2) -> CanData:
                         key = (name, struct_name, cast(int, frame_id), direction)
                         if key in rpc_messages:
                             continue
-                
+                     
                         message = CanMessage(
                             frame_id=cast(int, frame_id),
                             name_pascal=name,
@@ -566,10 +565,10 @@ def initialize_can_data(fcp: FcpV2) -> CanData:
                             protocol=protocol,
                             period=-1,
                             is_can_2b=bool(rpc_can_mode),
-                        )
+                        )         
                 
                         rpc.append(message)
-                        device_rpcs[device_name].append(message)
+                        device_rpcs[device_name].append(message)         
                 
                         if struct_name and not any(
                             struct_rpc.name_struct == struct_name
@@ -616,6 +615,7 @@ class CanCWriter:
             "device_rpc_h": self.env.get_template("rpc_device_h.j2"),
             "device_rpc_c": self.env.get_template("rpc_device_c.j2"),
         }
+        self.device_messages = map_messages_to_devices(self.can_data.messages)
         self.device_messages = map_messages_to_devices(self.can_data.messages)
 
     def generate_static_files(self) -> Generator[Tuple[str, str], None, None]:
@@ -809,7 +809,6 @@ class CanCWriter:
             Generator: Tuple containing the device name and the file content.
 
         """
-        breakpoint()
         for device_name in self._devices_with_rpc:
             device = next(aux for aux in self.can_data.devices if aux.name == device_name)
 

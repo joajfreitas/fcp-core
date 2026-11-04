@@ -12,6 +12,5 @@ typedef struct _can_frame {
 } CANFrame;
 
 typedef struct _can_frame CAN2BFrame;
-typedef struct _can_frame CANdata;
 
 #endif
