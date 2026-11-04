@@ -167,13 +167,24 @@ class CanMessage:
                     self.multiplexer_signal = to_snake_case(signal.multiplexer_signal)
                     self.is_multiplexer = True
 
+@dataclass
+class CanData:
+    """Class to represent a CAN data."""
+
+    enums: List[Enum]
+    devices: List[CanNode]
+    messages: List[CanMessage]
+    device_rpcs: Dict[str, List[CanMessage]]
+    rpc: List[CanMessage]
+    rpc_structs: Dict[str, Dict[str, List[CanMessage]]]
+    services: List[Service]
 
 @dataclass
 class Enum:
     """Class to represent an enum."""
 
     name: str
-    values: Dict[str, int]
+    values: Dict[str, int | None]
 
 
 class CanRpc:
@@ -309,17 +320,7 @@ def map_messages_to_devices(messages: List[CanMessage]) -> Dict[str, List[CanMes
     return device_messages
 
 
-def initialize_can_data(
-    fcp: FcpV2,
-) -> Tuple[
-    List[Enum],
-    List[CanNode],
-    List[CanMessage],
-    Dict[str, List[CanMessage]],
-    List[CanMessage],
-    Dict[str, Dict[str, List[CanMessage]]],
-    List[Service],
-]:
+def initialize_can_data(fcp: FcpV2) -> CanData:
     """Initialize CAN data from an FCP.
 
     Args:
@@ -332,6 +333,7 @@ def initialize_can_data(
     enums = []
     messages = []
     devices: List[CanNode] = []
+    devices_map: Dict[str, CanNode] = {}
     rpc: List[CanMessage] = []
     rpc_structs: Dict[str, Dict[str, List[CanMessage]]] = {}
     device_rpcs: Dict[str, List[CanMessage]] = {}
@@ -344,11 +346,13 @@ def initialize_can_data(
         .with_preserve_nested_structs(True),
     )
 
-    for enum in fcp.enums:
-        values = {v.name: v.value for v in enum.enumeration}
-        enums.append(Enum(name=enum.name, values=values))
+    enums = [
+        Enum(name=enum.name, values={v.name: v.value for v in enum.enumeration})
+        for enum in fcp.enums
+    ]
 
     devices.append(CanNode("global", []))
+    devices_map.setdefault("global", CanNode("global", []))
 
     device_rpc_info: Dict[
         str, Dict[str, Dict[str, Optional[int | bool | List[str]]]]
@@ -359,11 +363,45 @@ def initialize_can_data(
     can_impl_device_by_type: Dict[str, str] = {}
     default_impl_by_name: Dict[str, Any] = {}
 
+    def get_or_devices(device_name: str) -> CanNode:
+        if device_name not in devices_map:
+            node = CanNode(device_name, [])
+            node.services = device_services.get(device_name, {})
+            devices_map[device_name] = node
+            devices.append(node)
+        return devices_map[device_name]
+
+    def register_rpc(dev_name: str, protocol: str, get_id: Optional[int], ans_id: Optional[int], can_mode: bool):
+        node = get_or_devices(dev_name)
+        protocols = {rpc.protocol for rpc in node.rpc_block} if node.rpc_block else set()
+
+        if protocol not in protocols:
+            if node.rpc_block is None:
+                node.rpc_block = []
+            node.rpc_block.append(CanRpc(
+                rpc_get_id=get_id,
+                rpc_ans_id=ans_id,
+                rpc_can_mode=can_mode,
+                protocol=protocol,
+            ))
+
+    def get_dlc_signals(struct_name: Optional[str]) -> Tuple[Any, int]:
+        if not struct_name:
+            return None, 0
+        
+        impl = default_impl_by_name.get(struct_name) or next((ext for ext in fcp.impls if ext.name == struct_name),None)
+                        
+        if impl is None:
+            return None, -1
+                        
+        encoding = encoder.generate(impl)
+        return create_can_signals(encoding, fcp)
+    
+
     for dev in fcp.devices:
         rpc_get_id: Optional[int] = None
         rpc_ans_id: Optional[int] = None
         rpc_can_mode: Optional[bool] = None
-        can_mode = False
 
         device_services.setdefault(dev.name, {})
         device_rpc_info.setdefault(dev.name, {})
@@ -371,91 +409,45 @@ def initialize_can_data(
         protocols = (
             dev.fields.get("protocols") if isinstance(dev.fields, dict) else None
         )
-        if isinstance(protocols, dict) and isinstance(protocols.get("can"), dict):
-            can_protocol = cast(Dict[str, Any], protocols["can"])
 
-            for impl_binding in cast(
-                List[Dict[str, Any]], can_protocol.get("impls", [])
-            ):
-                binding_name = impl_binding.get("name")
-                binding_type = impl_binding.get("type")
-                if isinstance(binding_name, str):
-                    can_impl_device_by_name.setdefault(binding_name, dev.name)
-                if isinstance(binding_type, str):
-                    can_impl_device_by_type.setdefault(binding_type, dev.name)
+        if isinstance(protocols, dict):
+            for name, values in protocols.items():
+                if not isinstance(values, dict):
+                    continue
+        
+                for impl_binding in cast(
+                    List[Dict[str, Any]], values.get("impls", [])
+                ):
+                    binding_name = impl_binding.get("name")
+                    binding_type = impl_binding.get("type")
+                    if isinstance(binding_name, str):
+                        can_impl_device_by_name.setdefault(binding_name, dev.name)
+                    if isinstance(binding_type, str):
+                        can_impl_device_by_type.setdefault(binding_type, dev.name)
+        
+                rpc_block = cast(Dict[str, Any], values.get("rpc", {}))
+                request_id = rpc_block.get("request_id")
+                response_id = rpc_block.get("response_id")
 
-            rpc_block = cast(Dict[str, Any], can_protocol.get("rpc", {}))
-            request_id = rpc_block.get("request_id")
-            response_id = rpc_block.get("response_id")
-
-            if isinstance(request_id, int):
-                rpc_get_id = request_id
-            if isinstance(response_id, int):
-                rpc_ans_id = response_id
-
-            protocol_fields = cast(Dict[str, Any], can_protocol.get("fields", {}))
-            services_from_protocol = protocol_fields.get("services")
-            if isinstance(services_from_protocol, list):
-                device_services[dev.name].setdefault("can", services_from_protocol)
-
-            device_rpc_info[dev.name].setdefault(
-                "can",
-                {
-                    "rpc_get_id": rpc_get_id,
-                    "rpc_ans_id": rpc_ans_id,
-                    "rpc_can_mode": can_mode,
-                    "rpc_services": services_from_protocol,
-                },
-            )
-
-        if isinstance(protocols, dict) and isinstance(protocols.get("can2b"), dict):
-            can_protocol = cast(Dict[str, Any], protocols["can2b"])
-            rpc_get_id = None
-            rpc_ans_id = None
-            can_mode = True
-
-            for impl_binding in cast(
-                List[Dict[str, Any]], can_protocol.get("impls", [])
-            ):
-                binding_name = impl_binding.get("name")
-                binding_type = impl_binding.get("type")
-                if isinstance(binding_name, str):
-                    can_impl_device_by_name.setdefault(binding_name, dev.name)
-                if isinstance(binding_type, str):
-                    can_impl_device_by_type.setdefault(binding_type, dev.name)
-
-            rpc_block = cast(Dict[str, Any], can_protocol.get("rpc", {}))
-            request_id = rpc_block.get("request_id")
-            response_id = rpc_block.get("response_id")
-
-            if isinstance(request_id, int):
-                rpc_get_id = request_id
-            if isinstance(response_id, int):
-                rpc_ans_id = response_id
-
-            protocol_fields = cast(Dict[str, Any], can_protocol.get("fields", {}))
-            services_from_protocol = protocol_fields.get("services")
-            if isinstance(services_from_protocol, list):
-                device_services[dev.name].setdefault("can2b", services_from_protocol)
-
-            device_rpc_info[dev.name].setdefault(
-                "can2b",
-                {
-                    "rpc_get_id": rpc_get_id,
-                    "rpc_ans_id": rpc_ans_id,
-                    "rpc_can_mode": can_mode,
-                    "rpc_services": services_from_protocol,
-                },
-            )
+                services_from_protocol = cast(Dict[str, Any], values.get("fields", {})).get("services", [])
+                if isinstance(services_from_protocol, list):
+                    device_services[dev.name].setdefault(name, services_from_protocol)
+        
+                device_rpc_info[dev.name].setdefault(
+                    name,
+                    {
+                        "rpc_get_id": request_id if isinstance(request_id, int) else None,
+                        "rpc_ans_id": response_id if isinstance(response_id, int) else None,
+                        "rpc_can_mode": name == "can2b",
+                        "rpc_services": services_from_protocol,
+                    },
+                )
 
         service_protocol = device_services.get(dev.name, {})
 
-        for service_name in service_protocol.get("can", []):
-            service_devices.setdefault(service_name, []).append(dev.name)
-        for service_name in service_protocol.get("can2b", []):
-            service_devices.setdefault(service_name, []).append(dev.name)
-
-    used_devices = {"global"}
+        for protocol, service_name in service_protocol.items():
+            for service in service_name:
+                service_devices.setdefault(service, []).append(dev.name)
 
     for extension in fcp.impls:
         if extension.protocol == "default":
@@ -468,68 +460,36 @@ def initialize_can_data(
     ]
 
     for extension in extensions:
-        if extension.protocol == "can2b":
-            can_mode = True
-        else:
-            can_mode = False
+        can_mode = extension.protocol == "can2b"
 
-        encoding = encoder.generate(extension)
-        signals, dlc = create_can_signals(encoding, fcp)
+        signals, dlc = get_dlc_signals(extension.name)
 
         frame_id = extension.fields.get("id")
         period = extension.fields.get("period")
 
-        device_name: Optional[str] = extension.fields.get("device")
-        if not isinstance(device_name, str):
-            device_name = can_impl_device_by_name.get(extension.name)
-        if not isinstance(device_name, str):
-            device_name = can_impl_device_by_type.get(extension.type)
-        if not isinstance(device_name, str):
-            device_name = "global"
+        dev_field = extension.fields.get("device")
+        device_name = dev_field if isinstance(dev_field, str) else None
+        
+        if not device_name:
+            device_name = (
+                can_impl_device_by_name.get(extension.name) or
+                can_impl_device_by_type.get(extension.type) or
+                "global"
+            )
 
         rpc_protocols = device_rpc_info.get(device_name, {})
         ids = rpc_protocols.get(extension.protocol)
-        rpc_ids = ids if isinstance(ids, dict) else {}
 
-        get_id = rpc_ids.get("rpc_get_id")
-        ans_id = rpc_ids.get("rpc_ans_id")
+        get_id = ids.get("rpc_get_id") if isinstance(ids, dict) else None
+        ans_id = ids.get("rpc_ans_id") if isinstance(ids, dict) else None
 
         rpc_get_id = get_id if isinstance(get_id, int) else None
         rpc_ans_id = ans_id if isinstance(ans_id, int) else None
 
-        device = next((dev for dev in devices if dev.name == device_name), None)
-        protocols = (
-            [rpc.protocol for rpc in device.rpc_block]
-            if device and device.rpc_block
-            else []
-        )
-        if device_name not in used_devices:
-            node = CanNode(
-                device_name,
-                [
-                    CanRpc(
-                        rpc_get_id=rpc_get_id,
-                        rpc_ans_id=rpc_ans_id,
-                        rpc_can_mode=can_mode,
-                        protocol=extension.protocol,
-                    )
-                ],
-            )
-            node.services = device_services.get(device_name, {})
-            devices.append(node)
-            used_devices.add(device_name)
-        elif (
-            device is not None
-            and extension.protocol not in protocols
-            and device.rpc_block is not None
-        ):
-            device.rpc_block.append(
-                CanRpc(
-                    rpc_get_id=rpc_get_id,
-                    rpc_ans_id=rpc_ans_id,
-                    rpc_can_mode=can_mode,
-                    protocol=extension.protocol,
-                )
+        register_rpc(device_name, extension.protocol,
+                get_id if isinstance(get_id, int) else None,
+                ans_id if isinstance(ans_id, int) else None,
+                can_mode
             )
 
         if frame_id is not None:
@@ -556,17 +516,13 @@ def initialize_can_data(
             device_rpcs.setdefault(device_name, [])
             rpc_structs.setdefault(device_name, {})
 
-            for term in ("can", "can2b"):
-                if term not in rpc_protocols:
-                    continue
+            for protocol, values in rpc_protocols.items():
+                rpc_structs[device_name].setdefault(protocol, [])
 
-                rpc_structs[device_name].setdefault(term, [])
-
-                rpc_ids = rpc_protocols.get(term, {})
-                get_id = rpc_ids.get("rpc_get_id")
-                ans_id = rpc_ids.get("rpc_ans_id")
-                can_mode = rpc_ids.get("rpc_can_mode", False)
-                lst_services = rpc_ids.get("rpc_services", [])
+                get_id = values.get("rpc_get_id")
+                ans_id = values.get("rpc_ans_id")
+                can_mode = values.get("rpc_can_mode", False)
+                lst_services = values.get("rpc_services", [])
 
                 rpc_get_id = get_id if isinstance(get_id, int) else None
                 rpc_ans_id = ans_id if isinstance(ans_id, int) else None
@@ -575,41 +531,12 @@ def initialize_can_data(
 
                 if service.name not in rpc_services:
                     continue
-
-                device = next((dev for dev in devices if dev.name == device_name), None)
-                protocols = (
-                    [rpc.protocol for rpc in device.rpc_block]
-                    if device and device.rpc_block
-                    else []
+                
+                register_rpc(device_name, protocol,
+                    rpc_get_id,
+                    rpc_ans_id,
+                    rpc_can_mode
                 )
-                if device_name not in used_devices:
-                    node = CanNode(
-                        device_name,
-                        [
-                            CanRpc(
-                                rpc_get_id=rpc_get_id,
-                                rpc_ans_id=rpc_ans_id,
-                                rpc_can_mode=rpc_can_mode,
-                                protocol=term,
-                            )
-                        ],
-                    )
-                    node.services = device_services.get(device_name, {})
-                    devices.append(node)
-                    used_devices.add(device_name)
-                elif (
-                    device is not None
-                    and term not in protocols
-                    and device.rpc_block is not None
-                ):
-                    device.rpc_block.append(
-                        CanRpc(
-                            rpc_get_id=rpc_get_id,
-                            rpc_ans_id=rpc_ans_id,
-                            rpc_can_mode=rpc_can_mode,
-                            protocol=term,
-                        )
-                    )
 
                 for method in service.methods:
                     for name, struct_name, frame_id, direction in (
@@ -618,82 +545,47 @@ def initialize_can_data(
                     ):
                         if frame_id is None:
                             continue
-
-                        if struct_name:
-                            impl = default_impl_by_name.get(struct_name)
-                            if impl is None:
-                                impl = next(
-                                    (
-                                        ext
-                                        for ext in fcp.impls
-                                        if ext.name == struct_name
-                                    ),
-                                    None,
-                                )
-
-                            if impl is None:
-                                enum = fcp.get_enum(struct_name).unwrap_or(None)
-                                impl = (
-                                    Impl(
-                                        name=enum.name,
-                                        protocol="default",
-                                        type=enum.name,
-                                        fields={},
-                                        signals=[],
-                                        meta=enum.meta,
-                                    )
-                                    if enum
-                                    else None
-                                )
-
-                            if impl is None:
-                                continue
-
-                            encoding = encoder.generate(impl)
-                            signals, dlc = create_can_signals(encoding, fcp)
-                        else:
-                            signals = None
-                            dlc = 0
-
+                
+                        signals, dlc = get_dlc_signals(struct_name)
+                        if dlc == -1:
+                            continue
+                
                         key = (name, struct_name, cast(int, frame_id), direction)
                         if key in rpc_messages:
                             continue
-
-                        method_id, service_id = next(
-                            (aux.id, service.id)
-                            for service in fcp.services
-                            for aux in service.methods
-                            if aux.name == method.name
-                        )
-
+                
                         message = CanMessage(
                             frame_id=cast(int, frame_id),
                             name_pascal=name,
                             name_struct=struct_name,
                             dlc=dlc + 2,
-                            method_id=method_id,
-                            service_id=service_id,
+                            method_id=method.id,
+                            service_id=service.id,
                             signals=signals,
                             senders=[device_name] if direction == "request" else [],
-                            protocol=term,
+                            protocol=protocol,
                             period=-1,
                             is_can_2b=bool(rpc_can_mode),
                         )
-
+                
                         rpc.append(message)
                         device_rpcs[device_name].append(message)
-
-                        already_inside = any(
+                
+                        if struct_name and not any(
                             struct_rpc.name_struct == struct_name
-                            for struct_rpc in rpc_structs[device_name][term]
-                        )
-
-                        if struct_name and not already_inside:
-                            rpc_structs[device_name][term].append(message)
-
+                            for struct_rpc in rpc_structs[device_name][protocol]
+                        ):
+                            rpc_structs[device_name][protocol].append(message)
+                
                         rpc_messages.add(key)
 
-    return (enums, devices, messages, device_rpcs, rpc, rpc_structs, fcp.services)
+    return CanData(enums=enums, 
+        devices=devices, 
+        messages=messages,
+        device_rpcs=device_rpcs, 
+        rpc=rpc, 
+        rpc_structs=rpc_structs, 
+        services=fcp.services)
 
 
 class CanCWriter:
@@ -709,15 +601,7 @@ class CanCWriter:
         script_dir = os.path.dirname(os.path.realpath(__file__))
         self.templates_dir = os.path.join(script_dir, "../templates")
 
-        (
-            self.enums,
-            self.devices,
-            self.messages,
-            self.device_rpcs,
-            self.rpcs,
-            self.rpc_structs,
-            self.services,
-        ) = initialize_can_data(fcp)
+        self.can_data = initialize_can_data(fcp)
 
         self.fcp: FcpV2 = fcp
         self.env = Environment(
@@ -732,7 +616,7 @@ class CanCWriter:
             "device_rpc_h": self.env.get_template("rpc_device_h.j2"),
             "device_rpc_c": self.env.get_template("rpc_device_c.j2"),
         }
-        self.device_messages = map_messages_to_devices(self.messages)
+        self.device_messages = map_messages_to_devices(self.can_data.messages)
 
     def generate_static_files(self) -> Generator[Tuple[str, str], None, None]:
         """Generate all static C files.
@@ -758,17 +642,17 @@ class CanCWriter:
             Generator: Tuple containing the device name and the file content.
 
         """
-        enums_exists = any(self.enums)
+        enums_exists = any(self.can_data.enums)
         messages_global = any(self.device_messages.get("global", []))
         global_device_exists = any(
-            device.name == "global" for device in self.devices
+            device.name == "global" for device in self.can_data.devices
         ) and (enums_exists or messages_global)
 
-        for device in self.devices:
+        for device in self.can_data.devices:
             device_name = device.name
             all_messages = self.device_messages.get(device_name, [])
 
-            enums_to_include = self.enums if device_name == "global" else []
+            enums_to_include = self.can_data.enums if device_name == "global" else []
 
             messages = [message for message in all_messages if not message.is_can_2b]
 
@@ -851,7 +735,7 @@ class CanCWriter:
         """
         self._devices_with_rpc = set()
 
-        for device in self.devices:
+        for device in self.can_data.devices:
             if device.rpc_block is None:
                 continue
 
@@ -866,10 +750,10 @@ class CanCWriter:
             device_name = device.name
             self._devices_with_rpc.add(device_name)
 
-            rpc = self.device_rpcs.get(device_name, {})
+            rpc = self.can_data.device_rpcs.get(device_name, {})
 
             messages = [message for message in rpc if not message.is_can_2b]
-            rpc_struct = self.rpc_structs[device.name].get("can")
+            rpc_struct = self.can_data.rpc_structs[device.name].get("can")
             rpc_block = next(
                 (aux for aux in device.rpc_block if not aux.rpc_can_mode), None
             )
@@ -887,14 +771,14 @@ class CanCWriter:
                         rpc_ans_id=rpc_block.rpc_ans_id,
                         can_mode=False,
                         protocol="can",
-                        services=self.services,
+                        services=self.can_data.services,
                     ),
                 )
             else:
                 pass
 
             messages = [message for message in rpc if message.is_can_2b]
-            rpc_struct = self.rpc_structs[device.name].get("can2b")
+            rpc_struct = self.can_data.rpc_structs[device.name].get("can2b")
             rpc_block = next(
                 (aux for aux in device.rpc_block if aux.rpc_can_mode), None
             )
@@ -912,7 +796,7 @@ class CanCWriter:
                         rpc_ans_id=rpc_block.rpc_ans_id,
                         can_mode=True,
                         protocol="can2b",
-                        services=self.services,
+                        services=self.can_data.services,
                     ),
                 )
             else:
@@ -925,13 +809,14 @@ class CanCWriter:
             Generator: Tuple containing the device name and the file content.
 
         """
+        breakpoint()
         for device_name in self._devices_with_rpc:
-            device = next(aux for aux in self.devices if aux.name == device_name)
+            device = next(aux for aux in self.can_data.devices if aux.name == device_name)
 
-            rpcs = self.device_rpcs.get(device_name, {})
+            rpcs = self.can_data.device_rpcs.get(device_name, {})
 
             rpc = [message for message in rpcs if not message.is_can_2b]
-            rpc_struct = self.rpc_structs[device_name].get("can")
+            rpc_struct = self.can_data.rpc_structs[device_name].get("can")
             rpc_block = next((aux for aux in device.rpc_block if not aux.rpc_can_mode), None)  # type: ignore
 
             if rpc and rpc_block and rpc_struct:
@@ -947,14 +832,14 @@ class CanCWriter:
                         rpc_ans_id=rpc_block.rpc_ans_id,
                         can_mode=False,
                         protocol="can",
-                        services=self.services,
+                        services=self.can_data.services,
                     ),
                 )
             else:
                 pass
 
             rpc = [message for message in rpcs if message.is_can_2b]
-            rpc_struct = self.rpc_structs[device_name].get("can2b")
+            rpc_struct = self.can_data.rpc_structs[device_name].get("can2b")
             rpc_block = next((aux for aux in device.rpc_block if aux.rpc_can_mode), None)  # type: ignore
 
             if rpc and rpc_block and rpc_struct:
@@ -970,7 +855,7 @@ class CanCWriter:
                         rpc_ans_id=rpc_block.rpc_ans_id,
                         can_mode=True,
                         protocol="can2b",
-                        services=self.services,
+                        services=self.can_data.services,
                     ),
                 )
             else:
