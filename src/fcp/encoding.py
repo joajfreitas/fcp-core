@@ -443,10 +443,17 @@ class PackedEncoder:
         self.encoding = []
         self.bitstart = 0
 
-        self._generate(
-            StructType(impl.type),  # type: ignore
-            impl,
-        )
+        if self.fcp.get_struct(impl.name).unwrap_or(None):
+            self._generate(
+                StructType(impl.type),  # type: ignore
+                impl,
+            )
+        elif self.fcp.get_enum(impl.name).unwrap_or(None):
+            self._generate(
+                EnumType(impl.type),  # type: ignore
+                impl,
+            )
+
         return self.encoding
 
 
