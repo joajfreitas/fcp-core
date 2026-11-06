@@ -728,6 +728,7 @@ class CanCWriter:
 
         """
         self._devices_with_rpc = set()
+        enums_exists = any(self.can_data.enums)
 
         for device in self.can_data.devices:
             if device.rpc_block is None:
@@ -760,6 +761,7 @@ class CanCWriter:
                         device_name_pascal=to_pascal_case(device_name),
                         device_name_snake=to_snake_case(device_name),
                         messages=messages,
+                        enums_exist=enums_exists,
                         rpc_structs=rpc_struct,
                         rpc_get_id=rpc_block.rpc_get_id,
                         rpc_ans_id=rpc_block.rpc_ans_id,
@@ -786,6 +788,7 @@ class CanCWriter:
                         device_name_snake=to_snake_case(device_name),
                         messages=messages,
                         rpc_structs=rpc_struct,
+                        enums_exist=enums_exists,
                         rpc_get_id=rpc_block.rpc_get_id,
                         rpc_ans_id=rpc_block.rpc_ans_id,
                         can_mode=True,
