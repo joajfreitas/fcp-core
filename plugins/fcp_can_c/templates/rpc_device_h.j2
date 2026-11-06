@@ -46,6 +46,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "can_frame.h"
+{% if enums_exist %}
+#include "global_{{ protocol }}.h"
+{% endif %}
 
 /*---------------------------------------- Type Definitions ----------------------------------------*/
 #define {{ device_name_snake | upper }}_{{ protocol | upper }}_RPC_GET_ID {{ rpc_get_id }}
