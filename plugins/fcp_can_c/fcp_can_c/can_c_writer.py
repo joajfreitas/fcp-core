@@ -759,7 +759,6 @@ class CanCWriter:
             Generator: Tuple containing the device name and the file content.
 
         """
-
         structs_by_devices: Dict[str, Dict[str, List[CanMessage]]] = {"Global": {}}
         device_struct: Dict[str, Dict[str, bool]] = {}
         common_structs: List[CanMessage] = []
@@ -767,7 +766,9 @@ class CanCWriter:
         for device, messages in self.device_messages.items():
             device_pascal = to_pascal_case(device)
 
-            structs_by_devices.setdefault(device_pascal, {}).setdefault("can", []).extend(messages)
+            structs_by_devices.setdefault(device_pascal, {}).setdefault(
+                "can", []
+            ).extend(messages)
             device_struct.setdefault(device_pascal, {"can": False, "can2b": False})
 
             for message in messages:
@@ -784,7 +785,7 @@ class CanCWriter:
                     if struct.senders:
                         structs_by_devices[device_pascal]["rpc"].append(struct)
                     else:
-                        
+
                         if struct.name_struct in seen_structs:
                             continue
                         common_structs.append(struct)
@@ -799,7 +800,6 @@ class CanCWriter:
             )
         )
 
-    
     def generate_device_headers(self) -> Generator[Tuple[str, str, str], None, None]:
         """Generate C header files for devices.
 
@@ -808,9 +808,9 @@ class CanCWriter:
 
         """
         messages_global = any(self.device_messages.get("global", []))
-        global_device_exists = any(
-            device.name == "global" for device in self.devices
-        ) and messages_global
+        global_device_exists = (
+            any(device.name == "global" for device in self.devices) and messages_global
+        )
 
         for device in self.devices:
             device_name = device.name
