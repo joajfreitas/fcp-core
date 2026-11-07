@@ -46,6 +46,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "can_frame.h"
+#include "can_structs.h"
 
 /*---------------------------------------- Type Definitions ----------------------------------------*/
 #define {{ device_name_snake | upper }}_{{ protocol | upper }}_RPC_GET_ID {{ rpc_get_id }}
@@ -118,20 +119,6 @@ bool {{ device_name_snake }}_{{ protocol }}_rpc_unregister(uint8_t service, uint
  * Should be called once during system startup.
  */
 void {{ device_name_snake }}_{{ protocol }}_rpc_init(void);
-/*---------------------------------------- RPC Encode/Decode Structs --------------------------------*/
-{%- for message in rpc_structs +%}
-{% if message.signals[0].name %}
-typedef struct {
-    {% for signal in message.signals %}
-    {% if signal.multiplexer_count > 1 %}
-    {{ signal.data_type }} {{ signal.name }}[{{ signal.multiplexer_count }}];
-    {% else %}
-    {{ signal.data_type }} {{ signal.name }};
-    {% endif %}
-    {% endfor %}
-} {{ protocol | upper }}Rpc{{ message.name_struct }};
-{% endif %}
-{% endfor %}
 /*---------------------------------------- RPC Encode/Decode Rpcs -----------------------------------*/
 {{ generate_rpc_decode(messages) }}
 {{ generate_rpc_decode_ans(messages) }}

@@ -9,7 +9,7 @@ OBJS = $(SRCS:.c=.o)
 OBJECTS = $(OBJS)
 OUTPUT = test
 
-CFLAGS = -I$(LIBDIR) -Wall 
+CFLAGS = -I$(LIBDIR) -Wall -DECU_DEV
 
 all: $(OUTPUT)
 
