@@ -14,7 +14,7 @@
     "onLanguage:fcp"
   ],
   "engines": {
-    "vscode": "^1.90.0"
+    "vscode": "^1.146.0"
   },
   "categories": [
     "Programming Languages"
