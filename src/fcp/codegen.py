@@ -92,7 +92,7 @@ class GeneratorManager:
     """Manager for generators."""
 
     def __init__(self, verifier: Verifier) -> None:
-        self.verifier = make_general_verifier()
+        self.verifier = verifier
 
     def _list_generators(self) -> Any:
         return [
