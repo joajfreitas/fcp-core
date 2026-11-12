@@ -88,8 +88,8 @@ class variant : public std::variant<replace_t<T, self_t, variant<T...>>...> {
         return this;
     }
 
-    auto operator<=>(variant const&) const = default;
-    bool operator==(variant const&) const = default;
+    bool operator<(variant const& other) const { return get_base() < other.get_base(); }
+    bool operator==(variant const&) const = default;    
 };
 
 // See: https://en.cppreference.com/w/cpp/utility/variant/visit
