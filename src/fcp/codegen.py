@@ -35,7 +35,7 @@ from .types import Nil
 from .result import Result, Ok
 from .maybe import catch
 from . import FcpV2
-from .verifier import Verifier, make_general_verifier
+from .verifier import Verifier
 
 
 def _handle_file(result: Dict[str, Union[str, Path]]) -> NoReturn:
