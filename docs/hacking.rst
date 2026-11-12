@@ -22,6 +22,7 @@ Directory structure
     │   │       ├── 005_big_endian      - Testing big endian encoding for CAN2A C all data types
     │   │       ├── 006_rpc_support     - Testing rpc support for CAN2A C
     │   │       ├── 007_basic_struct    - Basic struct test for CAN2B C
+    │   │       ├── 007_verify_colisions- Basic script to verify handler duplication
     │   │       ├── 008_nested_enum     - Nested enum test for CAN2B C
     │   │       ├── 009_msg_scheduling  - Msg scheduling test for CAN2B C
     │   │       ├── 010_little_endian   - Testing little endian encoding for CAN2B C all data types
