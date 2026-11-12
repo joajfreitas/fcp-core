@@ -636,6 +636,7 @@ class CanCWriter:
         )
 
         self.templates = {
+            "can_structs_h": self.env.get_template("can_structs_h.j2"),
             "device_can_h": self.env.get_template("can_device_h.j2"),
             "device_can_c": self.env.get_template("can_device_c.j2"),
             "device_rpc_h": self.env.get_template("rpc_device_h.j2"),
@@ -661,6 +662,54 @@ class CanCWriter:
             with open(f"{self.templates_dir}/{file}", "r") as f:
                 yield file, f.read()
 
+    def generate_structs_headers(self) -> Generator[str, None, None]:
+        """Generate C header files for structs.
+
+        Returns:
+            Generator: Tuple containing the device name and the file content.
+
+        """
+        structs_by_devices: Dict[str, Dict[str, List[CanMessage]]] = {"Global": {}}
+        device_struct: Dict[str, Dict[str, bool]] = {}
+        common_structs: List[CanMessage] = []
+
+        for device, messages in self.device_messages.items():
+            device_pascal = to_pascal_case(device)
+
+            structs_by_devices.setdefault(device_pascal, {}).setdefault(
+                "can", []
+            ).extend(messages)
+            device_struct.setdefault(device_pascal, {"can": False, "can2b": False})
+
+            for message in messages:
+                if not device_struct[device_pascal][message.protocol]:
+                    device_struct[device_pascal][message.protocol] = True
+
+        seen_structs = set()
+        for device, rpcs in self.can_data.rpc_structs.items():
+            device_pascal = to_pascal_case(device)
+
+            for _, structs in rpcs.items():
+                structs_by_devices.setdefault(device_pascal, {}).setdefault("rpc", [])
+                for struct in structs:
+                    if struct.senders:
+                        structs_by_devices[device_pascal]["rpc"].append(struct)
+                    else:
+
+                        if struct.name_struct in seen_structs:
+                            continue
+                        common_structs.append(struct)
+                        seen_structs.add(struct.name_struct)
+
+        yield (
+            self.templates["can_structs_h"].render(
+                enums=self.can_data.enums,
+                structs=structs_by_devices,
+                devices=device_struct,
+                common_structs=common_structs,
+            )
+        )
+
     def generate_device_headers(self) -> Generator[Tuple[str, str, str], None, None]:
         """Generate C header files for devices.
 
@@ -668,21 +717,19 @@ class CanCWriter:
             Generator: Tuple containing the device name and the file content.
 
         """
-        enums_exists = any(self.can_data.enums)
         messages_global = any(self.device_messages.get("global", []))
-        global_device_exists = any(
-            device.name == "global" for device in self.can_data.devices
-        ) and (enums_exists or messages_global)
+        global_device_exists = (
+            any(device.name == "global" for device in self.can_data.devices)
+            and messages_global
+        )
 
         for device in self.can_data.devices:
             device_name = device.name
             all_messages = self.device_messages.get(device_name, [])
 
-            enums_to_include = self.can_data.enums if device_name == "global" else []
-
             messages = [message for message in all_messages if not message.is_can_2b]
 
-            if messages or (device_name == "global" and enums_to_include):
+            if messages:
                 yield (
                     device_name,
                     "can",
@@ -693,13 +740,12 @@ class CanCWriter:
                         protocol="can",
                         include_global=device_name != "global" and global_device_exists,
                         is_global_device=device_name == "global",
-                        enums=enums_to_include,
                     ),
                 )
 
             messages = [message for message in all_messages if message.is_can_2b]
 
-            if messages or (device_name == "global" and enums_to_include):
+            if messages:
                 yield (
                     device_name,
                     "can2b",
@@ -710,7 +756,6 @@ class CanCWriter:
                         protocol="can2b",
                         include_global=device_name != "global" and global_device_exists,
                         is_global_device=device_name == "global",
-                        enums=enums_to_include,
                     ),
                 )
 

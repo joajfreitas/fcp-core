@@ -73,6 +73,9 @@ class Generator(CodeGenerator):
         for filename, contents in writer.generate_static_files():
             files.append(to_dict("file", f"{base_dir}/{filename}", contents))
 
+        for contents in writer.generate_structs_headers():
+            files.append(to_dict("file", f"{base_dir}/can_structs.h", contents))
+
         for filename, protocol, contents in writer.generate_device_headers():
             files.append(
                 to_dict("file", f"{base_dir}/{filename}_{protocol}.h", contents)

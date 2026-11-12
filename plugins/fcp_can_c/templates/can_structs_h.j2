@@ -1,0 +1,109 @@
+{% macro render_fields(fields, indent='') %}
+{% for field in fields %}
+{% if field.__class__.__name__ == 'NestedStruct' %}
+{{ indent }}struct { 
+{{ render_fields(field.fields, indent + '    ') }}
+{{ indent }}} {{ field.name }};
+{% else %}
+{{ indent }}{{ field.data_type }} {{ field.name }}{% if field.is_multiplexer %}[{{ field.multiplexer_count }}]{% endif %};
+{% endif %}
+{% endfor %}
+{% endmacro -%}
+
+{%- macro render_structs(structs, protocol, indent='') %}
+{% for struct in structs %}
+{% if struct.protocol == protocol %}
+{{ indent }}{{ protocol | upper }}Msg{{ struct.name_pascal }} {{ struct.name_snake }};
+{% endif %}
+{% endfor %}
+{% endmacro -%}
+
+#ifndef __CAN_STRUCTS_H__
+#define __CAN_STRUCTS_H__
+
+{%- if enums | length > 0 %}
+
+{% for enum in enums +%}
+typedef enum {
+    {% for name, value in enum.values.items() %}
+    {% if loop.first %}
+    {{ name }} = {{ value }}{% if not loop.last %},{% endif +%}
+    {% elif (loop.previtem)[1] != value - 1 %}
+    {{ name }} = {{ value }}{% if not loop.last %},{% endif +%}
+    {% else %}
+    {{ name }}{% if not loop.last %},{% endif +%}
+    {% endif %}
+    {% endfor %}
+} {{ enum.name }};
+{% endfor -%}
+{% endif -%}
+
+{% for device, structs in structs.items() +%}
+{% if (device | lower) == "global" %}
+{%- for message in structs["can"] +%}
+/* {{ message.name_pascal }} message structure */
+typedef struct { 
+{{ render_fields(message.signals, '    ') -}}
+} {{ message.protocol | upper }}Msg{{ message.name_pascal }};
+{% endfor %}
+
+{% if (structs["can"]) | length > 0 %}
+{% for protocol, valid in devices[device].items() %}
+{% if valid %}
+/* {{ device }} device aggregate structure */
+typedef struct {
+{{ render_structs(structs["can"], protocol, '    ') -}}
+} {{ protocol | upper }}Device{{ device }};
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% for structs in common_structs %}
+typedef struct {
+    {% for signal in structs.signals %}
+    {% if signal.multiplexer_count > 1 %}
+    {{ signal.data_type }} {{ signal.name }}[{{ signal.multiplexer_count }}];
+    {% else %}
+    {{ signal.data_type }} {{ signal.name }};
+    {% endif %}
+    {% endfor %}
+} {{ structs.protocol | upper }}Rpc{{ structs.name_struct }};
+{% endfor %}
+{% else %}
+#ifdef {{device | upper }}_DEV
+
+{%- for message in structs["can"] +%}
+/* {{ message.name_pascal }} message structure */
+typedef struct { 
+{{ render_fields(message.signals, '    ') -}}
+} {{ message.protocol | upper }}Msg{{ message.name_pascal }};
+{% endfor %}
+
+{% if (structs["can"]) | length > 0 %}
+{% for protocol, valid in devices[device].items() %}
+{% if valid %}
+/* {{ device }} device aggregate structure */
+typedef struct {
+{{ render_structs(structs["can"], protocol, '    ') -}}
+} {{ protocol | upper }}Device{{ device }};
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{%- for message in structs["rpc"] +%}
+typedef struct {
+    {% for signal in message.signals %}
+    {% if signal.multiplexer_count > 1 %}
+    {{ signal.data_type }} {{ signal.name }}[{{ signal.multiplexer_count }}];
+    {% else %}
+    {{ signal.data_type }} {{ signal.name }};
+    {% endif %}
+    {% endfor %}
+} {{ message.protocol | upper }}Rpc{{ message.name_struct }};
+{% endfor %}
+
+#endif
+{% endif %}
+{% endfor %}
+
+#endif

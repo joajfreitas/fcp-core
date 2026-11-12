@@ -1,21 +1,3 @@
-{% macro render_fields(fields, indent='') %}
-{% for field in fields %}
-{% if field.__class__.__name__ == 'NestedStruct' %}
-{{ indent }}struct { 
-{{ render_fields(field.fields, indent + '    ') }}
-{{ indent }}} {{ field.name }};
-{% else %}
-{{ indent }}{{ field.data_type }} {{ field.name }}{% if field.is_multiplexer %}[{{ field.multiplexer_count }}]{% endif %};
-{% endif %}
-{% endfor %}
-{% endmacro -%}
-
-{%- macro render_structs(structs, indent='') %}
-{% for struct in structs %}
-{{ indent }}{{ protocol | upper }}Msg{{ struct.name_pascal }} {{ struct.name_snake }};
-{% endfor %}
-{% endmacro -%}
-
 #ifndef {{ device_name_snake | upper }}_{{ protocol | upper }}_H
 #define {{ device_name_snake | upper }}_{{ protocol | upper }}_H
 
@@ -23,6 +5,7 @@
 #include <stdbool.h>
 
 #include "can_frame.h"
+#include "can_structs.h"
 {% if include_global %}
 #include "global_{{ protocol }}.h"
 {% endif %}
@@ -38,37 +21,6 @@
 #define {{ message.protocol | upper }}_MSG_PERIOD_{{ message.name_snake | upper }} {{ message.period }}
 {% endfor %}
 {% endif -%}
-
-{% if enums | length > 0 %}
-{%- for enum in enums +%}
-typedef enum {
-    {% for name, value in enum.values.items() %}
-    {% if loop.first %}
-    {{ name }} = {{ value }}{% if not loop.last %},{% endif +%}
-    {% elif (loop.previtem)[1] != value - 1 %}
-    {{ name }} = {{ value }}{% if not loop.last %},{% endif +%}
-    {% else %}
-    {{ name }}{% if not loop.last %},{% endif +%}
-    {% endif %}
-    {% endfor %}
-} {{ enum.name }};
-{% endfor %}
-{% endif -%}
-
-{% for message in messages %}
-/* {{ message.name_pascal }} message structure */
-typedef struct { 
-{{ render_fields(message.signals, '    ') -}}
-} {{ protocol | upper }}Msg{{ message.name_pascal }};
-{% endfor %}
-
-{% if messages | length > 0 %}
-/* {{ device_name_pascal }} device aggregate structure */
-typedef struct {
-{{ render_structs(messages, '    ') -}}
-} {{ protocol | upper }}Device{{ device_name_pascal }};
-{% endif %}
-
 
 /* Check if a CanFrame comes from {{ device_name_pascal }} */
 bool {{ protocol }}_is_{{ device_name_snake }}_msg(const {{ protocol | upper }}Frame *frame);
