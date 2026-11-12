@@ -70,7 +70,7 @@ class Value:
         type: Type,
         bitstart: int,
         bitlength: int,
-        endianess: str = "little",
+        endianness: str = "little",
         unit: Optional[str] = None,
         extended_data: Dict[str, Any] = dict(),
         composite_type: Optional[str] = Nothing(),
@@ -80,14 +80,14 @@ class Value:
         self.type = type
         self.bitstart = bitstart
         self.bitlength = bitlength
-        self.endianess = endianess
+        self.endianness = endianness
         self.extended_data = extended_data
         self.unit = unit
         self.composite_type = composite_type
         self.nested_fields = nested_fields or []
 
     def __repr__(self) -> str:
-        return f"Value name={self.name} type={self.type} bitstart={self.bitstart} bitlength={self.bitlength} endianess={self.endianess}"
+        return f"Value name={self.name} type={self.type} bitstart={self.bitstart} bitlength={self.bitlength} endianness={self.endianness}"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Value):
@@ -98,7 +98,7 @@ class Value:
             and self.type == other.type
             and self.bitstart == other.bitstart
             and self.bitlength == other.bitlength
-            and self.endianess == other.endianess
+            and self.endianness == other.endianness
         )
 
 
@@ -267,7 +267,7 @@ class PackedEncoder:
                         type=nested_field.type,
                         bitstart=self.bitstart,
                         bitlength=type_length,
-                        endianess=fields_data.get("endianess") or "little",
+                        endianness=fields_data.get("endianness") or "little",
                         unit=nested_field.unit,
                         extended_data=fields_data,
                     )
@@ -330,7 +330,7 @@ class PackedEncoder:
                         type=field.type,
                         bitstart=bitstart,
                         bitlength=type_length,
-                        endianess=fields_data.get("endianess") or "little",
+                        endianness=fields_data.get("endianness") or "little",
                         unit=field.unit,
                         extended_data=fields_data,
                     )
@@ -359,7 +359,7 @@ class PackedEncoder:
                 type=field.type,
                 bitstart=self.bitstart,
                 bitlength=type_length,
-                endianess=fields.get("endianess") or "little",
+                endianness=fields.get("endianness") or "little",
                 unit=field.unit,
                 extended_data=fields,
             )

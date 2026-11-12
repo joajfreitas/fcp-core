@@ -102,10 +102,10 @@ def _make_signals(
         signals.append(
             CanSignal(
                 sig_name.replace("::", "_"),
-                (leaf.bitstart + 7) if leaf.endianess != "little" else leaf.bitstart,
+                (leaf.bitstart + 7) if leaf.endianness != "little" else leaf.bitstart,
                 leaf.bitlength,
                 byte_order=(
-                    "big_endian" if leaf.endianess == "big" else "little_endian"
+                    "big_endian" if leaf.endianness == "big" else "little_endian"
                 ),
                 is_signed=is_signed_value,
                 minimum=0,

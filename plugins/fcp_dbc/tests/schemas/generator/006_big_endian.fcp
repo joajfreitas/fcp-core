@@ -11,7 +11,7 @@ device dbc_device {
             id: 10,
 
             signal s2 {
-                endianess: "big",
+                endianness: "big",
             },
         },
     },

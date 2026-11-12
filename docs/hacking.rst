@@ -23,6 +23,7 @@ Directory structure
     │   │       ├── 006_rpc_support     - Testing rpc support for CAN2A C
     │   │       ├── 007_verify_colisions- Test to verify if the hadle function is duplicated in any .h file
     │   │       ├── 007_basic_struct    - Basic struct test for CAN2B C
+    │   │       ├── 007_verify_colisions- Basic script to verify handler duplication
     │   │       ├── 008_nested_enum     - Nested enum test for CAN2B C
     │   │       ├── 009_msg_scheduling  - Msg scheduling test for CAN2B C
     │   │       ├── 010_little_endian   - Testing little endian encoding for CAN2B C all data types
