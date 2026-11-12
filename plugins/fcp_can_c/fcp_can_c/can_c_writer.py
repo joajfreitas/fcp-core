@@ -686,7 +686,7 @@ class CanCWriter:
                     device_struct[device_pascal][message.protocol] = True
 
         seen_structs = set()
-        for device, rpcs in self.rpc_structs.items():
+        for device, rpcs in self.can_data.rpc_structs.items():
             device_pascal = to_pascal_case(device)
 
             for _, structs in rpcs.items():
@@ -703,7 +703,7 @@ class CanCWriter:
 
         yield (
             self.templates["can_structs_h"].render(
-                enums=self.enums,
+                enums=self.can_data.enums,
                 structs=structs_by_devices,
                 devices=device_struct,
                 common_structs=common_structs,
@@ -719,7 +719,8 @@ class CanCWriter:
         """
         messages_global = any(self.device_messages.get("global", []))
         global_device_exists = (
-            any(device.name == "global" for device in self.devices) and messages_global
+            any(device.name == "global" for device in self.can_data.devices)
+            and messages_global
         )
 
         for device in self.can_data.devices:
