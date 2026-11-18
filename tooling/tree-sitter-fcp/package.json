@@ -14,7 +14,7 @@
   "gypfile": true,
   "description": "",
   "dependencies": {
-    "node-gyp-build": "^4.8.1"
+    "node-gyp-build": "^4.8.4"
   },
   "peerDependencies": {
     "tree-sitter": "^0.25.2"
